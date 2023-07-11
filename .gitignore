@@ -1,0 +1,18 @@
+*.dll
+*.gch
+*.exe
+*.pdb
+*.vscode
+*.a
+*.o
+
+build/
+vendor/assimp*
+vendor/sdl2*
+vendor/glm*
+vendor/imgui*
+
+# cmake stuff
+CMakeFiles/
+CMakeCache.txt
+Makefile
