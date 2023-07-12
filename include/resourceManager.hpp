@@ -10,7 +10,7 @@ namespace nimbus
 class ResourceManager
 {
    public:
-    static ResourceManager& getInstance();
+    static ResourceManager& get();
 
     // Other member functions and variables...
 

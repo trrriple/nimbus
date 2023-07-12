@@ -11,9 +11,15 @@ Application::Application(const std::string name,
                          bool              is3d)
     : m_name(name), m_screenWidth(screenWidth), m_screenHeight(screenHeight)
 {
-    NM_LOG("------------------------------------------\n");
-    NM_LOG("----- Nimbus Engine Application Init -----\n");
-    NM_LOG("------------------------------------------\n");
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+
+    NM_CORE_INFO("------------------------------------------\n");
+    NM_CORE_INFO("----- Nimbus Engine Application Init -----\n");
+    NM_CORE_INFO("------------------------------------------\n");
+
+    NM_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
+
+    sp_instance = this;
 
     _initOsIntrf(name);
 
@@ -51,21 +57,30 @@ void Application::onExit()
 
 bool Application::shouldQuit() const
 {
-    return m_quit;
+    return !m_Active;
 }
 
 void Application::execute()
 {
     /* main game loop */
-    while (!m_quit)
+    while (m_Active)
     {
         /* main event loop */
         _render();
         _processEvents();
-        _onUpdate();
     }
 
-    NM_LOG("Quitting\n");
+    NM_CORE_INFO("Quitting\n");
+}
+
+void Application::insertLayer(Layer* layer, int32_t location)
+{
+    m_layerDeck.insertLayer(layer, location);
+}
+
+void Application::removeLayer(Layer* layer)
+{
+    m_layerDeck.removeLayer(layer);
 }
 
 void Application::addGuiCallback(nbCallback_t p_func)
@@ -73,35 +88,6 @@ void Application::addGuiCallback(nbCallback_t p_func)
     m_guiCallbacks.push_back(p_func);
 }
 
-void Application::addRenderCallback(nbCallback_t p_func)
-{
-    m_renderCallbacks.push_back(p_func);
-}
-
-void Application::addUpdateCallback(nbCallback_t p_func)
-{
-    m_updateCallbacks.push_back(p_func);
-}
-
-void Application::setEventCallback(nbWindowEvtCallback_t p_func)
-{
-    m_windowEvtCallback = p_func;
-}
-
-void Application::setEventCallback(nbMouseMotionEvtCallback_t p_func)
-{
-    m_mouseMotionEvtCallback = p_func;
-}
-
-void Application::setEventCallback(nbMouseWheelEvtCallback_t p_func)
-{
-    m_mouseWheelEvtCallback = p_func;
-}
-
-void Application::setEventCallback(nbMouseButtonEvtCallback_t p_func)
-{
-    m_mouseButtonEvtCallback = p_func;
-}
 
 SDL_Window* Application::getWindow() const
 {
@@ -200,8 +186,8 @@ void Application::_initOsIntrf(const std::string windowCaption)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        NM_ELOG(0, "SDL could not init. SDL_Error: %s\n", SDL_GetError());
-        throw std::runtime_error("Failed initialize SDL\n");
+        NM_CORE_ASSERT(
+            0, "SDL could not init. SDL_Error: %s\n", SDL_GetError());
     }
 
     // relative mouse
@@ -229,12 +215,9 @@ void Application::_initOsIntrf(const std::string windowCaption)
         m_screenHeight,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 
-    if (mp_window == nullptr)
-    {
-        NM_ELOG(
-            0, "Window could not be created. sdl error %s\n", SDL_GetError());
-        throw std::runtime_error("Window could not be created.\n");
-    }
+    NM_CORE_ASSERT(mp_window,
+                   "Window could not be created. sdl error %s\n",
+                   SDL_GetError());
 }
 
 void Application::_killOsIntrf()
@@ -287,10 +270,9 @@ void Application::_render()
         p_callback();
     }
 
-    // render callbacks
-    for (auto& p_callback : m_renderCallbacks)
+    for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); ++it)
     {
-        p_callback();
+        (*it)->onUpdate();
     }
 
     ImGui::Render();
@@ -299,57 +281,43 @@ void Application::_render()
     mp_renderer->render();
 }
 
-void Application::_onUpdate()
-{
-    for (auto& p_callback : m_updateCallbacks)
-    {
-        p_callback();
-    }
-}
-
 void Application::_processEvents()
 {
-    SDL_Event event;
-    while (SDL_PollEvent(&event) != 0)
+    Event event;
+
+    while (SDL_PollEvent(event.getEvent()) != 0)
     {
         ImGuiIO& io = ImGui::GetIO();
 
-        switch (event.type)
+        // interate over the layer deck backwards because we want layers at
+        // the top of the deck to handle events first if they so choose
+        // this is because when rendering layers, they are rendered bottom
+        // to top so the last layer will be the layer "highest" in the scene
+        for (auto it = m_layerDeck.rbegin(); it != m_layerDeck.rend(); ++it)
+        {
+            if (event.wasHandled())
+            {
+                break;
+            }
+            (*it)->onEvent(event);
+        }
+
+        ////////////////////////////////////////
+        // Handle Application Centric Events
+        ////////////////////////////////////////
+        switch (event.getEventType())
         {
             case SDL_WINDOWEVENT:
             {
-                if (m_windowEvtCallback != nullptr)
-                {
-                    m_windowEvtCallback(event.window);
-                }
-
+              
                 // handle internal window stuff
-                _processWindowEvents(event.window);
-
-                break;
-            }
-            case SDL_MOUSEMOTION:
-            {
-                if (!io.WantCaptureMouse && m_mouseMotionEvtCallback != nullptr
-                    && !m_menuMode)
-                {
-                    m_mouseMotionEvtCallback(event.motion);
-                }
-
-                break;
-            }
-            case SDL_MOUSEWHEEL:
-            {
-                if (m_mouseWheelEvtCallback != nullptr && !m_menuMode)
-                {
-                    m_mouseWheelEvtCallback(event.wheel);
-                }
+                _processWindowEvents(event.getEvent()->window);
 
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:
             {
-                if (event.button.button == SDL_BUTTON_LEFT)
+                if (event.getEvent()->button.button == SDL_BUTTON_LEFT)
                 {
                     if (!io.WantCaptureMouse)
                     {
@@ -357,17 +325,13 @@ void Application::_processEvents()
                         setMenuMode(false);
                     }
 
-                    if (m_mouseButtonEvtCallback != nullptr)
-                    {
-                        m_mouseButtonEvtCallback(event.button);
-                    }
                 }
                 break;
             }
             case SDL_QUIT:
             {
-                NM_LOG("Should quit\n");
-                m_quit = true;
+                NM_CORE_INFO("Should quit\n");
+                m_Active = false;
                 break;
             }
             default:
@@ -377,7 +341,7 @@ void Application::_processEvents()
         }
 
         // foward events to ingui
-        ImGui_ImplSDL2_ProcessEvent(&event);
+        ImGui_ImplSDL2_ProcessEvent(event.getEvent());
     }
 }
 
@@ -392,7 +356,7 @@ void Application::_processWindowEvents(SDL_WindowEvent& evt)
             m_screenWidth  = evt.data1;
             m_screenHeight = evt.data2;
 
-            NM_LOG("Window Resized %d x %d\n", evt.data1, evt.data2);
+            NM_CORE_INFO("Window Resized %d x %d\n", evt.data1, evt.data2);
         }
         default:
             break;

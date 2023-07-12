@@ -3,10 +3,6 @@
 namespace nimbus
 {
 
-Sprite::Sprite()
-{
-}
-
 Sprite::Sprite(const std::string& textureFileNm,
                const std::string& vertShaderFileNm,
                const std::string& fragShaderFileNm,
@@ -41,7 +37,7 @@ Sprite::Sprite(const std::string& textureFileNm,
         spriteVerts.push_back(vertex);
     }
 
-    ResourceManager& rm = ResourceManager::getInstance();
+    ResourceManager& rm = ResourceManager::get();
 
     Texture* p_spriteTexture
         = rm.loadTexture(Texture::Type::DIFFUSE, textureFileNm);

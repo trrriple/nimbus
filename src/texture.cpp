@@ -11,12 +11,9 @@ Texture::Texture(const Type         type,
                  const bool         flipOnLoad)
     : m_type(type), m_path(path), m_flipOnLoad(flipOnLoad)
 {
-    if (s_maxTextures == k_maxTexturesUninit)
-    {
-        throw std::length_error(
-            "s_maxTextures not initialized. Did you call "
-            "Texture::s_setMaxTextures?");
-    }
+    NM_CORE_ASSERT(!(s_maxTextures == k_maxTexturesUninit),
+                   "s_maxTextures not initialized. Did you call "
+                   "Texture::s_setMaxTextures?\n");
 
     _load();
 }
@@ -28,17 +25,12 @@ Texture::~Texture()
 
 void Texture::bind(const uint32_t glTextureUnit) const
 {
-    if (glTextureUnit <= s_maxTextures)
-    {
-        glActiveTexture(GL_TEXTURE0 + glTextureUnit);
-        glBindTexture(GL_TEXTURE_2D, m_id);
-    }
-    else
-    {
-        throw std::length_error(
-            "glTextureUnit > s_setMaxTextures. Did you call "
-            "Texture::s_setMaxTextures?");
-    }
+    NM_CORE_ASSERT((glTextureUnit <= s_maxTextures),
+                   "glTextureUnit > s_setMaxTextures. Did you call "
+                   "Texture::s_setMaxTextures?\n");
+
+    glActiveTexture(GL_TEXTURE0 + glTextureUnit);
+    glBindTexture(GL_TEXTURE_2D, m_id);
 }
 
 const std::string& Texture::getUniformNm(uint32_t index) const
@@ -112,9 +104,9 @@ void Texture::_load()
         {
             format = GL_RGBA;
         }
-        else
+        else    
         {
-            throw std::length_error("Unknown image format.");
+            NM_CORE_ASSERT(0, "Unknown image format 0x%x\n", format);
         }
 
         glBindTexture(GL_TEXTURE_2D, m_id);
@@ -139,7 +131,7 @@ void Texture::_load()
     }
     else
     {
-        NM_ELOG(0, "Texture failed to load at path: %s\n", m_path.c_str());
+        NM_CORE_ERROR("Texture failed to load at path: %s\n", m_path.c_str());
         stbi_image_free(data);
     }
 }

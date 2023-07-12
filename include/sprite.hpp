@@ -9,7 +9,7 @@ namespace nimbus
 class Sprite
 {
    public:
-    Sprite();
+    Sprite() = default;
 
     Sprite(const std::string& textureFileNm,
            const std::string& vertShaderFileNm,

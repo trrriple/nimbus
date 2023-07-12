@@ -3,14 +3,12 @@
 #include "core.hpp"
 #include "camera.hpp"
 #include "renderer.hpp"
+#include "layerDeck.hpp"
+#include "event.hpp"
 
 namespace nimbus
 {
 typedef std::function<void()>                      nbCallback_t;
-typedef std::function<void(SDL_WindowEvent&)>      nbWindowEvtCallback_t;
-typedef std::function<void(SDL_MouseMotionEvent&)> nbMouseMotionEvtCallback_t;
-typedef std::function<void(SDL_MouseWheelEvent&)>  nbMouseWheelEvtCallback_t;
-typedef std::function<void(SDL_MouseButtonEvent&)> nbMouseButtonEvtCallback_t;
 
 class Application
 {
@@ -22,6 +20,8 @@ class Application
 
     virtual ~Application();
 
+    static Application& get() { return *sp_instance; }
+
     virtual void onInit();
 
     virtual void onExit();
@@ -30,19 +30,11 @@ class Application
 
     void execute();
 
+    void insertLayer(Layer* layer, int32_t location = k_insertLocationHead);
+
+    void removeLayer(Layer* layer);
+    
     void addGuiCallback(nbCallback_t p_func);
-
-    void addRenderCallback(nbCallback_t p_func);
-
-    void addUpdateCallback(nbCallback_t p_func);
-
-    void setEventCallback(nbWindowEvtCallback_t p_func);
-
-    void setEventCallback(nbMouseMotionEvtCallback_t p_func);
-
-    void setEventCallback(nbMouseWheelEvtCallback_t p_func);
-
-    void setEventCallback(nbMouseButtonEvtCallback_t p_func);
 
     SDL_Window* getWindow() const;
 
@@ -71,6 +63,8 @@ class Application
     bool getMenuMode() const;
 
    private:
+    inline static Application* sp_instance = nullptr;
+
     std::string               m_name;
     int                       m_screenWidth;
     int                       m_screenHeight;
@@ -78,16 +72,11 @@ class Application
     std::unique_ptr<Renderer> mp_renderer = nullptr;
     std::unique_ptr<Camera>   mp_camera   = nullptr;
     bool                      m_menuMode  = false;
-    volatile bool             m_quit      = false;
+    volatile bool             m_Active    = true;
+
+    LayerDeck                 m_layerDeck;
 
     std::vector<nbCallback_t> m_guiCallbacks;
-    std::vector<nbCallback_t> m_renderCallbacks;
-    std::vector<nbCallback_t> m_updateCallbacks;
-
-    nbWindowEvtCallback_t      m_windowEvtCallback      = nullptr;
-    nbMouseMotionEvtCallback_t m_mouseMotionEvtCallback = nullptr;
-    nbMouseWheelEvtCallback_t  m_mouseWheelEvtCallback  = nullptr;
-    nbMouseButtonEvtCallback_t m_mouseButtonEvtCallback = nullptr;
 
     void _initOsIntrf(const std::string windowCaption);
 
@@ -98,8 +87,6 @@ class Application
     void _killGui();
 
     void _render();
-
-    void _onUpdate();
 
     void _processEvents();
 

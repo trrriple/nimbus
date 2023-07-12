@@ -2,7 +2,7 @@
 namespace nimbus
 {
 
-ResourceManager& ResourceManager::getInstance()
+ResourceManager& ResourceManager::get()
 {
     static ResourceManager instance;
     return instance;
@@ -27,7 +27,7 @@ Texture* ResourceManager::loadTexture(const Texture::Type type,
 
         m_loadedTextures[path] = p_texture;
 
-        NM_LOG("ResourceManager::Texture Name loaded %s\n",
+        NM_CORE_INFO("ResourceManager::Texture Name loaded %s\n",
                p_texture->m_path.c_str());
     }
 
@@ -51,8 +51,9 @@ Shader* ResourceManager::loadShader(const std::string& vertexPath,
 
         m_loadedShaders[path] = p_shader;
 
-        NM_LOG(
-            "ResourceManager::Shader Name loaded Vertex: %s, Fragment: "
+        NM_CORE_INFO(
+            "ResourceManager::Shader Compiled from: \n\tVertex:   %s "
+            "\n\tFragment: "
             "%s\n",
             p_shader->getVertexPath().c_str(),
             p_shader->getFragmentPath().c_str());

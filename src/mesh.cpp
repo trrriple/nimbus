@@ -3,10 +3,6 @@
 namespace nimbus
 {
 
-Mesh::Mesh()
-{
-}
-
 Mesh::Mesh(std::vector<Vertex>   verticies,
            std::vector<uint32_t> indicies,
            std::vector<Texture*> textures,
@@ -15,8 +11,8 @@ Mesh::Mesh(std::vector<Vertex>   verticies,
 {
     if (textures.size() > Texture::s_getMaxTextures())
     {
-        throw std::length_error(
-            "Too many textures. Did you call Texture::s_setMaxTextures?");
+        NM_CORE_ASSERT(
+            0, "Too many textures. Did you call Texture::s_setMaxTextures?");
     }
 
     m_textures = textures;
@@ -31,8 +27,8 @@ Mesh::Mesh(std::vector<Vertex>   verticies,
 {
     if (textures.size() > Texture::s_getMaxTextures())
     {
-        throw std::length_error(
-            "Too many textures. Did you call Texture::s_setMaxTextures?");
+        NM_CORE_ASSERT(
+            0, "Too many textures. Did you call Texture::s_setMaxTextures?");
     }
 
     m_textures = textures;
@@ -107,7 +103,7 @@ void Mesh::draw() const
             }
             default:
             {
-                throw std::invalid_argument("Texture unsupported.");
+                NM_CORE_ASSERT(0, "Texture type unsupported.");
             }
         }
 

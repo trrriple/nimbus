@@ -8,7 +8,7 @@ namespace nimbus
 class Shader
 {
    public:
-    Shader();
+    Shader() = default;
 
     Shader(const std::string& vertexPath, const std::string& fragmentPath);
 

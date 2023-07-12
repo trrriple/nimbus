@@ -18,7 +18,7 @@ struct Vertex
 class Mesh
 {
    public:
-    Mesh();
+    Mesh() = default;
     
     // with verticies, indicies, and textures
     Mesh(std::vector<Vertex>   verticies,

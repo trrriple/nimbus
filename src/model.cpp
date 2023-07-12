@@ -8,10 +8,10 @@ Model::Model(std::string path, bool flipOnLoad, bool normalize)
 {
     loadModel(path);
 
-    NM_LOG("Loaded Textures for model %s\n", path.c_str());
+    NM_CORE_INFO("Loaded Textures for model %s\n", path.c_str());
     for (const auto& pair : m_loadedTextures)
     {
-        NM_LOG("\t %s\n", pair.second->m_path.c_str());
+        NM_CORE_INFO("\t %s\n", pair.second->m_path.c_str());
     }
 }
 
@@ -33,7 +33,7 @@ void Model::loadModel(std::string path)
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE
         || !scene->mRootNode)
     {
-        NM_ELOG(0, "ASSIMP:: %s\n", import.GetErrorString());
+        NM_CORE_ERROR("ASSIMP:: %s\n", import.GetErrorString());
         return;
     }
 
@@ -168,7 +168,7 @@ std::vector<Texture*> Model::loadMaterialTextures(aiMaterial*   mat,
                                                   Texture::Type texType)
 
 {
-    aiTextureType aiType;
+    aiTextureType aiType = aiTextureType_NONE;
     if (texType == Texture::Type::NORMAL)
     {
         aiType = aiTextureType_NORMALS;
@@ -191,7 +191,7 @@ std::vector<Texture*> Model::loadMaterialTextures(aiMaterial*   mat,
     }
     else
     {
-        throw std::invalid_argument("Unknown Texture Type");
+        NM_CORE_ASSERT(0, "Unknown Texture format 0x%x\n", texType);
     }
 
     std::vector<Texture*> textures;
@@ -214,7 +214,7 @@ std::vector<Texture*> Model::loadMaterialTextures(aiMaterial*   mat,
 
         if (!skip)
         {
-            ResourceManager& rm = ResourceManager::getInstance();
+            ResourceManager& rm = ResourceManager::get();
 
             Texture* p_texture = rm.loadTexture(texType, path, m_flipOnLoad);
 

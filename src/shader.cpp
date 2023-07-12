@@ -7,10 +7,6 @@
 namespace nimbus
 {
 
-Shader::Shader()
-{
-}
-
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
     : m_vertexPath(vertexPath), m_fragmentPath(fragmentPath)
 {
@@ -50,10 +46,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
     }
     catch (std::ifstream::failure& e)
     {
-        NM_ELOG(0, "SHADER::FILE_NO_SUCCESFULLY_READ\n");
-        std::string err("Could not open shader file "
-                        + std::string(vertexPath));
-        throw std::invalid_argument(err);
+        NM_CORE_ASSERT(0, "SHADER::FILE_NO_SUCCESFULLY_READ\n");
     }
 
     const char* vShaderCode = vertexCode.c_str();
@@ -75,10 +68,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
     if (!success)
     {
         glGetShaderInfoLog(vertex, sizeof(infoLog), NULL, infoLog);
-        NM_ELOG(0, "SHADER::VERTEX::COMPILATION_FAILED %s\n", infoLog);
-        std::string err("Vertex Shader " + std::string(vertexPath)
-                        + " failed to compile");
-        throw std::invalid_argument(err);
+        NM_CORE_ASSERT(0, "SHADER::VERTEX::COMPILATION_FAILED %s\n", infoLog);
     }
 
     // fragment Shader
@@ -91,10 +81,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
     if (!success)
     {
         glGetShaderInfoLog(fragment, sizeof(infoLog), NULL, infoLog);
-        NM_ELOG(0, "SHADER::FRAGMENT::COMPILATION_FAILED %s\n", infoLog);
-        std::string err("Fragment Shader " + std::string(fragmentPath)
-                        + " failed to compile");
-        throw std::invalid_argument(err);
+        NM_CORE_ASSERT(0, "SHADER::FRAGMENT::COMPILATION_FAILED %s\n", infoLog);
     }
 
     // shader program
@@ -107,10 +94,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
     if (!success)
     {
         glGetProgramInfoLog(m_id, sizeof(infoLog), NULL, infoLog);
-        NM_ELOG(0, "SHADER::PROGRAM::LINKING_FAILED %s\n", infoLog);
-        std::string err("Shaders " + std::string(vertexPath) + " & "
-                        + std::string(fragmentPath) + " failed to link");
-        throw std::invalid_argument(err);
+        NM_CORE_ASSERT(0, "SHADER::PROGRAM::COMPILATION_FAILED %s\n", infoLog);
     }
 
     // delete shaders as they're linked into our program now and no longer
@@ -228,7 +212,7 @@ std::int32_t Shader::_getUniformLocation(const std::string& name) const
 
         if (location == -1)
         {
-            NM_LOG(
+            NM_CORE_INFO(
                 "Warning: Uniform %s not found in shader program (vertex: "
                 "%s, fragment: %s\n",
                 name.c_str(),
