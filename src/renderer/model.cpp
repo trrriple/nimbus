@@ -1,4 +1,4 @@
-#include "model.hpp"
+#include "renderer/model.hpp"
 
 namespace nimbus
 {
@@ -17,10 +17,10 @@ Model::Model(std::string path, bool flipOnLoad, bool normalize)
 
 void Model::draw(Shader& shader)
 {
-    for (uint32_t i = 0; i < m_meshes.size(); i++)
+    for (uint32_t i = 0; i < mp_meshes.size(); i++)
     {
-        m_meshes[i].setShader(&shader);
-        m_meshes[i].draw();
+        mp_meshes[i]->setShader(&shader);
+        mp_meshes[i]->draw();
     }
 }
 
@@ -49,7 +49,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     for (uint32_t i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        m_meshes.push_back(processMesh(mesh, scene));
+        mp_meshes.push_back(processMesh(mesh, scene));
     }
     // then do the same for each of its children
     for (uint32_t i = 0; i < node->mNumChildren; i++)
@@ -58,16 +58,16 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     }
 }
 
-Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
+scope<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
-    std::vector<Vertex>   vertices;
-    std::vector<uint32_t> indices;
-    std::vector<Texture*> textures;
+    std::vector<Mesh::Vertex> vertices;
+    std::vector<uint32_t>     indices;
+    std::vector<Texture*>     textures;
 
     // process vertex positions, normals and texture coordinates
     for (uint32_t i = 0; i < mesh->mNumVertices; i++)
     {
-        Vertex vertex;
+        Mesh::Vertex vertex;
         // we declare a placeholder vector since assimp uses its own vector
         // class that doesn't directly convert to glm's vec3 class so we
         // transfer the data to this placeholder glm::vec3 first.
@@ -161,7 +161,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
             = loadMaterialTextures(material, Texture::Type::HEIGHT);
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     }
-    return Mesh(vertices, indices, textures, m_normalize);
+    return std::make_unique<Mesh>(vertices, indices, textures, m_normalize);
 }
 
 std::vector<Texture*> Model::loadMaterialTextures(aiMaterial*   mat,

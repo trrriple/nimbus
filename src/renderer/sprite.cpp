@@ -1,4 +1,4 @@
-#include "sprite.hpp"
+#include "renderer/sprite.hpp"
 
 namespace nimbus
 {
@@ -23,13 +23,13 @@ Sprite::Sprite(const std::string& textureFileNm,
     const uint32_t places = 4;
     uint32_t numVertices  = sizeof(spriteVertices) / sizeof(float) / places;
 
-    std::vector<Vertex> spriteVerts;
+    std::vector<Mesh::Vertex> spriteVerts;
 
     for (uint32_t i = 0; i < numVertices; i++)
     {
         const float* p_vertChunk = &spriteVertices[i * places];
 
-        Vertex vertex   = {};
+        Mesh::Vertex vertex   = {};
         vertex.position = glm::vec3(p_vertChunk[0], p_vertChunk[1], 0.0);
 
         vertex.texCoords = glm::vec2(p_vertChunk[2], p_vertChunk[3]);
@@ -44,14 +44,14 @@ Sprite::Sprite(const std::string& textureFileNm,
 
     std::vector<Texture*> spriteTextures = {p_spriteTexture};
 
-    m_mesh = Mesh(spriteVerts, spriteTextures);
+    mp_mesh = std::make_unique<Mesh>(spriteVerts, spriteTextures);
 
     Shader* p_shader = rm.loadShader(vertShaderFileNm, fragShaderFileNm);
 
-    m_mesh.setShader(p_shader);
+    mp_mesh->setShader(p_shader);
 
-    m_mesh.getShader()->use();
-    m_mesh.getShader()->setMat4("projection", projection);
+    mp_mesh->getShader()->use();
+    mp_mesh->getShader()->setMat4("projection", projection);
 }
 
 void Sprite::draw(const glm::vec2& pos,
@@ -77,7 +77,7 @@ void Sprite::draw(const glm::vec2& pos,
 
     // only change the shader if this sprite uses a different shader
     // then the last sprite
-    const Shader* p_shader = m_mesh.getShader();
+    const Shader* p_shader = mp_mesh->getShader();
     if (p_shader != p_lastShader)
     {
         p_shader->use();
@@ -86,7 +86,7 @@ void Sprite::draw(const glm::vec2& pos,
 
     p_shader->setMat4("model", model);
     p_shader->setVec3("spriteColor", color);
-    m_mesh.draw();
+    mp_mesh->draw();
 }
 
 }  // namespace nimbus

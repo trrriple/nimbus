@@ -9,8 +9,6 @@ namespace nimbus
 class Sprite
 {
    public:
-    Sprite() = default;
-
     Sprite(const std::string& textureFileNm,
            const std::string& vertShaderFileNm,
            const std::string& fragShaderFileNm,
@@ -22,7 +20,7 @@ class Sprite
               const float      rotation);
 
    private:
-    Mesh                        m_mesh;
+    scope<Mesh>                 mp_mesh;
     inline static const Shader* p_lastShader = nullptr;
 };
 }  // namespace nimbus

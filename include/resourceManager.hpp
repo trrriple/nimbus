@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core.hpp"
-#include "shader.hpp"
-#include "texture.hpp"
+#include "renderer/shader.hpp"
+#include "renderer/texture.hpp"
 
 namespace nimbus
 {

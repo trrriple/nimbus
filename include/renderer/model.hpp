@@ -21,8 +21,8 @@ class Model
     void draw(Shader& shader);
 
    private:
-    std::vector<Mesh> m_meshes;
-    std::string       m_directory;
+    std::vector<scope<Mesh>> mp_meshes;
+    std::string              m_directory;
 
     // This allows us to keep track of textures that are already loaded
     // in this model so we can reuse them instead of reloading them
@@ -32,7 +32,7 @@ class Model
 
     void processNode(aiNode* node, const aiScene* scene);
 
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+    scope<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
 
     std::vector<Texture*> loadMaterialTextures(aiMaterial*   mat,
                                                Texture::Type texType);

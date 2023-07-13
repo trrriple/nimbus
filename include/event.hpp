@@ -1,8 +1,6 @@
 #pragma once
 
 #include "core.hpp"
-#include "mesh.hpp"
-#include "resourceManager.hpp"
 
 namespace nimbus
 {
@@ -31,6 +29,11 @@ class Event
     void markAsHandled()
     {
         m_wasHandled = true;
+    }
+
+    void clear()
+    {
+        m_wasHandled = false;
     }
 
     const std::string toString() const
@@ -86,7 +89,8 @@ class Event
             case SDL_RENDER_DEVICE_RESET:     return "RENDER_DEVICE_RESET";
             case SDL_USEREVENT:               return "USEREVENT";
             case SDL_LASTEVENT:               return "LASTEVENT";
-            default:                          return "Unknown event";
+            default:
+                return "Unknown event: " + std::to_string(m_event.type);
         }
     }
 

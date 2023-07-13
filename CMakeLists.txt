@@ -148,7 +148,7 @@ target_include_directories(imgui PRIVATE "${sdl2_SOURCE_DIR}/include")
 # #########################
 # Self: Nimbus
 # #########################
-file(GLOB NIMBUS_LIB_SRC "${SRC_PATH}/*.cpp")
+file(GLOB_RECURSE NIMBUS_LIB_SRC "${SRC_PATH}/*.cpp")
 add_library(nimbus STATIC ${NIMBUS_LIB_SRC})
 
 set(CMAKE_USE_PCH ON)

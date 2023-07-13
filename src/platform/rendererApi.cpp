@@ -1,43 +1,62 @@
-#include "renderer.hpp"
+#include "platform/rendererApi.hpp"
+
+#include "renderer/texture.hpp"
 
 namespace nimbus
 {
 
-Renderer::Renderer()
+void RendererApi::init()
 {
+    NM_CORE_INFO("Vendor:   %s\n", glGetString(GL_VENDOR));
+    NM_CORE_INFO("Renderer: %s\n", glGetString(GL_RENDERER));
+    NM_CORE_INFO("Version:  %s\n", glGetString(GL_VERSION));
+
+    if (m_depthTest)
+    {
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    glEnable(GL_LINE_SMOOTH);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // set the gl clear color
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
+        _enableGlErrPrint();
+    }
+
+    int numAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &numAttributes);
+    NM_CORE_INFO("Max number of vertex attributes supported: %i\n",
+                 numAttributes);
+
+    int maxTextureUnits;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
+
+    Texture::s_setMaxTextures(maxTextureUnits);
+
+    NM_CORE_INFO("Max number of Texture Units: supported: %i\n",
+                 Texture::s_getMaxTextures());
+
 }
 
-Renderer::Renderer(SDL_Window* p_window) : mp_window(p_window)
-{
-}
-
-void Renderer::clear()
+void RendererApi::clear()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::render()
+void RendererApi::setViewportSize(int x, int y, int w, int h)
 {
-    SDL_GL_SwapWindow(mp_window);
-
-    _calcFramerate();
+    glViewport(x, y, w, h);
 }
 
-void Renderer::setVSync(bool on)
-{
-    if (on != m_VSyncOn)
-    {
-        SDL_GL_SetSwapInterval(on);
-        m_VSyncOn = on;
-    }
-}
-
-bool Renderer::getVSync()
-{
-    return m_VSyncOn;
-}
-
-void Renderer::setWireframe(bool on)
+void RendererApi::setWireframe(bool on)
 {
     if (on != m_wireframeOn)
     {
@@ -55,12 +74,12 @@ void Renderer::setWireframe(bool on)
     }
 }
 
-bool Renderer::getWireframe()
+bool RendererApi::getWireframe()
 {
     return m_wireframeOn;
 }
 
-void Renderer::setDepthTest(bool on)
+void RendererApi::setDepthTest(bool on)
 {
     if (!on)
     {
@@ -75,99 +94,18 @@ void Renderer::setDepthTest(bool on)
     m_depthTest = on;
 }
 
-bool Renderer::getDepthTest()
+bool RendererApi::getDepthTest()
 {
     return m_depthTest;
 }
 
-void Renderer::init()
-{
-    m_context = SDL_GL_CreateContext(mp_window);
-
-    NM_CORE_ASSERT(
-        m_context, "Failed to created OpenGL Context %s\n", SDL_GetError());
-
-    // setup GLAD
-    if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
-    {
-        NM_CORE_ASSERT(0, "Failed to initialize Glad %s\n");
-    }
-    
-    NM_CORE_INFO("Vendor:   %s\n", glGetString(GL_VENDOR));
-    NM_CORE_INFO("Renderer: %s\n", glGetString(GL_RENDERER));
-    NM_CORE_INFO("Version:  %s\n", glGetString(GL_VERSION));
-
-    // enable v-sync
-    SDL_GL_SetSwapInterval(m_VSyncOn);
-
-    if (m_depthTest)
-    {
-        glEnable(GL_DEPTH_TEST);
-    }
-
-    // glDisable(GL_CULL_FACE);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // tell GL the size of the window
-    int w, h;
-    SDL_GetWindowSize(mp_window, &w, &h);
-    glViewport(0, 0, w, h);
-
-    // set the gl clear color
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-    {
-        _enableGlErrPrint();
-    }
-
-    int numAttributes;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &numAttributes);
-    NM_CORE_INFO("Max number of vertex attributes supported: %i\n", numAttributes);
-
-    int maxTextureUnits;
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
-
-    Texture::s_setMaxTextures(maxTextureUnits);
-
-    NM_CORE_INFO("Max number of Texture Units: supported: %i\n",
-           Texture::s_getMaxTextures());
-}
-
-void Renderer::_calcFramerate()
-{
-    float tNow_s = core::getTime_s();
-
-    static uint32_t frameCount    = 0;
-    static float    tLastFrame_s  = 0;
-    static float    samplesPeriod = 0.0;
-
-    m_tFrame_s   = tNow_s - tLastFrame_s;
-    tLastFrame_s = tNow_s;
-
-    frameCount++;
-
-    samplesPeriod += m_tFrame_s;
-
-    if (samplesPeriod >= 0.5)
-    {
-        m_fps         = (float)frameCount / (samplesPeriod);
-        frameCount    = 0;
-        samplesPeriod = 0;
-    }
-}
-
-void APIENTRY Renderer::_glDebugOutput(GLenum       source,
-                                       GLenum       type,
-                                       unsigned int id,
-                                       GLenum       severity,
-                                       GLsizei      length,
-                                       const char*  message,
-                                       const void*  userParam)
+void APIENTRY RendererApi::_glDebugOutput(GLenum       source,
+                                          GLenum       type,
+                                          unsigned int id,
+                                          GLenum       severity,
+                                          GLsizei      length,
+                                          const char*  message,
+                                          const void*  userParam)
 {
     UNUSED(length);
     UNUSED(userParam);
@@ -247,7 +185,7 @@ void APIENTRY Renderer::_glDebugOutput(GLenum       source,
     }
 }
 
-void Renderer::_enableGlErrPrint()
+void RendererApi::_enableGlErrPrint()
 {
     NM_CORE_INFO("GL Debug Enabled\n");
     glEnable(GL_DEBUG_OUTPUT);

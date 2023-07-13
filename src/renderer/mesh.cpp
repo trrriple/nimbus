@@ -1,4 +1,4 @@
-#include "mesh.hpp"
+#include "renderer/mesh.hpp"
 
 namespace nimbus
 {
@@ -117,7 +117,7 @@ void Mesh::draw() const
     glActiveTexture(GL_TEXTURE0);
 
     // draw mesh
-    glBindVertexArray(m_vao);
+    mp_vao->bind();
 
     if (m_hasEbo)
     {
@@ -135,56 +135,19 @@ void Mesh::draw() const
 
 void Mesh::_setupMesh()
 {
-    // TODO, abstract buffers themselves to a class
-    glGenVertexArrays(1, &m_vao);
-    glGenBuffers(1, &m_vbo);
+    mp_vbo = std::make_shared<VertexBuffer>(&m_vertices[0],
+                                            m_vertices.size() * sizeof(Vertex));
 
-    glBindVertexArray(m_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    mp_vbo->setFormat(k_vboFormat);
 
-    glBufferData(GL_ARRAY_BUFFER,
-                 m_vertices.size() * sizeof(Vertex),
-                 &m_vertices[0],
-                 GL_STATIC_DRAW);
+    mp_vao = std::make_shared<VertexArray>();
+    mp_vao->addVertexBuffer(mp_vbo);
 
     if (m_indices.size() > 0)
     {
-        glGenBuffers(1, &m_ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     m_indices.size() * sizeof(uint32_t),
-                     &m_indices[0],
-                     GL_STATIC_DRAW);
+        mp_ebo = std::make_shared<IndexBuffer>(&m_indices[0], m_indices.size());
         m_hasEbo = true;
     }
-
-    // vertex positions
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0,
-                          3,
-                          GL_FLOAT,
-                          m_normalize ? GL_TRUE : GL_FALSE,
-                          sizeof(Vertex),
-                          (void*)0);
-    // vertex normals
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1,
-                          3,
-                          GL_FLOAT,
-                          m_normalize ? GL_TRUE : GL_FALSE,
-                          sizeof(Vertex),
-                          (void*)offsetof(Vertex, normal));
-    // vertex texture coords
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2,
-                          2,
-                          GL_FLOAT,
-                          m_normalize ? GL_TRUE : GL_FALSE,
-                          sizeof(Vertex),
-                          (void*)offsetof(Vertex, texCoords));
-
-    // unbind
-    glBindVertexArray(0);
 }
 
 };  // namespace nimbus

@@ -2,23 +2,34 @@
 
 #include "core.hpp"
 #include "resourceManager.hpp"
+#include "platform/buffer.hpp"
 
 namespace nimbus
 {
 
-struct Vertex
-{
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 texCoords;
-    glm::vec3 tangent;
-    glm::vec3 bitangent;
-};
+
 
 class Mesh
 {
    public:
-    Mesh() = default;
+    struct Vertex
+    {
+        glm::vec3 position;
+        glm::vec3 normal;
+        glm::vec2 texCoords;
+        glm::vec3 tangent;
+        glm::vec3 bitangent;
+    };
+
+     // buffer format to describe the structure
+    inline static const BufferFormat k_vboFormat = 
+    {
+        {k_shaderVec3, "position"},
+        {k_shaderVec3, "normal"},
+        {k_shaderVec2, "texCoords"},
+        {k_shaderVec3, "tangent"},
+        {k_shaderVec3, "bitangent"},
+    };
     
     // with verticies, indicies, and textures
     Mesh(std::vector<Vertex>   verticies,
@@ -49,13 +60,12 @@ class Mesh
     std::vector<Vertex>   m_vertices;
     std::vector<uint32_t> m_indices;
     std::vector<Texture*> m_textures;
-    Shader*               mp_shader = nullptr;
     bool                  m_normalize;
-    // render data
-    uint32_t m_vao;
-    uint32_t m_vbo;
-    uint32_t m_ebo;
-    bool     m_hasEbo = false;
+    Shader*               mp_shader = nullptr;
+    ref<VertexBuffer>     mp_vbo    = nullptr;
+    ref<VertexArray>      mp_vao    = nullptr;
+    ref<IndexBuffer>      mp_ebo    = nullptr;
+    bool                  m_hasEbo  = false;
 
     void _setupMesh();
 };
