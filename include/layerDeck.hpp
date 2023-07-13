@@ -1,7 +1,9 @@
 #pragma once
 
-#include "core.hpp"
 #include "layer.hpp"
+
+#include <deque>
+#include <vector>
 
 namespace nimbus
 {
@@ -18,6 +20,8 @@ class LayerDeck
     void insertLayer(Layer* layer, int32_t location = k_insertLocationHead);
 
     void removeLayer(Layer* layer);
+
+    std::vector<std::string*> getLayerNames();
 
     ////////////////////////////////////////////////////////////////////
     // Foward Interator Helpers
@@ -73,5 +77,6 @@ class LayerDeck
 
    private:
     std::deque<Layer*> m_deck;
+    int32_t            m_lastRegularLayerIdx = 0;
 };
 }  // namespace nimbus

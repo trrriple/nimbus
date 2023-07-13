@@ -1,13 +1,15 @@
 #pragma once
 
 #include "core.hpp"
-#include "resourceManager.hpp"
 #include "platform/buffer.hpp"
+#include "renderer/texture.hpp"
+#include "renderer/shader.hpp"
+#include "glm.hpp"
+
+#include <string>
 
 namespace nimbus
 {
-
-
 
 class Mesh
 {

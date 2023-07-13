@@ -1,3 +1,6 @@
+#include "nmpch.hpp"
+#include "core.hpp"
+
 #include "platform/buffer.hpp"
 
 namespace nimbus

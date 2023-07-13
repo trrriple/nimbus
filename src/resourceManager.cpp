@@ -1,4 +1,8 @@
+#include "nmpch.hpp"
+#include "core.hpp"
+
 #include "resourceManager.hpp"
+
 namespace nimbus
 {
 
@@ -14,6 +18,8 @@ Texture* ResourceManager::loadTexture(const Texture::Type type,
                                       const std::string&  path,
                                       const bool          flipOnLoad)
 {
+    NM_PROFILE_DETAIL();
+    
     // check to see if it was already loaded
     auto     p_textureEntry = m_loadedTextures.find(path);
     Texture* p_texture      = nullptr;
@@ -37,6 +43,8 @@ Texture* ResourceManager::loadTexture(const Texture::Type type,
 Shader* ResourceManager::loadShader(const std::string& vertexPath,
                                     const std::string& fragmentPath)
 {
+    NM_PROFILE_DETAIL();
+    
     // check to see if it was already loaded
     std::string path          = vertexPath + fragmentPath;
     auto        p_shaderEntry = m_loadedShaders.find(path);

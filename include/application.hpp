@@ -3,14 +3,12 @@
 #include "camera.hpp"
 #include "core.hpp"
 #include "event.hpp"
+#include "guiLayers/guiSubsystem.hpp"
 #include "layerDeck.hpp"
-#include "renderer/renderer.hpp"
 #include "window.hpp"
 
 namespace nimbus
 {
-typedef std::function<void()> nbCallback_t;
-
 
 class Application
 {
@@ -20,18 +18,18 @@ class Application
                 int               windowHeight = 720,
                 bool              is3d         = true);
 
-    virtual ~Application();
+    virtual ~Application() = default;
 
     static Application& get()
     {
         return *sp_instance;
     }
 
-    virtual void onInit();
+    virtual void onInit() {}
 
-    virtual void onExit();
+    virtual void onExit() {}
 
-    bool shouldQuit() const;
+    void shouldQuit(Event& event);
 
     void execute();
 
@@ -41,8 +39,6 @@ class Application
 
     void removeLayer(Layer* layer);
 
-    void addGuiCallback(nbCallback_t p_func);
-
     float getFrametime() const;
 
     const uint8_t* getKeyboardState() const;
@@ -51,9 +47,11 @@ class Application
 
     const glm::mat4 getViewMatrix() const;
 
-    void cameraViewUpdate(float     xOffset,
-                          float     yOffset,
-                          GLboolean constrainPitch = true);
+    LayerDeck& getLayerDeck();
+
+    void cameraViewUpdate(float xOffset,
+                          float yOffset,
+                          bool  constrainPitch = true);
 
     void cameraZoomUpdate(float yOffset);
 
@@ -68,25 +66,16 @@ class Application
    private:
     inline static Application* sp_instance = nullptr;
 
-    std::string   m_name;
-    scope<Window> mp_window  = nullptr;
-    scope<Camera> mp_camera  = nullptr;
-    bool          m_menuMode = false;
-    volatile bool m_Active   = true;
+    std::string         m_name;
+    bool                m_is3d;
+    scope<Window>       mp_window            = nullptr;
+    scope<Camera>       mp_camera            = nullptr;
+    scope<GuiSubsystem> mp_guiSubsystemLayer = nullptr;
+    bool                m_menuMode           = false;
+    volatile bool       m_Active             = true;
 
     LayerDeck m_layerDeck;
 
-    std::vector<nbCallback_t> m_guiCallbacks;
-
-    void _initGui();
-
-    void _killGui();
-
-    void _render();
-
-    void _renderStatsDisplay();
-
-    void _cameraMenu();
 };
 
 Application* createApplication();

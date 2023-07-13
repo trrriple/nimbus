@@ -10,3 +10,8 @@
 #include "renderer/shader.hpp"
 #include "renderer/sprite.hpp"
 #include "renderer/texture.hpp"
+
+///////////////////////
+/// Dear Imgui stuff
+//////////////////////
+#include "imgui.h"

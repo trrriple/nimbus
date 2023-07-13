@@ -1,6 +1,9 @@
 #pragma once
 
 #include "core.hpp"
+#include "SDL.h"
+
+#include <string>
 
 namespace nimbus
 {

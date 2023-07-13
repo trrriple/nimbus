@@ -91,6 +91,21 @@ target_compile_options(assimp PRIVATE -Wno-microsoft-enum-value)
 
 
 # #########################
+# Tracy (profiling)
+# #########################
+FetchContent_Declare(
+    tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy
+    GIT_TAG v0.9
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(tracy)
+target_compile_options(TracyClient PRIVATE -Wno-format)
+
+
+# #########################
 # GLM (header only)
 # #########################
 FetchContent_Declare(
@@ -160,6 +175,8 @@ target_link_libraries(nimbus PRIVATE glad)
 target_link_libraries(nimbus PRIVATE stb_image)
 target_link_libraries(nimbus PRIVATE imgui)
 
+target_link_libraries (nimbus PUBLIC TracyClient )
+
 
 # #########################
 # Add Include paths
@@ -182,6 +199,10 @@ target_include_directories(nimbus PUBLIC "${glm_SOURCE_DIR}/glm")
 
 #imgui
 target_include_directories(nimbus PUBLIC "${imgui_SOURCE_DIR}")
+
+#tracy
+target_include_directories(nimbus PUBLIC "${tracy_SOURCE_DIR}/public/tracy")
+
 
 
 

@@ -1,7 +1,11 @@
 #pragma once
 
-#include "core.hpp"
 #include "event.hpp"
+#include "SDL.h"
+
+#include <functional>
+#include <cstdint>
+#include <string>
 
 namespace nimbus
 {
@@ -20,6 +24,8 @@ class Window
     void graphicsContextInit();
 
     void setEventCallback(const nbWindowEvtCallback_t& callback);
+    
+    void setExitCallback(const nbWindowEvtCallback_t& callback);
     
     void onUpdate();
 
@@ -53,8 +59,11 @@ class Window
     SDL_GLContext         m_context = nullptr;
     
     nbWindowEvtCallback_t m_evtCallback;
+    nbWindowEvtCallback_t m_exitCallback;
+    
     Event                 m_event;
 
+    uint32_t m_sdlWindowId;
     uint32_t m_width;
     uint32_t m_height;
     bool     m_VSyncOn = true;

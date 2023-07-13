@@ -1,3 +1,6 @@
+#include "nmpch.hpp"
+#include "core.hpp"
+
 #include "layerDeck.hpp"
 
 namespace nimbus
@@ -14,13 +17,26 @@ LayerDeck::~LayerDeck()
 
 void LayerDeck::insertLayer(Layer* layer, int32_t location)
 {
-    if (location == -1)
+    NM_PROFILE();
+
+    if (layer->m_type == Layer::Type::REGULAR)
     {
-        m_deck.push_back(layer);
-    }
-    else
-    {
+        if (location == k_insertLocationHead
+            || location > m_lastRegularLayerIdx)
+        {
+            // location is outside of the current range, so load it at the
+            // end of the Regular layer portion of the deck
+            location = m_lastRegularLayerIdx;
+        }
+
         m_deck.insert(m_deck.begin() + location, layer);
+        m_lastRegularLayerIdx++;
+    }
+    else if (layer->m_type == Layer::Type::OVERLAY)
+    {
+        // location is ignored for overlays and they are always pushed to
+        // the absolute end of the deck
+        m_deck.push_back(layer);
     }
 
     layer->onInsert();
@@ -28,12 +44,29 @@ void LayerDeck::insertLayer(Layer* layer, int32_t location)
 
 void LayerDeck::removeLayer(Layer* layer)
 {
+    NM_PROFILE();
+
     auto it = std::find(m_deck.begin(), m_deck.end(), layer);
     if (it != m_deck.end())
     {
         m_deck.erase(it);
         layer->onRemove();
     }
+}
+
+std::vector<std::string*> LayerDeck::getLayerNames()
+{
+    NM_PROFILE_TRACE();
+
+
+    std::vector<std::string*> layerNames;
+
+    for (auto& layer : m_deck)
+    {
+        layerNames.push_back(&layer->m_name);
+    }
+
+    return layerNames;
 }
 
 }  // namespace nimbus

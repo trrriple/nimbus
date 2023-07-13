@@ -11,6 +11,7 @@ vendor/assimp*
 vendor/sdl2*
 vendor/glm*
 vendor/imgui*
+vendor/tracy*
 
 # cmake stuff
 CMakeFiles/

@@ -1,3 +1,6 @@
+#include "nmpch.hpp"
+#include "core.hpp"
+
 #include "renderer/mesh.hpp"
 
 namespace nimbus
@@ -9,6 +12,8 @@ Mesh::Mesh(std::vector<Vertex>   verticies,
            bool                  normalize)
     : m_vertices(verticies), m_indices(indicies), m_normalize(normalize)
 {
+    NM_PROFILE_DETAIL();
+
     if (textures.size() > Texture::s_getMaxTextures())
     {
         NM_CORE_ASSERT(
@@ -25,6 +30,8 @@ Mesh::Mesh(std::vector<Vertex>   verticies,
            bool                  normalize)
     : m_vertices(verticies), m_normalize(normalize)
 {
+    NM_PROFILE_DETAIL();
+    
     if (textures.size() > Texture::s_getMaxTextures())
     {
         NM_CORE_ASSERT(
@@ -41,27 +48,38 @@ Mesh::Mesh(std::vector<Vertex>   verticies,
            bool                  normalize)
     : m_vertices(verticies), m_indices(indicies), m_normalize(normalize)
 {
+    NM_PROFILE_DETAIL();
+
     _setupMesh();
 }
 
 Mesh::Mesh(std::vector<Vertex> verticies, bool normalize)
     : m_vertices(verticies), m_normalize(normalize)
 {
+    NM_PROFILE_DETAIL();
+
     _setupMesh();
 }
 
 void Mesh::setShader(Shader* p_shader)
 {
+    NM_PROFILE_TRACE();
+
     mp_shader = p_shader;
 }
 
 const Shader* Mesh::getShader() const
 {
+    NM_PROFILE_TRACE();
+
     return mp_shader;
 }
 
 void Mesh::draw() const
 {
+    NM_PROFILE();
+
+
     uint32_t  diffIndex   = 0;
     uint32_t  specIndex   = 0;
     uint32_t  ambIndex    = 0;
@@ -135,6 +153,7 @@ void Mesh::draw() const
 
 void Mesh::_setupMesh()
 {
+
     mp_vbo = makeRef<VertexBuffer>(&m_vertices[0],
                                      m_vertices.size() * sizeof(Vertex));
 

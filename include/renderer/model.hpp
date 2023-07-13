@@ -1,11 +1,15 @@
 #pragma once
 
+#include "core.hpp"
+#include "mesh.hpp"
+#include "texture.hpp"
+
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
-#include "core.hpp"
-#include "mesh.hpp"
-#include "resourceManager.hpp"
+
+
+#include <string>
 
 namespace nimbus
 {

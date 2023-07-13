@@ -1,8 +1,10 @@
 #pragma once
 
-#include "core.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/texture.hpp"
+
+#include <unordered_map>
+#include <string>
 
 namespace nimbus
 {

@@ -1,3 +1,5 @@
+#include "nmpch.hpp"
+#include "core.hpp"
 
 #include "window.hpp"
 #include "platform/rendererApi.hpp"
@@ -10,6 +12,8 @@ Window::Window(const std::string& windowCaption,
                uint32_t           height)
     : m_width(width), m_height(height)
 {
+    NM_PROFILE_DETAIL();
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         NM_CORE_ASSERT(
@@ -27,6 +31,8 @@ Window::Window(const std::string& windowCaption,
         m_height,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 
+    m_sdlWindowId = SDL_GetWindowID(mp_window);
+
     NM_CORE_ASSERT(mp_window,
                    "Window could not be created. sdl error %s\n",
                    SDL_GetError());
@@ -34,6 +40,8 @@ Window::Window(const std::string& windowCaption,
 
 Window::~Window()
 {
+    NM_PROFILE_DETAIL();
+    
     SDL_DestroyWindow(mp_window);
     mp_window = nullptr;
 
@@ -45,7 +53,8 @@ Window::~Window()
 
 void Window::graphicsContextInit()
 {
-    
+    NM_PROFILE_DETAIL();
+
     m_context = SDL_GL_CreateContext(mp_window);
     NM_CORE_ASSERT(
         m_context, "Failed to created OpenGL Context %s\n", SDL_GetError());
@@ -76,11 +85,22 @@ void Window::graphicsContextInit()
 
 void Window::setEventCallback(const nbWindowEvtCallback_t& callback)
 {
+    NM_PROFILE_TRACE();
+
     m_evtCallback = callback;
+}
+
+void Window::setExitCallback(const nbWindowEvtCallback_t& callback)
+{
+    NM_PROFILE_TRACE();
+
+    m_exitCallback = callback;
 }
 
 void Window::onUpdate()
 {
+    NM_PROFILE();
+
     _pollEvents();
     SDL_GL_SwapWindow(mp_window);
     _calcFramerate();
@@ -88,6 +108,8 @@ void Window::onUpdate()
 
 bool Window::keyPressed(uint32_t keyCode)
 {
+    NM_PROFILE_DETAIL();
+
     const uint8_t* keyboardState = SDL_GetKeyboardState(nullptr);
 
     return keyboardState[keyCode];
@@ -95,6 +117,8 @@ bool Window::keyPressed(uint32_t keyCode)
 
 void Window::setVSync(bool on)
 {
+    NM_PROFILE_TRACE();
+
     if (on != m_VSyncOn)
     {
         SDL_GL_SetSwapInterval(on);
@@ -109,8 +133,11 @@ bool Window::getVSync()
 
 void Window::_handleWindowEvents()
 {
+    NM_PROFILE_DETAIL();
+
     switch (m_event.getEvent()->window.event)
     {
+        // main window resized
         case (SDL_WINDOWEVENT_SIZE_CHANGED):
         {
             m_width  = m_event.getEvent()->window.data1;
@@ -120,6 +147,13 @@ void Window::_handleWindowEvents()
 
             NM_CORE_INFO("Window Resized %d x %d\n", m_width, m_height);
         }
+        // main window closed
+        case (SDL_WINDOWEVENT_CLOSE):
+        {
+            NM_CORE_INFO("This window closed\n");
+
+            m_exitCallback(m_event);
+        }
         default:
             break;
     }
@@ -127,6 +161,8 @@ void Window::_handleWindowEvents()
 
 void Window::_pollEvents()
 {
+    NM_PROFILE();
+
     m_event.clear();
 
     while (SDL_PollEvent(m_event.getEvent()))
@@ -135,9 +171,19 @@ void Window::_pollEvents()
         m_evtCallback(m_event);
 
         // handle internal window event stuff
-        if (!m_event.wasHandled() && m_event.getEventType() == SDL_WINDOWEVENT)
+        // SDL_QUIT comes if all windows are closed
+        if (m_event.getEventType() == SDL_QUIT)
         {
-            _handleWindowEvents();
+            NM_CORE_INFO("SDL_QUIT\n");
+            m_exitCallback(m_event);
+        }
+        else if (m_event.getEventType() == SDL_WINDOWEVENT)
+        {
+            // we only want to handle window events for this window
+            if (m_event.getEvent()->window.windowID == m_sdlWindowId)
+            {
+                _handleWindowEvents();
+            }
         }
 
         m_event.clear();
@@ -146,6 +192,8 @@ void Window::_pollEvents()
 
 void Window::_calcFramerate()
 {
+    NM_PROFILE_TRACE();
+
     float tNow_s = core::getTime_s();
 
     static uint32_t frameCount    = 0;

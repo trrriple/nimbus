@@ -1,4 +1,8 @@
+#include "nmpch.hpp"
+#include "core.hpp"
+
 #include "renderer/model.hpp"
+#include "resourceManager.hpp"
 
 namespace nimbus
 {

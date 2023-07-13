@@ -1,8 +1,10 @@
 #pragma once
 
-#include "core.hpp"
 #include "mesh.hpp"
-#include "resourceManager.hpp"
+#include "glm.hpp"
+#include "shader.hpp"
+
+#include <string>
 
 namespace nimbus
 {

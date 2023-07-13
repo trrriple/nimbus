@@ -1,8 +1,12 @@
-#include "application.hpp"
-
 #include "nmpch.hpp"
+#include "core.hpp"
+
+#include "application.hpp"
 #include "platform/rendererApi.hpp"
 #include "renderer/renderer.hpp"
+#include "guiLayers/guiSubsystem.hpp"
+#include "guiLayers/engineGui.hpp"
+
 
 namespace nimbus
 {
@@ -11,7 +15,7 @@ Application::Application(const std::string& name,
                          int                windowWidth,
                          int                windowHeight,
                          bool               is3d)
-    : m_name(name)
+    : m_name(name), m_is3d(is3d)
 {
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 
@@ -31,10 +35,12 @@ Application::Application(const std::string& name,
     mp_window->setEventCallback(
         std::bind(&Application::onEvent, this, std::placeholders::_1));
 
-    if (is3d)
+    mp_window->setExitCallback(
+        std::bind(&Application::shouldQuit, this, std::placeholders::_1));
+
+    if (m_is3d)
     {
         RendererApi::setDepthTest(true);
-        addGuiCallback(std::bind(&Application::_cameraMenu, this));
         mp_camera = makeScope<Camera>(glm::vec3(-10.0f, 0.0f, 0.0f));
     }
     else
@@ -42,35 +48,49 @@ Application::Application(const std::string& name,
         RendererApi::setDepthTest(false);
     }
 
-    _initGui();
-    addGuiCallback(std::bind(&Application::_renderStatsDisplay, this));
+    mp_guiSubsystemLayer = makeScope<GuiSubsystem>();
+    insertLayer(mp_guiSubsystemLayer.get());
+    insertLayer(new EngineGui());
+
 }
 
-Application::~Application()
+void Application::shouldQuit(Event& event)
 {
-}
-
-void Application::onInit()
-{
-}
-
-void Application::onExit()
-{
-    _killGui();
-}
-
-bool Application::shouldQuit() const
-{
-    return !m_Active;
+    UNUSED(event);
+    m_Active = false;
 }
 
 void Application::execute()
 {
-    /* main game loop */
     while (m_Active)
     {
-        /* main event loop */
-        _render();
+        NM_PROFILE();
+
+        RendererApi::clear();
+
+        ////////////////////////////////////////////////////////////////////////
+        // Call layer update functions
+        ////////////////////////////////////////////////////////////////////////
+        for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); ++it)
+        {
+            (*it)->onUpdate();
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Call layer GUI update functions
+        ////////////////////////////////////////////////////////////////////////
+        mp_guiSubsystemLayer->begin();
+
+        for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); ++it)
+        {
+            (*it)->onGuiUpdate();
+        }
+
+        mp_guiSubsystemLayer->end();
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Call window update function (events polled and buffers swapped)
+        ////////////////////////////////////////////////////////////////////////
         mp_window->onUpdate();
     }
 
@@ -97,22 +117,8 @@ void Application::onEvent(Event& event)
     ////////////////////////////////////////
     switch (event.getEventType())
     {
-        case SDL_MOUSEBUTTONDOWN:
-        {
-            if (event.getEvent()->button.button == SDL_BUTTON_LEFT)
-            {
-                ImGuiIO& io = ImGui::GetIO();
-                if (!io.WantCaptureMouse)
-                {
-                    // We must have clicked off a dearimgui window
-                    setMenuMode(false);
-                }
-            }
-            break;
-        }
         case SDL_QUIT:
         {
-            NM_CORE_INFO("Should quit\n");
             m_Active = false;
             break;
         }
@@ -122,8 +128,6 @@ void Application::onEvent(Event& event)
         }
     }
 
-    // foward events to imgui
-    ImGui_ImplSDL2_ProcessEvent(event.getEvent());
 }
 
 void Application::insertLayer(Layer* layer, int32_t location)
@@ -134,11 +138,6 @@ void Application::insertLayer(Layer* layer, int32_t location)
 void Application::removeLayer(Layer* layer)
 {
     m_layerDeck.removeLayer(layer);
-}
-
-void Application::addGuiCallback(nbCallback_t p_func)
-{
-    m_guiCallbacks.push_back(p_func);
 }
 
 float Application::getFrametime() const
@@ -177,9 +176,14 @@ const glm::mat4 Application::getViewMatrix() const
     return mp_camera->getViewMatrix();
 }
 
-void Application::cameraViewUpdate(float     xOffset,
-                                   float     yOffset,
-                                   GLboolean constrainPitch)
+LayerDeck& Application::getLayerDeck()
+{
+    return m_layerDeck;
+}
+
+void Application::cameraViewUpdate(float xOffset,
+                                   float yOffset,
+                                   bool  constrainPitch)
 {
     mp_camera->processViewUpdate(xOffset, yOffset, constrainPitch);
 }
@@ -225,96 +229,6 @@ bool Application::getMenuMode() const
     return m_menuMode;
 }
 
-void Application::_initGui()
-{
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
 
-    ImGuiIO& io = ImGui::GetIO();
-    UNUSED(io);
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-
-    // Setup Platform/Renderer bindings
-    // window is the SDL_Window*
-    // context is the SDL_GLContext
-    ImGui_ImplSDL2_InitForOpenGL(mp_window->getSDLWindow(),
-                                 mp_window->getContext());
-    ImGui_ImplOpenGL3_Init();
-}
-
-void Application::_killGui()
-{
-    // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
-}
-
-void Application::_render()
-{
-    RendererApi::clear();
-
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(mp_window->getSDLWindow());
-    ImGui::NewFrame();
-
-    // gui callbacks
-    for (auto& p_callback : m_guiCallbacks)
-    {
-        p_callback();
-    }
-
-    for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); ++it)
-    {
-        (*it)->onUpdate();
-    }
-
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
-
-void Application::_renderStatsDisplay()
-{
-    ImGui::Begin("Render Status", 0, ImGuiWindowFlags_AlwaysAutoResize);
-
-    ImGui::Text("Draw Parameters");
-
-    bool newWireFrameMode = RendererApi::getWireframe();
-    ImGui::Checkbox("Wireframe Mode", &newWireFrameMode);
-    RendererApi::setWireframe(newWireFrameMode);
-
-    ImGui::SameLine();
-
-    bool newVsyncMode = mp_window->getVSync();
-    ImGui::Checkbox("Vertical Sync", &newVsyncMode);
-    mp_window->setVSync(newVsyncMode);
-
-    ImGui::Text("Render Time: %.02f ms/frame (%.02f FPS)",
-                getFrametime() * 1000.0f,
-                mp_window->m_fps);
-
-    ImGui::End();
-}
-
-void Application::_cameraMenu()
-{
-    ImGui::Begin("Camera Menu", 0, ImGuiWindowFlags_AlwaysAutoResize);
-
-    ImGui::Text("Camera Pos (X: %.03f, Y: %.03f, Z: %.03f)",
-                mp_camera->m_position[0],
-                mp_camera->m_position[1],
-                mp_camera->m_position[2]);
-
-    ImGui::Text("Camera Attitude (Yaw: %.03f, Pitch: %.03f)",
-                mp_camera->m_yaw,
-                mp_camera->m_pitch);
-
-    ImGui::SliderFloat("Speed", &mp_camera->m_speed, 1.0f, 100.0f);
-    ImGui::SliderFloat("Sensitivity", &mp_camera->m_sensitivity, 0.01f, 0.5f);
-    ImGui::End();
-}
 
 };  // namespace nimbus

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core.hpp"
-#include "shader.hpp"
+#include <string>
+#include <cstdint>
 
 namespace nimbus
 {

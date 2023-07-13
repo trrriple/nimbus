@@ -1,14 +1,25 @@
 #pragma once
 
-#include "core.hpp"
 #include "event.hpp"
+
+#include <string>
 
 namespace nimbus
 {
 class Layer
 {
    public:
-    Layer();
+    enum class Type
+    {
+        REGULAR,
+        OVERLAY
+    };
+
+    Type        m_type;
+    std::string m_name;
+
+    Layer(Type type = Type::REGULAR, const std::string& name = "noName");
+
     virtual ~Layer() = default;
 
     virtual void onInsert()
@@ -22,10 +33,15 @@ class Layer
     virtual void onUpdate()
     {
     }
+    
+    virtual void onGuiUpdate()
+    {
+    }
 
     virtual void onEvent(Event& event)
     {
         UNUSED(event);
     }
+    
 };
 }  // namespace nimbus

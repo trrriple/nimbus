@@ -1,7 +1,10 @@
 
-#include "renderer/texture.hpp"
+#include "nmpch.hpp"
+#include "core.hpp"
 
+#include "renderer/texture.hpp"
 #include "stb_image.h"
+
 
 namespace nimbus
 {

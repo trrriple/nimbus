@@ -1,5 +1,7 @@
-#include "platform/rendererApi.hpp"
+#include "nmpch.hpp"
+#include "core.hpp"
 
+#include "platform/rendererApi.hpp"
 #include "renderer/texture.hpp"
 
 namespace nimbus
@@ -7,6 +9,8 @@ namespace nimbus
 
 void RendererApi::init()
 {
+    NM_PROFILE_DETAIL();
+    
     NM_CORE_INFO("Vendor:   %s\n", glGetString(GL_VENDOR));
     NM_CORE_INFO("Renderer: %s\n", glGetString(GL_RENDERER));
     NM_CORE_INFO("Version:  %s\n", glGetString(GL_VERSION));
@@ -48,16 +52,22 @@ void RendererApi::init()
 
 void RendererApi::clear()
 {
+    NM_PROFILE_TRACE();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void RendererApi::setViewportSize(int x, int y, int w, int h)
 {
+    NM_PROFILE_TRACE();
+
     glViewport(x, y, w, h);
 }
 
 void RendererApi::setWireframe(bool on)
 {
+    NM_PROFILE_TRACE();
+
     if (on != m_wireframeOn)
     {
         if (!on)
@@ -76,11 +86,15 @@ void RendererApi::setWireframe(bool on)
 
 bool RendererApi::getWireframe()
 {
+    NM_PROFILE_TRACE();
+
     return m_wireframeOn;
 }
 
 void RendererApi::setDepthTest(bool on)
 {
+    NM_PROFILE_TRACE();
+
     if (!on)
     {
         NM_CORE_INFO("Depth test off\n");
@@ -96,16 +110,18 @@ void RendererApi::setDepthTest(bool on)
 
 bool RendererApi::getDepthTest()
 {
+    NM_PROFILE_TRACE();
+
     return m_depthTest;
 }
 
-void APIENTRY RendererApi::_glDebugOutput(GLenum       source,
-                                          GLenum       type,
-                                          unsigned int id,
-                                          GLenum       severity,
-                                          GLsizei      length,
-                                          const char*  message,
-                                          const void*  userParam)
+void APIENTRY _glDebugOutput(GLenum       source,
+                             GLenum       type,
+                             unsigned int id,
+                             GLenum       severity,
+                             GLsizei      length,
+                             const char*  message,
+                             const void*  userParam)
 {
     UNUSED(length);
     UNUSED(userParam);

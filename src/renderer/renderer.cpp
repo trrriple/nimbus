@@ -1,5 +1,7 @@
-#include "renderer/renderer.hpp"
+#include "nmpch.hpp"
+#include "core.hpp"
 
+#include "renderer/renderer.hpp"
 #include "platform/rendererApi.hpp"
 
 namespace nimbus
