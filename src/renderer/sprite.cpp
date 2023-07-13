@@ -44,7 +44,7 @@ Sprite::Sprite(const std::string& textureFileNm,
 
     std::vector<Texture*> spriteTextures = {p_spriteTexture};
 
-    mp_mesh = std::make_unique<Mesh>(spriteVerts, spriteTextures);
+    mp_mesh = makeScope<Mesh>(spriteVerts, spriteTextures);
 
     Shader* p_shader = rm.loadShader(vertShaderFileNm, fragShaderFileNm);
 

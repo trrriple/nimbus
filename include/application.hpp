@@ -68,11 +68,11 @@ class Application
    private:
     inline static Application* sp_instance = nullptr;
 
-    std::string               m_name;
-    std::unique_ptr<Window>   mp_window   = nullptr;
-    std::unique_ptr<Camera>   mp_camera   = nullptr;
-    bool                      m_menuMode  = false;
-    volatile bool             m_Active    = true;
+    std::string   m_name;
+    scope<Window> mp_window  = nullptr;
+    scope<Camera> mp_camera  = nullptr;
+    bool          m_menuMode = false;
+    volatile bool m_Active   = true;
 
     LayerDeck m_layerDeck;
 

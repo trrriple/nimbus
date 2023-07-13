@@ -30,6 +30,16 @@ class Mesh
         {k_shaderVec3, "tangent"},
         {k_shaderVec3, "bitangent"},
     };
+
+    inline static const BufferFormat k_vboFormatNormalize= 
+    {
+        {k_shaderVec3, "position",  true},
+        {k_shaderVec3, "normal",    true},
+        {k_shaderVec2, "texCoords", true},
+        {k_shaderVec3, "tangent",   true},
+        {k_shaderVec3, "bitangent", true},
+    };
+    
     
     // with verticies, indicies, and textures
     Mesh(std::vector<Vertex>   verticies,

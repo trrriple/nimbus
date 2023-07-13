@@ -1,16 +1,16 @@
 #include "application.hpp"
-#include "renderer/renderer.hpp"
-#include "platform/rendererApi.hpp"
 
 #include "nmpch.hpp"
+#include "platform/rendererApi.hpp"
+#include "renderer/renderer.hpp"
 
 namespace nimbus
 {
 
 Application::Application(const std::string& name,
-                         int               windowWidth,
-                         int               windowHeight,
-                         bool              is3d)
+                         int                windowWidth,
+                         int                windowHeight,
+                         bool               is3d)
     : m_name(name)
 {
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
@@ -23,12 +23,11 @@ Application::Application(const std::string& name,
 
     sp_instance = this;
 
-
-    mp_window = std::make_unique<Window>(m_name, windowWidth, windowHeight);
+    mp_window = makeScope<Window>(m_name, windowWidth, windowHeight);
     mp_window->graphicsContextInit();
-    
+
     Renderer::init();
-    
+
     mp_window->setEventCallback(
         std::bind(&Application::onEvent, this, std::placeholders::_1));
 
@@ -36,7 +35,7 @@ Application::Application(const std::string& name,
     {
         RendererApi::setDepthTest(true);
         addGuiCallback(std::bind(&Application::_cameraMenu, this));
-        mp_camera = std::make_unique<Camera>(glm::vec3(-10.0f, 0.0f, 0.0f));
+        mp_camera = makeScope<Camera>(glm::vec3(-10.0f, 0.0f, 0.0f));
     }
     else
     {
@@ -141,7 +140,6 @@ void Application::addGuiCallback(nbCallback_t p_func)
 {
     m_guiCallbacks.push_back(p_func);
 }
-
 
 float Application::getFrametime() const
 {
@@ -276,7 +274,6 @@ void Application::_render()
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 }
 
 void Application::_renderStatsDisplay()

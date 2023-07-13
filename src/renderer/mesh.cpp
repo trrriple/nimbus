@@ -135,17 +135,24 @@ void Mesh::draw() const
 
 void Mesh::_setupMesh()
 {
-    mp_vbo = std::make_shared<VertexBuffer>(&m_vertices[0],
-                                            m_vertices.size() * sizeof(Vertex));
+    mp_vbo = makeRef<VertexBuffer>(&m_vertices[0],
+                                     m_vertices.size() * sizeof(Vertex));
 
-    mp_vbo->setFormat(k_vboFormat);
+    if(!m_normalize)
+    {
+        mp_vbo->setFormat(k_vboFormat);
+    }
+    else
+    {
+        mp_vbo->setFormat(k_vboFormatNormalize);
+    }
 
-    mp_vao = std::make_shared<VertexArray>();
+    mp_vao = makeRef<VertexArray>();
     mp_vao->addVertexBuffer(mp_vbo);
 
     if (m_indices.size() > 0)
     {
-        mp_ebo = std::make_shared<IndexBuffer>(&m_indices[0], m_indices.size());
+        mp_ebo   = makeRef<IndexBuffer>(&m_indices[0], m_indices.size());
         m_hasEbo = true;
     }
 }
