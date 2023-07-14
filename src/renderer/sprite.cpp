@@ -43,19 +43,20 @@ Sprite::Sprite(const std::string& textureFileNm,
 
     ResourceManager& rm = ResourceManager::get();
 
-    Texture* p_spriteTexture
+    ref<Texture>& p_spriteTexture
         = rm.loadTexture(Texture::Type::DIFFUSE, textureFileNm);
 
-    std::vector<Texture*> spriteTextures = {p_spriteTexture};
+    std::vector<ref<Texture>> spriteTextures = {p_spriteTexture};
 
+    NM_CORE_INFO("Sprite new mesh %s\n", textureFileNm.c_str());
     mp_mesh = makeScope<Mesh>(spriteVerts, spriteTextures);
 
-    Shader* p_shader = rm.loadShader(vertShaderFileNm, fragShaderFileNm);
+    ref<Shader>& p_shader = rm.loadShader(vertShaderFileNm, fragShaderFileNm);
 
     mp_mesh->setShader(p_shader);
 
     mp_mesh->getShader()->use();
-    mp_mesh->getShader()->setMat4("projection", projection);
+    mp_mesh->getShader()->setMat4("u_viewProjection", projection);
 }
 
 void Sprite::draw(const glm::vec2& pos,
@@ -81,16 +82,9 @@ void Sprite::draw(const glm::vec2& pos,
 
     // only change the shader if this sprite uses a different shader
     // then the last sprite
-    const Shader* p_shader = mp_mesh->getShader();
-    if (p_shader != p_lastShader)
-    {
-        p_shader->use();
-        p_lastShader = p_shader;
-    }
 
-    p_shader->setMat4("model", model);
-    p_shader->setVec3("spriteColor", color);
-    mp_mesh->draw();
+    mp_mesh->getShader()->setVec3("spriteColor", color);
+    mp_mesh->draw(model);
 }
 
 }  // namespace nimbus

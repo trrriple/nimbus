@@ -56,6 +56,8 @@ IndexBuffer::IndexBuffer(std::uint32_t* indices, std::uint32_t count)
                  count * sizeof(std::uint32_t),
                  indices,
                  GL_STATIC_DRAW);
+    
+    m_type = GL_UNSIGNED_INT;
 }
 
 IndexBuffer::IndexBuffer(std::uint16_t* indices, std::uint16_t count)
@@ -67,6 +69,9 @@ IndexBuffer::IndexBuffer(std::uint16_t* indices, std::uint16_t count)
                  count * sizeof(std::uint16_t),
                  indices,
                  GL_STATIC_DRAW);
+
+    m_type = GL_UNSIGNED_SHORT;
+
 }
 
 IndexBuffer::IndexBuffer(std::uint8_t* indices, std::uint8_t count)
@@ -76,6 +81,9 @@ IndexBuffer::IndexBuffer(std::uint8_t* indices, std::uint8_t count)
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
     glBufferData(
         GL_ARRAY_BUFFER, count * sizeof(std::uint8_t), indices, GL_STATIC_DRAW);
+
+    m_type = GL_UNSIGNED_BYTE;
+
 }
 
 IndexBuffer::~IndexBuffer()

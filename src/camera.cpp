@@ -1,45 +1,51 @@
-#include "nmpch.hpp"
-#include "core.hpp"
-
 #include "camera.hpp"
+
+#include "application.hpp"
+#include "core.hpp"
+#include "nmpch.hpp"
 
 namespace nimbus
 {
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-    : m_front(glm::vec3(0.0f, 0.0f, -1.0f)),
+    : m_position(position),
+      m_front(glm::vec3(0.0f, 0.0f, -1.0f)),
+      m_worldUp(up),
+      m_yaw(yaw),
+      m_pitch(pitch),
       m_speed(K_SPEED_DEFAULT),
       m_sensitivity(K_SENSITIVITY_DEFAULT),
-      m_fov(K_FOV_DEFAULT)
+      m_fov(K_FOV_DEFAULT),
+      m_near(K_NEAR_DEFAULT),
+      m_far(K_FAR_DEFAULT),
+      m_is3d(true)
 {
-    m_position = position;
-    m_worldUp  = up;
-    m_yaw      = yaw;
-    m_pitch    = pitch;
-    updateCameraVectors();
+    setAspectRatio(Application::get().getWindow().getWidth(),
+                   Application::get().getWindow().getHeight());
+
+    _updateCameraVectors();
+
+    updateView();
+    updateProjection();
+    updateViewProjection();
 }
 
-Camera::Camera(float posX,
-               float posY,
-               float posZ,
-               float upX,
-               float upY,
-               float upZ,
-               float yaw,
-               float pitch)
-    : m_front(glm::vec3(0.0f, 0.0f, -1.0f)),
-      m_speed(K_SPEED_DEFAULT),
-      m_sensitivity(K_SENSITIVITY_DEFAULT),
-      m_fov(K_FOV_DEFAULT)
+Camera::Camera(float left, float right, float bottom, float top)
+    : m_position({0.0, 0.0, 0.0}),
+      m_yaw(0.0f),
+      m_orthoLeft(left),
+      m_orthoRight(right),
+      m_orthoBottom(bottom),
+      m_orthoTop(top),
+      m_is3d(false)
+
 {
-    m_position = glm::vec3(posX, posY, posZ);
-    m_worldUp  = glm::vec3(upX, upY, upZ);
-    m_yaw      = yaw;
-    m_pitch    = pitch;
-    updateCameraVectors();
+    updateView();
+    updateProjection();
+    updateViewProjection();
 }
 
-void Camera::processPosUpd(Movement direction, float deltaTime)
+void Camera::processPosiUpdate(Movement direction, float deltaTime)
 {
     float velocity = m_speed * deltaTime;
     switch (direction)
@@ -77,6 +83,8 @@ void Camera::processPosUpd(Movement direction, float deltaTime)
         default:
             break;
     }
+
+    m_staleView = true;
 }
 
 void Camera::processViewUpdate(float xOffset,
@@ -100,25 +108,123 @@ void Camera::processViewUpdate(float xOffset,
     }
 
     // update Front, Right and Up Vectors using the updated Euler angles
-    updateCameraVectors();
+    _updateCameraVectors();
+
+    m_staleView = true;
 }
 
 void Camera::processZoom(float yOffset)
 {
+    NM_PROFILE_TRACE();
+
     m_fov -= (float)yOffset;
     if (m_fov < 1.0f)
         m_fov = 1.0f;
     if (m_fov > 45.0f)
         m_fov = 45.0f;
+
+    m_staleProjection = true;
 }
 
-glm::mat4 Camera::getViewMatrix()
+void Camera::updateView()
 {
-    return glm::lookAt(m_position, m_position + m_front, m_up);
+    NM_PROFILE_DETAIL();
+
+    NM_CORE_INFO("%s\n", __func__);
+
+    if (m_is3d)
+    {
+        m_view = glm::lookAt(m_position, m_position + m_front, m_up);
+    }
+    else
+    {
+        glm::mat4 transform
+            = glm::translate(glm::mat4(1.0f), m_position)
+              * glm::rotate(
+                  glm::mat4(1.0f), glm::radians(m_yaw), glm::vec3(0, 0, 1));
+
+        m_view = glm::inverse(transform);
+    }
+
+    m_staleView           = false;
+    m_staleViewProjection = true;
 }
 
-void Camera::updateCameraVectors()
+glm::mat4& Camera::getView()
 {
+    NM_PROFILE_TRACE();
+
+    if (m_staleView)
+    {
+        updateView();
+    }
+
+    return m_view;
+}
+
+void Camera::updateProjection()
+{
+    NM_PROFILE_DETAIL();
+
+    NM_CORE_INFO("%s\n", __func__);
+
+    if (m_is3d)
+    {
+        m_projection = glm::perspective(
+            glm::radians(m_fov), m_aspectRatio, m_near, m_far);
+    }
+    else
+    {
+        m_projection
+            = glm::ortho(m_orthoLeft,
+                         (float)Application::get().getWindow().getWidth(),
+                         (float)Application::get().getWindow().getHeight(),
+                         m_orthoTop,
+                         -1.0f,
+                         1.0f);
+    }
+
+    m_staleProjection     = false;
+    m_staleViewProjection = true;
+}
+
+glm::mat4& Camera::getProjection()
+{
+    NM_PROFILE_TRACE();
+
+    if (m_staleProjection)
+    {
+        updateProjection();
+    }
+
+    return m_projection;
+}
+
+void Camera::updateViewProjection()
+{
+    NM_PROFILE_DETAIL();
+
+    NM_CORE_INFO("%s\n", __func__);
+    m_viewProjection = (getView() * getProjection());
+
+    m_staleViewProjection = false;
+}
+
+glm::mat4& Camera::getViewProjection()
+{
+    NM_PROFILE_TRACE();
+
+    if (m_staleViewProjection)
+    {
+        updateViewProjection();
+    }
+    return m_viewProjection;
+}
+
+void Camera::_updateCameraVectors()
+{
+    NM_PROFILE_DETAIL();
+
     // calculate the new Front vector
     glm::vec3 front;
     front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
@@ -132,6 +238,12 @@ void Camera::updateCameraVectors()
                                  // gets closer to 0 the more you look up or
                                  // down which results in slower movement.
     m_up = glm::normalize(glm::cross(m_right, m_front));
+}
+
+void Camera::setAspectRatio(float width, float height)
+{
+    m_aspectRatio     = width / height;
+    m_staleProjection = true;
 }
 
 }  // namespace nimbus

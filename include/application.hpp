@@ -1,7 +1,7 @@
 #pragma once
 
 #include "camera.hpp"
-#include "core.hpp"
+#include "common.hpp"
 #include "event.hpp"
 #include "guiLayers/guiSubsystem.hpp"
 #include "layerDeck.hpp"
@@ -43,21 +43,11 @@ class Application
 
     const uint8_t* getKeyboardState() const;
 
-    const glm::mat4 getProjectionMatrix(bool perspective = true) const;
-
-    const glm::mat4 getViewMatrix() const;
-
     LayerDeck& getLayerDeck();
 
-    void cameraViewUpdate(float xOffset,
-                          float yOffset,
-                          bool  constrainPitch = true);
-
-    void cameraZoomUpdate(float yOffset);
-
-    void cameraPosUpdate(Camera::Movement movement);
-
     Window& getWindow();
+
+    Camera& getCamera();
 
     void setMenuMode(bool mode);
 

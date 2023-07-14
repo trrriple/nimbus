@@ -1,5 +1,7 @@
 #pragma once
 
+#include "buffer.hpp"
+
 namespace nimbus
 {
 class RendererApi
@@ -7,6 +9,12 @@ class RendererApi
    public:
     static void init();
     static void clear();
+
+    static void drawElements(const ref<VertexArray>& p_vertexArray,
+                             uint32_t                indexCount = 0);
+
+    static void drawArrays(const ref<VertexArray>& p_vertexArrax,
+                           uint32_t                vertexCount);
 
     static void setViewportSize(int x, int y, int w, int h);
 

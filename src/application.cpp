@@ -1,12 +1,11 @@
-#include "nmpch.hpp"
-#include "core.hpp"
-
 #include "application.hpp"
+
+#include "core.hpp"
+#include "guiLayers/engineGui.hpp"
+#include "guiLayers/guiSubsystem.hpp"
+#include "nmpch.hpp"
 #include "platform/rendererApi.hpp"
 #include "renderer/renderer.hpp"
-#include "guiLayers/guiSubsystem.hpp"
-#include "guiLayers/engineGui.hpp"
-
 
 namespace nimbus
 {
@@ -41,17 +40,20 @@ Application::Application(const std::string& name,
     if (m_is3d)
     {
         RendererApi::setDepthTest(true);
-        mp_camera = makeScope<Camera>(glm::vec3(-10.0f, 0.0f, 0.0f));
+        mp_camera = makeScope<Camera>(glm::vec3(0.0f, 0.0f, 0.0f));
     }
     else
     {
         RendererApi::setDepthTest(false);
+        mp_camera = makeScope<Camera>(0.0f,
+                                      (float)mp_window->getWidth(),
+                                      (float)mp_window->getHeight(),
+                                      0.0f);
     }
 
     mp_guiSubsystemLayer = makeScope<GuiSubsystem>();
     insertLayer(mp_guiSubsystemLayer.get());
     insertLayer(new EngineGui());
-
 }
 
 void Application::shouldQuit(Event& event)
@@ -87,7 +89,7 @@ void Application::execute()
         }
 
         mp_guiSubsystemLayer->end();
-        
+
         ////////////////////////////////////////////////////////////////////////
         // Call window update function (events polled and buffers swapped)
         ////////////////////////////////////////////////////////////////////////
@@ -127,7 +129,6 @@ void Application::onEvent(Event& event)
             break;
         }
     }
-
 }
 
 void Application::insertLayer(Layer* layer, int32_t location)
@@ -150,57 +151,19 @@ const uint8_t* Application::getKeyboardState() const
     return SDL_GetKeyboardState(nullptr);
 }
 
-const glm::mat4 Application::getProjectionMatrix(bool perspective) const
-{
-    if (perspective)
-    {
-        return glm::perspective(
-            glm::radians(mp_camera->m_fov),
-            (float)mp_window->getWidth() / (float)mp_window->getHeight(),
-            0.1f,
-            300.0f);
-    }
-    else
-    {
-        return glm::ortho(0.0f,
-                          (float)mp_window->getWidth(),
-                          (float)mp_window->getHeight(),
-                          0.0f,
-                          -1.0f,
-                          1.0f);
-    }
-}
-
-const glm::mat4 Application::getViewMatrix() const
-{
-    return mp_camera->getViewMatrix();
-}
-
 LayerDeck& Application::getLayerDeck()
 {
     return m_layerDeck;
 }
 
-void Application::cameraViewUpdate(float xOffset,
-                                   float yOffset,
-                                   bool  constrainPitch)
-{
-    mp_camera->processViewUpdate(xOffset, yOffset, constrainPitch);
-}
-
-void Application::cameraZoomUpdate(float yOffset)
-{
-    mp_camera->processZoom(yOffset);
-}
-
-void Application::cameraPosUpdate(Camera::Movement movement)
-{
-    mp_camera->processPosUpd(movement, getFrametime());
-}
-
 Window& Application::getWindow()
 {
     return *mp_window;
+}
+
+Camera& Application::getCamera()
+{
+    return *mp_camera;
 }
 
 void Application::setMenuMode(bool mode)
@@ -228,7 +191,5 @@ bool Application::getMenuMode() const
 {
     return m_menuMode;
 }
-
-
 
 };  // namespace nimbus

@@ -98,6 +98,9 @@ void EngineGui::onGuiUpdate()
     ImGui::SliderFloat("Sensitivity", &mp_camera->m_sensitivity, 0.01f, 0.5f);
     ImGui::End();
 #endif
+
+    // ImGui::ShowDemoWindow();
+
 }
 
 }  // namespace nimbus

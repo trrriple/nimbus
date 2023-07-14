@@ -25,6 +25,11 @@ class Shader
     // user/activate the shader
     void use() const;
 
+    std::uint32_t getId()
+    {
+        return m_id;
+    }
+
     // utility uniform functions
     void setBool(const std::string& name, bool value) const;
 
@@ -58,6 +63,8 @@ class Shader
     std::uint32_t m_id;
     std::string   m_vertexPath;
     std::string   m_fragmentPath;
+
+    inline static std::uint32_t s_lastId = 0;
 
     // we use this map to keep track of where uniforms are located
     // in the future, it may make sense to make a uniform object that

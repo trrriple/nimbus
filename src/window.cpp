@@ -3,6 +3,7 @@
 
 #include "window.hpp"
 #include "platform/rendererApi.hpp"
+#include "keyCode.hpp"
 
 namespace nimbus
 {
@@ -106,13 +107,14 @@ void Window::onUpdate()
     _calcFramerate();
 }
 
-bool Window::keyPressed(uint32_t keyCode)
+bool Window::keyPressed(keyCode keyCode)
 {
     NM_PROFILE_DETAIL();
 
-    const uint8_t* keyboardState = SDL_GetKeyboardState(nullptr);
+    static const uint8_t* keyboardState = SDL_GetKeyboardState(nullptr);
 
-    return keyboardState[keyCode];
+    // Will break if SDL changes their keymap
+    return keyboardState[static_cast<uint32_t>(keyCode)];
 }
 
 void Window::setVSync(bool on)

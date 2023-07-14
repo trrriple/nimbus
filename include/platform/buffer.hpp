@@ -3,8 +3,12 @@
 // Hazel. Credit where credit is due!
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "core.hpp"
+
+#include "common.hpp"
 #include "glad.h"
+
+#include <vector>
+#include <cstdint>
 
 namespace nimbus
 {
@@ -12,7 +16,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 // Shader Types MetaData
 ////////////////////////////////////////////////////////////////////////////////
-//                  gl Type   sizeof    # of Components
+//                     gl Type       sizeof      # of Components
 typedef std::tuple<std::uint32_t, std::uint32_t, std::uint32_t> ShaderDataType;
 
 const ShaderDataType k_shaderFloat  = std::make_tuple(GL_FLOAT, 4, 1);
@@ -57,8 +61,8 @@ class BufferFormat
     {
     }
 
-    BufferFormat(std::initializer_list<BufferComponent> elements)
-        : m_elements(elements)
+    BufferFormat(std::initializer_list<BufferComponent> components)
+        : m_components(components)
     {
         _genOffsetsAndStride();
     }
@@ -69,39 +73,39 @@ class BufferFormat
     }
     const std::vector<BufferComponent>& getComponents() const
     {
-        return m_elements;
+        return m_components;
     }
 
     std::vector<BufferComponent>::iterator begin()
     {
-        return m_elements.begin();
+        return m_components.begin();
     }
     std::vector<BufferComponent>::iterator end()
     {
-        return m_elements.end();
+        return m_components.end();
     }
     std::vector<BufferComponent>::const_iterator begin() const
     {
-        return m_elements.begin();
+        return m_components.begin();
     }
     std::vector<BufferComponent>::const_iterator end() const
     {
-        return m_elements.end();
+        return m_components.end();
     }
 
    private:
-    std::vector<BufferComponent> m_elements;
+    std::vector<BufferComponent> m_components;
     std::uint32_t                m_stride = 0;
 
     void _genOffsetsAndStride()
     {
         size_t offset = 0;
         m_stride      = 0;
-        for (auto& element : m_elements)
+        for (auto& component : m_components)
         {
-            element.offset = offset;
-            offset += std::get<1>(element.type);
-            m_stride += std::get<1>(element.type);
+            component.offset = offset;
+            offset += std::get<1>(component.type);
+            m_stride += std::get<1>(component.type);
         }
     }
 };
@@ -155,9 +159,15 @@ class IndexBuffer
         return m_count;
     }
 
+    std::uint32_t getType() const
+    {
+        return m_type;
+    }
+
    private:
     std::uint32_t m_id;
     std::uint32_t m_count;
+    std::uint32_t m_type;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,10 +197,10 @@ class VertexArray
     }
 
    private:
-    uint32_t                       m_id;
-    uint32_t                       m_vertexBufferIndex = 0;
+    std::uint32_t                  m_id;
+    std::uint32_t                  m_vertexBufferIndex = 0;
     std::vector<ref<VertexBuffer>> m_vertexBuffers;
-    ref<IndexBuffer>               m_indexBuffer;
+    ref<IndexBuffer>               m_indexBuffer = nullptr;
 };
 
 };  // namespace nimbus

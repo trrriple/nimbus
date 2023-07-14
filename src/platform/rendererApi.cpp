@@ -50,6 +50,26 @@ void RendererApi::init()
 
 }
 
+void RendererApi::drawElements(const ref<VertexArray>& p_vertexArray,
+                               uint32_t                indexCount)
+{
+    uint32_t count
+        = indexCount ? indexCount : p_vertexArray->getIndexBuffer()->getCount();
+
+    p_vertexArray->bind();
+    glDrawElements(GL_TRIANGLES,
+                   count,
+                   p_vertexArray->getIndexBuffer()->getType(),
+                   nullptr);
+}
+
+void RendererApi::drawArrays(const ref<VertexArray>& p_vertexArray,
+                             uint32_t                indexCount)
+{
+    p_vertexArray->bind();
+    glDrawArrays(GL_TRIANGLES, 0, indexCount);
+}
+
 void RendererApi::clear()
 {
     NM_PROFILE_TRACE();

@@ -19,12 +19,12 @@ Model::Model(std::string path, bool flipOnLoad, bool normalize)
     }
 }
 
-void Model::draw(Shader& shader)
+void Model::draw(ref<Shader>& shader, glm::mat4& model)
 {
     for (uint32_t i = 0; i < mp_meshes.size(); i++)
     {
-        mp_meshes[i]->setShader(&shader);
-        mp_meshes[i]->draw();
+        mp_meshes[i]->setShader(shader);
+        mp_meshes[i]->draw(model);
     }
 }
 
@@ -66,7 +66,7 @@ scope<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<Mesh::Vertex> vertices;
     std::vector<uint32_t>     indices;
-    std::vector<Texture*>     textures;
+    std::vector<ref<Texture>> textures;
 
     // process vertex positions, normals and texture coordinates
     for (uint32_t i = 0; i < mesh->mNumVertices; i++)
@@ -140,36 +140,36 @@ scope<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
         // 1. diffuse maps
-        std::vector<Texture*> diffuseMaps
+        std::vector<ref<Texture>> diffuseMaps
             = loadMaterialTextures(material, Texture::Type::DIFFUSE);
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
         // 2. specular maps
-        std::vector<Texture*> specularMaps
+        std::vector<ref<Texture>> specularMaps
             = loadMaterialTextures(material, Texture::Type::SPECULAR);
         textures.insert(
             textures.end(), specularMaps.begin(), specularMaps.end());
 
         // 3. Ambient maps
-        std::vector<Texture*> ambientMaps
+        std::vector<ref<Texture>> ambientMaps
             = loadMaterialTextures(material, Texture::Type::AMBIENT);
         textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
 
         // 3. normal maps
-        std::vector<Texture*> normalMaps
+        std::vector<ref<Texture>> normalMaps
             = loadMaterialTextures(material, Texture::Type::NORMAL);
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
         // 4. height maps
-        std::vector<Texture*> heightMaps
+        std::vector<ref<Texture>> heightMaps
             = loadMaterialTextures(material, Texture::Type::HEIGHT);
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     }
     return makeScope<Mesh>(vertices, indices, textures, m_normalize);
 }
 
-std::vector<Texture*> Model::loadMaterialTextures(aiMaterial*   mat,
-                                                  Texture::Type texType)
+std::vector<ref<Texture>> Model::loadMaterialTextures(aiMaterial*   mat,
+                                                      Texture::Type texType)
 
 {
     aiTextureType aiType = aiTextureType_NONE;
@@ -198,7 +198,7 @@ std::vector<Texture*> Model::loadMaterialTextures(aiMaterial*   mat,
         NM_CORE_ASSERT(0, "Unknown Texture format 0x%x\n", texType);
     }
 
-    std::vector<Texture*> textures;
+    std::vector<ref<Texture>> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(aiType); i++)
     {
         aiString filename;
@@ -220,7 +220,7 @@ std::vector<Texture*> Model::loadMaterialTextures(aiMaterial*   mat,
         {
             ResourceManager& rm = ResourceManager::get();
 
-            Texture* p_texture = rm.loadTexture(texType, path, m_flipOnLoad);
+            ref<Texture>& p_texture = rm.loadTexture(texType, path, m_flipOnLoad);
 
             textures.push_back(p_texture);
             m_loadedTextures.emplace(path, p_texture);

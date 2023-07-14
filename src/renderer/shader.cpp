@@ -129,7 +129,12 @@ void Shader::use() const
 {
     NM_PROFILE_TRACE();
 
-    glUseProgram(m_id);
+    // don't rebind the same shader
+    if (m_id != s_lastId)
+    {
+        glUseProgram(m_id);
+        s_lastId = m_id;
+    }
 }
 // utility uniform functions
 void Shader::setBool(const std::string& name, bool value) const

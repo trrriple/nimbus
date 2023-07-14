@@ -2,6 +2,7 @@
 
 #include "renderer/shader.hpp"
 #include "renderer/texture.hpp"
+#include "common.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -16,16 +17,16 @@ class ResourceManager
 
     // Other member functions and variables...
 
-    Texture* loadTexture(const Texture::Type type,
-                         const std::string&  path,
-                         const bool          flipOnLoad = false);
+    ref<Texture>& loadTexture(const Texture::Type type,
+                               const std::string&  path,
+                               const bool          flipOnLoad = false);
 
-    Shader* loadShader(const std::string& vertexPath,
-                       const std::string& fragmentPath);
+    ref<Shader>& loadShader(const std::string& vertexPath,
+                            const std::string& fragmentPath);
 
    private:
-    std::unordered_map<std::string, Texture*> m_loadedTextures;
-    std::unordered_map<std::string, Shader*>  m_loadedShaders;
+    std::unordered_map<std::string, ref<Texture>> m_loadedTextures;
+    std::unordered_map<std::string, ref<Shader>>  m_loadedShaders;
 
     // Private constructor to prevent direct instantiation
 

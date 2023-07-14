@@ -10,6 +10,8 @@ const float K_PITCH_DEFAULT       = 0.0f;
 const float K_SPEED_DEFAULT       = 10.0f;
 const float K_SENSITIVITY_DEFAULT = 0.05f;
 const float K_FOV_DEFAULT         = 45.0f;
+const float K_NEAR_DEFAULT        = 0.1f;
+const float K_FAR_DEFAULT         = 300.0f;
 
 class Camera
 {
@@ -27,7 +29,49 @@ class Camera
         DOWN,
     };
 
-    // attributes
+    //3d camera
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
+           glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f),
+           float     yaw      = K_YAW_DEFAULT,
+           float     pitch    = K_PITCH_DEFAULT);
+
+    //2d camera
+    Camera(float left, float right, float bottom, float top);
+
+    // processes input received from any position movement input system.
+    // Accepts input parameter in the form of camera defined ENUM
+    // (to abstract it from windowing systems)
+    void processPosiUpdate(Movement direction, float deltaTime);
+
+    // processes input received from a view update.
+    void processViewUpdate(float xOffset,
+                           float yOffset,
+                           bool  constrainPitch = true);
+
+    // processes input received from a canera zoom event
+    void processZoom(float yOffset);
+
+    void       updateView();
+    glm::mat4& getView();
+
+    void       updateProjection();
+    glm::mat4& getProjection();
+
+    void       updateViewProjection();
+    glm::mat4& getViewProjection();
+
+    void setAspectRatio(float width, float height);
+
+   private:
+    glm::mat4 m_projection;
+    glm::mat4 m_view;
+    glm::mat4 m_viewProjection;
+
+    bool m_staleProjection;
+    bool m_staleView;
+    bool m_staleViewProjection;
+
+    // location
     glm::vec3 m_position;
     glm::vec3 m_front;
     glm::vec3 m_up;
@@ -42,41 +86,23 @@ class Camera
     float m_speed;
     float m_sensitivity;
     float m_fov;
+    float m_aspectRatio;
 
-    // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
-           glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f),
-           float     yaw      = K_YAW_DEFAULT,
-           float     pitch    = K_PITCH_DEFAULT);
+    float m_near;
+    float m_far;
 
-    // constructor with scalar values
-    Camera(float posX,
-           float posY,
-           float posZ,
-           float upX,
-           float upY,
-           float upZ,
-           float yaw,
-           float pitch);
+    // ortho specific parameters (2d)
+    float m_orthoLeft;
+    float m_orthoRight;
+    float m_orthoBottom;
+    float m_orthoTop;
 
-    // processes input received from any position movement input system.
-    // Accepts input parameter in the form of camera defined ENUM
-    // (to abstract it from windowing systems)
-    void processPosUpd(Movement direction, float deltaTime);
+    bool m_is3d;
 
-    // processes input received from a view update.
-    void processViewUpdate(float xOffset,
-                           float yOffset,
-                           bool  constrainPitch = true);
-
-    // processes input received from a canera zoom event
-    void processZoom(float yOffset);
-
-    glm::mat4 getViewMatrix();
-
-   private:
     // calculates the front vector from the Camera's (updated) Euler Angles
-    void updateCameraVectors();
+    void _updateCameraVectors();
+    float _getAspectRatio();
+
 };
 
 }  // namespace nimbus

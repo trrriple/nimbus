@@ -1,6 +1,7 @@
 #pragma once
 
 #include "event.hpp"
+#include "keyCode.hpp"
 #include "SDL.h"
 
 #include <functional>
@@ -29,7 +30,7 @@ class Window
     
     void onUpdate();
 
-    bool keyPressed(uint32_t keyCode);
+    bool keyPressed(keyCode keyCode);
 
     uint32_t getHeight() const
     {

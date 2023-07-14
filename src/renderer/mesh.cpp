@@ -2,14 +2,15 @@
 #include "core.hpp"
 
 #include "renderer/mesh.hpp"
+#include "renderer/renderer.hpp"
 
 namespace nimbus
 {
 
-Mesh::Mesh(std::vector<Vertex>   verticies,
-           std::vector<uint32_t> indicies,
-           std::vector<Texture*> textures,
-           bool                  normalize)
+Mesh::Mesh(std::vector<Vertex>        verticies,
+           std::vector<uint32_t>      indicies,
+           std::vector<ref<Texture>>  textures,
+           bool                       normalize)
     : m_vertices(verticies), m_indices(indicies), m_normalize(normalize)
 {
     NM_PROFILE_DETAIL();
@@ -25,13 +26,13 @@ Mesh::Mesh(std::vector<Vertex>   verticies,
     _setupMesh();
 }
 
-Mesh::Mesh(std::vector<Vertex>   verticies,
-           std::vector<Texture*> textures,
-           bool                  normalize)
+Mesh::Mesh(std::vector<Vertex>        verticies,
+           std::vector<ref<Texture>>  textures,
+           bool                       normalize)
     : m_vertices(verticies), m_normalize(normalize)
 {
     NM_PROFILE_DETAIL();
-    
+
     if (textures.size() > Texture::s_getMaxTextures())
     {
         NM_CORE_ASSERT(
@@ -61,21 +62,21 @@ Mesh::Mesh(std::vector<Vertex> verticies, bool normalize)
     _setupMesh();
 }
 
-void Mesh::setShader(Shader* p_shader)
+void Mesh::setShader(ref<Shader>& p_shader)
 {
     NM_PROFILE_TRACE();
 
     mp_shader = p_shader;
 }
 
-const Shader* Mesh::getShader() const
+ref<Shader>& Mesh::getShader()
 {
     NM_PROFILE_TRACE();
 
     return mp_shader;
 }
 
-void Mesh::draw() const
+void Mesh::draw(glm::mat4& model) const
 {
     NM_PROFILE();
 
@@ -90,9 +91,7 @@ void Mesh::draw() const
     // go through and bind all of our textures
     for (uint32_t i = 0; i < m_textures.size(); i++)
     {
-        Texture* p_texture = m_textures[i];
-
-        switch (p_texture->m_type)
+        switch (m_textures[i]->m_type)
         {
             case (Texture::Type::DIFFUSE):
             {
@@ -125,26 +124,30 @@ void Mesh::draw() const
             }
         }
 
-        const std::string& uniformNm = p_texture->getUniformNm(*typeIndex++);
+        const std::string& uniformNm
+            = m_textures[i]->getUniformNm(*typeIndex++);
 
         mp_shader->setInt(uniformNm.c_str(), i);
 
-        p_texture->bind(i);
+        m_textures[i]->bind(i);
     }
 
+    // TODO do I need this?
     glActiveTexture(GL_TEXTURE0);
 
     // draw mesh
     mp_vao->bind();
 
-    if (m_hasEbo)
-    {
-        glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
-    }
-    else
-    {
-        glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
-    }
+    // if (m_hasEbo)
+    // {
+    //     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
+    // }
+    // else
+    // {
+    //     glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+    // }
+
+    Renderer::submit(mp_shader, mp_vao, model, m_vertices.size());
 
     // unbind
     glBindVertexArray(0);
@@ -153,11 +156,10 @@ void Mesh::draw() const
 
 void Mesh::_setupMesh()
 {
-
     mp_vbo = makeRef<VertexBuffer>(&m_vertices[0],
-                                     m_vertices.size() * sizeof(Vertex));
+                                   m_vertices.size() * sizeof(Vertex));
 
-    if(!m_normalize)
+    if (!m_normalize)
     {
         mp_vbo->setFormat(k_vboFormat);
     }
