@@ -148,6 +148,7 @@ void Window::_handleWindowEvents()
             RendererApi::setViewportSize(0, 0, m_width, m_height);
 
             NM_CORE_INFO("Window Resized %d x %d\n", m_width, m_height);
+            break;
         }
         // main window closed
         case (SDL_WINDOWEVENT_CLOSE):

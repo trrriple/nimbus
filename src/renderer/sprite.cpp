@@ -13,16 +13,20 @@ Sprite::Sprite(const std::string& textureFileNm,
                const glm::mat4&   projection)
 {
 
-    const float spriteVertices[] = { 
-            // pos      // tex
-            0.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f, 
-        
-            0.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 1.0f, 1.0f,
-            1.0f, 0.0f, 1.0f, 0.0f
-        };
+    const float spriteVertices[] = 
+    { 
+        // pos      // tex
+        0.0f, 0.0f, 0.0f, 0.0f, // bottom left
+        1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+        1.0f, 1.0f, 1.0f, 1.0f, // top right
+        0.0f, 1.0f, 0.0f, 1.0f, // top left
+    };
+
+    const std::vector<uint32_t> indicies = 
+    {
+        0, 1, 2, // first triangle
+        2, 3, 0  // second triangle
+    };
 
     const uint32_t places = 4;
     uint32_t numVertices  = sizeof(spriteVertices) / sizeof(float) / places;
@@ -48,8 +52,7 @@ Sprite::Sprite(const std::string& textureFileNm,
 
     std::vector<ref<Texture>> spriteTextures = {p_spriteTexture};
 
-    NM_CORE_INFO("Sprite new mesh %s\n", textureFileNm.c_str());
-    mp_mesh = makeScope<Mesh>(spriteVerts, spriteTextures);
+    mp_mesh = makeScope<Mesh>(spriteVerts, indicies, spriteTextures);
 
     ref<Shader>& p_shader = rm.loadShader(vertShaderFileNm, fragShaderFileNm);
 
@@ -79,9 +82,6 @@ void Sprite::draw(const glm::vec2& pos,
                            glm::vec3(-0.5f * size.x, -0.5f * size.y, 0.0f));
     // last scale
     model = glm::scale(model, glm::vec3(size, 1.0f));
-
-    // only change the shader if this sprite uses a different shader
-    // then the last sprite
 
     mp_mesh->getShader()->setVec3("spriteColor", color);
     mp_mesh->draw(model);

@@ -31,7 +31,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 }
 
 Camera::Camera(float left, float right, float bottom, float top)
-    : m_position({0.0, 0.0, 0.0}),
+    : m_position({0.0f, 0.0f, 0.0f}),
       m_yaw(0.0f),
       m_orthoLeft(left),
       m_orthoRight(right),

@@ -51,10 +51,11 @@ void RendererApi::init()
 }
 
 void RendererApi::drawElements(const ref<VertexArray>& p_vertexArray,
-                               uint32_t                indexCount)
+                               uint32_t                vertexCount)
 {
+    NM_PROFILE_DETAIL();
     uint32_t count
-        = indexCount ? indexCount : p_vertexArray->getIndexBuffer()->getCount();
+        = vertexCount ? vertexCount : p_vertexArray->getIndexBuffer()->getCount();
 
     p_vertexArray->bind();
     glDrawElements(GL_TRIANGLES,
@@ -64,10 +65,42 @@ void RendererApi::drawElements(const ref<VertexArray>& p_vertexArray,
 }
 
 void RendererApi::drawArrays(const ref<VertexArray>& p_vertexArray,
-                             uint32_t                indexCount)
+                             uint32_t                vertexCount)
 {
+    NM_PROFILE_DETAIL();
+    uint32_t count
+        = vertexCount ? vertexCount : p_vertexArray->getExpectedVertexCount();
+
     p_vertexArray->bind();
-    glDrawArrays(GL_TRIANGLES, 0, indexCount);
+    glDrawArrays(GL_TRIANGLES, 0, count);
+}
+
+void RendererApi::drawElementsInstanced(const ref<VertexArray>& p_vertexArray,
+                                        uint32_t                instanceCount,
+                                        uint32_t                vertexCount)
+{
+    NM_PROFILE_DETAIL();
+    uint32_t count = vertexCount ? vertexCount
+                                 : p_vertexArray->getIndexBuffer()->getCount();
+
+    p_vertexArray->bind();
+    glDrawElementsInstanced(GL_TRIANGLES,
+                            count,
+                            p_vertexArray->getIndexBuffer()->getType(),
+                            nullptr,
+                            instanceCount);
+}
+
+void RendererApi::drawArraysInstanced(const ref<VertexArray>& p_vertexArray,
+                                      uint32_t                instanceCount,
+                                      uint32_t                vertexCount)
+{
+    NM_PROFILE_DETAIL();
+    uint32_t count
+        = vertexCount ? vertexCount : p_vertexArray->getExpectedVertexCount();
+
+    p_vertexArray->bind();
+    glDrawArraysInstanced(GL_TRIANGLES, 0, count, instanceCount);
 }
 
 void RendererApi::clear()

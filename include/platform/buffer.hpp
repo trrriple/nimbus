@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
+#include <cstdint>
+#include <vector>
+
 #include "common.hpp"
 #include "glad.h"
-
-#include <vector>
-#include <cstdint>
 
 namespace nimbus
 {
@@ -19,34 +19,61 @@ namespace nimbus
 //                     gl Type       sizeof      # of Components
 typedef std::tuple<std::uint32_t, std::uint32_t, std::uint32_t> ShaderDataType;
 
-const ShaderDataType k_shaderFloat  = std::make_tuple(GL_FLOAT, 4, 1);
-const ShaderDataType k_shaderVec2   = std::make_tuple(GL_FLOAT, 8, 2);
-const ShaderDataType k_shaderVec3   = std::make_tuple(GL_FLOAT, 12, 3);
-const ShaderDataType k_shaderVec4   = std::make_tuple(GL_FLOAT, 16, 4);
-const ShaderDataType k_shaderMat3   = std::make_tuple(GL_FLOAT, 36, 9);
-const ShaderDataType k_shaderMat4   = std::make_tuple(GL_FLOAT, 64, 16);
-const ShaderDataType k_shaderInt    = std::make_tuple(GL_INT, 4, 1);
-const ShaderDataType k_shaderInt2   = std::make_tuple(GL_INT, 8, 2);
-const ShaderDataType k_shaderInt3   = std::make_tuple(GL_INT, 12, 3);
-const ShaderDataType k_shaderInt4   = std::make_tuple(GL_INT, 16, 4);
-const ShaderDataType k_shaderBool   = std::make_tuple(GL_BOOL, 1, 1);
+const ShaderDataType k_shaderFloat = std::make_tuple(GL_FLOAT, 4, 1);
+const ShaderDataType k_shaderVec2  = std::make_tuple(GL_FLOAT, 8, 2);
+const ShaderDataType k_shaderVec3  = std::make_tuple(GL_FLOAT, 12, 3);
+const ShaderDataType k_shaderVec4  = std::make_tuple(GL_FLOAT, 16, 4);
+const ShaderDataType k_shaderMat3  = std::make_tuple(GL_FLOAT, 36, 9);
+const ShaderDataType k_shaderMat4  = std::make_tuple(GL_FLOAT, 64, 16);
+const ShaderDataType k_shaderInt   = std::make_tuple(GL_INT, 4, 1);
+const ShaderDataType k_shaderInt2  = std::make_tuple(GL_INT, 8, 2);
+const ShaderDataType k_shaderInt3  = std::make_tuple(GL_INT, 12, 3);
+const ShaderDataType k_shaderInt4  = std::make_tuple(GL_INT, 16, 4);
+const ShaderDataType k_shaderBool  = std::make_tuple(GL_BOOL, 1, 1);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Description of component in a buffer
 ////////////////////////////////////////////////////////////////////////////////
 struct BufferComponent
 {
-    ShaderDataType type;
-    std::string    name;
-    bool           normalized;
-    size_t         offset;
+    enum class Type
+    {
+        PER_VERTEX,
+        PER_INSTANCE
+    };
+
+    ShaderDataType        dataType;
+    std::string           name;
+    BufferComponent::Type type;
+    std::uint32_t         perInstance;
+    bool                  normalized;
+    size_t                offset; // calculated
 
     BufferComponent() = default;
 
-    BufferComponent(ShaderDataType     type,
-                    const std::string& name,
-                    bool               normalized = false)
-        : type(type), name(name), normalized(normalized), offset(0)
+    BufferComponent(ShaderDataType        dataType,
+                    const std::string&    name,
+                    bool                  normalized = false)
+        : dataType(dataType),
+          name(name),
+          type(BufferComponent::Type::PER_VERTEX),
+          perInstance(0),
+          normalized(normalized),
+          offset(0)
+    {
+    }
+
+    BufferComponent(ShaderDataType        dataType,
+                    const std::string&    name,
+                    BufferComponent::Type type,
+                    std::uint32_t         perInstance,
+                    bool                  normalized = false)
+        : dataType(dataType),
+          name(name),
+          type(type),
+          perInstance(perInstance),
+          normalized(normalized),
+          offset(0)
     {
     }
 };
@@ -104,8 +131,8 @@ class BufferFormat
         for (auto& component : m_components)
         {
             component.offset = offset;
-            offset += std::get<1>(component.type);
-            m_stride += std::get<1>(component.type);
+            offset += std::get<1>(component.dataType);
+            m_stride += std::get<1>(component.dataType);
         }
     }
 };
@@ -116,8 +143,17 @@ class BufferFormat
 class VertexBuffer
 {
    public:
-    VertexBuffer(std::uint32_t size);
-    VertexBuffer(const void* vertices, std::uint32_t size);
+    enum class Type
+    {
+        STATIC_DRAW,
+        DYNAMIC_DRAW,
+        STREAM_DRAW,
+    };
+
+    VertexBuffer(const void*        vertices,
+                 std::uint32_t      size,
+                 VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
+
     ~VertexBuffer();
 
     void bind() const;
@@ -129,14 +165,27 @@ class VertexBuffer
     {
         return m_format;
     }
+
     void setFormat(const BufferFormat& format)
     {
         m_format = format;
     }
 
+    std::uint32_t getSize()
+    {
+        return m_size;
+    }
+
+    std::uint32_t getId()
+    {
+        return m_id;
+    }
+
    private:
-    std::uint32_t m_id;
-    BufferFormat  m_format;
+    std::uint32_t      m_id;
+    std::uint32_t      m_size;  // in bytes
+    VertexBuffer::Type m_type;
+    BufferFormat       m_format;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -196,11 +245,18 @@ class VertexArray
         return m_indexBuffer;
     }
 
+    std::uint32_t getExpectedVertexCount()
+    {
+        return m_expectedVboVertexCount;
+    }
+
    private:
     std::uint32_t                  m_id;
     std::uint32_t                  m_vertexBufferIndex = 0;
     std::vector<ref<VertexBuffer>> m_vertexBuffers;
-    ref<IndexBuffer>               m_indexBuffer = nullptr;
+    ref<IndexBuffer>               m_indexBuffer            = nullptr;
+    std::uint32_t                  m_expectedVboVertexCount = 0;
+    std::uint32_t                  m_vertexSize             = 0;
 };
 
-};  // namespace nimbus
+}  // namespace nimbus

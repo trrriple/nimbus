@@ -138,16 +138,7 @@ void Mesh::draw(glm::mat4& model) const
     // draw mesh
     mp_vao->bind();
 
-    // if (m_hasEbo)
-    // {
-    //     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
-    // }
-    // else
-    // {
-    //     glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
-    // }
-
-    Renderer::submit(mp_shader, mp_vao, model, m_vertices.size());
+    Renderer::submit(mp_shader, mp_vao, model);
 
     // unbind
     glBindVertexArray(0);
@@ -156,25 +147,66 @@ void Mesh::draw(glm::mat4& model) const
 
 void Mesh::_setupMesh()
 {
-    mp_vbo = makeRef<VertexBuffer>(&m_vertices[0],
-                                   m_vertices.size() * sizeof(Vertex));
+    ref<VertexBuffer> p_vbo = makeRef<VertexBuffer>(
+        &m_vertices[0], m_vertices.size() * sizeof(Vertex));
 
     if (!m_normalize)
     {
-        mp_vbo->setFormat(k_vboFormat);
+        p_vbo->setFormat(k_vboFormat);
     }
     else
     {
-        mp_vbo->setFormat(k_vboFormatNormalize);
+        p_vbo->setFormat(k_vboFormatNormalize);
     }
 
     mp_vao = makeRef<VertexArray>();
-    mp_vao->addVertexBuffer(mp_vbo);
-
+    mp_vao->addVertexBuffer(p_vbo);
     if (m_indices.size() > 0)
+
     {
-        mp_ebo   = makeRef<IndexBuffer>(&m_indices[0], m_indices.size());
-        m_hasEbo = true;
+        // determine type to use for indicies
+        uint32_t maxIndex
+            = *std::max_element(m_indices.begin(), m_indices.end());
+
+        if (maxIndex < std::numeric_limits<uint8_t>::max())
+        {
+            std::vector<uint8_t> indices8;
+            indices8.reserve(m_indices.size());
+
+            for (uint32_t index : m_indices)
+            {
+                indices8.push_back(static_cast<uint8_t>(index));
+            }
+
+            mp_vao->setIndexBuffer(
+                makeRef<IndexBuffer>(&indices8[0], indices8.size()));
+        }
+        else if (maxIndex < std::numeric_limits<uint16_t>::max())
+        {
+            std::vector<uint16_t> indices16;
+            indices16.reserve(m_indices.size());
+
+            for (uint32_t index : m_indices)
+            {
+                indices16.push_back(static_cast<uint16_t>(index));
+            }
+
+            mp_vao->setIndexBuffer(
+                makeRef<IndexBuffer>(&indices16[0], indices16.size()));
+        }
+        else  // we pass in uint32_t so it can't be bigger then that
+        {
+            std::vector<uint8_t> indices32;
+            indices32.reserve(m_indices.size());
+
+            for (uint32_t index : m_indices)
+            {
+                indices32.push_back(static_cast<uint32_t>(index));
+            }
+
+            mp_vao->setIndexBuffer(
+                makeRef<IndexBuffer>(&indices32[0], indices32.size()));
+        }
     }
 }
 

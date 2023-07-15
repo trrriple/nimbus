@@ -21,9 +21,15 @@ class Renderer
     static void submit(const ref<Shader>&      p_shader,
                        const ref<VertexArray>& p_vertexArray,
                        const glm::mat4&        p_model = glm::mat4(1.0f),
-                       int32_t                 count = k_detectCountIfPossible);
+                       int32_t vertexCount = k_detectCountIfPossible);
+
+    static void submitInstanced(const ref<Shader>&      p_shader,
+                                const ref<VertexArray>& p_vertexArray,
+                                int32_t                 instanceCount,
+                                const glm::mat4& p_model = glm::mat4(1.0f),
+                                int32_t vertexCount = k_detectCountIfPossible);
 
    private:
-    inline static glm::mat4 m_vpMatrix;
+    inline static glm::mat4* mp_vpMatrix = nullptr;
 };
 }  // namespace nimbus

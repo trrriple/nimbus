@@ -10,10 +10,12 @@
 #include "platform/rendererApi.hpp"
 #include "renderer/mesh.hpp"
 #include "renderer/model.hpp"
+#include "renderer/particleEmitter.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/sprite.hpp"
 #include "renderer/texture.hpp"
+#include "resourceManager.hpp"
 
 ///////////////////////
 /// Dear Imgui stuff

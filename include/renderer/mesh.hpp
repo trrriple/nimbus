@@ -74,7 +74,6 @@ class Mesh
     ref<VertexBuffer>          mp_vbo    = nullptr;
     ref<VertexArray>           mp_vao    = nullptr;
     ref<IndexBuffer>           mp_ebo    = nullptr;
-    bool                       m_hasEbo  = false;
 
     void _setupMesh();
 };

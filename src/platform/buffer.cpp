@@ -8,18 +8,32 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Buffer
 ////////////////////////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(std::uint32_t size)
+VertexBuffer::VertexBuffer(const void*        vertices,
+                           std::uint32_t      size,
+                           VertexBuffer::Type type)
+    : m_size(size), m_type(type)
 {
     glCreateBuffers(1, &m_id);
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-}
 
-VertexBuffer::VertexBuffer(const void* data, std::uint32_t size)
-{
-    glCreateBuffers(1, &m_id);
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    switch (m_type)
+    {
+        case (VertexBuffer::Type::STATIC_DRAW):
+        {
+            glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+            break;
+        }
+        case (VertexBuffer::Type::DYNAMIC_DRAW):
+        {
+            glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_DYNAMIC_DRAW);
+            break;
+        }
+        case (VertexBuffer::Type::STREAM_DRAW):
+        {
+            glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STREAM_DRAW);
+            break;
+        }
+    }
 }
 
 VertexBuffer::~VertexBuffer()
@@ -48,6 +62,7 @@ void VertexBuffer::setData(const void* data, std::uint32_t size)
 // Index Buffer
 ////////////////////////////////////////////////////////////////////////////////
 IndexBuffer::IndexBuffer(std::uint32_t* indices, std::uint32_t count)
+    : m_count(count)
 {
     glCreateBuffers(1, &m_id);
 
@@ -56,11 +71,12 @@ IndexBuffer::IndexBuffer(std::uint32_t* indices, std::uint32_t count)
                  count * sizeof(std::uint32_t),
                  indices,
                  GL_STATIC_DRAW);
-    
+
     m_type = GL_UNSIGNED_INT;
 }
 
 IndexBuffer::IndexBuffer(std::uint16_t* indices, std::uint16_t count)
+    : m_count(count)
 {
     glCreateBuffers(1, &m_id);
 
@@ -71,19 +87,18 @@ IndexBuffer::IndexBuffer(std::uint16_t* indices, std::uint16_t count)
                  GL_STATIC_DRAW);
 
     m_type = GL_UNSIGNED_SHORT;
-
 }
 
 IndexBuffer::IndexBuffer(std::uint8_t* indices, std::uint8_t count)
+    : m_count(count)
 {
     glCreateBuffers(1, &m_id);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
     glBufferData(
         GL_ARRAY_BUFFER, count * sizeof(std::uint8_t), indices, GL_STATIC_DRAW);
-
+    
     m_type = GL_UNSIGNED_BYTE;
-
 }
 
 IndexBuffer::~IndexBuffer()
@@ -136,40 +151,64 @@ void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
     const auto& format = vertexBuffer->getFormat();
     for (const auto& component : format)
     {
-        glEnableVertexAttribArray(m_vertexBufferIndex);
 
-        if (std::get<0>(component.type) == GL_INT
-            || std::get<0>(component.type) == GL_BOOL)
+        if (std::get<0>(component.dataType) == GL_INT
+            || std::get<0>(component.dataType) == GL_BOOL)
         {
+            glEnableVertexAttribArray(m_vertexBufferIndex);
+
+            std::uint32_t typeOfComponent = std::get<0>(component.dataType);
+            std::uint32_t numOfComponent = std::get<2>(component.dataType);
+            
             glVertexAttribIPointer(m_vertexBufferIndex,
-                                   std::get<2>(component.type),
-                                   std::get<0>(component.type),
+                                   numOfComponent,
+                                   typeOfComponent,
                                    format.getStride(),
                                    (const void*)component.offset);
-        }
-        else if (std::get<0>(component.type) == GL_FLOAT)
-        {
-            std::uint32_t count   = std::get<2>(component.type);
-            std::uint32_t columns = 1;
 
-            if (count > 4)
+            if (component.type == BufferComponent::Type::PER_INSTANCE)
+            {
+                glVertexAttribDivisor(m_vertexBufferIndex,
+                                      component.perInstance);
+            }
+            m_vertexBufferIndex++;
+        }
+        else if (std::get<0>(component.dataType) == GL_FLOAT)
+        {
+            std::uint32_t typeOfComponent = std::get<0>(component.dataType);
+            std::uint32_t numOfComponent  = std::get<2>(component.dataType);
+            std::uint32_t columns         = 1;
+
+            std::uint32_t numOfComponentsPerColumn = numOfComponent;
+            if (numOfComponent > 4)
             {
                 // This is a matrix we must add a pointer for each
                 // column of the matrix
-                columns = static_cast<std::uint32_t>(std::sqrt(count));
-                count   = columns;  // matrix will always be square
+                columns = static_cast<std::uint32_t>(std::sqrt(numOfComponent));
+                numOfComponentsPerColumn
+                    = columns;  // matrix will always be square
             }
 
             for (std::uint32_t i = 0; i < columns; i++)
             {
                 std::uint64_t offset
-                    = component.offset + (sizeof(float) * count * i);
+                    = component.offset
+                      + (sizeof(float) * numOfComponentsPerColumn * i);
+
+                glEnableVertexAttribArray(m_vertexBufferIndex);
                 glVertexAttribPointer(m_vertexBufferIndex,
-                                      count,
-                                      std::get<0>(component.type),
+                                      numOfComponentsPerColumn,
+                                      typeOfComponent,
                                       component.normalized ? GL_TRUE : GL_FALSE,
                                       format.getStride(),
                                       (const void*)offset);
+
+                if (component.type == BufferComponent::Type::PER_INSTANCE)
+                {
+                    glVertexAttribDivisor(m_vertexBufferIndex,
+                                          component.perInstance);
+                }
+                m_vertexBufferIndex++;
             }
         }
         else
@@ -177,8 +216,22 @@ void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
             NM_CORE_ASSERT(0, "Unknown ShaderDataType!");
         }
 
-        m_vertexBufferIndex++;
     }
+
+    std::uint32_t thisVboVertexCount
+        = vertexBuffer->getSize() / format.getStride();
+
+    // accumulate the size of the vertex
+    m_vertexSize += format.getStride();
+
+    if (m_vertexBuffers.size() == 0)
+    {
+        // this is our first vertex buffer, so set the expected size in number
+        // of vertexes because this "should" to match between all vbos bound to
+        // this vba
+        m_expectedVboVertexCount = thisVboVertexCount;
+    }
+
 
     m_vertexBuffers.push_back(vertexBuffer);
 }
@@ -190,6 +243,5 @@ void VertexArray::setIndexBuffer(const ref<IndexBuffer>& indexBuffer)
 
     m_indexBuffer = indexBuffer;
 }
-
 
 };  // namespace nimbus

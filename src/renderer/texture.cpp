@@ -83,41 +83,37 @@ void Texture::_load()
 {
     glGenTextures(1, &m_id);
 
-    int32_t width;
-    int32_t height;
-    int32_t nrComponents;
-
     stbi_set_flip_vertically_on_load(m_flipOnLoad);
 
     uint8_t* data
-        = stbi_load(m_path.c_str(), &width, &height, &nrComponents, 0);
+        = stbi_load(m_path.c_str(), &m_width, &m_height, &m_numComponents, 0);
 
     if (data)
     {
         GLenum format = 0;
-        if (nrComponents == 1)
+        if (m_numComponents == 1)
         {
             format = GL_RED;
         }
-        else if (nrComponents == 3)
+        else if (m_numComponents == 3)
         {
             format = GL_RGB;
         }
-        else if (nrComponents == 4)
+        else if (m_numComponents == 4)
         {
             format = GL_RGBA;
         }
         else    
         {
-            NM_CORE_ASSERT(0, "Unknown image format 0x%x\n", format);
+            NM_CORE_ASSERT(0, "Unknown image format 0x%x\n", m_numComponents);
         }
 
         glBindTexture(GL_TEXTURE_2D, m_id);
         glTexImage2D(GL_TEXTURE_2D,
                      0,
                      format,
-                     width,
-                     height,
+                     m_width,
+                     m_height,
                      0,
                      format,
                      GL_UNSIGNED_BYTE,

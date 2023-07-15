@@ -11,10 +11,18 @@ class RendererApi
     static void clear();
 
     static void drawElements(const ref<VertexArray>& p_vertexArray,
-                             uint32_t                indexCount = 0);
+                             uint32_t                vertexCount = 0);
 
-    static void drawArrays(const ref<VertexArray>& p_vertexArrax,
-                           uint32_t                vertexCount);
+    static void drawArrays(const ref<VertexArray>& p_vertexArray,
+                           uint32_t                vertexCount = 0);
+
+    static void drawElementsInstanced(const ref<VertexArray>& p_vertexArray,
+                                      uint32_t                instanceCount,
+                                      uint32_t                vertexCount = 0);
+
+    static void drawArraysInstanced(const ref<VertexArray>& p_vertexArray,
+                                    uint32_t                instanceCount,
+                                    uint32_t                vertexCount = 0);
 
     static void setViewportSize(int x, int y, int w, int h);
 

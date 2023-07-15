@@ -15,7 +15,7 @@
 #define NM_PROFILE_LEVEL_NORM   1
 #define NM_PROFILE_LEVEL_NONE   0
 
-#define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_TRACE
+#define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_NONE
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,8 +69,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Tracy
 ////////////////////////////////////////////////////////////////////////////////
-#include "Tracy.hpp"
 #if NM_PROFILE_LEVEL >= NM_PROFILE_LEVEL_NORM
+#include "Tracy.hpp"
 #define NM_PROFILE_FUNC() ZoneScopedN(__func__)
 #define NM_PROFILE() NM_PROFILE_FUNC()
 #else

@@ -141,21 +141,21 @@ void Shader::setBool(const std::string& name, bool value) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform1i(glGetUniformLocation(m_id, name.c_str()), (uint32_t)value);
+    glUniform1i(_getUniformLocation(name), (uint32_t)value);
 }
 
 void Shader::setInt(const std::string& name, uint32_t value) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
+    glUniform1i(_getUniformLocation(name), value);
 }
 
 void Shader::setFloat(const std::string& name, float value) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
+    glUniform1f(_getUniformLocation(name), value);
 }
 
 void Shader::setVec2(const std::string& name, const glm::vec2& value) const
@@ -163,14 +163,14 @@ void Shader::setVec2(const std::string& name, const glm::vec2& value) const
     NM_PROFILE_TRACE();
 
     glUniform2fv(
-        glGetUniformLocation(m_id, name.c_str()), 1, glm::value_ptr(value));
+        _getUniformLocation(name), 1, glm::value_ptr(value));
 }
 
 void Shader::setVec2(const std::string& name, float x, float y) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform2f(glGetUniformLocation(m_id, name.c_str()), x, y);
+    glUniform2f(_getUniformLocation(name), x, y);
 }
 
 void Shader::setVec3(const std::string& name, const glm::vec3& value) const
@@ -178,14 +178,14 @@ void Shader::setVec3(const std::string& name, const glm::vec3& value) const
     NM_PROFILE_TRACE();
 
     glUniform3fv(
-        glGetUniformLocation(m_id, name.c_str()), 1, glm::value_ptr(value));
+        _getUniformLocation(name), 1, glm::value_ptr(value));
 }
 
 void Shader::setVec3(const std::string& name, float x, float y, float z) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform3f(glGetUniformLocation(m_id, name.c_str()), x, y, z);
+    glUniform3f(_getUniformLocation(name), x, y, z);
 }
 
 void Shader::setVec4(const std::string& name, const glm::vec4& value) const
@@ -193,7 +193,7 @@ void Shader::setVec4(const std::string& name, const glm::vec4& value) const
     NM_PROFILE_TRACE();
 
     glUniform4fv(
-        glGetUniformLocation(m_id, name.c_str()), 1, glm::value_ptr(value));
+        _getUniformLocation(name), 1, glm::value_ptr(value));
 }
 
 void Shader::setVec4(const std::string& name,
@@ -204,14 +204,14 @@ void Shader::setVec4(const std::string& name,
 {
     NM_PROFILE_TRACE();
 
-    glUniform4f(glGetUniformLocation(m_id, name.c_str()), x, y, z, w);
+    glUniform4f(_getUniformLocation(name), x, y, z, w);
 }
 
 void Shader::setMat2(const std::string& name, const glm::mat2& mat) const
 {
     NM_PROFILE_TRACE();
 
-    glUniformMatrix2fv(glGetUniformLocation(m_id, name.c_str()),
+    glUniformMatrix2fv(_getUniformLocation(name),
                        1,
                        GL_FALSE,
                        glm::value_ptr(mat));
@@ -221,7 +221,7 @@ void Shader::setMat3(const std::string& name, const glm::mat3& mat) const
 {
     NM_PROFILE_TRACE();
 
-    glUniformMatrix3fv(glGetUniformLocation(m_id, name.c_str()),
+    glUniformMatrix3fv(_getUniformLocation(name),
                        1,
                        GL_FALSE,
                        glm::value_ptr(mat));
@@ -254,8 +254,8 @@ std::int32_t Shader::_getUniformLocation(const std::string& name) const
 
         if (location == -1)
         {
-            NM_CORE_INFO(
-                "Warning: Uniform %s not found in shader program (vertex: "
+            NM_CORE_ERROR(
+                "Error: Uniform %s not found in shader program (vertex: "
                 "%s, fragment: %s\n",
                 name.c_str(),
                 m_vertexPath.c_str(),
