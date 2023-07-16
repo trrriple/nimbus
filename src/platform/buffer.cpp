@@ -43,12 +43,18 @@ VertexBuffer::~VertexBuffer()
 
 void VertexBuffer::bind() const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
+    if(m_id != m_currBoundId)
+    {
+        // only bind if this is a different buffer
+        glBindBuffer(GL_ARRAY_BUFFER, m_id);
+        m_currBoundId = m_id;
+    }
 }
 
 void VertexBuffer::unbind() const
 {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    m_currBoundId = 0;
 }
 
 void VertexBuffer::setData(const void* data, std::uint32_t size)

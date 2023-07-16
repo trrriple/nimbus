@@ -29,9 +29,9 @@ class Texture
     Type        m_type;
     std::string m_path;
     bool        m_flipOnLoad;
-    int32_t    m_numComponents;
-    int32_t    m_height;
-    int32_t    m_width;
+    int32_t     m_numComponents;
+    int32_t     m_height;
+    int32_t     m_width;
 
     Texture(const Type         type,
             const std::string& path,
@@ -57,7 +57,7 @@ class Texture
     inline static std::vector<std::string> s_texAmbiUniformNms;
     inline static std::vector<std::string> s_texNormUniformNms;
     inline static std::vector<std::string> s_texHghtUniformNms;
-
+    inline static std::uint32_t            s_currBoundId = 0;
 
     void _load();
 

@@ -9,43 +9,72 @@
 
 namespace nimbus
 {
-
 ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
                                  const ref<Texture>& p_texture,
+                                 const parameters&   parameters,
                                  const glm::vec3&    centerPosition,
-                                 uint32_t            count,
-                                 float               particleLifetime,
-                                 bool                persist,
                                  bool                is3d)
     : mp_shader(p_shader),
       mp_texture(p_texture),
+      m_parameters(parameters),
       m_centerPosition(centerPosition),
-      m_numLiveParticles(count),
-      m_particleLifetime(particleLifetime),
-      m_persist(persist),
+      m_randGen(std::random_device{}()),
       m_is3d(is3d)
 {
     NM_CORE_ASSERT(!is3d, "3D spaces particles are not supported!");
-
+    NM_CORE_ASSERT(parameters.particleCount,
+                   "Particle Emitter needs at least 1 particle!");
+    NM_CORE_ASSERT(parameters.colors.size(),
+                   "Particle Emitter needs at least 1 color!");
     if (!is3d)
     {
-        const std::vector<vertexData2d> vData = {
-            // pos      // tex
-            {glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},  // bottom left
-            {glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 0.0f)},  // bottom right
-            {glm::vec2(1.0f, 1.0f), glm::vec2(1.0f, 1.0f)},  // top right
-            {glm::vec2(0.0f, 1.0f), glm::vec2(0.0f, 1.0f)}   // top left
+        // clang-format off
+        const std::vector<vertexData2d> vData = 
+        {
+            // centered around (0, 0)
+            // pos               // tex
+            {glm::vec2(-0.5f, -0.5f), glm::vec2(0.0f, 0.0f)},  // bottom left
+            {glm::vec2( 0.5f, -0.5f), glm::vec2(1.0f, 0.0f)},  // bottom right
+            {glm::vec2( 0.5f,  0.5f), glm::vec2(1.0f, 1.0f)},  // top right
+            {glm::vec2(-0.5f,  0.5f), glm::vec2(0.0f, 1.0f)}   // top left
         };
 
         std::vector<uint8_t> perVertexIdx = {
-            0,
-            1,
-            2,  // first triangle
-            2,
-            3,
-            0  // second triangle
+            0, 1, 2,  // first triangle
+            2, 3, 0  // second triangle
         };
+        // clang-format on
 
+        ////////////////////////////////////////////////////////////////////////
+        // Random generator setup
+        ////////////////////////////////////////////////////////////////////////
+        // general purpose distribution
+        m_gpRandDist = std::uniform_real_distribution<float>(0.0f, 1.0f);
+
+
+        // lifetime distribution
+        m_lifetimeDist = std::uniform_real_distribution<float>(
+            m_parameters.lifetimeMin_s, m_parameters.lifetimeMax_s);
+
+        // speed ditribution
+        m_speedDist = std::uniform_real_distribution<float>(
+            m_parameters.speedMin, m_parameters.speedMax);
+
+        // size distribution
+        m_sizeDist = std::uniform_real_distribution<float>(
+            m_parameters.sizeMin, m_parameters.sizeMax);
+
+        // project angle distribution
+        m_angleDist = std::uniform_real_distribution<float>(
+            m_parameters.baseAngle_rad - m_parameters.spreadAngle_rad / 2,
+            m_parameters.baseAngle_rad + m_parameters.spreadAngle_rad / 2);
+        // color indexing dist
+        m_colorIndexDist = std::uniform_int_distribution<uint32_t>(
+            0, m_parameters.colors.size() - 1);
+
+        ////////////////////////////////////////////////////////////////////////
+        // GPU Buffers
+        ////////////////////////////////////////////////////////////////////////
         mp_vao = makeRef<VertexArray>();
 
         ref<VertexBuffer> vertexVbo = makeRef<VertexBuffer>(
@@ -58,41 +87,51 @@ ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
         mp_vao->setIndexBuffer(
             makeRef<IndexBuffer>(&perVertexIdx[0], perVertexIdx.size()));
 
-        // todo, noodle through how to make us not need to copy this out each
-        // time
-        std::vector<Particle::instanceData> particleInstanceData;
-        particleInstanceData.reserve(count);
-
-        std::random_device               rd;
-        std::mt19937                     gen(rd());
-        std::uniform_real_distribution<float> dis(0, 1.0);
-        std::uniform_real_distribution<float> disVelocity(0.0f, 2.0f * M_PI);
-
-
-        for (uint32_t i = 0; i < count; i++)
+        // we know how many particles we have, so reserve the memory
+        m_particleInstanceData.reserve(m_parameters.particleCount);
+        m_particleAttributes.reserve(m_parameters.particleCount);
+        for (uint32_t i = 0; i < m_parameters.particleCount; i++)
         {
-            float angle = disVelocity(gen);
-            float speed = dis(gen);
+            // set CPU data
+            float    angle      = m_angleDist(m_randGen);
+            float    speed      = m_speedDist(m_randGen);
+            float    lifetime   = m_lifetimeDist(m_randGen);
+            float    size       = m_sizeDist(m_randGen);
+            uint32_t colorIndex = m_colorIndexDist(m_randGen);
 
-            m_particles.emplace_back(
-                glm::vec3(0.0f, 0.0f, 0.0f),
+            m_particleAttributes.emplace_back(
                 glm::vec3(
                     std::sin(angle) * speed, std::cos(angle) * speed, 0.0f),
-                glm::vec4(dis(gen), dis(gen), dis(gen), 1.0f),
-                particleLifetime);
+                size,
+                lifetime,
+                lifetime);
 
-            particleInstanceData.emplace_back(m_particles[i].getInstanceData());
+            // set GPU data
+            m_particleInstanceData.emplace_back(
+                glm::vec3(0.0f, 0.0f, 0.0f),
+                _getRandomColorInRange(
+                    m_parameters.colors[colorIndex].colorMin,
+                    m_parameters.colors[colorIndex].colorMax),
+                size);
         }
 
+        m_numLiveParticles = m_parameters.particleCount;
+
         mp_instanceVbo = makeRef<VertexBuffer>(
-            &particleInstanceData[0],
-            particleInstanceData.size() * sizeof(Particle::instanceData),
+            &m_particleInstanceData[0],
+            m_particleInstanceData.size() * sizeof(particleInstanceData),
             VertexBuffer::Type::STREAM_DRAW);
 
-        mp_instanceVbo->setFormat(Particle::k_instanceVboFormat);
+        mp_instanceVbo->setFormat(k_instanceVboFormat);
 
         mp_vao->addVertexBuffer(mp_instanceVbo);
     }
+}
+
+void ParticleEmitter::update(float deltaTime, const glm::vec3& centerPosition)
+{
+    m_centerPosition = centerPosition;
+    update(deltaTime);
 }
 
 void ParticleEmitter::update(float deltaTime)
@@ -102,13 +141,60 @@ void ParticleEmitter::update(float deltaTime)
     const uint32_t curLiveParticles = m_numLiveParticles;
     for (uint32_t i = 0; i < curLiveParticles; ++i)
     {
-        m_particles[i].update(deltaTime);
+        particleInstanceData* p_instDat = &m_particleInstanceData[i];
+        particleAttributes*   p_attrib  = &m_particleAttributes[i];
+
+        p_attrib->decreaseLifetime(deltaTime);
 
         // dead particles are at the end of the vector
-        if (m_particles[i].isDead())
+        if (p_attrib->isDead())
         {
-            std::swap(m_particles[i], m_particles.back());
-            --m_numLiveParticles;
+            if (!m_parameters.persist)
+            {
+                // we want particles to die off
+                std::swap(*p_attrib, m_particleAttributes.back());
+                std::swap(*p_instDat, m_particleInstanceData.back());
+                --m_numLiveParticles;
+            }
+            else
+            {
+                // we want to respawn particles as they die
+                // randomly pick a lifetime between 0 and the maximum
+
+                p_attrib->reset(m_lifetimeDist(m_randGen),
+                                m_sizeDist(m_randGen));
+
+                // reset the instance data
+                uint32_t colorIndex = m_colorIndexDist(m_randGen);
+                p_instDat->reset(p_attrib->startSize,
+                                 _getRandomColorInRange(
+                                     m_parameters.colors[colorIndex].colorMin,
+                                     m_parameters.colors[colorIndex].colorMax));
+            }
+        }
+        else
+        {
+            glm::vec3 velocity
+                = m_parameters.damp
+                      ? p_attrib->velocity * p_attrib->getLifePercent()
+                      : p_attrib->velocity;
+
+            p_instDat->updatePosition(velocity, deltaTime);
+
+            if (m_parameters.fade)
+            {
+                p_instDat->updateAlpha(p_attrib->getLifePercent());
+            }
+
+            if (m_parameters.shrink)
+            {
+                // shrink at a slower rate initially then speed up as
+                // particle ages
+                float newSize = std::sqrt(p_attrib->getLifePercent())
+                                * p_attrib->startSize;
+
+                p_instDat->updateSize(newSize);
+            }
         }
     }
 }
@@ -123,32 +209,87 @@ void ParticleEmitter::draw()
         return;
     }
 
-    // todo, noodle through how to make us not need to copy this out each time
-    std::vector<Particle::instanceData> particleInstanceData;
-    particleInstanceData.reserve(m_numLiveParticles);
-
-    for (uint32_t i = 0; i < m_numLiveParticles; ++i)
-    {
-        particleInstanceData.emplace_back(m_particles[i].getInstanceData());
-    }
-
     const std::string& uniformNm = mp_texture->getUniformNm(0);
-    mp_shader->setInt(uniformNm, 0);
     mp_texture->bind(0);
+    mp_shader->use();
+    mp_shader->setInt(uniformNm, 0);
 
     mp_instanceVbo->bind();
-    mp_instanceVbo->setData(
-        &particleInstanceData[0],
-        particleInstanceData.size() * sizeof(Particle::instanceData));
+    mp_instanceVbo->setData(&m_particleInstanceData[0],
+                            m_numLiveParticles * sizeof(particleInstanceData));
 
     glm::mat4 model = glm::mat4(1.0f);
     model           = glm::translate(model, m_centerPosition);
-    model           = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
 
-    Renderer::submitInstanced(
-        mp_shader, mp_vao, particleInstanceData.size(), model);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+    Renderer::submitInstanced(mp_shader, mp_vao, m_numLiveParticles, model);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
     Texture::s_unbind();
+}
+
+void ParticleEmitter::chooseColor(size_t min, size_t max)
+{
+    NM_PROFILE_DETAIL();
+    
+    size_t minC = std::clamp(min, size_t(0), m_parameters.colors.size() - 1);
+    size_t maxC = std::clamp(max, size_t(0), m_parameters.colors.size() - 1);
+
+    if(minC != min || maxC != max)
+    {
+        NM_CORE_ERROR(
+            "Particle color range given %i - %i outside of valid range %i - "
+            "%i\n",
+            min,
+            max,
+            0,
+            m_parameters.colors.size() - 1);
+    }
+
+    m_colorIndexDist = std::uniform_int_distribution<uint32_t>(minC, maxC);
+
+
+    for (uint32_t i = 0; i < m_numLiveParticles; ++i)
+    {
+        uint32_t colorIndex = m_colorIndexDist(m_randGen);
+
+        m_particleInstanceData[i].updateColor(
+            _getRandomColorInRange(m_parameters.colors[colorIndex].colorMin,
+                                   m_parameters.colors[colorIndex].colorMax));
+    }
+}
+
+void ParticleEmitter::setAngle(float baseAngle_rad, float spreadAngle_rad)
+{
+    m_parameters.baseAngle_rad  = baseAngle_rad;
+    m_parameters.spreadAngle_rad = spreadAngle_rad;
+
+    m_angleDist = std::uniform_real_distribution<float>(
+        m_parameters.baseAngle_rad - m_parameters.spreadAngle_rad / 2,
+        m_parameters.baseAngle_rad + m_parameters.spreadAngle_rad / 2);
+
+    for (uint32_t i = 0; i < m_numLiveParticles; ++i)
+    {
+        float angle = m_angleDist(m_randGen);
+        float speed = m_speedDist(m_randGen);
+
+        m_particleAttributes[i].setVelocity(glm::vec3(
+                    std::sin(angle) * speed, std::cos(angle) * speed, 0.0f));
+    }
+}
+
+glm::vec4 ParticleEmitter::_getRandomColorInRange(const glm::vec4& min,
+                                                  const glm::vec4& max)
+{
+    float r = min.r + (m_gpRandDist(m_randGen) * (max.r - min.r));
+    float g = min.g + (m_gpRandDist(m_randGen) * (max.g - min.g));
+    float b = min.b + (m_gpRandDist(m_randGen) * (max.b - min.b));
+    float a = min.a + (m_gpRandDist(m_randGen) * (max.a - min.a));
+
+    return {r, g, b, a};
 }
 
 }  // namespace nimbus

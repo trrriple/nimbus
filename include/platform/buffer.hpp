@@ -186,6 +186,9 @@ class VertexBuffer
     std::uint32_t      m_size;  // in bytes
     VertexBuffer::Type m_type;
     BufferFormat       m_format;
+
+    inline static std::uint32_t m_currBoundId = 0;
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,6 +260,7 @@ class VertexArray
     ref<IndexBuffer>               m_indexBuffer            = nullptr;
     std::uint32_t                  m_expectedVboVertexCount = 0;
     std::uint32_t                  m_vertexSize             = 0;
+
 };
 
 }  // namespace nimbus

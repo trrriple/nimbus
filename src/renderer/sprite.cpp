@@ -69,7 +69,7 @@ void Sprite::draw(const glm::vec2& pos,
 {
     glm::mat4 model = glm::mat4(1.0f);
     // first translate (transformations are: scale happens first, then
-    // rotation, and then final translation happens; reversed order)
+    // rotation, and then final translation happens; eversed order)
     model = glm::translate(model, glm::vec3(pos, 0.0f));
     // move origin of rotation to center of quad
     model
@@ -83,6 +83,7 @@ void Sprite::draw(const glm::vec2& pos,
     // last scale
     model = glm::scale(model, glm::vec3(size, 1.0f));
 
+    mp_mesh->getShader()->use();
     mp_mesh->getShader()->setVec3("spriteColor", color);
     mp_mesh->draw(model);
 }

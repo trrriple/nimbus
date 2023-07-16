@@ -132,9 +132,6 @@ void Mesh::draw(glm::mat4& model) const
         m_textures[i]->bind(i);
     }
 
-    // TODO do I need this?
-    glActiveTexture(GL_TEXTURE0);
-
     // draw mesh
     mp_vao->bind();
 

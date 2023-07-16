@@ -32,8 +32,12 @@ void Texture::bind(const uint32_t glTextureUnit) const
                    "glTextureUnit > s_setMaxTextures. Did you call "
                    "Texture::s_setMaxTextures?\n");
 
-    glActiveTexture(GL_TEXTURE0 + glTextureUnit);
-    glBindTexture(GL_TEXTURE_2D, m_id);
+    if (m_id != s_currBoundId)
+    {
+        glActiveTexture(GL_TEXTURE0 + glTextureUnit);
+        glBindTexture(GL_TEXTURE_2D, m_id);
+        s_currBoundId = m_id;
+    }
 }
 
 const std::string& Texture::getUniformNm(uint32_t index) const
@@ -77,6 +81,7 @@ uint32_t Texture::s_getMaxTextures()
 void Texture::s_unbind()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
+    s_currBoundId = 0;
 }
 
 void Texture::_load()
