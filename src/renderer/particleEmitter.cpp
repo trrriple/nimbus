@@ -108,7 +108,7 @@ ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
 
             // set GPU data
             m_particleInstanceData.emplace_back(
-                glm::vec3(0.0f, 0.0f, 0.0f),
+                m_centerPosition,
                 _getRandomColorInRange(
                     m_parameters.colors[colorIndex].colorMin,
                     m_parameters.colors[colorIndex].colorMax),
@@ -163,13 +163,21 @@ void ParticleEmitter::update(float deltaTime)
 
                 p_attrib->reset(m_lifetimeDist(m_randGen),
                                 m_sizeDist(m_randGen));
+                                
+                float angle = m_angleDist(m_randGen);
+                float speed = m_speedDist(m_randGen);
+
+                m_particleAttributes[i].setVelocity(glm::vec3(
+                    std::sin(angle) * speed, std::cos(angle) * speed, 0.0f));
 
                 // reset the instance data
                 uint32_t colorIndex = m_colorIndexDist(m_randGen);
-                p_instDat->reset(p_attrib->startSize,
+                p_instDat->reset(m_centerPosition,
+                                 p_attrib->startSize,
                                  _getRandomColorInRange(
                                      m_parameters.colors[colorIndex].colorMin,
                                      m_parameters.colors[colorIndex].colorMax));
+
             }
         }
         else
@@ -218,12 +226,10 @@ void ParticleEmitter::draw()
     mp_instanceVbo->setData(&m_particleInstanceData[0],
                             m_numLiveParticles * sizeof(particleInstanceData));
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model           = glm::translate(model, m_centerPosition);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    Renderer::submitInstanced(mp_shader, mp_vao, m_numLiveParticles, model);
+    Renderer::submitInstanced(mp_shader, mp_vao, m_numLiveParticles);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -271,14 +277,14 @@ void ParticleEmitter::setAngle(float baseAngle_rad, float spreadAngle_rad)
         m_parameters.baseAngle_rad - m_parameters.spreadAngle_rad / 2,
         m_parameters.baseAngle_rad + m_parameters.spreadAngle_rad / 2);
 
-    for (uint32_t i = 0; i < m_numLiveParticles; ++i)
-    {
-        float angle = m_angleDist(m_randGen);
-        float speed = m_speedDist(m_randGen);
+    // for (uint32_t i = 0; i < m_numLiveParticles; ++i)
+    // {
+    //     float angle = m_angleDist(m_randGen);
+    //     float speed = m_speedDist(m_randGen);
 
-        m_particleAttributes[i].setVelocity(glm::vec3(
-                    std::sin(angle) * speed, std::cos(angle) * speed, 0.0f));
-    }
+    //     m_particleAttributes[i].setVelocity(glm::vec3(
+    //                 std::sin(angle) * speed, std::cos(angle) * speed, 0.0f));
+    // }
 }
 
 glm::vec4 ParticleEmitter::_getRandomColorInRange(const glm::vec4& min,

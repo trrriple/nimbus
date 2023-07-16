@@ -20,13 +20,22 @@ class Renderer
 
     static void submit(const ref<Shader>&      p_shader,
                        const ref<VertexArray>& p_vertexArray,
-                       const glm::mat4&        p_model = glm::mat4(1.0f),
+                       const glm::mat4&        p_model,
+                       int32_t vertexCount = k_detectCountIfPossible);
+
+    static void submit(const ref<Shader>&      p_shader,
+                       const ref<VertexArray>& p_vertexArray,
                        int32_t vertexCount = k_detectCountIfPossible);
 
     static void submitInstanced(const ref<Shader>&      p_shader,
                                 const ref<VertexArray>& p_vertexArray,
                                 int32_t                 instanceCount,
-                                const glm::mat4& p_model = glm::mat4(1.0f),
+                                const glm::mat4&        p_model,
+                                int32_t vertexCount = k_detectCountIfPossible);
+
+    static void submitInstanced(const ref<Shader>&      p_shader,
+                                const ref<VertexArray>& p_vertexArray,
+                                int32_t                 instanceCount,
                                 int32_t vertexCount = k_detectCountIfPossible);
 
    private:

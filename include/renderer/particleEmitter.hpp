@@ -128,9 +128,11 @@ class ParticleEmitter
         {
             size = newSize;
         }
-        void reset(float newSize, const glm::vec4& newColor)
+        void reset(const glm::vec3  newPosition,
+                   float            newSize,
+                   const glm::vec4& newColor)
         {
-            offsetPosition = glm::vec3(0.0f);
+            offsetPosition = newPosition;
             size           = newSize;
             color          = newColor;
         }
