@@ -40,7 +40,14 @@ void EngineGui::onEvent(Event& event)
 void EngineGui::onGuiUpdate()
 {
     // todo handle enable/disable for this
-    ImGui::Begin("Render Status", 0, ImGuiWindowFlags_AlwaysAutoResize);
+    char buf[128];
+    snprintf(buf,
+             128,
+             "%.02f ms/frame (%.02f FPS)###RenderStatus",
+             sp_appRef->getFrametime() * 1000.0f,
+             sp_appWinRef->m_fps);
+
+    ImGui::Begin(buf, 0, ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::Text("Draw Parameters");
 
@@ -53,10 +60,6 @@ void EngineGui::onGuiUpdate()
     bool newVsyncMode = sp_appWinRef->getVSync();
     ImGui::Checkbox("Vertical Sync", &newVsyncMode);
     sp_appWinRef->setVSync(newVsyncMode);
-
-    ImGui::Text("Render Time: %.02f ms/frame (%.02f FPS)",
-                sp_appRef->getFrametime() * 1000.0f,
-                sp_appWinRef->m_fps);
 
     if (ImGui::CollapsingHeader("Layers"))
     {

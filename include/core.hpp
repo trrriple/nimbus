@@ -15,13 +15,16 @@
 #define NM_PROFILE_LEVEL_NORM   1
 #define NM_PROFILE_LEVEL_NONE   0
 
-#define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_NONE
+#define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_DETAIL
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Core Log Interface
 ////////////////////////////////////////////////////////////////////////////////
 #define NM_CORE_INFO(msg, ...) SDL_Log("[CORE] " msg, __VA_ARGS__);
+
+#define NM_CORE_WARN(msg, ...) \
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[CORE] " msg, __VA_ARGS__);
 
 #define NM_CORE_ERROR(msg, ...) \
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CORE] " msg, __VA_ARGS__);

@@ -1,37 +1,63 @@
 #pragma once
+#include <random>
+#include <vector>
+
 #include "common.hpp"
 #include "glm.hpp"
 #include "platform/buffer.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/texture.hpp"
 
-#include <vector>
-#include <random>
-
 namespace nimbus
 {
 class ParticleEmitter
 {
    public:
-
     struct colorSpec
     {
         glm::vec4 colorMin;
         glm::vec4 colorMax;
     };
 
+    enum class SpawnVolumeType
+    {
+        POINT,
+        CIRCLE,
+        RECTANGLE,
+        LINE
+    };
+
+    struct circleVolumeParameters
+    {
+        float radius;
+    };
+
+    struct rectVolumeParameters
+    {
+        float width;
+        float height;
+    };
+
+    struct lineVolumeParameters
+    {
+        float length;
+    };
+
     struct parameters
     {
-        uint32_t               particleCount;
-        glm::vec3              bound;
+        glm::vec3              centerPosition;
+        SpawnVolumeType        spawnVolumeType;
+        circleVolumeParameters circleVolumeParams;
+        rectVolumeParameters   rectVolumeParams;
+        lineVolumeParameters   lineVolumeParams;
         float                  lifetimeMin_s;
         float                  lifetimeMax_s;
         float                  speedMin;
         float                  speedMax;
         float                  sizeMin;
         float                  sizeMax;
-        float                  baseAngle_rad;
-        float                  spreadAngle_rad;
+        float                  ejectionBaseAngle_rad;
+        float                  ejectionSpreadAngle_rad;
         std::vector<colorSpec> colors;
         bool                   persist;
         bool                   fade;
@@ -41,23 +67,33 @@ class ParticleEmitter
 
     ParticleEmitter(const ref<Shader>&  p_shader,
                     const ref<Texture>& p_texture,
+                    uint32_t            particleCount,
                     const parameters&   particleParameters,
-                    const glm::vec3&    centerPosition,
                     bool                is3d = false);
-
-
 
     ~ParticleEmitter() = default;
 
     void update(float deltaTime);
 
-    void update(float deltaTime, const glm::vec3& centerPosition);
-
     void draw();
 
-    void chooseColor(size_t min, size_t max);
+    bool isDone();
 
-    void setAngle(float baseAngle_rad, float spreadAngle_rad);
+    void trigger();
+
+    void reset(bool updateLiving = false);
+
+    void chooseColors(size_t min, size_t max, bool updateLiving = false);
+
+    void setPosition(const glm::vec3& centerPosition,
+                     bool             updateLiving = false);
+
+    void setAngle(float ejectionBaseAngle_rad,
+                  float ejectionSpreadAngle_rad,
+                  bool  updateLiving = false);
+
+    
+    void setPersist(bool persist);
 
    private:
     ////////////////////////////////////////////////////////////////////////////
@@ -65,80 +101,69 @@ class ParticleEmitter
     ////////////////////////////////////////////////////////////////////////////
     struct particleAttributes
     {
+        glm::vec3 positionOffset;
         glm::vec3 velocity;
+        glm::vec4 color;
         float     startSize;
         float     startLifetime;
         float     curLifetime;
+        bool      updateColor;
+        bool      updateVelocity;
 
-        void setVelocity(const glm::vec3& newVelocity)
+        void resetLifetime(float newLifetime)
         {
-            velocity = newVelocity;
+            startLifetime = newLifetime;
+            curLifetime   = startLifetime;
         }
+        
         bool isDead() const
         {
             return curLifetime <= 0;
         }
+   
         void decreaseLifetime(float deltaTime)
         {
             curLifetime -= deltaTime;
         }
-        void reset(float newLifetime, float newSize)
-        {
-            startLifetime = newLifetime;
-            curLifetime   = startLifetime;
-            startSize     = newSize;
-        }
+        
         float getLifePercent()
         {
             return curLifetime / startLifetime;
         }
+        
     };
     std::vector<particleAttributes> m_particleAttributes;
     ////////////////////////////////////////////////////////////////////////////
     // GPU data unique to each particle
     ////////////////////////////////////////////////////////////////////////////
     inline static const BufferFormat k_instanceVboFormat = {
-        {k_shaderVec3,
-         "offsetPosition",
-         BufferComponent::Type::PER_INSTANCE,
-         1},
+        {k_shaderVec3, "position", BufferComponent::Type::PER_INSTANCE, 1},
         {k_shaderVec4, "color", BufferComponent::Type::PER_INSTANCE, 1},
         {k_shaderFloat, "size", BufferComponent::Type::PER_INSTANCE, 1},
 
     };
     struct particleInstanceData
     {
-        glm::vec3 offsetPosition;
+        glm::vec3 position;
         glm::vec4 color;
         float     size;
 
-        void updatePosition(const glm::vec3& velocity, float deltaTime)
-        {
-            offsetPosition += velocity * deltaTime;
-        }
-        void updateAlpha(float alpha)
-        {
-            color.a = alpha;
-        }
-        void updateColor(const glm::vec4& newColor)
-        {
-            color = newColor;
-        }
-        void updateSize(float newSize)
-        {
-            size = newSize;
-        }
         void reset(const glm::vec3  newPosition,
                    float            newSize,
                    const glm::vec4& newColor)
         {
-            offsetPosition = newPosition;
-            size           = newSize;
-            color          = newColor;
+            position = newPosition;
+            size     = newSize;
+            color    = newColor;
+        }
+
+        void updatePosition(const glm::vec3& velocity, float deltaTime)
+        {
+            position += velocity * deltaTime;
         }
     };
     std::vector<particleInstanceData> m_particleInstanceData;
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // GPU data shared by all particles
     ////////////////////////////////////////////////////////////////////////////
@@ -169,11 +194,9 @@ class ParticleEmitter
     ref<VertexBuffer> mp_instanceVbo = nullptr;
 
     // parameters
+    uint32_t   m_numParticles;
+    uint32_t   m_numLiveParticles;
     parameters m_parameters;
-    
-    // cluster state
-    glm::vec3 m_centerPosition;
-    uint32_t  m_numLiveParticles;
 
     std::mt19937                            m_randGen;
     std::uniform_real_distribution<float>   m_gpRandDist;
@@ -184,8 +207,13 @@ class ParticleEmitter
     std::uniform_int_distribution<uint32_t> m_colorIndexDist;
 
     bool m_is3d;
+    bool m_beenTriggered = false;
 
-    glm::vec4 _getRandomColorInRange(const glm::vec4& min,
-                                     const glm::vec4& max);
+    void _respawnParticle(particleAttributes*   p_attrib,
+                          particleInstanceData* p_instDat);
+
+    glm::vec4 _getRandomColorInRange();
+
+    glm::vec3 _getRandomPositionInVolume();
 };
 }  // namespace nimbus

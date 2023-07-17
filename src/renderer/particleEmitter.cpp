@@ -11,22 +11,23 @@ namespace nimbus
 {
 ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
                                  const ref<Texture>& p_texture,
-                                 const parameters&   parameters,
-                                 const glm::vec3&    centerPosition,
+                                 uint32_t            particleCount,
+                                 const parameters&   particleParameters,
                                  bool                is3d)
     : mp_shader(p_shader),
       mp_texture(p_texture),
-      m_parameters(parameters),
-      m_centerPosition(centerPosition),
+      m_numParticles(particleCount),
+      m_numLiveParticles(particleCount),
+      m_parameters(particleParameters),
       m_randGen(std::random_device{}()),
       m_is3d(is3d)
 {
-    NM_CORE_ASSERT(!is3d, "3D spaces particles are not supported!");
-    NM_CORE_ASSERT(parameters.particleCount,
+    NM_CORE_ASSERT(!m_is3d, "3D spaces particles are not supported!");
+    NM_CORE_ASSERT(m_numParticles,
                    "Particle Emitter needs at least 1 particle!");
-    NM_CORE_ASSERT(parameters.colors.size(),
+    NM_CORE_ASSERT(m_parameters.colors.size(),
                    "Particle Emitter needs at least 1 color!");
-    if (!is3d)
+    if (!m_is3d)
     {
         // clang-format off
         const std::vector<vertexData2d> vData = 
@@ -66,8 +67,11 @@ ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
 
         // project angle distribution
         m_angleDist = std::uniform_real_distribution<float>(
-            m_parameters.baseAngle_rad - m_parameters.spreadAngle_rad / 2,
-            m_parameters.baseAngle_rad + m_parameters.spreadAngle_rad / 2);
+            m_parameters.ejectionBaseAngle_rad
+                - m_parameters.ejectionSpreadAngle_rad / 2,
+            m_parameters.ejectionBaseAngle_rad
+                + m_parameters.ejectionSpreadAngle_rad / 2);
+        
         // color indexing dist
         m_colorIndexDist = std::uniform_int_distribution<uint32_t>(
             0, m_parameters.colors.size() - 1);
@@ -88,34 +92,38 @@ ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
             makeRef<IndexBuffer>(&perVertexIdx[0], perVertexIdx.size()));
 
         // we know how many particles we have, so reserve the memory
-        m_particleInstanceData.reserve(m_parameters.particleCount);
-        m_particleAttributes.reserve(m_parameters.particleCount);
-        for (uint32_t i = 0; i < m_parameters.particleCount; i++)
+        m_particleInstanceData.reserve(m_numParticles);
+        m_particleAttributes.reserve(m_numParticles);
+        for (uint32_t i = 0; i < m_numParticles; i++)
         {
             // set CPU data
             float    angle      = m_angleDist(m_randGen);
             float    speed      = m_speedDist(m_randGen);
             float    lifetime   = m_lifetimeDist(m_randGen);
             float    size       = m_sizeDist(m_randGen);
-            uint32_t colorIndex = m_colorIndexDist(m_randGen);
+
+
+            glm::vec3 positionOffset = _getRandomPositionInVolume();
+
+            glm::vec3 velocity = glm::vec3(
+                std::sin(angle) * speed, std::cos(angle) * speed, 0.0f);
+
+            glm::vec4 color = _getRandomColorInRange();
 
             m_particleAttributes.emplace_back(
-                glm::vec3(
-                    std::sin(angle) * speed, std::cos(angle) * speed, 0.0f),
-                size,
-                lifetime,
-                lifetime);
+                                              positionOffset,
+                                              velocity,
+                                              color,
+                                              size,
+                                              lifetime,
+                                              lifetime,
+                                              false,
+                                              false);
 
             // set GPU data
             m_particleInstanceData.emplace_back(
-                m_centerPosition,
-                _getRandomColorInRange(
-                    m_parameters.colors[colorIndex].colorMin,
-                    m_parameters.colors[colorIndex].colorMax),
-                size);
+                m_parameters.centerPosition + positionOffset, color, size);
         }
-
-        m_numLiveParticles = m_parameters.particleCount;
 
         mp_instanceVbo = makeRef<VertexBuffer>(
             &m_particleInstanceData[0],
@@ -128,92 +136,83 @@ ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
     }
 }
 
-void ParticleEmitter::update(float deltaTime, const glm::vec3& centerPosition)
-{
-    m_centerPosition = centerPosition;
-    update(deltaTime);
-}
 
 void ParticleEmitter::update(float deltaTime)
 {
     NM_PROFILE_DETAIL();
-
-    const uint32_t curLiveParticles = m_numLiveParticles;
-    for (uint32_t i = 0; i < curLiveParticles; ++i)
+    
+    for (uint32_t i = 0; i < m_numLiveParticles; ++i)
     {
         particleInstanceData* p_instDat = &m_particleInstanceData[i];
         particleAttributes*   p_attrib  = &m_particleAttributes[i];
 
         p_attrib->decreaseLifetime(deltaTime);
 
-        // dead particles are at the end of the vector
         if (p_attrib->isDead())
         {
             if (!m_parameters.persist)
             {
-                // we want particles to die off
-                std::swap(*p_attrib, m_particleAttributes.back());
-                std::swap(*p_instDat, m_particleInstanceData.back());
-                --m_numLiveParticles;
+                ////////////////////////////////////////////////////////////////
+                //  Move dead particles to end
+                ////////////////////////////////////////////////////////////////
+                if (i != m_numLiveParticles - 1)  // prevent swap with itself
+                {
+                    std::swap(m_particleAttributes[i],
+                              m_particleAttributes[m_numLiveParticles - 1]);
+                    std::swap(m_particleInstanceData[i],
+                              m_particleInstanceData[m_numLiveParticles - 1]);
+                }
+
+                m_numLiveParticles -= 1;
             }
             else
             {
-                // we want to respawn particles as they die
-                // randomly pick a lifetime between 0 and the maximum
-
-                p_attrib->reset(m_lifetimeDist(m_randGen),
-                                m_sizeDist(m_randGen));
-                                
-                float angle = m_angleDist(m_randGen);
-                float speed = m_speedDist(m_randGen);
-
-                m_particleAttributes[i].setVelocity(glm::vec3(
-                    std::sin(angle) * speed, std::cos(angle) * speed, 0.0f));
-
-                // reset the instance data
-                uint32_t colorIndex = m_colorIndexDist(m_randGen);
-                p_instDat->reset(m_centerPosition,
-                                 p_attrib->startSize,
-                                 _getRandomColorInRange(
-                                     m_parameters.colors[colorIndex].colorMin,
-                                     m_parameters.colors[colorIndex].colorMax));
-
+                _respawnParticle(p_attrib, p_instDat);
             }
         }
         else
         {
-            glm::vec3 velocity
-                = m_parameters.damp
-                      ? p_attrib->velocity * p_attrib->getLifePercent()
-                      : p_attrib->velocity;
+            ////////////////////////////////////////////////////////////////////
+            //  Step living particles
+            ////////////////////////////////////////////////////////////////////
+            float currentLifeLeft = p_attrib->getLifePercent();
+            // calculate velocty based on damping or no
+            glm::vec3 velocity = m_parameters.damp
+                                     ? p_attrib->velocity * currentLifeLeft
+                                     : p_attrib->velocity;
 
+            // position update
             p_instDat->updatePosition(velocity, deltaTime);
 
+            // fade out particles as they age by adjusting alpha if desired
             if (m_parameters.fade)
             {
-                p_instDat->updateAlpha(p_attrib->getLifePercent());
+                // todo fix this to look at start alpha in attributes
+                p_instDat->color.a = currentLifeLeft;
             }
 
+            //  shrink particles as they age if desired
             if (m_parameters.shrink)
             {
                 // shrink at a slower rate initially then speed up as
                 // particle ages
-                float newSize = std::sqrt(p_attrib->getLifePercent())
-                                * p_attrib->startSize;
+                float newSize
+                    = std::sqrt(currentLifeLeft) * p_attrib->startSize;
 
-                p_instDat->updateSize(newSize);
+                p_instDat->size = newSize;
             }
         }
     }
+
 }
 
 void ParticleEmitter::draw()
 {
     NM_PROFILE();
 
-    if (m_numLiveParticles == 0)
+    if(m_numLiveParticles == 0)
     {
-        // nothing to draw
+        // if this guy is done emitting don't do anything 
         return;
     }
 
@@ -237,7 +236,40 @@ void ParticleEmitter::draw()
     Texture::s_unbind();
 }
 
-void ParticleEmitter::chooseColor(size_t min, size_t max)
+bool ParticleEmitter::isDone()
+{
+    return m_numLiveParticles == 0;
+}
+
+void ParticleEmitter::trigger()
+{
+    // if this is the first time we've been triggered, reset locations on 
+    // living particles. If not, don't.
+    reset(!m_beenTriggered);
+}
+
+
+void ParticleEmitter::reset(bool updateLiving)
+{
+    NM_PROFILE_DETAIL();
+
+    for (uint32_t i = 0; i < m_numParticles; ++i)
+    {
+        bool isDead = m_particleAttributes[i].isDead();
+        if (updateLiving || isDead)
+        {
+            if (isDead)
+            {
+                // only increment for particles we respawn that are dead
+                m_numLiveParticles++;
+            }
+            _respawnParticle(&m_particleAttributes[i],
+                             &m_particleInstanceData[i]);
+        }
+    }
+}
+
+void ParticleEmitter::chooseColors(size_t min, size_t max, bool updateLiving)
 {
     NM_PROFILE_DETAIL();
     
@@ -257,45 +289,159 @@ void ParticleEmitter::chooseColor(size_t min, size_t max)
 
     m_colorIndexDist = std::uniform_int_distribution<uint32_t>(minC, maxC);
 
-
-    for (uint32_t i = 0; i < m_numLiveParticles; ++i)
+    for (uint32_t i = 0; i < m_numParticles; ++i)
     {
-        uint32_t colorIndex = m_colorIndexDist(m_randGen);
+        if (updateLiving && !m_particleAttributes[i].isDead())
+        {
+            glm::vec4 newColor = _getRandomColorInRange();
 
-        m_particleInstanceData[i].updateColor(
-            _getRandomColorInRange(m_parameters.colors[colorIndex].colorMin,
-                                   m_parameters.colors[colorIndex].colorMax));
+            m_particleAttributes[i].color   = newColor;
+            m_particleInstanceData[i].color = newColor;
+        }
+        else
+        {
+            m_particleAttributes[i].updateColor = true;
+        }
     }
 }
 
-void ParticleEmitter::setAngle(float baseAngle_rad, float spreadAngle_rad)
+void ParticleEmitter::setPosition(const glm::vec3& centerPosition,
+                                  bool             updateLiving)
 {
-    m_parameters.baseAngle_rad  = baseAngle_rad;
-    m_parameters.spreadAngle_rad = spreadAngle_rad;
+    m_parameters.centerPosition = centerPosition;
 
-    m_angleDist = std::uniform_real_distribution<float>(
-        m_parameters.baseAngle_rad - m_parameters.spreadAngle_rad / 2,
-        m_parameters.baseAngle_rad + m_parameters.spreadAngle_rad / 2);
-
-    // for (uint32_t i = 0; i < m_numLiveParticles; ++i)
-    // {
-    //     float angle = m_angleDist(m_randGen);
-    //     float speed = m_speedDist(m_randGen);
-
-    //     m_particleAttributes[i].setVelocity(glm::vec3(
-    //                 std::sin(angle) * speed, std::cos(angle) * speed, 0.0f));
-    // }
+    if (updateLiving)
+    {
+        for (uint32_t i = 0; i < m_numParticles; ++i)
+        {
+            m_particleInstanceData[i].position
+                = m_parameters.centerPosition
+                  + m_particleAttributes[i].positionOffset;
+        }
+    }
 }
 
-glm::vec4 ParticleEmitter::_getRandomColorInRange(const glm::vec4& min,
-                                                  const glm::vec4& max)
+void ParticleEmitter::setAngle(float ejectionBaseAngle_rad,
+                               float ejectionSpreadAngle_rad,
+                               bool  updateLiving)
 {
+    m_parameters.ejectionBaseAngle_rad   = ejectionBaseAngle_rad;
+    m_parameters.ejectionSpreadAngle_rad = ejectionSpreadAngle_rad;
+
+    m_angleDist = std::uniform_real_distribution<float>(
+        m_parameters.ejectionBaseAngle_rad
+            - m_parameters.ejectionSpreadAngle_rad / 2,
+        m_parameters.ejectionBaseAngle_rad
+            + m_parameters.ejectionSpreadAngle_rad / 2);
+
+    for (uint32_t i = 0; i < m_numParticles; ++i)
+    {
+        if (updateLiving && !m_particleAttributes[i].isDead())
+        {
+            float angle = m_angleDist(m_randGen);
+            float speed = m_speedDist(m_randGen);
+
+            m_particleAttributes[i].velocity = glm::vec3(
+                std::sin(angle) * speed, std::cos(angle) * speed, 0.0f);
+        }
+        else
+        {
+            m_particleAttributes[i].updateVelocity = true;
+        }
+    }
+}
+
+void ParticleEmitter::setPersist(bool persist)
+{
+    // if we weren't already persisting reset all dead particles
+    if (!m_parameters.persist)
+    {
+        reset(false);
+    }
+    m_parameters.persist = persist;
+}
+
+void ParticleEmitter::_respawnParticle(particleAttributes*   p_attrib,
+                                       particleInstanceData* p_instDat)
+{
+    if (p_attrib->updateVelocity)
+    {
+        float angle = m_angleDist(m_randGen);
+        float speed = m_speedDist(m_randGen);
+
+        p_attrib->velocity
+            = glm::vec3(std::sin(angle) * speed, std::cos(angle) * speed, 0.0f);
+
+        p_attrib->updateVelocity = false;
+    }
+
+    if (p_attrib->updateColor)
+    {
+        glm::vec4 newColor = _getRandomColorInRange();
+
+        p_attrib->color = newColor;
+
+        p_attrib->updateColor = false;
+    }
+
+    // always use a random new lifetime to avoid stale behavior
+    p_attrib->resetLifetime(m_lifetimeDist(m_randGen));
+
+    // reset the instance data
+    p_instDat->reset(m_parameters.centerPosition + p_attrib->positionOffset,
+                     p_attrib->startSize,
+                     p_attrib->color);
+}
+
+glm::vec4 ParticleEmitter::_getRandomColorInRange()
+{   
+    uint32_t colorIndex = m_colorIndexDist(m_randGen);
+    glm::vec4& min = m_parameters.colors[colorIndex].colorMin;
+    glm::vec4& max = m_parameters.colors[colorIndex].colorMax;
+
     float r = min.r + (m_gpRandDist(m_randGen) * (max.r - min.r));
     float g = min.g + (m_gpRandDist(m_randGen) * (max.g - min.g));
     float b = min.b + (m_gpRandDist(m_randGen) * (max.b - min.b));
     float a = min.a + (m_gpRandDist(m_randGen) * (max.a - min.a));
 
     return {r, g, b, a};
+}
+
+glm::vec3 ParticleEmitter::_getRandomPositionInVolume()
+{
+    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+
+    switch (m_parameters.spawnVolumeType)
+    {
+        case SpawnVolumeType::POINT:
+        {
+            // For a point, there's no variation. Return zero offset.
+            return glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+        case SpawnVolumeType::CIRCLE:
+        {
+            float theta = 2 * 3.1415926f * dist(m_randGen);
+            float r     = m_parameters.circleVolumeParams.radius
+                      * sqrt(dist(m_randGen));
+            return glm::vec3(r * cos(theta), r * sin(theta), 0.0f);
+        }
+        case SpawnVolumeType::RECTANGLE:
+        {
+            float x = dist(m_randGen) * m_parameters.rectVolumeParams.width;
+            float y = dist(m_randGen) * m_parameters.rectVolumeParams.height;
+            return glm::vec3(x, y, 0.0f);
+        }
+        case SpawnVolumeType::LINE:
+        {
+            float x = dist(m_randGen) * m_parameters.lineVolumeParams.length;
+            return glm::vec3(x, 0.0f, 0.0f);
+        }
+        default:
+        {
+            // Handle default case here, if needed
+            return glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+    }
 }
 
 }  // namespace nimbus
