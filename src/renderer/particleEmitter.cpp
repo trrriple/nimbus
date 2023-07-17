@@ -6,27 +6,103 @@
 #include "core.hpp"
 #include "glm.hpp"
 #include "renderer/renderer.hpp"
+#include "resourceManager.hpp"
 
 namespace nimbus
 {
-ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
-                                 const ref<Texture>& p_texture,
-                                 uint32_t            particleCount,
+
+const std::string k_particleVertexShader = R"(
+    #version 460 core
+
+    layout (location = 0) in vec2 aBasePos;
+    layout (location = 1) in vec2 aTexCoords;
+
+    layout (location = 2) in vec3 aParticlePosition;
+    layout (location = 3) in vec4 aParticleColor;
+    layout (location = 4) in float aParticleSize;
+
+    out vec2 TexCoords;
+    out vec4 Color;
+
+    uniform mat4 u_model;
+    uniform mat4 u_viewProjection;
+
+    void main()
+    {
+        // Pass the texture coordinates and color to the fragment shader
+        TexCoords = aTexCoords;
+        Color = aParticleColor;
+        
+        // Convert aParticlePosition to vec4
+        vec4 aParticlePosition4 = vec4(aParticlePosition, 0.0);
+
+        // Create scale matrix
+        mat4 scale = mat4(
+            aParticleSize, 0.0, 0.0,  0.0,
+            0.0, aParticleSize, 0.0,  0.0,
+            0.0, 0.0,  aParticleSize, 0.0,
+            0.0, 0.0,  0.0,           1.0
+        );
+
+        // Convert base position to vec4
+        vec4 basePos4 = vec4(aBasePos, 0.0, 1.0);
+
+        // Apply transformations
+        vec4 finalPos = (scale * basePos4) + aParticlePosition4;
+        gl_Position = u_viewProjection * finalPos;
+    }
+)";
+
+const std::string k_particleFragmentShader = R"(
+    #version 460 core
+
+    in vec2 TexCoords;
+    in vec4 Color;
+
+    out vec4 FragColor;
+
+    uniform sampler2D texDiff_0;
+
+    void main()
+    {
+        // Sample the texture at the given coordinates and multiply it by the 
+        // color
+        FragColor = texture(texDiff_0, TexCoords) * Color;
+    }
+)";
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Functions
+////////////////////////////////////////////////////////////////////////////////
+ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
                                  const parameters&   particleParameters,
+                                 const ref<Texture>& p_texture,
+                                 const ref<Shader>&  p_customShader,
                                  bool                is3d)
-    : mp_shader(p_shader),
-      mp_texture(p_texture),
-      m_numParticles(particleCount),
+    : m_numParticles(particleCount),
       m_numLiveParticles(particleCount),
       m_parameters(particleParameters),
-      m_randGen(std::random_device{}()),
-      m_is3d(is3d)
+      m_is3d(is3d),
+      mp_texture(p_texture),
+      m_randGen(std::random_device{}())
 {
     NM_CORE_ASSERT(!m_is3d, "3D spaces particles are not supported!");
     NM_CORE_ASSERT(m_numParticles,
                    "Particle Emitter needs at least 1 particle!");
     NM_CORE_ASSERT(m_parameters.colors.size(),
                    "Particle Emitter needs at least 1 color!");
+
+    if (p_customShader != nullptr)
+    {
+        mp_shader = p_customShader;
+    }
+    else
+    {
+        mp_shader = ResourceManager::get().loadShader("particleDefault",
+                                                      k_particleVertexShader,
+                                                      k_particleFragmentShader);
+    }
+
     if (!m_is3d)
     {
         // clang-format off
@@ -60,6 +136,16 @@ ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
         // speed ditribution
         m_speedDist = std::uniform_real_distribution<float>(
             m_parameters.speedMin, m_parameters.speedMax);
+
+        // accel distribution
+        m_accelDistX = std::uniform_real_distribution<float>(
+            m_parameters.accelerationMin.x, m_parameters.accelerationMax.x);
+
+        m_accelDistY = std::uniform_real_distribution<float>(
+            m_parameters.accelerationMin.y, m_parameters.accelerationMax.y);
+
+        m_accelDistZ = std::uniform_real_distribution<float>(
+            m_parameters.accelerationMin.z, m_parameters.accelerationMax.z);
 
         // size distribution
         m_sizeDist = std::uniform_real_distribution<float>(
@@ -102,17 +188,20 @@ ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
             float    lifetime   = m_lifetimeDist(m_randGen);
             float    size       = m_sizeDist(m_randGen);
 
+            glm::vec3 accel(m_accelDistX(m_randGen),
+                            m_accelDistY(m_randGen),
+                            m_accelDistZ(m_randGen));
 
             glm::vec3 positionOffset = _getRandomPositionInVolume();
 
-            glm::vec3 velocity = glm::vec3(
+            glm::vec3 velocity(
                 std::sin(angle) * speed, std::cos(angle) * speed, 0.0f);
 
             glm::vec4 color = _getRandomColorInRange();
 
-            m_particleAttributes.emplace_back(
-                                              positionOffset,
+            m_particleAttributes.emplace_back(positionOffset,
                                               velocity,
+                                              accel,
                                               color,
                                               size,
                                               lifetime,
@@ -135,7 +224,6 @@ ParticleEmitter::ParticleEmitter(const ref<Shader>&  p_shader,
         mp_vao->addVertexBuffer(mp_instanceVbo);
     }
 }
-
 
 void ParticleEmitter::update(float deltaTime)
 {
@@ -176,10 +264,11 @@ void ParticleEmitter::update(float deltaTime)
             //  Step living particles
             ////////////////////////////////////////////////////////////////////
             float currentLifeLeft = p_attrib->getLifePercent();
-            // calculate velocty based on damping or no
-            glm::vec3 velocity = m_parameters.damp
-                                     ? p_attrib->velocity * currentLifeLeft
-                                     : p_attrib->velocity;
+            // calculate velocty based on acceleration and lifetime
+            glm::vec3 velocity
+                = p_attrib->velocity
+                  + (p_attrib->acceleration
+                     * (p_attrib->startLifetime - p_attrib->curLifetime));
 
             // position update
             p_instDat->updatePosition(velocity, deltaTime);
@@ -188,7 +277,7 @@ void ParticleEmitter::update(float deltaTime)
             if (m_parameters.fade)
             {
                 // todo fix this to look at start alpha in attributes
-                p_instDat->color.a = currentLifeLeft;
+                p_instDat->color.a = p_attrib->color.a * currentLifeLeft;
             }
 
             //  shrink particles as they age if desired
@@ -197,7 +286,7 @@ void ParticleEmitter::update(float deltaTime)
                 // shrink at a slower rate initially then speed up as
                 // particle ages
                 float newSize
-                    = std::sqrt(currentLifeLeft) * p_attrib->startSize;
+                    = std::sqrt(currentLifeLeft) * p_attrib->size;
 
                 p_instDat->size = newSize;
             }
@@ -225,13 +314,12 @@ void ParticleEmitter::draw()
     mp_instanceVbo->setData(&m_particleInstanceData[0],
                             m_numLiveParticles * sizeof(particleInstanceData));
 
-
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    RendererApi::BlendingMode currBlendMode = RendererApi::getBlendingMode();
+    RendererApi::setBlendingMode(m_parameters.blendingMode);
 
     Renderer::submitInstanced(mp_shader, mp_vao, m_numLiveParticles);
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+    RendererApi::setBlendingMode(currBlendMode);
 
     Texture::s_unbind();
 }
@@ -361,6 +449,9 @@ void ParticleEmitter::setPersist(bool persist)
     m_parameters.persist = persist;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Private Functions
+////////////////////////////////////////////////////////////////////////////////
 void ParticleEmitter::_respawnParticle(particleAttributes*   p_attrib,
                                        particleInstanceData* p_instDat)
 {
@@ -389,7 +480,7 @@ void ParticleEmitter::_respawnParticle(particleAttributes*   p_attrib,
 
     // reset the instance data
     p_instDat->reset(m_parameters.centerPosition + p_attrib->positionOffset,
-                     p_attrib->startSize,
+                     p_attrib->size,
                      p_attrib->color);
 }
 

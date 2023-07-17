@@ -37,14 +37,41 @@ ref<Texture>& ResourceManager::loadTexture(const Texture::Type type,
     }
 }
 
+ref<Shader>& ResourceManager::loadShader(const std::string& name,
+                                         const std::string& vertexSource,
+                                         const std::string& fragmentSource)
+{
+    NM_PROFILE_DETAIL();
+
+    // check to see if it was already loaded
+    auto p_shaderEntry = m_loadedShaders.find(name);
+    if (p_shaderEntry != m_loadedShaders.end())
+    {
+        return p_shaderEntry->second;
+    }
+    else
+    {
+        ref<Shader> p_shader
+            = makeRef<Shader>(name, vertexSource, fragmentSource);
+
+        auto shaderPair
+            = m_loadedShaders.emplace(p_shader->getName(), p_shader);
+
+        NM_CORE_INFO("ResourceManager::Shader %s Compiled\n",
+                     shaderPair.first->second->getName().c_str());
+
+        return shaderPair.first->second;
+    }
+}
+
 ref<Shader>& ResourceManager::loadShader(const std::string& vertexPath,
                                          const std::string& fragmentPath)
 {
     NM_PROFILE_DETAIL();
 
     // check to see if it was already loaded
-    std::string  path          = vertexPath + fragmentPath;
-    auto         p_shaderEntry = m_loadedShaders.find(path);
+    std::string name          = vertexPath + fragmentPath;
+    auto        p_shaderEntry = m_loadedShaders.find(name);
     if (p_shaderEntry != m_loadedShaders.end())
     {
         return p_shaderEntry->second;
@@ -52,7 +79,7 @@ ref<Shader>& ResourceManager::loadShader(const std::string& vertexPath,
     else
     {
         auto shaderPair = m_loadedShaders.emplace(
-            path, makeRef<Shader>(vertexPath, fragmentPath));
+            name, makeRef<Shader>(vertexPath, fragmentPath));
 
         NM_CORE_INFO(
             "ResourceManager::Shader Compiled from: \n\tVertex:   %s "

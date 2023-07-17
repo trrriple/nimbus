@@ -21,8 +21,13 @@ class ResourceManager
                                const std::string&  path,
                                const bool          flipOnLoad = false);
 
+    ref<Shader>& loadShader(const std::string& name,
+                            const std::string& vertexSource,
+                            const std::string& fragmentSource);
+
     ref<Shader>& loadShader(const std::string& vertexPath,
                             const std::string& fragmentPath);
+    
 
    private:
     std::unordered_map<std::string, ref<Texture>> m_loadedTextures;

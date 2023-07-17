@@ -7,6 +7,7 @@
 #include "platform/buffer.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/texture.hpp"
+#include "platform/rendererApi.hpp"
 
 namespace nimbus
 {
@@ -15,8 +16,8 @@ class ParticleEmitter
    public:
     struct colorSpec
     {
-        glm::vec4 colorMin;
-        glm::vec4 colorMax;
+        glm::vec4 colorMin = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);  // 0 to Full
+        glm::vec4 colorMax = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     };
 
     enum class SpawnVolumeType
@@ -29,46 +30,49 @@ class ParticleEmitter
 
     struct circleVolumeParameters
     {
-        float radius;
+        float radius = 1.0f;
     };
 
     struct rectVolumeParameters
     {
-        float width;
-        float height;
+        float width  = 1.0f;
+        float height = 1.0f;
     };
 
     struct lineVolumeParameters
     {
-        float length;
+        float length = 1.0f;
     };
 
     struct parameters
     {
-        glm::vec3              centerPosition;
-        SpawnVolumeType        spawnVolumeType;
-        circleVolumeParameters circleVolumeParams;
-        rectVolumeParameters   rectVolumeParams;
-        lineVolumeParameters   lineVolumeParams;
-        float                  lifetimeMin_s;
-        float                  lifetimeMax_s;
-        float                  speedMin;
-        float                  speedMax;
-        float                  sizeMin;
-        float                  sizeMax;
-        float                  ejectionBaseAngle_rad;
-        float                  ejectionSpreadAngle_rad;
-        std::vector<colorSpec> colors;
-        bool                   persist;
-        bool                   fade;
-        bool                   damp;
-        bool                   shrink;
+        glm::vec3                 centerPosition  = glm::vec3(0.0f);
+        SpawnVolumeType           spawnVolumeType = SpawnVolumeType::POINT;
+        circleVolumeParameters    circleVolumeParams;
+        rectVolumeParameters      rectVolumeParams;
+        lineVolumeParameters      lineVolumeParams;
+        float                     lifetimeMin_s           = 1.0f;
+        float                     lifetimeMax_s           = 1.0f;
+        float                     speedMin                = 10.0f;
+        float                     speedMax                = 10.0f;
+        glm::vec3                 accelerationMin         = glm::vec3(0.0f);
+        glm::vec3                 accelerationMax         = glm::vec3(0.0f);
+        float                     sizeMin                 = 5.0f;
+        float                     sizeMax                 = 5.0f;
+        float                     ejectionBaseAngle_rad   = 0.0f;
+        float                     ejectionSpreadAngle_rad = 6.2831f;
+        std::vector<colorSpec>    colors;
+        bool                      persist = false;
+        bool                      fade    = false;
+        bool                      shrink  = false;
+        RendererApi::BlendingMode blendingMode
+            = RendererApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
     };
 
-    ParticleEmitter(const ref<Shader>&  p_shader,
-                    const ref<Texture>& p_texture,
-                    uint32_t            particleCount,
+    ParticleEmitter(uint32_t            particleCount,
                     const parameters&   particleParameters,
+                    const ref<Texture>& p_texture,
+                    const ref<Shader>&  p_customShader = nullptr,
                     bool                is3d = false);
 
     ~ParticleEmitter() = default;
@@ -103,8 +107,9 @@ class ParticleEmitter
     {
         glm::vec3 positionOffset;
         glm::vec3 velocity;
+        glm::vec3 acceleration;
         glm::vec4 color;
-        float     startSize;
+        float     size;
         float     startLifetime;
         float     curLifetime;
         bool      updateColor;
@@ -132,7 +137,6 @@ class ParticleEmitter
         }
         
     };
-    std::vector<particleAttributes> m_particleAttributes;
     ////////////////////////////////////////////////////////////////////////////
     // GPU data unique to each particle
     ////////////////////////////////////////////////////////////////////////////
@@ -162,7 +166,6 @@ class ParticleEmitter
             position += velocity * deltaTime;
         }
     };
-    std::vector<particleInstanceData> m_particleInstanceData;
 
     ////////////////////////////////////////////////////////////////////////////
     // GPU data shared by all particles
@@ -188,27 +191,40 @@ class ParticleEmitter
         glm::vec2 texCoords;
     };
 
-    ref<Shader>       mp_shader      = nullptr;
-    ref<VertexArray>  mp_vao         = nullptr;
-    ref<Texture>      mp_texture     = nullptr;
-    ref<VertexBuffer> mp_instanceVbo = nullptr;
-
-    // parameters
+    ////////////////////////////////////////////////////////////////////////////
+    // Cluster parameters
+    ////////////////////////////////////////////////////////////////////////////
     uint32_t   m_numParticles;
     uint32_t   m_numLiveParticles;
     parameters m_parameters;
+    bool       m_is3d;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Cluster State
+    ////////////////////////////////////////////////////////////////////////////
+    bool                              m_beenTriggered = false;
+    ref<Shader>                       mp_shader       = nullptr;
+    ref<VertexArray>                  mp_vao          = nullptr;
+    ref<Texture>                      mp_texture      = nullptr;
+    ref<VertexBuffer>                 mp_instanceVbo  = nullptr;
+    std::vector<particleAttributes>   m_particleAttributes;    // CPU data
+    std::vector<particleInstanceData> m_particleInstanceData;  // GPU data
 
     std::mt19937                            m_randGen;
     std::uniform_real_distribution<float>   m_gpRandDist;
     std::uniform_real_distribution<float>   m_lifetimeDist;
     std::uniform_real_distribution<float>   m_speedDist;
+    std::uniform_real_distribution<float>   m_accelDistX;
+    std::uniform_real_distribution<float>   m_accelDistY;
+    std::uniform_real_distribution<float>   m_accelDistZ;
     std::uniform_real_distribution<float>   m_sizeDist;
     std::uniform_real_distribution<float>   m_angleDist;
     std::uniform_int_distribution<uint32_t> m_colorIndexDist;
 
-    bool m_is3d;
-    bool m_beenTriggered = false;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Private helper functions
+    ////////////////////////////////////////////////////////////////////////////
     void _respawnParticle(particleAttributes*   p_attrib,
                           particleInstanceData* p_instDat);
 

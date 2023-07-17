@@ -14,7 +14,12 @@ class Shader
    public:
     Shader() = default;
 
+    Shader(const std::string& name,
+           const std::string& vertexSource,
+           const std::string& fragmentSource);
+
     Shader(const std::string& vertexPath, const std::string& fragmentPath);
+
 
     ~Shader();
 
@@ -25,9 +30,14 @@ class Shader
     // user/activate the shader
     void use() const;
 
-    std::uint32_t getId()
+    std::uint32_t getId() const
     {
         return m_id;
+    }
+
+    const std::string& getName() const
+    {
+        return m_name;
     }
 
     // utility uniform functions
@@ -63,6 +73,7 @@ class Shader
     std::uint32_t m_id;
     std::string   m_vertexPath;
     std::string   m_fragmentPath;
+    std::string   m_name;
 
     inline static std::uint32_t s_lastId = 0;
 
@@ -73,7 +84,11 @@ class Shader
     // here anyways
     mutable std::unordered_map<std::string, std::int32_t> m_uniformLocCache;
 
+    void _compileShader(const std::string& vertexPath,
+                        const std::string& fragmentPath);
+
     std::int32_t _getUniformLocation(const std::string& name) const;
+
 };
 
 }  // namespace nimbus

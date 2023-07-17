@@ -18,6 +18,8 @@ void Renderer::destroy()
 {
 }
 
+
+
 void Renderer::setScene(Camera& camera)
 {
     mp_vpMatrix = &camera.getViewProjection();

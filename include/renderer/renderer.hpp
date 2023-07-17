@@ -9,7 +9,8 @@
 namespace nimbus
 {
 class Renderer
-{
+{  
+    
     inline static const int32_t k_detectCountIfPossible = -1;
 
    public:

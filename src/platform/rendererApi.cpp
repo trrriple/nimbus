@@ -1,7 +1,7 @@
-#include "nmpch.hpp"
-#include "core.hpp"
-
 #include "platform/rendererApi.hpp"
+
+#include "core.hpp"
+#include "nmpch.hpp"
 #include "renderer/texture.hpp"
 
 namespace nimbus
@@ -10,12 +10,12 @@ namespace nimbus
 void RendererApi::init()
 {
     NM_PROFILE_DETAIL();
-    
+
     NM_CORE_INFO("Vendor:   %s\n", glGetString(GL_VENDOR));
     NM_CORE_INFO("Renderer: %s\n", glGetString(GL_RENDERER));
     NM_CORE_INFO("Version:  %s\n", glGetString(GL_VERSION));
 
-    if (m_depthTest)
+    if (s_depthTest)
     {
         glEnable(GL_DEPTH_TEST);
     }
@@ -47,15 +47,14 @@ void RendererApi::init()
 
     NM_CORE_INFO("Max number of Texture Units: supported: %i\n",
                  Texture::s_getMaxTextures());
-
 }
 
 void RendererApi::drawElements(const ref<VertexArray>& p_vertexArray,
                                uint32_t                vertexCount)
 {
     NM_PROFILE_DETAIL();
-    uint32_t count
-        = vertexCount ? vertexCount : p_vertexArray->getIndexBuffer()->getCount();
+    uint32_t count = vertexCount ? vertexCount
+                                 : p_vertexArray->getIndexBuffer()->getCount();
 
     p_vertexArray->bind();
     glDrawElements(GL_TRIANGLES,
@@ -121,7 +120,7 @@ void RendererApi::setWireframe(bool on)
 {
     NM_PROFILE_TRACE();
 
-    if (on != m_wireframeOn)
+    if (on != s_wireframeOn)
     {
         if (!on)
         {
@@ -133,7 +132,7 @@ void RendererApi::setWireframe(bool on)
             NM_CORE_INFO("Wireframe on\n");
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
-        m_wireframeOn = on;
+        s_wireframeOn = on;
     }
 }
 
@@ -141,7 +140,7 @@ bool RendererApi::getWireframe()
 {
     NM_PROFILE_TRACE();
 
-    return m_wireframeOn;
+    return s_wireframeOn;
 }
 
 void RendererApi::setDepthTest(bool on)
@@ -158,14 +157,60 @@ void RendererApi::setDepthTest(bool on)
         NM_CORE_INFO("Depth test on\n");
         glEnable(GL_DEPTH_TEST);
     }
-    m_depthTest = on;
+    s_depthTest = on;
 }
 
 bool RendererApi::getDepthTest()
 {
     NM_PROFILE_TRACE();
 
-    return m_depthTest;
+    return s_depthTest;
+}
+
+void RendererApi::setBlendingMode(RendererApi::BlendingMode mode)
+{
+    if (mode == s_currBlendingMode)
+    {
+        // no reason to switch to same value
+        return;
+    }
+
+    switch (mode)
+    {
+        case BlendingMode::ADDITIVE:
+            glBlendFunc(GL_ONE, GL_ONE);
+            break;
+        case BlendingMode::SUBTRACT:
+            glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+            break;
+        case BlendingMode::MULTIPLY:
+            glBlendFunc(GL_DST_COLOR, GL_ZERO);
+            break;
+        case BlendingMode::SCREEN:
+            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+            break;
+        case BlendingMode::REPLACE:
+            glBlendFunc(GL_ONE, GL_ZERO);
+            break;
+        case BlendingMode::ALPHA_BLEND:
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+        case BlendingMode::ALPHA_PREMULTIPLIED:
+            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+        case BlendingMode::SOURCE_ALPHA_ADDITIVE:
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            break;
+        default:
+            NM_CORE_ASSERT_STATIC(0, "Invalid blending mode %i", mode);
+    }
+
+    s_currBlendingMode = mode;
+}
+
+RendererApi::BlendingMode RendererApi::getBlendingMode()
+{
+    return s_currBlendingMode;
 }
 
 void APIENTRY _glDebugOutput(GLenum       source,
