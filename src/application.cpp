@@ -11,8 +11,8 @@ namespace nimbus
 {
 
 Application::Application(const std::string& name,
-                         int                windowWidth,
-                         int                windowHeight,
+                         uint32_t           windowWidth,
+                         uint32_t           windowHeight,
                          bool               is3d)
     : m_name(name), m_is3d(is3d)
 {
@@ -51,9 +51,9 @@ Application::Application(const std::string& name,
                                       0.0f);
     }
 
-    mp_guiSubsystemLayer = makeScope<GuiSubsystem>();
-    insertLayer(mp_guiSubsystemLayer.get());
-    insertLayer(new EngineGui());
+    mp_guiSubsystemLayer = makeRef<GuiSubsystem>();
+    insertLayer(mp_guiSubsystemLayer);
+    insertLayer(makeRef<EngineGui>());
 }
 
 void Application::shouldQuit(Event& event)
@@ -131,14 +131,19 @@ void Application::onEvent(Event& event)
     }
 }
 
-void Application::insertLayer(Layer* layer, int32_t location)
+void Application::insertLayer(const ref<Layer>& p_layer, int32_t location)
 {
-    m_layerDeck.insertLayer(layer, location);
+    m_layerDeck.insertLayer(p_layer, location);
 }
 
-void Application::removeLayer(Layer* layer)
+void Application::removeLayer(const ref<Layer>& p_layer)
 {
-    m_layerDeck.removeLayer(layer);
+    m_layerDeck.removeLayer(p_layer);
+}
+
+void Application::guiSubsystemCaptureEvents(bool capture)
+{
+    mp_guiSubsystemLayer->captureEvents(capture);
 }
 
 float Application::getFrametime() const

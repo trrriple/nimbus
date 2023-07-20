@@ -13,10 +13,10 @@ namespace nimbus
 class Application
 {
    public:
-    Application(const std::string& name        = "Program",
-                int               windowWidth  = 1280,
-                int               windowHeight = 720,
-                bool              is3d         = true);
+    Application(const std::string& name         = "Program",
+                uint32_t           windowWidth  = 1280,
+                uint32_t           windowHeight = 720,
+                bool               is3d         = true);
 
     virtual ~Application() = default;
 
@@ -35,9 +35,12 @@ class Application
 
     void onEvent(Event& event);
 
-    void insertLayer(Layer* layer, int32_t location = k_insertLocationHead);
+    void insertLayer(const ref<Layer>& p_layer,
+                     int32_t           location = k_insertLocationHead);
 
-    void removeLayer(Layer* layer);
+    void removeLayer(const ref<Layer>& p_layer);
+
+    void guiSubsystemCaptureEvents(bool capture);
 
     float getFrametime() const;
 
@@ -60,7 +63,7 @@ class Application
     bool                m_is3d;
     scope<Window>       mp_window            = nullptr;
     scope<Camera>       mp_camera            = nullptr;
-    scope<GuiSubsystem> mp_guiSubsystemLayer = nullptr;
+    ref<GuiSubsystem>   mp_guiSubsystemLayer = nullptr;
     bool                m_menuMode           = false;
     volatile bool       m_Active             = true;
 

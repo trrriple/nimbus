@@ -11,15 +11,14 @@ LayerDeck::~LayerDeck()
     for (auto& layer : m_deck)
     {
         layer->onRemove();
-        delete layer;
     }
 }
 
-void LayerDeck::insertLayer(Layer* layer, int32_t location)
+void LayerDeck::insertLayer(const ref<Layer>& p_layer, int32_t location)
 {
     NM_PROFILE();
 
-    if (layer->m_type == Layer::Type::REGULAR)
+    if (p_layer->m_type == Layer::Type::REGULAR)
     {
         if (location == k_insertLocationHead
             || location > m_lastRegularLayerIdx)
@@ -29,28 +28,28 @@ void LayerDeck::insertLayer(Layer* layer, int32_t location)
             location = m_lastRegularLayerIdx;
         }
 
-        m_deck.insert(m_deck.begin() + location, layer);
+        m_deck.insert(m_deck.begin() + location, p_layer);
         m_lastRegularLayerIdx++;
     }
-    else if (layer->m_type == Layer::Type::OVERLAY)
+    else if (p_layer->m_type == Layer::Type::OVERLAY)
     {
         // location is ignored for overlays and they are always pushed to
         // the absolute end of the deck
-        m_deck.push_back(layer);
+        m_deck.push_back(p_layer);
     }
 
-    layer->onInsert();
+    p_layer->onInsert();
 }
 
-void LayerDeck::removeLayer(Layer* layer)
+void LayerDeck::removeLayer(const ref<Layer>& p_layer)
 {
     NM_PROFILE();
 
-    auto it = std::find(m_deck.begin(), m_deck.end(), layer);
+    auto it = std::find(m_deck.begin(), m_deck.end(), p_layer);
     if (it != m_deck.end())
     {
         m_deck.erase(it);
-        layer->onRemove();
+        p_layer->onRemove();
     }
 }
 
@@ -61,9 +60,9 @@ std::vector<std::string*> LayerDeck::getLayerNames()
 
     std::vector<std::string*> layerNames;
 
-    for (auto& layer : m_deck)
+    for (auto& p_layer : m_deck)
     {
-        layerNames.push_back(&layer->m_name);
+        layerNames.push_back(&p_layer->m_name);
     }
 
     return layerNames;

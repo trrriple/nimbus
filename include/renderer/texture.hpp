@@ -33,6 +33,7 @@ class Texture
     int32_t     m_height;
     int32_t     m_width;
 
+
     Texture(const Type         type,
             const std::string& path,
             const bool         flipOnLoad = false);

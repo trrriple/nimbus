@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common.hpp"
 #include "layer.hpp"
 
 #include <deque>
@@ -10,73 +11,74 @@ namespace nimbus
 
     static const int32_t k_insertLocationHead = -1;
 
-class LayerDeck
-{
-   public:
-    LayerDeck() = default;
-
-    ~LayerDeck();
-
-    void insertLayer(Layer* layer, int32_t location = k_insertLocationHead);
-
-    void removeLayer(Layer* layer);
-
-    std::vector<std::string*> getLayerNames();
-
-    ////////////////////////////////////////////////////////////////////
-    // Foward Interator Helpers
-    ////////////////////////////////////////////////////////////////////
-    std::deque<Layer*>::iterator begin()
+    class LayerDeck
     {
-        return m_deck.begin();
-    }
+       public:
+        LayerDeck() = default;
 
-    std::deque<Layer*>::iterator end()
-    {
-        return m_deck.end();
-    }
+        ~LayerDeck();
 
-    ////////////////////////////////////////////////////////////////////
-    // Reverse Interator Helpers
-    ////////////////////////////////////////////////////////////////////
-    std::deque<Layer*>::reverse_iterator rbegin()
-    {
-        return m_deck.rbegin();
-    }
+        void insertLayer(const ref<Layer>& p_layer,
+                         int32_t     location = k_insertLocationHead);
 
-    std::deque<Layer*>::reverse_iterator rend()
-    {
-        return m_deck.rend();
-    }
+        void removeLayer(const ref<Layer>& p_layer);
 
-    ////////////////////////////////////////////////////////////////////
-    // Constant Interator Helpers
-    ////////////////////////////////////////////////////////////////////
-    std::deque<Layer*>::const_iterator begin() const
-    {
-        return m_deck.begin();
-    }
+        std::vector<std::string*> getLayerNames();
 
-    std::deque<Layer*>::const_iterator end() const
-    {
-        return m_deck.end();
-    }
+        ////////////////////////////////////////////////////////////////////
+        // Foward Interator Helpers
+        ////////////////////////////////////////////////////////////////////
+        std::deque<ref<Layer>>::iterator begin()
+        {
+            return m_deck.begin();
+        }
 
-    ////////////////////////////////////////////////////////////////////
-    // Constant Reverse Interator Helpers
-    ////////////////////////////////////////////////////////////////////
-    std::deque<Layer*>::const_reverse_iterator rbegin() const
-    {
-        return m_deck.rbegin();
-    }
+        std::deque<ref<Layer>>::iterator end()
+        {
+            return m_deck.end();
+        }
 
-    std::deque<Layer*>::const_reverse_iterator rend() const
-    {
-        return m_deck.rend();
-    }
+        ////////////////////////////////////////////////////////////////////
+        // Reverse Interator Helpers
+        ////////////////////////////////////////////////////////////////////
+        std::deque<ref<Layer>>::reverse_iterator rbegin()
+        {
+            return m_deck.rbegin();
+        }
 
-   private:
-    std::deque<Layer*> m_deck;
-    int32_t            m_lastRegularLayerIdx = 0;
-};
-}  // namespace nimbus
+        std::deque<ref<Layer>>::reverse_iterator rend()
+        {
+            return m_deck.rend();
+        }
+
+        ////////////////////////////////////////////////////////////////////
+        // Constant Interator Helpers
+        ////////////////////////////////////////////////////////////////////
+        std::deque <ref<Layer>>::const_iterator begin() const
+        {
+            return m_deck.begin();
+        }
+
+        std::deque < ref<Layer>>::const_iterator end() const
+        {
+            return m_deck.end();
+        }
+
+        ////////////////////////////////////////////////////////////////////
+        // Constant Reverse Interator Helpers
+        ////////////////////////////////////////////////////////////////////
+        std::deque<ref<Layer>>::const_reverse_iterator rbegin() const
+        {
+            return m_deck.rbegin();
+        }
+
+        std::deque<ref<Layer>>::const_reverse_iterator rend() const
+        {
+            return m_deck.rend();
+        }
+
+       private:
+        std::deque<ref<Layer>> m_deck;
+        int32_t                 m_lastRegularLayerIdx = 0;
+    };
+    }  // namespace nimbus

@@ -106,7 +106,7 @@ void RendererApi::clear()
 {
     NM_PROFILE_TRACE();
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | (GL_DEPTH_BUFFER_BIT && getDepthTest()));
 }
 
 void RendererApi::setViewportSize(int x, int y, int w, int h)
@@ -149,12 +149,10 @@ void RendererApi::setDepthTest(bool on)
 
     if (!on)
     {
-        NM_CORE_INFO("Depth test off\n");
         glDisable(GL_DEPTH_TEST);
     }
     else
     {
-        NM_CORE_INFO("Depth test on\n");
         glEnable(GL_DEPTH_TEST);
     }
     s_depthTest = on;
