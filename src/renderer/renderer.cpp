@@ -1,11 +1,10 @@
-#include "nmpch.hpp"
-#include "core.hpp"
-
 #include "renderer/renderer.hpp"
-#include "platform/rendererApi.hpp"
+
 #include <sstream>
 
-
+#include "core.hpp"
+#include "nmpch.hpp"
+#include "platform/rendererApi.hpp"
 
 namespace nimbus
 {
@@ -18,8 +17,6 @@ void Renderer::destroy()
 {
 }
 
-
-
 void Renderer::setScene(Camera& camera)
 {
     mp_vpMatrix = &camera.getViewProjection();
@@ -28,27 +25,30 @@ void Renderer::setScene(Camera& camera)
 void Renderer::submit(const ref<Shader>&      p_shader,
                       const ref<VertexArray>& p_vertexArray,
                       const glm::mat4&        p_model,
-                      int32_t                 vertexCount)
+                      int32_t                 vertexCount,
+                      bool                    setViewProjection)
 {
     NM_PROFILE();
-    
+
     p_shader->use();
-
     p_shader->setMat4("u_model", p_model);
-    p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
-
     
+    if (setViewProjection)
+    {
+        p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
+    }
+
     // do we have an index buffer?
     if (p_vertexArray->getIndexBuffer())
     {
         // we do, so drawElements
-        if(vertexCount == k_detectCountIfPossible)
+        if (vertexCount == k_detectCountIfPossible)
         {
             RendererApi::drawElements(p_vertexArray);
         }
         else
         {
-             RendererApi::drawElements(p_vertexArray, vertexCount);
+            RendererApi::drawElements(p_vertexArray, vertexCount);
         }
     }
     else
@@ -56,36 +56,40 @@ void Renderer::submit(const ref<Shader>&      p_shader,
         // we don't so drawArrays
         if (vertexCount == k_detectCountIfPossible)
         {
-             RendererApi::drawArrays(p_vertexArray);
+            RendererApi::drawArrays(p_vertexArray);
         }
         else
         {
-             RendererApi::drawArrays(p_vertexArray, vertexCount);
+            RendererApi::drawArrays(p_vertexArray, vertexCount);
         }
     }
 }
 
 void Renderer::submit(const ref<Shader>&      p_shader,
                       const ref<VertexArray>& p_vertexArray,
-                      int32_t                 vertexCount)
+                      int32_t                 vertexCount,
+                      bool                    setViewProjection)
 {
     NM_PROFILE();
-    
+
     p_shader->use();
 
-    p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
-    
+    if (setViewProjection)
+    {
+        p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
+    }
+
     // do we have an index buffer?
     if (p_vertexArray->getIndexBuffer())
     {
         // we do, so drawElements
-        if(vertexCount == k_detectCountIfPossible)
+        if (vertexCount == k_detectCountIfPossible)
         {
             RendererApi::drawElements(p_vertexArray);
         }
         else
         {
-             RendererApi::drawElements(p_vertexArray, vertexCount);
+            RendererApi::drawElements(p_vertexArray, vertexCount);
         }
     }
     else
@@ -93,28 +97,31 @@ void Renderer::submit(const ref<Shader>&      p_shader,
         // we don't so drawArrays
         if (vertexCount == k_detectCountIfPossible)
         {
-             RendererApi::drawArrays(p_vertexArray);
+            RendererApi::drawArrays(p_vertexArray);
         }
         else
         {
-             RendererApi::drawArrays(p_vertexArray, vertexCount);
+            RendererApi::drawArrays(p_vertexArray, vertexCount);
         }
     }
 }
-
 
 void Renderer::submitInstanced(const ref<Shader>&      p_shader,
                                const ref<VertexArray>& p_vertexArray,
                                int32_t                 instanceCount,
                                const glm::mat4&        p_model,
-                               int32_t                 vertexCount)
+                               int32_t                 vertexCount,
+                               bool                    setViewProjection)
 {
     NM_PROFILE();
 
     p_shader->use();
-
     p_shader->setMat4("u_model", p_model);
-    p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
+    
+    if (setViewProjection)
+    {
+        p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
+    }
 
     // do we have an index buffer?
     if (p_vertexArray->getIndexBuffer())
@@ -122,12 +129,12 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
         // we do, so drawElements
         if (vertexCount == k_detectCountIfPossible)
         {
-             RendererApi::drawElementsInstanced(p_vertexArray, instanceCount);
+            RendererApi::drawElementsInstanced(p_vertexArray, instanceCount);
         }
         else
         {
-             RendererApi::drawElementsInstanced(
-                 p_vertexArray, instanceCount, vertexCount);
+            RendererApi::drawElementsInstanced(
+                p_vertexArray, instanceCount, vertexCount);
         }
     }
     else
@@ -135,12 +142,12 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
         // we don't so drawArrays
         if (vertexCount == k_detectCountIfPossible)
         {
-             RendererApi::drawArraysInstanced(p_vertexArray, instanceCount);
+            RendererApi::drawArraysInstanced(p_vertexArray, instanceCount);
         }
         else
         {
-             RendererApi::drawArraysInstanced(
-                 p_vertexArray, instanceCount, vertexCount);
+            RendererApi::drawArraysInstanced(
+                p_vertexArray, instanceCount, vertexCount);
         }
     }
 }
@@ -148,12 +155,17 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
 void Renderer::submitInstanced(const ref<Shader>&      p_shader,
                                const ref<VertexArray>& p_vertexArray,
                                int32_t                 instanceCount,
-                               int32_t                 vertexCount)
+                               int32_t                 vertexCount,
+                               bool                    setViewProjection)
 {
     NM_PROFILE();
 
     p_shader->use();
-    p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
+
+    if (setViewProjection)
+    {
+        p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
+    }
 
     // do we have an index buffer?
     if (p_vertexArray->getIndexBuffer())
@@ -161,12 +173,12 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
         // we do, so drawElements
         if (vertexCount == k_detectCountIfPossible)
         {
-             RendererApi::drawElementsInstanced(p_vertexArray, instanceCount);
+            RendererApi::drawElementsInstanced(p_vertexArray, instanceCount);
         }
         else
         {
-             RendererApi::drawElementsInstanced(
-                 p_vertexArray, instanceCount, vertexCount);
+            RendererApi::drawElementsInstanced(
+                p_vertexArray, instanceCount, vertexCount);
         }
     }
     else
@@ -174,12 +186,12 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
         // we don't so drawArrays
         if (vertexCount == k_detectCountIfPossible)
         {
-             RendererApi::drawArraysInstanced(p_vertexArray, instanceCount);
+            RendererApi::drawArraysInstanced(p_vertexArray, instanceCount);
         }
         else
         {
-             RendererApi::drawArraysInstanced(
-                 p_vertexArray, instanceCount, vertexCount);
+            RendererApi::drawArraysInstanced(
+                p_vertexArray, instanceCount, vertexCount);
         }
     }
 }

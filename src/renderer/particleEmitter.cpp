@@ -321,7 +321,6 @@ void ParticleEmitter::draw()
 
     RendererApi::setBlendingMode(currBlendMode);
 
-    Texture::s_unbind();
 }
 
 bool ParticleEmitter::isDone()

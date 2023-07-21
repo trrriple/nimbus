@@ -136,10 +136,6 @@ void Mesh::draw(glm::mat4& model) const
     mp_vao->bind();
 
     Renderer::submit(mp_shader, mp_vao, model);
-
-    // unbind
-    glBindVertexArray(0);
-    Texture::s_unbind();
 }
 
 void Mesh::_setupMesh()

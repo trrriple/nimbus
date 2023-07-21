@@ -1,10 +1,9 @@
 
-#include "nmpch.hpp"
-#include "core.hpp"
-
 #include "renderer/texture.hpp"
-#include "stb_image.h"
 
+#include "core.hpp"
+#include "nmpch.hpp"
+#include "stb_image.h"
 
 namespace nimbus
 {
@@ -28,16 +27,7 @@ Texture::~Texture()
 
 void Texture::bind(const uint32_t glTextureUnit) const
 {
-    NM_CORE_ASSERT((glTextureUnit <= s_maxTextures),
-                   "glTextureUnit > s_setMaxTextures. Did you call "
-                   "Texture::s_setMaxTextures?\n");
-
-    if (m_id != s_currBoundId)
-    {
-        glActiveTexture(GL_TEXTURE0 + glTextureUnit);
-        glBindTexture(GL_TEXTURE_2D, m_id);
-        s_currBoundId = m_id;
-    }
+    s_bind(m_id, glTextureUnit);
 }
 
 const std::string& Texture::getUniformNm(uint32_t index) const
@@ -78,15 +68,45 @@ uint32_t Texture::s_getMaxTextures()
     return s_maxTextures;
 }
 
+void Texture::s_bind(const uint32_t textureId, const uint32_t glTextureUnit)
+{
+    NM_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
+                          "glTextureUnit > s_setMaxTextures. Did you call "
+                          "Texture::s_setMaxTextures?\n");
+
+    if (glTextureUnit != s_currBoundTextureUnit)
+    {
+        glActiveTexture(GL_TEXTURE0 + glTextureUnit);
+        s_currBoundTextureUnit = glTextureUnit;
+    }
+
+    if (textureId != s_currBoundId)
+    {
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        s_currBoundId = textureId;
+    }
+}
+
 void Texture::s_unbind()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
     s_currBoundId = 0;
 }
 
+void Texture::s_gen(uint32_t& id)
+{   
+    std::lock_guard<std::mutex> lock(s_genLock);
+    glCreateTextures(GL_TEXTURE_2D, 1, &id);
+    NM_CORE_INFO("GL Generated texture id %i\n", id);
+    
+    NM_CORE_ASSERT_STATIC(!(id <= s_usedGlIds), "openGl reused id %i\n", id);
+
+    s_usedGlIds++;
+}
+
 void Texture::_load()
 {
-    glGenTextures(1, &m_id);
+    s_gen(m_id);
 
     stbi_set_flip_vertically_on_load(m_flipOnLoad);
 
@@ -108,12 +128,19 @@ void Texture::_load()
         {
             format = GL_RGBA;
         }
-        else    
+        else
         {
             NM_CORE_ASSERT(0, "Unknown image format 0x%x\n", m_numComponents);
         }
 
         glBindTexture(GL_TEXTURE_2D, m_id);
+
+        // safety check for:
+        // If a non-zero named buffer object is bound to the
+        // GL_PIXEL_UNPACK_BUFFER target (see glBindBuffer) while a texture
+        // image is specified, data is treated as a byte offset into the buffer
+        // object's data store.
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         glTexImage2D(GL_TEXTURE_2D,
                      0,
                      format,

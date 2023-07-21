@@ -56,26 +56,27 @@ void Window::graphicsContextInit()
 {
     NM_PROFILE_DETAIL();
 
-    m_context = SDL_GL_CreateContext(mp_window);
-    NM_CORE_ASSERT(
-        m_context, "Failed to created OpenGL Context %s\n", SDL_GetError());
-
-    // openGL context
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-
     int contextFlags = 0;
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
     contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
-
+   
+    // openGL context
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+   
     // depth buffer
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     // Set V-sync
     SDL_GL_SetSwapInterval(m_VSyncOn);
+   
+    m_context = SDL_GL_CreateContext(mp_window);
+    NM_CORE_ASSERT(
+        m_context, "Failed to created OpenGL Context %s\n", SDL_GetError());
+
 
     // setup GLAD
     if (!gladLoadGLLoader(SDL_GL_GetProcAddress))

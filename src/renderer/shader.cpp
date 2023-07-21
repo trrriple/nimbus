@@ -86,10 +86,10 @@ void Shader::use() const
     NM_PROFILE_TRACE();
 
     // don't rebind the same shader
-    if (m_id != s_lastId)
+    if (m_id != s_currBoundId)
     {
         glUseProgram(m_id);
-        s_lastId = m_id;
+        s_currBoundId = m_id;
     }
 }
 // utility uniform functions

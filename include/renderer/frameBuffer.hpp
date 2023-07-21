@@ -18,17 +18,20 @@ class FrameBuffer
 
     void resize(uint32_t width, uint32_t height);
 
-    void bind();
+    void bind() const;
+
+    void unbind() const;
     
-    uint32_t getTextureId()
+    void bindTexture(const uint32_t textureUnit) const;
+
+    void unbindTexture() const;
+
+    void clear();
+        
+    uint32_t getTextureId() const
     {
         return m_texture;
     }
-
-    void unbind();
-
-    void clear();
-    
 
    private:
     uint32_t m_width;

@@ -17,7 +17,7 @@ namespace nimbus
 // Shader Types MetaData
 ////////////////////////////////////////////////////////////////////////////////
 //                     gl Type       sizeof      # of Components
-typedef std::tuple<std::uint32_t, std::uint32_t, std::uint32_t> ShaderDataType;
+typedef std::tuple<uint32_t, uint32_t, uint32_t> ShaderDataType;
 
 const ShaderDataType k_shaderFloat = std::make_tuple(GL_FLOAT, 4, 1);
 const ShaderDataType k_shaderVec2  = std::make_tuple(GL_FLOAT, 8, 2);
@@ -45,15 +45,15 @@ struct BufferComponent
     ShaderDataType        dataType;
     std::string           name;
     BufferComponent::Type type;
-    std::uint32_t         perInstance;
+    uint32_t              perInstance;
     bool                  normalized;
-    size_t                offset; // calculated
+    size_t                offset;  // calculated
 
     BufferComponent() = default;
 
-    BufferComponent(ShaderDataType        dataType,
-                    const std::string&    name,
-                    bool                  normalized = false)
+    BufferComponent(ShaderDataType     dataType,
+                    const std::string& name,
+                    bool               normalized = false)
         : dataType(dataType),
           name(name),
           type(BufferComponent::Type::PER_VERTEX),
@@ -66,7 +66,7 @@ struct BufferComponent
     BufferComponent(ShaderDataType        dataType,
                     const std::string&    name,
                     BufferComponent::Type type,
-                    std::uint32_t         perInstance,
+                    uint32_t              perInstance,
                     bool                  normalized = false)
         : dataType(dataType),
           name(name),
@@ -94,7 +94,7 @@ class BufferFormat
         _genOffsetsAndStride();
     }
 
-    std::uint32_t getStride() const
+    uint32_t getStride() const
     {
         return m_stride;
     }
@@ -122,7 +122,7 @@ class BufferFormat
 
    private:
     std::vector<BufferComponent> m_components;
-    std::uint32_t                m_stride = 0;
+    uint32_t                     m_stride = 0;
 
     void _genOffsetsAndStride()
     {
@@ -151,7 +151,7 @@ class VertexBuffer
     };
 
     VertexBuffer(const void*        vertices,
-                 std::uint32_t      size,
+                 uint32_t           size,
                  VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
 
     ~VertexBuffer();
@@ -159,7 +159,7 @@ class VertexBuffer
     void bind() const;
     void unbind() const;
 
-    void setData(const void* data, std::uint32_t size);
+    void setData(const void* data, uint32_t size);
 
     const BufferFormat& getFormat() const
     {
@@ -171,24 +171,23 @@ class VertexBuffer
         m_format = format;
     }
 
-    std::uint32_t getSize()
+    uint32_t getSize()
     {
         return m_size;
     }
 
-    std::uint32_t getId()
+    uint32_t getId()
     {
         return m_id;
     }
 
    private:
-    std::uint32_t      m_id;
-    std::uint32_t      m_size;  // in bytes
+    uint32_t           m_id;
+    uint32_t           m_size;  // in bytes
     VertexBuffer::Type m_type;
     BufferFormat       m_format;
 
-    inline static std::uint32_t m_currBoundId = 0;
-
+    inline static uint32_t m_currBoundId = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,29 +196,29 @@ class VertexBuffer
 class IndexBuffer
 {
    public:
-    IndexBuffer(std::uint32_t* indices, std::uint32_t count);
-    IndexBuffer(std::uint16_t* indices, std::uint16_t count);
-    IndexBuffer(std::uint8_t* indices, std::uint8_t count);
+    IndexBuffer(uint32_t* indices, uint32_t count);
+    IndexBuffer(uint16_t* indices, uint16_t count);
+    IndexBuffer(uint8_t* indices, uint8_t count);
 
     ~IndexBuffer();
 
     void bind() const;
     void unbind() const;
 
-    std::uint32_t getCount() const
+    uint32_t getCount() const
     {
         return m_count;
     }
 
-    std::uint32_t getType() const
+    uint32_t getType() const
     {
         return m_type;
     }
 
    private:
-    std::uint32_t m_id;
-    std::uint32_t m_count;
-    std::uint32_t m_type;
+    uint32_t m_id;
+    uint32_t m_count;
+    uint32_t m_type;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,19 +247,20 @@ class VertexArray
         return m_indexBuffer;
     }
 
-    std::uint32_t getExpectedVertexCount()
+    uint32_t getExpectedVertexCount()
     {
         return m_expectedVboVertexCount;
     }
 
    private:
-    std::uint32_t                  m_id;
-    std::uint32_t                  m_vertexBufferIndex = 0;
+    uint32_t                       m_id;
+    uint32_t                       m_vertexBufferIndex = 0;
     std::vector<ref<VertexBuffer>> m_vertexBuffers;
     ref<IndexBuffer>               m_indexBuffer            = nullptr;
-    std::uint32_t                  m_expectedVboVertexCount = 0;
-    std::uint32_t                  m_vertexSize             = 0;
+    uint32_t                       m_expectedVboVertexCount = 0;
+    uint32_t                       m_vertexSize             = 0;
 
+    inline static uint32_t s_currBoundId = 0;
 };
 
 }  // namespace nimbus

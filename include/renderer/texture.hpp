@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <mutex>
 
 namespace nimbus
 {
@@ -48,8 +49,11 @@ class Texture
 
     static uint32_t s_getMaxTextures();
 
+    static void s_bind(const uint32_t textureId, const uint32_t glTextureUnit);
 
     static void s_unbind();
+
+    static void s_gen(uint32_t& id);
 
    private:
     inline static uint32_t                 s_maxTextures = k_maxTexturesUninit;
@@ -58,7 +62,10 @@ class Texture
     inline static std::vector<std::string> s_texAmbiUniformNms;
     inline static std::vector<std::string> s_texNormUniformNms;
     inline static std::vector<std::string> s_texHghtUniformNms;
-    inline static std::uint32_t            s_currBoundId = 0;
+    inline static std::uint32_t            s_currBoundId          = 0;
+    inline static std::uint32_t            s_currBoundTextureUnit = 0;
+    inline static std::mutex               s_genLock = std::mutex();
+    inline static uint32_t                 s_usedGlIds = 0;
 
     void _load();
 

@@ -133,7 +133,7 @@ class Shader
     std::string   m_fragmentPath;  ///< The path to the fragment shader.
     std::string   m_name;          ///< The name of the shader.
 
-    inline static std::uint32_t s_lastId = 0;  ///< Static counter for IDs.
+    inline static std::uint32_t s_currBoundId = 0;  ///< Static counter for IDs.
 
     /// Cache of uniform locations in the shader.
     /// Used for keeping track of where uniforms are located.

@@ -12,6 +12,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <mutex>
 #include <random>
 #include <string>
 #include <unordered_map>

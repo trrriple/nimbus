@@ -228,7 +228,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         -Wno-deprecated-copy)
 endif()
 
-if(GAME_BUILD_MODE STREQUAL "Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Add debug-specific flags
     target_compile_options(nimbus PRIVATE -g -gcodeview)
 
@@ -237,9 +237,9 @@ if(GAME_BUILD_MODE STREQUAL "Debug")
         target_link_options(nimbus PRIVATE -g -gcodeview -Wl,/debug,/pdb:)
     endif()
 
-elseif(GAME_BUILD_MODE STREQUAL "Release")
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     # Add release-specific flags
-    target_compile_options(nimbus} PRIVATE -O3)
+    target_compile_options(nimbus PRIVATE -O3 -march=native -DGLM_FORCE_INTRINSICS)
 endif()
 
 target_link_options(nimbus PRIVATE
