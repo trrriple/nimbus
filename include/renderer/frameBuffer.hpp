@@ -37,11 +37,9 @@ class FrameBuffer
     uint32_t m_width;
     uint32_t m_height;
 
-    uint32_t m_fbo;
-    uint32_t m_texture;
-    uint32_t m_rbo;
-
-
+    uint32_t m_fbo     = 0;
+    uint32_t m_texture = 0;
+    uint32_t m_rbo     = 0;
 };
 
 }  // namespace nimbus

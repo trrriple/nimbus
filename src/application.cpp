@@ -119,7 +119,7 @@ void Application::onEvent(Event& event)
     ////////////////////////////////////////
     switch (event.getEventType())
     {
-        case SDL_QUIT:
+        case Event::Type::QUIT:
         {
             m_Active = false;
             break;

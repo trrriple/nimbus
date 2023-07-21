@@ -2,7 +2,6 @@
 
 #include "event.hpp"
 #include "keyCode.hpp"
-#include "SDL.h"
 
 #include <functional>
 #include <cstdint>
@@ -30,7 +29,7 @@ class Window
     
     void onUpdate();
 
-    bool keyPressed(keyCode keyCode);
+    bool keyPressed(ScanCode ScanCode);
 
     uint32_t getHeight() const
     {
@@ -41,14 +40,14 @@ class Window
         return m_width;
     }
 
-    SDL_Window* getSDLWindow() const
+    void* getOsWindow() const
     {
         return mp_window;
     }
 
-    SDL_GLContext getContext() const
+    void* getContext() const
     {
-        return m_context;
+        return mp_context;
     }
 
     void setVSync(bool on);
@@ -56,13 +55,13 @@ class Window
     bool getVSync();
 
    private:
-    SDL_Window*           mp_window = nullptr;
-    SDL_GLContext         m_context = nullptr;
-    
+    void* mp_window = nullptr;
+    void* mp_context = nullptr;
+
     nbWindowEvtCallback_t m_evtCallback;
     nbWindowEvtCallback_t m_exitCallback;
-    
-    Event                 m_event;
+
+    Event m_event;
 
     uint32_t m_sdlWindowId;
     uint32_t m_width;

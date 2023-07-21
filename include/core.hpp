@@ -7,7 +7,7 @@
 #include "SDL.h"
 
 // TODO do this smarter
-#define NM_ASSERTS
+#define NM_RUNTIME_ASSERTS
 
 
 #define NM_PROFILE_LEVEL_TRACE  3
@@ -34,7 +34,7 @@
 
 
 
-#ifdef NM_ASSERTS
+#ifdef NM_RUNTIME_ASSERTS
 ////////////////////////////////////////////////////////////////////////////////
 // Asserts
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,10 @@
 #else
 #define NM_CORE_ASSERT(condition, msg, ...)
 #define NM_CORE_ASSERT_STATIC(condition, msg, ...)
-#endif /* NM_ASSERTS */
+#endif /* NM_RUNTIME_ASSERTS */
+
+// we always want compile time asserts
+#define NM_CORE_COMPILETIME_ASSERT(cond, msg) static_assert(cond, msg)
 
 #ifdef NM_PROFILE_LEVEL
 ////////////////////////////////////////////////////////////////////////////////

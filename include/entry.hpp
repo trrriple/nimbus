@@ -2,11 +2,8 @@
 
 extern nimbus::Application* nimbus::createApplication();
 
-int main(int argc, char* argv[])
+int nimbusEntry()
 {
-    UNUSED(argc);
-    UNUSED(argv);
-    
     auto app = nimbus::createApplication();
 
     app->onInit();
@@ -19,9 +16,20 @@ int main(int argc, char* argv[])
 
 #ifdef _WIN32
 int WinMain(int argc, char* argv[])
-{   
-    main(argc, argv);
+{
+    (void)(argc);
+    (void)(argv);
+    return nimbusEntry();
+}
+#else
+int main(int argc, char* argv[])
+{
+    (void)(argc);
+    (void)(argv);
+
+    return nimbusEntry();
 
     return 0;
 }
+
 #endif

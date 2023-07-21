@@ -65,7 +65,6 @@ class Texture
     inline static std::uint32_t            s_currBoundId          = 0;
     inline static std::uint32_t            s_currBoundTextureUnit = 0;
     inline static std::mutex               s_genLock = std::mutex();
-    inline static uint32_t                 s_usedGlIds = 0;
 
     void _load();
 

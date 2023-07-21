@@ -97,11 +97,6 @@ void Texture::s_gen(uint32_t& id)
 {   
     std::lock_guard<std::mutex> lock(s_genLock);
     glCreateTextures(GL_TEXTURE_2D, 1, &id);
-    NM_CORE_INFO("GL Generated texture id %i\n", id);
-    
-    NM_CORE_ASSERT_STATIC(!(id <= s_usedGlIds), "openGl reused id %i\n", id);
-
-    s_usedGlIds++;
 }
 
 void Texture::_load()

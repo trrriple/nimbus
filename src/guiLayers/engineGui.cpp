@@ -47,7 +47,10 @@ void EngineGui::onGuiUpdate()
              sp_appRef->getFrametime() * 1000.0f,
              sp_appWinRef->m_fps);
 
-    ImGui::Begin(buf, 0, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin(buf,
+                 0,
+                 ImGuiWindowFlags_AlwaysAutoResize
+                     | ImGuiWindowFlags_NoFocusOnAppearing);
 
     ImGui::Text("Draw Parameters");
 

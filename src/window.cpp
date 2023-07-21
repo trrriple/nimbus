@@ -24,15 +24,15 @@ Window::Window(const std::string& windowCaption,
     // relative mouse
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
-    mp_window = SDL_CreateWindow(
+    mp_window = static_cast<void*>(SDL_CreateWindow(
         windowCaption.c_str(),
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         m_width,
         m_height,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL));
 
-    m_sdlWindowId = SDL_GetWindowID(mp_window);
+    m_sdlWindowId = SDL_GetWindowID(static_cast<SDL_Window*>(mp_window));
 
     NM_CORE_ASSERT(mp_window,
                    "Window could not be created. sdl error %s\n",
@@ -43,7 +43,7 @@ Window::~Window()
 {
     NM_PROFILE_DETAIL();
     
-    SDL_DestroyWindow(mp_window);
+    SDL_DestroyWindow(static_cast<SDL_Window*>(mp_window));
     mp_window = nullptr;
 
     NM_CORE_INFO("Window destroyed\n")
@@ -72,11 +72,11 @@ void Window::graphicsContextInit()
 
     // Set V-sync
     SDL_GL_SetSwapInterval(m_VSyncOn);
-   
-    m_context = SDL_GL_CreateContext(mp_window);
-    NM_CORE_ASSERT(
-        m_context, "Failed to created OpenGL Context %s\n", SDL_GetError());
 
+    mp_context = static_cast<void*>(
+        SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
+    NM_CORE_ASSERT(
+        mp_context, "Failed to created OpenGL Context %s\n", SDL_GetError());
 
     // setup GLAD
     if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
@@ -104,18 +104,18 @@ void Window::onUpdate()
     NM_PROFILE();
 
     _pollEvents();
-    SDL_GL_SwapWindow(mp_window);
+    SDL_GL_SwapWindow(static_cast<SDL_Window*>(mp_window));
     _calcFramerate();
 }
 
-bool Window::keyPressed(keyCode keyCode)
+bool Window::keyPressed(ScanCode scanCode)
 {
     NM_PROFILE_DETAIL();
 
     static const uint8_t* keyboardState = SDL_GetKeyboardState(nullptr);
 
     // Will break if SDL changes their keymap
-    return keyboardState[static_cast<uint32_t>(keyCode)];
+    return keyboardState[static_cast<uint32_t>(scanCode)];
 }
 
 void Window::setVSync(bool on)
@@ -138,13 +138,13 @@ void Window::_handleWindowEvents()
 {
     NM_PROFILE_DETAIL();
 
-    switch (m_event.getEvent()->window.event)
+    switch (m_event.getDetails().window.event)
     {
         // main window resized
         case (SDL_WINDOWEVENT_SIZE_CHANGED):
         {
-            m_width  = m_event.getEvent()->window.data1;
-            m_height = m_event.getEvent()->window.data2;
+            m_width  = m_event.getDetails().window.data1;
+            m_height = m_event.getDetails().window.data2;
 
             RendererApi::setViewportSize(0, 0, m_width, m_height);
 
@@ -169,22 +169,22 @@ void Window::_pollEvents()
 
     m_event.clear();
 
-    while (SDL_PollEvent(m_event.getEvent()))
+    while (SDL_PollEvent(reinterpret_cast<SDL_Event*>(&m_event.getDetails())))
     {
         // call the event callback for each event
         m_evtCallback(m_event);
 
         // handle internal window event stuff
         // SDL_QUIT comes if all windows are closed
-        if (m_event.getEventType() == SDL_QUIT)
+        if (m_event.getEventType() == Event::Type::QUIT)
         {
             NM_CORE_INFO("SDL_QUIT\n");
             m_exitCallback(m_event);
         }
-        else if (m_event.getEventType() == SDL_WINDOWEVENT)
+        else if (m_event.getEventType() == Event::Type::WINDOW)
         {
             // we only want to handle window events for this window
-            if (m_event.getEvent()->window.windowID == m_sdlWindowId)
+            if (m_event.getDetails().window.windowID == m_sdlWindowId)
             {
                 _handleWindowEvents();
             }

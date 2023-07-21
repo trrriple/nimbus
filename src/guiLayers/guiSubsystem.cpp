@@ -36,8 +36,10 @@ void GuiSubsystem::onInsert()
     // Setup Platform/Renderer bindings
     // window is the SDL_Window*
     // context is the SDL_GLContext
-    ImGui_ImplSDL2_InitForOpenGL(Application::get().getWindow().getSDLWindow(),
-                                 Application::get().getWindow().getContext());
+    ImGui_ImplSDL2_InitForOpenGL(
+        static_cast<SDL_Window*>(Application::get().getWindow().getOsWindow()),
+        Application::get().getWindow().getContext());
+    
     ImGui_ImplOpenGL3_Init();
 }
 
@@ -50,36 +52,38 @@ void GuiSubsystem::onRemove()
 
 void GuiSubsystem::onEvent(Event& event)
 {
-    ImGui_ImplSDL2_ProcessEvent(event.getEvent());
-    
+    ImGui_ImplSDL2_ProcessEvent((SDL_Event*)&event.getDetails());
+
     if (m_captureEvents)
     {
-        uint32_t eventType = event.getEventType();
+        Event::Type eventType = event.getEventType();
 
         ImGuiIO& io = ImGui::GetIO();
-        
+
         // mark mouse events as handled
         if (io.WantCaptureMouse
-            && (eventType == SDL_MOUSEMOTION || eventType == SDL_MOUSEBUTTONUP
-                || eventType == SDL_MOUSEBUTTONDOWN
-                || eventType == SDL_MOUSEWHEEL))
+            && (eventType == Event::Type::MOUSEMOTION
+                || eventType == Event::Type::MOUSEBUTTONUP
+                || eventType == Event::Type::MOUSEBUTTONDOWN
+                || eventType == Event::Type::MOUSEWHEEL))
         {
-            event.wasHandled();
+            event.markAsHandled();
         }
         // mark keyboard events as handled
         else if (io.WantCaptureKeyboard
-                 && (eventType == SDL_KEYDOWN || eventType == SDL_KEYUP
-                     || eventType == SDL_TEXTEDITING
-                     || eventType == SDL_TEXTINPUT))
+                 && (eventType == Event::Type::KEYDOWN
+                     || eventType == Event::Type::KEYUP
+                     || eventType == Event::Type::TEXTEDITING
+                     || eventType == Event::Type::TEXTINPUT))
         {
-            event.wasHandled();
+            event.markAsHandled();
         }
-        else if(!io.WantCaptureMouse && eventType == SDL_MOUSEBUTTONDOWN)
+        else if (!io.WantCaptureMouse
+                 && eventType == Event::Type::MOUSEBUTTONDOWN)
         {
             Application::get().setMenuMode(false);
         }
     }
-
 }
 
 void GuiSubsystem::begin()
