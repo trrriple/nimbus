@@ -130,8 +130,6 @@ void Camera::updateView()
 {
     NM_PROFILE_DETAIL();
 
-    NM_CORE_INFO("%s\n", __func__);
-
     if (m_is3d)
     {
         m_view = glm::lookAt(m_position, m_position + m_front, m_up);
@@ -165,8 +163,6 @@ glm::mat4& Camera::getView()
 void Camera::updateProjection()
 {
     NM_PROFILE_DETAIL();
-
-    NM_CORE_INFO("%s\n", __func__);
 
     if (m_is3d)
     {
@@ -204,7 +200,6 @@ void Camera::updateViewProjection()
 {
     NM_PROFILE_DETAIL();
 
-    NM_CORE_INFO("%s\n", __func__);
     m_viewProjection = (getView() * getProjection());
 
     m_staleViewProjection = false;

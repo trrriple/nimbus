@@ -46,7 +46,7 @@ Window::~Window()
     SDL_DestroyWindow(static_cast<SDL_Window*>(mp_window));
     mp_window = nullptr;
 
-    NM_CORE_INFO("Window destroyed\n")
+    Log::coreInfo("Window destroyed\n");
 
     // Quit SDL subsystems
     SDL_Quit();
@@ -70,13 +70,13 @@ void Window::graphicsContextInit()
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    // Set V-sync
-    SDL_GL_SetSwapInterval(m_VSyncOn);
-
     mp_context = static_cast<void*>(
         SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
     NM_CORE_ASSERT(
         mp_context, "Failed to created OpenGL Context %s\n", SDL_GetError());
+
+    // Set V-sync
+    SDL_GL_SetSwapInterval(m_VSyncOn);
 
     // setup GLAD
     if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
@@ -108,7 +108,7 @@ void Window::onUpdate()
     _calcFramerate();
 }
 
-bool Window::keyPressed(ScanCode scanCode)
+bool Window::keyPressed(ScanCode scanCode) const
 {
     NM_PROFILE_DETAIL();
 
@@ -148,13 +148,13 @@ void Window::_handleWindowEvents()
 
             RendererApi::setViewportSize(0, 0, m_width, m_height);
 
-            NM_CORE_INFO("Window Resized %d x %d\n", m_width, m_height);
+            Log::coreInfo("Window Resized %d x %d\n", m_width, m_height);
             break;
         }
         // main window closed
         case (SDL_WINDOWEVENT_CLOSE):
         {
-            NM_CORE_INFO("This window closed\n");
+            Log::coreInfo("This window closed\n");
 
             m_exitCallback(m_event);
         }
@@ -178,7 +178,7 @@ void Window::_pollEvents()
         // SDL_QUIT comes if all windows are closed
         if (m_event.getEventType() == Event::Type::QUIT)
         {
-            NM_CORE_INFO("SDL_QUIT\n");
+            Log::coreInfo("SDL_QUIT\n");
             m_exitCallback(m_event);
         }
         else if (m_event.getEventType() == Event::Type::WINDOW)

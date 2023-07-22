@@ -15,10 +15,10 @@ Model::Model(std::string path, bool flipOnLoad, bool normalize)
 {
     loadModel(path);
 
-    NM_CORE_INFO("Loaded Textures for model %s\n", path.c_str());
+    Log::coreInfo("Loaded Textures for model %s\n", path.c_str());
     for (const auto& pair : m_loadedTextures)
     {
-        NM_CORE_INFO("\t %s\n", pair.second->m_path.c_str());
+        Log::coreInfo("\t %s\n", pair.second->m_path.c_str());
     }
 }
 
@@ -40,7 +40,7 @@ void Model::loadModel(std::string path)
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE
         || !scene->mRootNode)
     {
-        NM_CORE_ERROR("ASSIMP:: %s\n", import.GetErrorString());
+        Log::coreError("ASSIMP:: %s\n", import.GetErrorString());
         return;
     }
 

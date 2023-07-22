@@ -183,7 +183,7 @@ target_link_libraries (nimbus PUBLIC TracyClient )
 # #########################
 
 # self
-target_include_directories(nimbus PUBLIC "${INCLUDE_PATH}")
+target_include_directories(nimbus PRIVATE "${INCLUDE_PATH}")
 
 # libraries build with fetchcontent
 #assimp
@@ -192,7 +192,7 @@ target_include_directories(nimbus PRIVATE "${assimp_SOURCE_DIR}/include")
 target_include_directories(nimbus PRIVATE "${assimp_BINARY_DIR}/include")
 
 #sdl
-target_include_directories(nimbus PUBLIC "${sdl2_SOURCE_DIR}/include")
+target_include_directories(nimbus PRIVATE "${sdl2_SOURCE_DIR}/include")
 
 #glm
 target_include_directories(nimbus PUBLIC "${glm_SOURCE_DIR}/glm")

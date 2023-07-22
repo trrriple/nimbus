@@ -14,6 +14,8 @@ namespace nimbus
 FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t samples)
     : m_width(width), m_height(height), m_samples(samples)
 {
+    NM_PROFILE_DETAIL();
+
     if (width == 0 || height == 0 || width > FrameBuffer::k_maxDimension
         || height > FrameBuffer::k_maxDimension)
     {
@@ -42,6 +44,8 @@ FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t samples)
 
 FrameBuffer::~FrameBuffer()
 {
+    NM_PROFILE_DETAIL();
+
     glDeleteFramebuffers(1, &m_fbo);
     glDeleteTextures(1, &m_texture);
     glDeleteRenderbuffers(1, &m_rbo);
@@ -49,6 +53,8 @@ FrameBuffer::~FrameBuffer()
 
 void FrameBuffer::construct()
 {
+    NM_PROFILE();
+
     ////////////////////////////////////////////////////////////////////////////
     // blow away existing frame buffer if we've already made it and create new
     ////////////////////////////////////////////////////////////////////////////
@@ -67,7 +73,6 @@ void FrameBuffer::construct()
     Texture::s_gen(m_texture, m_samples > 1);
     glBindTexture(_textureType(), m_texture);
 
-    
     ////////////////////////////////////////////////////////////////////////////
     // setup texture and parameters
     ////////////////////////////////////////////////////////////////////////////
@@ -113,7 +118,6 @@ void FrameBuffer::construct()
     glNamedFramebufferRenderbuffer(
         m_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
 
-
     ////////////////////////////////////////////////////////////////////////////
     // Verify complete frame buffer
     ////////////////////////////////////////////////////////////////////////////
@@ -123,7 +127,7 @@ void FrameBuffer::construct()
                        "Incomplete framebuffer! Error 0x%X\n",
                        glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-        NM_CORE_CRITICAL("Incomplete framebuffer! Error 0x%X\n",
+        Log::coreCritical("Incomplete framebuffer! Error 0x%X\n",
                          glCheckFramebufferStatus(GL_FRAMEBUFFER));
     }
 
@@ -133,6 +137,8 @@ void FrameBuffer::construct()
 
 void FrameBuffer::resize(uint32_t width, uint32_t height)
 {
+    NM_PROFILE();
+
     if (width == 0 || height == 0 || width > FrameBuffer::k_maxDimension
         || height > FrameBuffer::k_maxDimension)
     {
@@ -151,6 +157,8 @@ void FrameBuffer::resize(uint32_t width, uint32_t height)
 
 void FrameBuffer::blit(const FrameBuffer& destination) const
 {
+    NM_PROFILE();
+
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destination.m_fbo);
 
@@ -171,6 +179,8 @@ void FrameBuffer::blit(const FrameBuffer& destination) const
 
 void FrameBuffer::bind(Mode mode) const
 {
+    NM_PROFILE_TRACE();
+
     switch (mode)
     {
         case (Mode::READ_WRITE):
@@ -195,6 +205,8 @@ void FrameBuffer::bind(Mode mode) const
 
 void FrameBuffer::unbind(Mode mode) const
 {
+    NM_PROFILE_TRACE();
+
     switch (mode)
     {
         case (Mode::READ_WRITE):
@@ -227,6 +239,8 @@ void FrameBuffer::unbindTexture() const
 
 void FrameBuffer::clear()
 {
+    NM_PROFILE_DETAIL();
+
     int val = -1;
     glClearTexImage(m_texture, 0, GL_RGBA, GL_INT, &val);
 }

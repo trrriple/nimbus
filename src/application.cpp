@@ -16,11 +16,11 @@ Application::Application(const std::string& name,
                          bool               is3d)
     : m_name(name), m_is3d(is3d)
 {
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+    Log::init(); 
 
-    NM_CORE_INFO("------------------------------------------\n");
-    NM_CORE_INFO("----- Nimbus Engine Application Init -----\n");
-    NM_CORE_INFO("------------------------------------------\n");
+    Log::coreInfo("------------------------------------------\n");
+    Log::coreInfo("----- Nimbus Engine Application Init -----\n");
+    Log::coreInfo("------------------------------------------\n");
 
     NM_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
 
@@ -96,7 +96,7 @@ void Application::execute()
         mp_window->onUpdate();
     }
 
-    NM_CORE_INFO("Quitting\n");
+    Log::coreInfo("Quitting\n");
 }
 
 void Application::onEvent(Event& event)

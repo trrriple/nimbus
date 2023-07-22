@@ -1,10 +1,9 @@
 #include "renderer/particleEmitter.hpp"
 
-#include "nmpch.hpp"
-
 #include "application.hpp"
 #include "core.hpp"
 #include "glm.hpp"
+#include "nmpch.hpp"
 #include "renderer/renderer.hpp"
 #include "resourceManager.hpp"
 
@@ -128,7 +127,6 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
         // general purpose distribution
         m_gpRandDist = std::uniform_real_distribution<float>(0.0f, 1.0f);
 
-
         // lifetime distribution
         m_lifetimeDist = std::uniform_real_distribution<float>(
             m_parameters.lifetimeMin_s, m_parameters.lifetimeMax_s);
@@ -157,7 +155,7 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
                 - m_parameters.ejectionSpreadAngle_rad / 2,
             m_parameters.ejectionBaseAngle_rad
                 + m_parameters.ejectionSpreadAngle_rad / 2);
-        
+
         // color indexing dist
         m_colorIndexDist = std::uniform_int_distribution<uint32_t>(
             0, m_parameters.colors.size() - 1);
@@ -183,10 +181,10 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
         for (uint32_t i = 0; i < m_numParticles; i++)
         {
             // set CPU data
-            float    angle      = m_angleDist(m_randGen);
-            float    speed      = m_speedDist(m_randGen);
-            float    lifetime   = m_lifetimeDist(m_randGen);
-            float    size       = m_sizeDist(m_randGen);
+            float angle    = m_angleDist(m_randGen);
+            float speed    = m_speedDist(m_randGen);
+            float lifetime = m_lifetimeDist(m_randGen);
+            float size     = m_sizeDist(m_randGen);
 
             glm::vec3 accel(m_accelDistX(m_randGen),
                             m_accelDistY(m_randGen),
@@ -228,7 +226,7 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
 void ParticleEmitter::update(float deltaTime)
 {
     NM_PROFILE_DETAIL();
-    
+
     for (uint32_t i = 0; i < m_numLiveParticles; ++i)
     {
         particleInstanceData* p_instDat = &m_particleInstanceData[i];
@@ -285,23 +283,21 @@ void ParticleEmitter::update(float deltaTime)
             {
                 // shrink at a slower rate initially then speed up as
                 // particle ages
-                float newSize
-                    = std::sqrt(currentLifeLeft) * p_attrib->size;
+                float newSize = std::sqrt(currentLifeLeft) * p_attrib->size;
 
                 p_instDat->size = newSize;
             }
         }
     }
-
 }
 
 void ParticleEmitter::draw()
 {
     NM_PROFILE();
 
-    if(m_numLiveParticles == 0)
+    if (m_numLiveParticles == 0)
     {
-        // if this guy is done emitting don't do anything 
+        // if this guy is done emitting don't do anything
         return;
     }
 
@@ -320,7 +316,6 @@ void ParticleEmitter::draw()
     Renderer::submitInstanced(mp_shader, mp_vao, m_numLiveParticles);
 
     RendererApi::setBlendingMode(currBlendMode);
-
 }
 
 bool ParticleEmitter::isDone()
@@ -330,11 +325,10 @@ bool ParticleEmitter::isDone()
 
 void ParticleEmitter::trigger()
 {
-    // if this is the first time we've been triggered, reset locations on 
+    // if this is the first time we've been triggered, reset locations on
     // living particles. If not, don't.
     reset(!m_beenTriggered);
 }
-
 
 void ParticleEmitter::reset(bool updateLiving)
 {
@@ -359,13 +353,13 @@ void ParticleEmitter::reset(bool updateLiving)
 void ParticleEmitter::chooseColors(size_t min, size_t max, bool updateLiving)
 {
     NM_PROFILE_DETAIL();
-    
+
     size_t minC = std::clamp(min, size_t(0), m_parameters.colors.size() - 1);
     size_t maxC = std::clamp(max, size_t(0), m_parameters.colors.size() - 1);
 
-    if(minC != min || maxC != max)
+    if (minC != min || maxC != max)
     {
-        NM_CORE_ERROR(
+        Log::coreError(
             "Particle color range given %i - %i outside of valid range %i - "
             "%i\n",
             min,
@@ -484,10 +478,10 @@ void ParticleEmitter::_respawnParticle(particleAttributes*   p_attrib,
 }
 
 glm::vec4 ParticleEmitter::_getRandomColorInRange()
-{   
-    uint32_t colorIndex = m_colorIndexDist(m_randGen);
-    glm::vec4& min = m_parameters.colors[colorIndex].colorMin;
-    glm::vec4& max = m_parameters.colors[colorIndex].colorMax;
+{
+    uint32_t   colorIndex = m_colorIndexDist(m_randGen);
+    glm::vec4& min        = m_parameters.colors[colorIndex].colorMin;
+    glm::vec4& max        = m_parameters.colors[colorIndex].colorMax;
 
     float r = min.r + (m_gpRandDist(m_randGen) * (max.r - min.r));
     float g = min.g + (m_gpRandDist(m_randGen) * (max.g - min.g));

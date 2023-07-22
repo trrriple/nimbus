@@ -10,7 +10,6 @@
 namespace nimbus
 {
 
-
 // helpers have to be here to avoid circular dependency if they are in
 // class declaration due to needing application, and application includes
 // this class...

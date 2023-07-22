@@ -17,23 +17,6 @@
 
 #define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_DETAIL
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Core Log Interface
-////////////////////////////////////////////////////////////////////////////////
-#define NM_CORE_INFO(msg, ...) SDL_Log("[CORE] " msg, __VA_ARGS__);
-
-#define NM_CORE_WARN(msg, ...) \
-    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[CORE] " msg, __VA_ARGS__);
-
-#define NM_CORE_ERROR(msg, ...) \
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[CORE] " msg, __VA_ARGS__);
-
-#define NM_CORE_CRITICAL(msg, ...) \
-    SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "[CORE] " msg, __VA_ARGS__);
-
-
-
 #ifdef NM_RUNTIME_ASSERTS
 ////////////////////////////////////////////////////////////////////////////////
 // Asserts
@@ -43,11 +26,11 @@
     {                                              \
         if (!condition)                            \
         {                                          \
-            NM_CORE_CRITICAL("[%s::%s:%i] " msg,   \
-                             typeid(*this).name(), \
-                             __func__,             \
-                             __LINE__,             \
-                             __VA_ARGS__);         \
+            Log::coreCritical("[%s::%s:%i] " msg,      \
+                           typeid(*this).name(),   \
+                           __func__,               \
+                           __LINE__,               \
+                           __VA_ARGS__);           \
             __debugbreak();                        \
         }                                          \
     }
@@ -55,10 +38,10 @@
     {                                              \
         if (!condition)                            \
         {                                          \
-            NM_CORE_CRITICAL("[%s:%i] " msg,       \
-                             __func__,             \
-                             __LINE__,             \
-                             __VA_ARGS__);         \
+            Log::coreCritical("[%s:%i] " msg,          \
+                           __func__,               \
+                           __LINE__,               \
+                           __VA_ARGS__);           \
             __debugbreak();                        \
         }                                          \
     }

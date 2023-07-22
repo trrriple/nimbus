@@ -6,6 +6,7 @@
 #include "guiLayers/guiSubsystem.hpp"
 #include "layerDeck.hpp"
 #include "window.hpp"
+#include "log.hpp"
 
 namespace nimbus
 {
@@ -46,7 +47,7 @@ class Application
 
     const uint8_t* getKeyboardState() const;
 
-    LayerDeck& getLayerDeck();
+    LayerDeck& getLayerDeck(); 
 
     Window& getWindow();
 
@@ -56,20 +57,33 @@ class Application
 
     bool getMenuMode() const;
 
+    const Log& getAppLog() const;
+
+    const Log& getCoreLog() const;
+
     void kill();
 
    private:
-    inline static Application* sp_instance = nullptr;
+    ///////////////////////////
+    // Parameters
+    ///////////////////////////
+    std::string m_name;
+    bool        m_is3d;
 
-    std::string         m_name;
-    bool                m_is3d;
-    scope<Window>       mp_window            = nullptr;
-    scope<Camera>       mp_camera            = nullptr;
-    ref<GuiSubsystem>   mp_guiSubsystemLayer = nullptr;
-    bool                m_menuMode           = false;
-    volatile bool       m_Active             = true;
+    ///////////////////////////
+    // State
+    ///////////////////////////
+    bool          m_menuMode = false;
+    volatile bool m_Active   = true;
+    LayerDeck     m_layerDeck;
 
-    LayerDeck m_layerDeck;
+    ///////////////////////////
+    // References
+    ///////////////////////////
+    inline static Application* sp_instance          = nullptr;
+    scope<Window>              mp_window            = nullptr;
+    scope<Camera>              mp_camera            = nullptr;
+    ref<GuiSubsystem>          mp_guiSubsystemLayer = nullptr;
 
 };
 

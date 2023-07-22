@@ -11,9 +11,9 @@ void RendererApi::init()
 {
     NM_PROFILE_DETAIL();
 
-    NM_CORE_INFO("Vendor:   %s\n", glGetString(GL_VENDOR));
-    NM_CORE_INFO("Renderer: %s\n", glGetString(GL_RENDERER));
-    NM_CORE_INFO("Version:  %s\n", glGetString(GL_VERSION));
+    Log::coreInfo("Vendor:   %s\n", glGetString(GL_VENDOR));
+    Log::coreInfo("Renderer: %s\n", glGetString(GL_RENDERER));
+    Log::coreInfo("Version:  %s\n", glGetString(GL_VERSION));
 
     if (s_depthTest)
     {
@@ -37,7 +37,7 @@ void RendererApi::init()
 
     int numAttributes;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &numAttributes);
-    NM_CORE_INFO("Max number of vertex attributes supported: %i\n",
+    Log::coreInfo("Max number of vertex attributes supported: %i\n",
                  numAttributes);
 
     int maxTextureUnits;
@@ -45,7 +45,7 @@ void RendererApi::init()
 
     Texture::s_setMaxTextures(maxTextureUnits);
 
-    NM_CORE_INFO("Max number of Texture Units: supported: %i\n",
+    Log::coreInfo("Max number of Texture Units: supported: %i\n",
                  Texture::s_getMaxTextures());
 }
 
@@ -124,12 +124,12 @@ void RendererApi::setWireframe(bool on)
     {
         if (!on)
         {
-            NM_CORE_INFO("Wireframe off\n");
+            Log::coreInfo("Wireframe off\n");
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
         else
         {
-            NM_CORE_INFO("Wireframe on\n");
+            Log::coreInfo("Wireframe on\n");
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
         s_wireframeOn = on;
@@ -226,80 +226,80 @@ void APIENTRY _glDebugOutput(GLenum       source,
     if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
         return;
 
-    NM_CORE_ERROR("Debug message (%d):  %s\n", id, message);
+    Log::coreError("Debug message (%d):  %s\n", id, message);
     switch (source)
     {
         case GL_DEBUG_SOURCE_API:
-            NM_CORE_ERROR("Source: API\n");
+            Log::coreError("Source: API\n");
             break;
         case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-            NM_CORE_ERROR("Source: Window System\n");
+            Log::coreError("Source: Window System\n");
             break;
         case GL_DEBUG_SOURCE_SHADER_COMPILER:
-            NM_CORE_ERROR("Source: Shader Compiler\n");
+            Log::coreError("Source: Shader Compiler\n");
             break;
         case GL_DEBUG_SOURCE_THIRD_PARTY:
-            NM_CORE_ERROR("Source: Third Party\n");
+            Log::coreError("Source: Third Party\n");
             break;
         case GL_DEBUG_SOURCE_APPLICATION:
-            NM_CORE_ERROR("Source: Application\n");
+            Log::coreError("Source: Application\n");
             break;
         case GL_DEBUG_SOURCE_OTHER:
-            NM_CORE_ERROR("Source: Other\n");
+            Log::coreError("Source: Other\n");
             break;
     }
 
     switch (type)
     {
         case GL_DEBUG_TYPE_ERROR:
-            NM_CORE_ERROR("Type: Error\n");
+            Log::coreError("Type: Error\n");
             break;
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-            NM_CORE_ERROR("Type: Deprecated Behaviour\n");
+            Log::coreError("Type: Deprecated Behaviour\n");
             break;
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-            NM_CORE_ERROR("Type: Undefined Behaviour\n");
+            Log::coreError("Type: Undefined Behaviour\n");
             break;
         case GL_DEBUG_TYPE_PORTABILITY:
-            NM_CORE_ERROR("Type: Portability\n");
+            Log::coreError("Type: Portability\n");
             break;
         case GL_DEBUG_TYPE_PERFORMANCE:
-            NM_CORE_ERROR("Type: Performance\n");
+            Log::coreError("Type: Performance\n");
             break;
         case GL_DEBUG_TYPE_MARKER:
-            NM_CORE_ERROR("Type: Marker\n");
+            Log::coreError("Type: Marker\n");
             break;
         case GL_DEBUG_TYPE_PUSH_GROUP:
-            NM_CORE_ERROR("Type: Push Group\n");
+            Log::coreError("Type: Push Group\n");
             break;
         case GL_DEBUG_TYPE_POP_GROUP:
-            NM_CORE_ERROR("Type: Pop Group\n");
+            Log::coreError("Type: Pop Group\n");
             break;
         case GL_DEBUG_TYPE_OTHER:
-            NM_CORE_ERROR("Type: Other\n");
+            Log::coreError("Type: Other\n");
             break;
     }
 
     switch (severity)
     {
         case GL_DEBUG_SEVERITY_HIGH:
-            NM_CORE_ERROR("Severity: high\n");
+            Log::coreError("Severity: high\n");
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
-            NM_CORE_ERROR("Severity: medium\n");
+            Log::coreError("Severity: medium\n");
             break;
         case GL_DEBUG_SEVERITY_LOW:
-            NM_CORE_ERROR("Severity: low\n");
+            Log::coreError("Severity: low\n");
             break;
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-            NM_CORE_ERROR("Severity: notification\n");
+            Log::coreError("Severity: notification\n");
             break;
     }
 }
 
 void RendererApi::_enableGlErrPrint()
 {
-    NM_CORE_INFO("GL Debug Enabled\n");
+    Log::coreInfo("GL Debug Enabled\n");
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(_glDebugOutput, nullptr);

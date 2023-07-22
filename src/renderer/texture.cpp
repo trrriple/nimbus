@@ -171,7 +171,7 @@ void Texture::_load()
     }
     else
     {
-        NM_CORE_ERROR("Texture failed to load at path: %s\n", m_path.c_str());
+        Log::coreError("Texture failed to load at path: %s\n", m_path.c_str());
         stbi_image_free(data);
     }
 }

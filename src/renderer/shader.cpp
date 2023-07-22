@@ -289,7 +289,7 @@ std::int32_t Shader::_getUniformLocation(const std::string& name) const
 
         if (location == -1)
         {
-            NM_CORE_ERROR(
+            Log::coreError(
                 "Uniform %s not found in shader program (vertex: "
                 "%s, fragment: %s\n",
                 name.c_str(),

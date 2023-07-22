@@ -29,7 +29,7 @@ class Window
     
     void onUpdate();
 
-    bool keyPressed(ScanCode ScanCode);
+    bool keyPressed(ScanCode ScanCode) const;
 
     uint32_t getHeight() const
     {
