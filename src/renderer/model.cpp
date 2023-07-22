@@ -1,7 +1,10 @@
-#include "nmpch.hpp"
-#include "core.hpp"
-
 #include "renderer/model.hpp"
+
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
+#include "assimp/scene.h"
+#include "core.hpp"
+#include "nmpch.hpp"
 #include "resourceManager.hpp"
 
 namespace nimbus
@@ -44,32 +47,39 @@ void Model::loadModel(std::string path)
     std::filesystem::path filePath(path);
     m_directory = filePath.parent_path().string();
 
-    processNode(scene->mRootNode, scene);
+    processNode(static_cast<void*>(scene->mRootNode),
+                static_cast<const void*>(scene));
 }
 
-void Model::processNode(aiNode* node, const aiScene* scene)
+void Model::processNode(void* node, const void* scene)
 {
+    aiNode*        ainode  = static_cast<aiNode*>(node);
+    const aiScene* aiScene = static_cast<const struct aiScene*>(scene);
+
     // process all the node's meshes (if any)
-    for (uint32_t i = 0; i < node->mNumMeshes; i++)
+    for (uint32_t i = 0; i < ainode->mNumMeshes; i++)
     {
-        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        mp_meshes.push_back(processMesh(mesh, scene));
+        aiMesh* mesh = aiScene->mMeshes[ainode->mMeshes[i]];
+        mp_meshes.push_back(processMesh(mesh, aiScene));
     }
     // then do the same for each of its children
-    for (uint32_t i = 0; i < node->mNumChildren; i++)
+    for (uint32_t i = 0; i < ainode->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene);
+        processNode(ainode->mChildren[i], scene);
     }
 }
 
-scope<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
+scope<Mesh> Model::processMesh(void* mesh, const void* scene)
 {
     std::vector<Mesh::Vertex> vertices;
     std::vector<uint32_t>     indices;
     std::vector<ref<Texture>> textures;
 
+    aiMesh*        aimesh  = static_cast<aiMesh*>(mesh);
+    const aiScene* aiScene = static_cast<const struct aiScene*>(scene);
+
     // process vertex positions, normals and texture coordinates
-    for (uint32_t i = 0; i < mesh->mNumVertices; i++)
+    for (uint32_t i = 0; i < aimesh->mNumVertices; i++)
     {
         Mesh::Vertex vertex;
         // we declare a placeholder vector since assimp uses its own vector
@@ -77,41 +87,41 @@ scope<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
         // transfer the data to this placeholder glm::vec3 first.
         glm::vec3 vector;
         // positions
-        vector.x        = mesh->mVertices[i].x;
-        vector.y        = mesh->mVertices[i].y;
-        vector.z        = mesh->mVertices[i].z;
+        vector.x        = aimesh->mVertices[i].x;
+        vector.y        = aimesh->mVertices[i].y;
+        vector.z        = aimesh->mVertices[i].z;
         vertex.position = vector;
         // normals
-        if (mesh->HasNormals())
+        if (aimesh->HasNormals())
         {
-            vector.x      = mesh->mNormals[i].x;
-            vector.y      = mesh->mNormals[i].y;
-            vector.z      = mesh->mNormals[i].z;
+            vector.x      = aimesh->mNormals[i].x;
+            vector.y      = aimesh->mNormals[i].y;
+            vector.z      = aimesh->mNormals[i].z;
             vertex.normal = vector;
         }
         // texture coordinates
-        if (mesh->mTextureCoords[0])  // does the mesh contain texture
-                                      // coordinates?
+        if (aimesh->mTextureCoords[0])  // does the mesh contain texture
+                                        // coordinates?
         {
             glm::vec2 vec;
             // a vertex can contain up to 8 different texture coordinates.
             // We thus make the assumption that we won't use models where a
             // vertex can have multiple texture coordinates so we always
             // take the first set (0).
-            vec.x            = mesh->mTextureCoords[0][i].x;
-            vec.y            = mesh->mTextureCoords[0][i].y;
+            vec.x            = aimesh->mTextureCoords[0][i].x;
+            vec.y            = aimesh->mTextureCoords[0][i].y;
             vertex.texCoords = vec;
             // tangent
-            if (mesh->HasTangentsAndBitangents())
+            if (aimesh->HasTangentsAndBitangents())
             {
-                vector.x       = mesh->mTangents[i].x;
-                vector.y       = mesh->mTangents[i].y;
-                vector.z       = mesh->mTangents[i].z;
+                vector.x       = aimesh->mTangents[i].x;
+                vector.y       = aimesh->mTangents[i].y;
+                vector.z       = aimesh->mTangents[i].z;
                 vertex.tangent = vector;
                 // bitangent
-                vector.x         = mesh->mBitangents[i].x;
-                vector.y         = mesh->mBitangents[i].y;
-                vector.z         = mesh->mBitangents[i].z;
+                vector.x         = aimesh->mBitangents[i].x;
+                vector.y         = aimesh->mBitangents[i].y;
+                vector.z         = aimesh->mBitangents[i].z;
                 vertex.bitangent = vector;
             }
         }
@@ -125,9 +135,9 @@ scope<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
     // now walk through each of the mesh's faces (a face is a mesh its
     // triangle) and retrieve the corresponding vertex indices.
-    for (uint32_t i = 0; i < mesh->mNumFaces; i++)
+    for (uint32_t i = 0; i < aimesh->mNumFaces; i++)
     {
-        aiFace face = mesh->mFaces[i];
+        aiFace face = aimesh->mFaces[i];
         for (uint32_t j = 0; j < face.mNumIndices; j++)
         {
             indices.push_back(face.mIndices[j]);
@@ -135,9 +145,9 @@ scope<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
     }
 
     // process material
-    if (mesh->mMaterialIndex >= 0)
+    if (aimesh->mMaterialIndex >= 0)
     {
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        aiMaterial* material = aiScene->mMaterials[aimesh->mMaterialIndex];
 
         // 1. diffuse maps
         std::vector<ref<Texture>> diffuseMaps
@@ -168,10 +178,12 @@ scope<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
     return makeScope<Mesh>(vertices, indices, textures, m_normalize);
 }
 
-std::vector<ref<Texture>> Model::loadMaterialTextures(aiMaterial*   mat,
+std::vector<ref<Texture>> Model::loadMaterialTextures(void*         mat,
                                                       Texture::Type texType)
 
 {
+    aiMaterial* aimat = static_cast<aiMaterial*>(mat);
+
     aiTextureType aiType = aiTextureType_NONE;
     if (texType == Texture::Type::NORMAL)
     {
@@ -199,10 +211,10 @@ std::vector<ref<Texture>> Model::loadMaterialTextures(aiMaterial*   mat,
     }
 
     std::vector<ref<Texture>> textures;
-    for (unsigned int i = 0; i < mat->GetTextureCount(aiType); i++)
+    for (unsigned int i = 0; i < aimat->GetTextureCount(aiType); i++)
     {
         aiString filename;
-        mat->GetTexture(aiType, i, &filename);
+        aimat->GetTexture(aiType, i, &filename);
         std::string path = m_directory + "/" + filename.C_Str();
 
         bool skip           = false;
@@ -220,7 +232,8 @@ std::vector<ref<Texture>> Model::loadMaterialTextures(aiMaterial*   mat,
         {
             ResourceManager& rm = ResourceManager::get();
 
-            ref<Texture>& p_texture = rm.loadTexture(texType, path, m_flipOnLoad);
+            ref<Texture>& p_texture
+                = rm.loadTexture(texType, path, m_flipOnLoad);
 
             textures.push_back(p_texture);
             m_loadedTextures.emplace(path, p_texture);

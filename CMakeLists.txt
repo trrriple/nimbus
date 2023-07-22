@@ -187,9 +187,9 @@ target_include_directories(nimbus PUBLIC "${INCLUDE_PATH}")
 
 # libraries build with fetchcontent
 #assimp
-target_include_directories(nimbus PUBLIC "${assimp_SOURCE_DIR}/include")
+target_include_directories(nimbus PRIVATE "${assimp_SOURCE_DIR}/include")
 # this is needed because assimp builds a file callled config.h here
-target_include_directories(nimbus PUBLIC "${assimp_BINARY_DIR}/include")
+target_include_directories(nimbus PRIVATE "${assimp_BINARY_DIR}/include")
 
 #sdl
 target_include_directories(nimbus PUBLIC "${sdl2_SOURCE_DIR}/include")
@@ -207,10 +207,10 @@ target_include_directories(nimbus PUBLIC "${tracy_SOURCE_DIR}/public/tracy")
 
 
 # vendors (not fetch content)
-target_include_directories(nimbus PUBLIC "${VENDOR_PATH}")
-target_include_directories(nimbus PUBLIC "${VENDOR_PATH}/glad")
-target_include_directories(nimbus PUBLIC "${VENDOR_PATH}/KHR")
-target_include_directories(nimbus PUBLIC "${VENDOR_PATH}/stb_image")
+target_include_directories(nimbus PRIVATE "${VENDOR_PATH}")
+target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/glad")
+target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/KHR")
+target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/stb_image")
 
 
 # #########################

@@ -13,6 +13,14 @@ namespace nimbus
 class Shader
 {
    public:
+    
+    enum class ShaderType
+    {
+        INT,
+        FLOAT,
+        BOOL
+    };
+
     /// Default constructor for Shader.
     Shader() = default;
 
@@ -126,6 +134,9 @@ class Shader
     /// @param name The name of the uniform.
     /// @param mat The matrix to set.
     void setMat4(const std::string& name, const glm::mat4& mat) const;
+    
+    static uint32_t s_getShaderType(ShaderType type);
+
 
    private:
     std::uint32_t m_id;            ///< The unique ID of the shader.

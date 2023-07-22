@@ -2,9 +2,6 @@
 
 #include <string>
 
-#include "assimp/Importer.hpp"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
 #include "common.hpp"
 #include "mesh.hpp"
 #include "texture.hpp"
@@ -32,11 +29,11 @@ class Model
 
     void loadModel(std::string path);
 
-    void processNode(aiNode* node, const aiScene* scene);
+    void processNode(void* node, const void* scene);
 
-    scope<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
+    scope<Mesh> processMesh(void* mesh, const void* scene);
 
-    std::vector<ref<Texture>> loadMaterialTextures(aiMaterial*   mat,
-                                               Texture::Type texType);
+    std::vector<ref<Texture>> loadMaterialTextures(void*         mat,
+                                                   Texture::Type texType);
 };
 }  // namespace nimbus

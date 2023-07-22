@@ -154,17 +154,18 @@ void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
     const auto& format = vertexBuffer->getFormat();
     for (const auto& component : format)
     {
-        if (std::get<0>(component.dataType) == GL_INT
-            || std::get<0>(component.dataType) == GL_BOOL)
+        uint32_t glType
+            = Shader::s_getShaderType(std::get<0>(component.dataType));
+
+        if (glType == GL_INT || glType == GL_BOOL)
         {
             glEnableVertexAttribArray(m_vertexBufferIndex);
 
-            uint32_t typeOfComponent = std::get<0>(component.dataType);
             uint32_t numOfComponent  = std::get<2>(component.dataType);
 
             glVertexAttribIPointer(m_vertexBufferIndex,
                                    numOfComponent,
-                                   typeOfComponent,
+                                   glType,
                                    format.getStride(),
                                    (const void*)component.offset);
 
@@ -175,11 +176,10 @@ void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
             }
             m_vertexBufferIndex++;
         }
-        else if (std::get<0>(component.dataType) == GL_FLOAT)
+        else if (glType == GL_FLOAT)
         {
-            uint32_t typeOfComponent = std::get<0>(component.dataType);
-            uint32_t numOfComponent  = std::get<2>(component.dataType);
-            uint32_t columns         = 1;
+            uint32_t numOfComponent = std::get<2>(component.dataType);
+            uint32_t columns        = 1;
 
             uint32_t numOfComponentsPerColumn = numOfComponent;
             if (numOfComponent > 4)
@@ -200,7 +200,7 @@ void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
                 glEnableVertexAttribArray(m_vertexBufferIndex);
                 glVertexAttribPointer(m_vertexBufferIndex,
                                       numOfComponentsPerColumn,
-                                      typeOfComponent,
+                                      glType,
                                       component.normalized ? GL_TRUE : GL_FALSE,
                                       format.getStride(),
                                       (const void*)offset);

@@ -8,6 +8,9 @@
 namespace nimbus
 {
 
+////////////////////////////////////////////////////////////////////////////////
+// Public Functions
+////////////////////////////////////////////////////////////////////////////////
 FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t samples)
     : m_width(width), m_height(height), m_samples(samples)
 {
@@ -46,7 +49,9 @@ FrameBuffer::~FrameBuffer()
 
 void FrameBuffer::construct()
 {
-    // blow away existing frame buffer if we've already made it
+    ////////////////////////////////////////////////////////////////////////////
+    // blow away existing frame buffer if we've already made it and create new
+    ////////////////////////////////////////////////////////////////////////////
     if (m_fbo)
     {
         glDeleteFramebuffers(1, &m_fbo);
@@ -56,12 +61,16 @@ void FrameBuffer::construct()
 
     glCreateFramebuffers(1, &m_fbo);
 
+    ////////////////////////////////////////////////////////////////////////////
     // generate and bind the texture in which to write
+    ////////////////////////////////////////////////////////////////////////////
     Texture::s_gen(m_texture, m_samples > 1);
-
     glBindTexture(_textureType(), m_texture);
 
+    
+    ////////////////////////////////////////////////////////////////////////////
     // setup texture and parameters
+    ////////////////////////////////////////////////////////////////////////////
     if (m_samples == 1)
     {
         glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, m_width, m_height);
@@ -83,11 +92,11 @@ void FrameBuffer::construct()
     }
 
     glBindTexture(_textureType(), 0);
-
-    // attach it
     glNamedFramebufferTexture(m_fbo, GL_COLOR_ATTACHMENT0, m_texture, 0);
 
+    ////////////////////////////////////////////////////////////////////////////
     // use render buffer for depth and stencil
+    ////////////////////////////////////////////////////////////////////////////
     glCreateRenderbuffers(1, &m_rbo);
     // allocate
     if (m_samples == 1)
@@ -101,11 +110,13 @@ void FrameBuffer::construct()
             m_rbo, m_samples, GL_DEPTH24_STENCIL8, m_width, m_height);
     }
 
-    // now attach it
     glNamedFramebufferRenderbuffer(
         m_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
 
-    // check frame buffer is complete
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Verify complete frame buffer
+    ////////////////////////////////////////////////////////////////////////////
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         NM_CORE_ASSERT(false,
@@ -184,7 +195,6 @@ void FrameBuffer::bind(Mode mode) const
 
 void FrameBuffer::unbind(Mode mode) const
 {
-    // bind the default framebuffer
     switch (mode)
     {
         case (Mode::READ_WRITE):
@@ -221,6 +231,9 @@ void FrameBuffer::clear()
     glClearTexImage(m_texture, 0, GL_RGBA, GL_INT, &val);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Private Functions
+////////////////////////////////////////////////////////////////////////////////
 uint32_t FrameBuffer::_textureType() const
 {
     return m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;

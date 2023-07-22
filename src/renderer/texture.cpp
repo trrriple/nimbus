@@ -8,6 +8,9 @@
 namespace nimbus
 {
 
+////////////////////////////////////////////////////////////////////////////////
+// Public Functions
+////////////////////////////////////////////////////////////////////////////////
 Texture::Texture(const Type         type,
                  const std::string& path,
                  const bool         flipOnLoad)
@@ -57,6 +60,9 @@ const std::string& Texture::getUniformNm(uint32_t index) const
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Static Functions
+////////////////////////////////////////////////////////////////////////////////
 void Texture::s_setMaxTextures(uint32_t maxTextures)
 {
     s_maxTextures = maxTextures;
@@ -103,6 +109,10 @@ void Texture::s_gen(uint32_t& id, bool multisample)
         multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &id);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Private Functions
+////////////////////////////////////////////////////////////////////////////////
 void Texture::_load()
 {
     s_gen(m_id);
@@ -165,6 +175,7 @@ void Texture::_load()
         stbi_image_free(data);
     }
 }
+
 
 void Texture::_initializeUniformNames()
 {

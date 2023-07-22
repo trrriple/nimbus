@@ -191,6 +191,21 @@ void Shader::setMat4(const std::string& name, const glm::mat4& mat) const
         _getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
+uint32_t Shader::s_getShaderType(Shader::ShaderType type)
+{
+    switch (type)
+    {
+        case (ShaderType::INT):
+            return GL_INT;
+        case (ShaderType::FLOAT):
+            return GL_FLOAT;
+        case (ShaderType::BOOL):
+            return GL_BOOL;
+        default:
+            NM_CORE_ASSERT_STATIC(
+                false, "Unknown Shader::ShaderType %i\n", type);
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private Functions

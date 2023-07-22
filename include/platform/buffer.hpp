@@ -8,28 +8,40 @@
 #include <vector>
 
 #include "common.hpp"
-#include "glad.h"
+#include "renderer/shader.hpp"
 
 namespace nimbus
 {
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shader Types MetaData
 ////////////////////////////////////////////////////////////////////////////////
-//                     gl Type       sizeof      # of Components
-typedef std::tuple<uint32_t, uint32_t, uint32_t> ShaderDataType;
+//                    Type             sizeof      # of Components
+typedef std::tuple<Shader::ShaderType, uint32_t, uint32_t> ShaderDataType;
 
-const ShaderDataType k_shaderFloat = std::make_tuple(GL_FLOAT, 4, 1);
-const ShaderDataType k_shaderVec2  = std::make_tuple(GL_FLOAT, 8, 2);
-const ShaderDataType k_shaderVec3  = std::make_tuple(GL_FLOAT, 12, 3);
-const ShaderDataType k_shaderVec4  = std::make_tuple(GL_FLOAT, 16, 4);
-const ShaderDataType k_shaderMat3  = std::make_tuple(GL_FLOAT, 36, 9);
-const ShaderDataType k_shaderMat4  = std::make_tuple(GL_FLOAT, 64, 16);
-const ShaderDataType k_shaderInt   = std::make_tuple(GL_INT, 4, 1);
-const ShaderDataType k_shaderInt2  = std::make_tuple(GL_INT, 8, 2);
-const ShaderDataType k_shaderInt3  = std::make_tuple(GL_INT, 12, 3);
-const ShaderDataType k_shaderInt4  = std::make_tuple(GL_INT, 16, 4);
-const ShaderDataType k_shaderBool  = std::make_tuple(GL_BOOL, 1, 1);
+const ShaderDataType k_shaderFloat
+    = std::make_tuple(Shader::ShaderType::FLOAT, 4, 1);
+const ShaderDataType k_shaderVec2
+    = std::make_tuple(Shader::ShaderType::FLOAT, 8, 2);
+const ShaderDataType k_shaderVec3
+    = std::make_tuple(Shader::ShaderType::FLOAT, 12, 3);
+const ShaderDataType k_shaderVec4
+    = std::make_tuple(Shader::ShaderType::FLOAT, 16, 4);
+const ShaderDataType k_shaderMat3
+    = std::make_tuple(Shader::ShaderType::FLOAT, 36, 9);
+const ShaderDataType k_shaderMat4
+    = std::make_tuple(Shader::ShaderType::FLOAT, 64, 16);
+const ShaderDataType k_shaderInt
+    = std::make_tuple(Shader::ShaderType::INT, 4, 1);
+const ShaderDataType k_shaderInt2
+    = std::make_tuple(Shader::ShaderType::INT, 8, 2);
+const ShaderDataType k_shaderInt3
+    = std::make_tuple(Shader::ShaderType::INT, 12, 3);
+const ShaderDataType k_shaderInt4
+    = std::make_tuple(Shader::ShaderType::INT, 16, 4);
+const ShaderDataType k_shaderBool
+    = std::make_tuple(Shader::ShaderType::BOOL, 1, 1);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Description of component in a buffer
