@@ -1,9 +1,9 @@
 
 #include "renderer/frameBuffer.hpp"
-#include "renderer/texture.hpp"
 
 #include "core.hpp"
 #include "nmpch.hpp"
+#include "renderer/texture.hpp"
 
 namespace nimbus
 {
@@ -21,8 +21,7 @@ FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t samples)
             FrameBuffer::k_maxDimension);
     }
 
-    NM_CORE_ASSERT(m_samples,
-                   "Must have at least 1 sample ");
+    NM_CORE_ASSERT(m_samples, "Must have at least 1 sample ");
 
     if (m_samples > 1)
     {
@@ -40,9 +39,9 @@ FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t samples)
 
 FrameBuffer::~FrameBuffer()
 {
-   glDeleteFramebuffers(1, &m_fbo);
-   glDeleteTextures(1, &m_texture);
-   glDeleteRenderbuffers(1, &m_rbo);
+    glDeleteFramebuffers(1, &m_fbo);
+    glDeleteTextures(1, &m_texture);
+    glDeleteRenderbuffers(1, &m_rbo);
 }
 
 void FrameBuffer::construct()
@@ -59,13 +58,12 @@ void FrameBuffer::construct()
 
     // generate and bind the texture in which to write
     Texture::s_gen(m_texture, m_samples > 1);
-    
+
     glBindTexture(_textureType(), m_texture);
 
     // setup texture and parameters
-    if(m_samples == 1)
+    if (m_samples == 1)
     {
-
         glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, m_width, m_height);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -76,7 +74,6 @@ void FrameBuffer::construct()
     }
     else
     {
-
         glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
                                   m_samples,
                                   GL_RGBA8,
@@ -95,13 +92,11 @@ void FrameBuffer::construct()
     // allocate
     if (m_samples == 1)
     {
-
         glNamedRenderbufferStorage(
             m_rbo, GL_DEPTH24_STENCIL8, m_width, m_height);
     }
     else
     {
-
         glNamedRenderbufferStorageMultisample(
             m_rbo, m_samples, GL_DEPTH24_STENCIL8, m_width, m_height);
     }
@@ -158,7 +153,7 @@ void FrameBuffer::blit(const FrameBuffer& destination) const
                       destination.m_height,
                       GL_COLOR_BUFFER_BIT,
                       GL_NEAREST);
-    
+
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
@@ -230,6 +225,5 @@ uint32_t FrameBuffer::_textureType() const
 {
     return m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 }
-
 
 }  // namespace nimbus
