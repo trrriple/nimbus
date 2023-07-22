@@ -56,6 +56,8 @@ class Application
 
     bool getMenuMode() const;
 
+    void kill();
+
    private:
     inline static Application* sp_instance = nullptr;
 

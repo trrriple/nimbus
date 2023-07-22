@@ -192,6 +192,12 @@ void Application::setMenuMode(bool mode)
     m_menuMode = mode;
 }
 
+void Application::kill()
+{
+    m_Active = false;
+}
+
+
 bool Application::getMenuMode() const
 {
     return m_menuMode;

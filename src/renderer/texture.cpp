@@ -68,7 +68,9 @@ uint32_t Texture::s_getMaxTextures()
     return s_maxTextures;
 }
 
-void Texture::s_bind(const uint32_t textureId, const uint32_t glTextureUnit)
+void Texture::s_bind(const uint32_t textureId,
+                     const uint32_t glTextureUnit,
+                     bool           multisample)
 {
     NM_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
                           "glTextureUnit > s_setMaxTextures. Did you call "
@@ -82,21 +84,23 @@ void Texture::s_bind(const uint32_t textureId, const uint32_t glTextureUnit)
 
     if (textureId != s_currBoundId)
     {
-        glBindTexture(GL_TEXTURE_2D, textureId);
+        glBindTexture(multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
+                      textureId);
         s_currBoundId = textureId;
     }
 }
 
-void Texture::s_unbind()
+void Texture::s_unbind(bool multisample)
 {
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 0);
     s_currBoundId = 0;
 }
 
-void Texture::s_gen(uint32_t& id)
-{   
+void Texture::s_gen(uint32_t& id, bool multisample)
+{
     std::lock_guard<std::mutex> lock(s_genLock);
-    glCreateTextures(GL_TEXTURE_2D, 1, &id);
+    glCreateTextures(
+        multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &id);
 }
 
 void Texture::_load()

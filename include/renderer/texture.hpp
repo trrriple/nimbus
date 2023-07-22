@@ -49,11 +49,13 @@ class Texture
 
     static uint32_t s_getMaxTextures();
 
-    static void s_bind(const uint32_t textureId, const uint32_t glTextureUnit);
+    static void s_bind(const uint32_t textureId,
+                       const uint32_t glTextureUnit,
+                       bool           multisample = false);
 
-    static void s_unbind();
+    static void s_unbind(bool multisample = false);
 
-    static void s_gen(uint32_t& id);
+    static void s_gen(uint32_t& id, bool multisample = false);
 
    private:
     inline static uint32_t                 s_maxTextures = k_maxTexturesUninit;
