@@ -18,7 +18,7 @@ Window::Window(const std::string& windowCaption,
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         NM_CORE_ASSERT(
-            0, "SDL could not init. SDL_Error: %s\n", SDL_GetError());
+            0, "SDL could not init. SDL_Error: %s", SDL_GetError());
     }
 
     // relative mouse
@@ -35,7 +35,7 @@ Window::Window(const std::string& windowCaption,
     m_sdlWindowId = SDL_GetWindowID(static_cast<SDL_Window*>(mp_window));
 
     NM_CORE_ASSERT(mp_window,
-                   "Window could not be created. sdl error %s\n",
+                   "Window could not be created. sdl error %s",
                    SDL_GetError());
 }
 
@@ -46,7 +46,7 @@ Window::~Window()
     SDL_DestroyWindow(static_cast<SDL_Window*>(mp_window));
     mp_window = nullptr;
 
-    Log::coreInfo("Window destroyed\n");
+    Log::coreInfo("Window destroyed");
 
     // Quit SDL subsystems
     SDL_Quit();
@@ -73,7 +73,7 @@ void Window::graphicsContextInit()
     mp_context = static_cast<void*>(
         SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
     NM_CORE_ASSERT(
-        mp_context, "Failed to created OpenGL Context %s\n", SDL_GetError());
+        mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
 
     // Set V-sync
     SDL_GL_SetSwapInterval(m_VSyncOn);
@@ -81,7 +81,7 @@ void Window::graphicsContextInit()
     // setup GLAD
     if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
     {
-        NM_CORE_ASSERT_STATIC(0, "Failed to initialize Glad %s\n");
+        NM_CORE_ASSERT_STATIC(0, "Failed to initialize Glad %s");
     }
 }
 
@@ -148,13 +148,13 @@ void Window::_handleWindowEvents()
 
             RendererApi::setViewportSize(0, 0, m_width, m_height);
 
-            Log::coreInfo("Window Resized %d x %d\n", m_width, m_height);
+            Log::coreInfo("Window Resized %d x %d", m_width, m_height);
             break;
         }
         // main window closed
         case (SDL_WINDOWEVENT_CLOSE):
         {
-            Log::coreInfo("This window closed\n");
+            Log::coreInfo("This window closed");
 
             m_exitCallback(m_event);
         }
@@ -178,7 +178,7 @@ void Window::_pollEvents()
         // SDL_QUIT comes if all windows are closed
         if (m_event.getEventType() == Event::Type::QUIT)
         {
-            Log::coreInfo("SDL_QUIT\n");
+            Log::coreInfo("SDL_QUIT");
             m_exitCallback(m_event);
         }
         else if (m_event.getEventType() == Event::Type::WINDOW)

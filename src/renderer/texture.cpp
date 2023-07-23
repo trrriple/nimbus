@@ -18,7 +18,7 @@ Texture::Texture(const Type         type,
 {
     NM_CORE_ASSERT(!(s_maxTextures == k_maxTexturesUninit),
                    "s_maxTextures not initialized. Did you call "
-                   "Texture::s_setMaxTextures?\n");
+                   "Texture::s_setMaxTextures?");
 
     _load();
 }
@@ -80,7 +80,7 @@ void Texture::s_bind(const uint32_t textureId,
 {
     NM_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
                           "glTextureUnit > s_setMaxTextures. Did you call "
-                          "Texture::s_setMaxTextures?\n");
+                          "Texture::s_setMaxTextures?");
 
     if (glTextureUnit != s_currBoundTextureUnit)
     {
@@ -139,7 +139,7 @@ void Texture::_load()
         }
         else
         {
-            NM_CORE_ASSERT(0, "Unknown image format 0x%x\n", m_numComponents);
+            NM_CORE_ASSERT(0, "Unknown image format 0x%x", m_numComponents);
         }
 
         glBindTexture(GL_TEXTURE_2D, m_id);
@@ -171,7 +171,7 @@ void Texture::_load()
     }
     else
     {
-        Log::coreError("Texture failed to load at path: %s\n", m_path.c_str());
+        Log::coreError("Texture failed to load at path: %s", m_path.c_str());
         stbi_image_free(data);
     }
 }

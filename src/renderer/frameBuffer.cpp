@@ -124,10 +124,10 @@ void FrameBuffer::construct()
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         NM_CORE_ASSERT(false,
-                       "Incomplete framebuffer! Error 0x%X\n",
+                       "Incomplete framebuffer! Error 0x%X",
                        glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-        Log::coreCritical("Incomplete framebuffer! Error 0x%X\n",
+        Log::coreCritical("Incomplete framebuffer! Error 0x%X",
                          glCheckFramebufferStatus(GL_FRAMEBUFFER));
     }
 
@@ -145,7 +145,7 @@ void FrameBuffer::resize(uint32_t width, uint32_t height)
         NM_CORE_ASSERT(
             false,
             "Attempted to make null sized FrameBuffer or Yuge (> %i) "
-            "FrameBuffer\n",
+            "FrameBuffer",
             FrameBuffer::k_maxDimension);
     }
 

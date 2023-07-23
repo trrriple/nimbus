@@ -29,7 +29,7 @@ ref<Texture>& ResourceManager::loadTexture(const Texture::Type type,
         auto texturePair = m_loadedTextures.emplace(
             path, makeRef<Texture>(type, path, flipOnLoad));
 
-        Log::coreInfo("ResourceManager::Texture loaded %s, components %i\n",
+        Log::coreInfo("ResourceManager::Texture loaded %s, components %i",
                      texturePair.first->second->m_path.c_str(),
                      texturePair.first->second->m_numComponents);
 
@@ -57,7 +57,7 @@ ref<Shader>& ResourceManager::loadShader(const std::string& name,
         auto shaderPair
             = m_loadedShaders.emplace(p_shader->getName(), p_shader);
 
-        Log::coreInfo("ResourceManager::Shader %s Compiled\n",
+        Log::coreInfo("ResourceManager::Shader %s Compiled",
                      shaderPair.first->second->getName().c_str());
 
         return shaderPair.first->second;
@@ -84,7 +84,7 @@ ref<Shader>& ResourceManager::loadShader(const std::string& vertexPath,
         Log::coreInfo(
             "ResourceManager::Shader Compiled from: \n\tVertex:   %s "
             "\n\tFragment: "
-            "%s\n",
+            "%s",
             shaderPair.first->second->getVertexPath().c_str(),
             shaderPair.first->second->getFragmentPath().c_str());
 

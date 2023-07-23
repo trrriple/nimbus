@@ -38,5 +38,6 @@ class Log
 
     static void coreCritical(const char* format, ...);
 
+
 };
 }  // namespace nimbus

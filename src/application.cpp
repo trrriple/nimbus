@@ -16,17 +16,17 @@ Application::Application(const std::string& name,
                          bool               is3d)
     : m_name(name), m_is3d(is3d)
 {
-    Log::init(); 
-
-    Log::coreInfo("------------------------------------------\n");
-    Log::coreInfo("----- Nimbus Engine Application Init -----\n");
-    Log::coreInfo("------------------------------------------\n");
-
     NM_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
 
     sp_instance = this;
 
     mp_window = makeScope<Window>(m_name, windowWidth, windowHeight);
+    Log::init();
+
+    Log::coreInfo("------------------------------------------");
+    Log::coreInfo("----- Nimbus Engine Application Init -----");
+    Log::coreInfo("------------------------------------------");
+
     mp_window->graphicsContextInit();
 
     Renderer::init();
@@ -96,7 +96,7 @@ void Application::execute()
         mp_window->onUpdate();
     }
 
-    Log::coreInfo("Quitting\n");
+    Log::coreInfo("Quitting");
 }
 
 void Application::onEvent(Event& event)

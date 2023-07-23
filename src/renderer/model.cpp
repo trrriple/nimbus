@@ -15,10 +15,10 @@ Model::Model(std::string path, bool flipOnLoad, bool normalize)
 {
     loadModel(path);
 
-    Log::coreInfo("Loaded Textures for model %s\n", path.c_str());
+    Log::coreInfo("Loaded Textures for model %s", path.c_str());
     for (const auto& pair : m_loadedTextures)
     {
-        Log::coreInfo("\t %s\n", pair.second->m_path.c_str());
+        Log::coreInfo("\t %s", pair.second->m_path.c_str());
     }
 }
 
@@ -40,7 +40,7 @@ void Model::loadModel(std::string path)
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE
         || !scene->mRootNode)
     {
-        Log::coreError("ASSIMP:: %s\n", import.GetErrorString());
+        Log::coreError("ASSIMP:: %s", import.GetErrorString());
         return;
     }
 
@@ -207,7 +207,7 @@ std::vector<ref<Texture>> Model::loadMaterialTextures(void*         mat,
     }
     else
     {
-        NM_CORE_ASSERT(0, "Unknown Texture format 0x%x\n", texType);
+        NM_CORE_ASSERT(0, "Unknown Texture format 0x%x", texType);
     }
 
     std::vector<ref<Texture>> textures;

@@ -361,7 +361,7 @@ void ParticleEmitter::chooseColors(size_t min, size_t max, bool updateLiving)
     {
         Log::coreError(
             "Particle color range given %i - %i outside of valid range %i - "
-            "%i\n",
+            "%i",
             min,
             max,
             0,

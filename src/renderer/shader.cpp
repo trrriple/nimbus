@@ -57,7 +57,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
     }
     catch (std::ifstream::failure& e)
     {
-        NM_CORE_ASSERT(0, "SHADER::FILE_NO_SUCCESFULLY_READ\n");
+        NM_CORE_ASSERT(0, "SHADER::FILE_NO_SUCCESFULLY_READ");
     }
 
     _compileShader(vertexSource, fragmentSource);
@@ -203,7 +203,7 @@ uint32_t Shader::s_getShaderType(Shader::ShaderType type)
             return GL_BOOL;
         default:
             NM_CORE_ASSERT_STATIC(
-                false, "Unknown Shader::ShaderType %i\n", type);
+                false, "Unknown Shader::ShaderType %i", type);
     }
 }
 
@@ -235,7 +235,7 @@ void Shader::_compileShader(const std::string& vertexSource,
     if (!success)
     {
         glGetShaderInfoLog(vertex, sizeof(infoLog), NULL, infoLog);
-        NM_CORE_ASSERT(0, "SHADER::VERTEX::COMPILATION_FAILED %s\n", infoLog);
+        NM_CORE_ASSERT(0, "SHADER::VERTEX::COMPILATION_FAILED %s", infoLog);
     }
 
     // fragment Shader
@@ -248,7 +248,7 @@ void Shader::_compileShader(const std::string& vertexSource,
     if (!success)
     {
         glGetShaderInfoLog(fragment, sizeof(infoLog), NULL, infoLog);
-        NM_CORE_ASSERT(0, "SHADER::FRAGMENT::COMPILATION_FAILED %s\n", infoLog);
+        NM_CORE_ASSERT(0, "SHADER::FRAGMENT::COMPILATION_FAILED %s", infoLog);
     }
 
     // shader program
@@ -261,7 +261,7 @@ void Shader::_compileShader(const std::string& vertexSource,
     if (!success)
     {
         glGetProgramInfoLog(m_id, sizeof(infoLog), NULL, infoLog);
-        NM_CORE_ASSERT(0, "SHADER::PROGRAM::COMPILATION_FAILED %s\n", infoLog);
+        NM_CORE_ASSERT(0, "SHADER::PROGRAM::COMPILATION_FAILED %s", infoLog);
     }
 
     // delete shaders as they're linked into our program now and no longer
@@ -291,7 +291,7 @@ std::int32_t Shader::_getUniformLocation(const std::string& name) const
         {
             Log::coreError(
                 "Uniform %s not found in shader program (vertex: "
-                "%s, fragment: %s\n",
+                "%s, fragment: %s",
                 name.c_str(),
                 m_vertexPath.c_str(),
                 m_fragmentPath.c_str());

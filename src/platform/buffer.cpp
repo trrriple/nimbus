@@ -146,7 +146,7 @@ void VertexArray::unbind() const
 void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
 {
     NM_CORE_ASSERT(vertexBuffer->getFormat().getComponents().size(),
-                   "VBO format is required to create VBA\n");
+                   "VBO format is required to create VBA");
 
     glBindVertexArray(m_id);
     vertexBuffer->bind();
