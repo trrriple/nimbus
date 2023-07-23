@@ -8,16 +8,29 @@ cmake_minimum_required(VERSION 3.6)
 # General Setup
 # #########################
 if(NOT CMAKE_CXX_COMPILER)
-    set(CMAKE_CXX_COMPILER "clang++")
+    if(CMAKE_SYSTEM_NAME MATCHES Windows)
+        set(CMAKE_CXX_COMPILER "clang++")
+    else()
+        set(CMAKE_CXX_COMPILER "g++")
+    endif()
 endif()
 
 if(NOT CMAKE_C_COMPILER)
-    set(CMAKE_C_COMPILER "clang")
+    if(CMAKE_SYSTEM_NAME MATCHES Windows)
+        set(CMAKE_C_COMPILER "clang")
+    else()
+        set(CMAKE_C_COMPILER "gcc")
+    endif()
 endif()
 
 if(NOT CMAKE_AR)
-    set(CMAKE_AR "llvm-ar")
+    if(CMAKE_SYSTEM_NAME MATCHES Windows)
+        set(CMAKE_AR "llvm-ar")
+    else()
+        set(CMAKE_AR "ar")
+    endif()
 endif()
+
 
 project(nimbus)
 
@@ -85,10 +98,13 @@ set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(assimp)
 
 # zlib really doesn't like c2x so correct for that
-#target_compile_options(zlibstatic PRIVATE -Wno-deprecated-non-prototype
-#    -Wno-deprecated-declarations
-#    -D_CRT_SECURE_NO_WARNINGS)
-target_compile_options(assimp PRIVATE -Wno-microsoft-enum-value)
+if(TARGET zlibstatic)
+    target_compile_options(zlibstatic PRIVATE -Wno-deprecated-non-prototype
+        -Wno-deprecated-declarations
+        -D_CRT_SECURE_NO_WARNINGS)
+endif()
+
+   target_compile_options(assimp PRIVATE -Wno-microsoft-enum-value)
 
 
 # #########################
