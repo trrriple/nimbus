@@ -204,6 +204,7 @@ uint32_t Shader::s_getShaderType(Shader::ShaderType type)
         default:
             NM_CORE_ASSERT_STATIC(
                 false, "Unknown Shader::ShaderType %i", type);
+            return GL_INT; // compiler snuffing
     }
 }
 
