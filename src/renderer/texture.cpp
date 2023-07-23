@@ -57,6 +57,11 @@ const std::string& Texture::getUniformNm(uint32_t index) const
         {
             return s_texHghtUniformNms[index];
         }
+        default:
+        {
+            NM_CORE_ASSERT(false, "Unsupported texture type!");
+            return s_texDiffUniformNms[index];
+        }
     }
 }
 

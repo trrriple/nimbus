@@ -197,19 +197,22 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
 
             glm::vec4 color = _getRandomColorInRange();
 
-            m_particleAttributes.emplace_back(positionOffset,
-                                              velocity,
-                                              accel,
-                                              color,
-                                              size,
-                                              lifetime,
-                                              lifetime,
-                                              false,
-                                              false);
+            particleAttributes partAtt = {positionOffset,
+                                          velocity,
+                                          accel,
+                                          color,
+                                          size,
+                                          lifetime,
+                                          lifetime,
+                                          false,
+                                          false};
+
+            m_particleAttributes.push_back(partAtt);
 
             // set GPU data
-            m_particleInstanceData.emplace_back(
-                m_parameters.centerPosition + positionOffset, color, size);
+            particleInstanceData partInst
+                = {m_parameters.centerPosition + positionOffset, color, size};
+            m_particleInstanceData.push_back(partInst);
         }
 
         mp_instanceVbo = makeRef<VertexBuffer>(

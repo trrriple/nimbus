@@ -105,15 +105,15 @@ class ParticleEmitter
     ////////////////////////////////////////////////////////////////////////////
     struct particleAttributes
     {
-        glm::vec3 positionOffset;
-        glm::vec3 velocity;
-        glm::vec3 acceleration;
-        glm::vec4 color;
-        float     size;
-        float     startLifetime;
-        float     curLifetime;
-        bool      updateColor;
-        bool      updateVelocity;
+        glm::vec3 positionOffset = glm::vec3(0.0f);
+        glm::vec3 velocity       = glm::vec3(0.0f);
+        glm::vec3 acceleration   = glm::vec3(0.0f);
+        glm::vec4 color          = glm::vec4(0.0f);
+        float     size           = 0.0f;
+        float     startLifetime  = 0.0f;
+        float     curLifetime    = 0.0f;
+        bool      updateColor    = false;
+        bool      updateVelocity = false;
 
         void resetLifetime(float newLifetime)
         {
@@ -135,7 +135,6 @@ class ParticleEmitter
         {
             return curLifetime / startLifetime;
         }
-        
     };
     ////////////////////////////////////////////////////////////////////////////
     // GPU data unique to each particle
@@ -148,9 +147,9 @@ class ParticleEmitter
     };
     struct particleInstanceData
     {
-        glm::vec3 position;
-        glm::vec4 color;
-        float     size;
+        glm::vec3 position = glm::vec3(0.0f);
+        glm::vec4 color    = glm::vec4(0.0f);
+        float     size     = 0.0f;
 
         void reset(const glm::vec3  newPosition,
                    float            newSize,

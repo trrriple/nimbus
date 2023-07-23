@@ -84,9 +84,9 @@ set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(assimp)
 
 # zlib really doesn't like c2x so correct for that
-target_compile_options(zlibstatic PRIVATE -Wno-deprecated-non-prototype
-    -Wno-deprecated-declarations
-    -D_CRT_SECURE_NO_WARNINGS)
+#target_compile_options(zlibstatic PRIVATE -Wno-deprecated-non-prototype
+#    -Wno-deprecated-declarations
+#    -D_CRT_SECURE_NO_WARNINGS)
 target_compile_options(assimp PRIVATE -Wno-microsoft-enum-value)
 
 
