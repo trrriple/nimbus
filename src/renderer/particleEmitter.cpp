@@ -212,7 +212,7 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
             // set GPU data
             particleInstanceData partInst
                 = {m_parameters.centerPosition + positionOffset, color, size};
-            
+
             m_particleInstanceData.push_back(partInst);
         }
 

@@ -2,7 +2,11 @@
 
 #include <cstdarg>
 
+#ifndef NIMBUS_NO_CONSOLE
 #include "SDL_log.h"
+#endif /* NIMBUS_NO_CONSOLE */
+
+
 #include "core.hpp"
 #include "nmpch.hpp"
 
@@ -22,6 +26,9 @@ void Log::init()
 
 void Log::appInfo(const char* format, ...)
 {
+#ifdef NIMBUS_NO_CONSOLE
+    UNUSED(format);
+#else
     va_list args;
     va_start(args, format);
 
@@ -34,10 +41,14 @@ void Log::appInfo(const char* format, ...)
                     args);
 
     va_end(args);
+#endif /* NIMBUS_NO_CONSOLE */
 }
 
 void Log::appWarn(const char* format, ...)
 {
+#ifdef NIMBUS_NO_CONSOLE
+    UNUSED(format);
+#else    
     va_list args;
     va_start(args, format);
 
@@ -50,10 +61,14 @@ void Log::appWarn(const char* format, ...)
                     args);
 
     va_end(args);
+#endif /* NIMBUS_NO_CONSOLE */
 }
 
 void Log::appError(const char* format, ...)
 {
+#ifdef NIMBUS_NO_CONSOLE
+    UNUSED(format);
+#else
     va_list args;
     va_start(args, format);
 
@@ -66,10 +81,14 @@ void Log::appError(const char* format, ...)
                     args);
 
     va_end(args);
+#endif /* NIMBUS_NO_CONSOLE */
 }
 
 void Log::appCritical(const char* format, ...)
 {
+#ifdef NIMBUS_NO_CONSOLE
+    UNUSED(format);
+#else
     va_list args;
     va_start(args, format);
 
@@ -82,10 +101,14 @@ void Log::appCritical(const char* format, ...)
                     args);
 
     va_end(args);
+#endif /* NIMBUS_NO_CONSOLE */
 }
 
 void Log::coreInfo(const char* format, ...)
 {
+#ifdef NIMBUS_NO_CONSOLE
+    UNUSED(format);
+#else
     va_list args;
     va_start(args, format);
 
@@ -98,10 +121,14 @@ void Log::coreInfo(const char* format, ...)
                     args);
 
     va_end(args);
+#endif /* NIMBUS_NO_CONSOLE */
 }
 
 void Log::coreWarn(const char* format, ...)
 {
+#ifdef NIMBUS_NO_CONSOLE
+    UNUSED(format);
+#else
     va_list args;
     va_start(args, format);
 
@@ -114,10 +141,14 @@ void Log::coreWarn(const char* format, ...)
                     args);
 
     va_end(args);
+#endif /* NIMBUS_NO_CONSOLE */
 }
 
 void Log::coreError(const char* format, ...)
 {
+#ifdef NIMBUS_NO_CONSOLE
+    UNUSED(format);
+#else
     va_list args;
     va_start(args, format);
 
@@ -130,10 +161,14 @@ void Log::coreError(const char* format, ...)
                     args);
 
     va_end(args);
+#endif /* NIMBUS_NO_CONSOLE */
 }
 
 void Log::coreCritical(const char* format, ...)
 {
+#ifdef NIMBUS_NO_CONSOLE
+    UNUSED(format);
+#else
     va_list args;
     va_start(args, format);
 
@@ -146,6 +181,7 @@ void Log::coreCritical(const char* format, ...)
                     args);
 
     va_end(args);
+#endif /* NIMBUS_NO_CONSOLE */
 }
 
 }  // namespace nimbus

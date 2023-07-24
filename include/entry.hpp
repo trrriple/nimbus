@@ -14,7 +14,7 @@ int nimbusEntry()
     return 0;
 }
 
-#if defined(_WIN32) && defined(NO_CONSOLE)
+#if defined(_WIN32) && defined(NIMBUS_NO_CONSOLE)
 int WinMain(int argc, char* argv[])
 {
     (void)(argc);

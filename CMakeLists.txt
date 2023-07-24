@@ -234,6 +234,10 @@ target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/stb_image")
 # #########################
 # Self Compiler/Linker flags
 # #########################
+if(NIMBUS_NO_CONSOLE)
+        target_compile_options(nimbus PRIVATE -DNIMBUS_NO_CONSOLE)
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(nimbus PRIVATE
         -Wall
@@ -250,13 +254,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    # Add debug-specific flags
-    target_compile_options(nimbus PRIVATE -g -gcodeview)
+# Add debug-specific flags
+target_compile_options(${GAME_TARGET} PRIVATE -g)
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # clang lets us get an pdb file for debugging with remedybg/vs
-        target_link_options(nimbus PRIVATE -g -gcodeview -Wl,/debug,/pdb:)
-    endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # clang lets us get an pdb file for debugging with remedybg/vs
+    target_compile_options(${GAME_TARGET} PRIVATE -gcodeview)
+    target_link_options(${GAME_TARGET} PRIVATE -g -gcodeview -Wl,/debug,/pdb:)
+endif()
+
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     # Add release-specific flags
