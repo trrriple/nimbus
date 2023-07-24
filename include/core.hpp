@@ -22,6 +22,10 @@
 // Asserts
 ////////////////////////////////////////////////////////////////////////////////
 #include <typeinfo>
+#ifdef __linux__
+#include <signal.h>
+#define __debugbreak() raise(SIGTRAP)
+#endif
 #define NM_CORE_ASSERT(condition, msg, ...)        \
 {                                                  \
     if (!(condition))                              \
@@ -31,6 +35,7 @@
             typeid(*this).name(),                  \
             __func__,                              \
             __LINE__ __VA_OPT__(,) __VA_ARGS__);   \
+            __debugbreak();                        \
     }                                              \
 }
 
@@ -42,6 +47,7 @@
             "[%s:%i] " msg,                        \
             __func__,                              \
             __LINE__ __VA_OPT__(,) __VA_ARGS__);   \
+            __debugbreak();                        \
     }                                              \
 
 

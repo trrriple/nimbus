@@ -16,6 +16,8 @@ Texture::Texture(const Type         type,
                  const bool         flipOnLoad)
     : m_type(type), m_path(path), m_flipOnLoad(flipOnLoad)
 {
+    NM_PROFILE();
+
     NM_CORE_ASSERT(!(s_maxTextures == k_maxTexturesUninit),
                    "s_maxTextures not initialized. Did you call "
                    "Texture::s_setMaxTextures?");
@@ -29,12 +31,14 @@ Texture::~Texture()
 }
 
 void Texture::bind(const uint32_t glTextureUnit) const
-{
+{   
     s_bind(m_id, glTextureUnit);
 }
 
 const std::string& Texture::getUniformNm(uint32_t index) const
 {
+    NM_PROFILE_TRACE();
+
     switch (m_type)
     {
         case (Type::DIFFUSE):
@@ -83,6 +87,8 @@ void Texture::s_bind(const uint32_t textureId,
                      const uint32_t glTextureUnit,
                      bool           multisample)
 {
+    NM_PROFILE_TRACE();
+
     NM_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
                           "glTextureUnit > s_setMaxTextures. Did you call "
                           "Texture::s_setMaxTextures?");
@@ -103,6 +109,8 @@ void Texture::s_bind(const uint32_t textureId,
 
 void Texture::s_unbind(bool multisample)
 {
+    NM_PROFILE_TRACE();
+
     glBindTexture(multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 0);
     s_currBoundId = 0;
 }

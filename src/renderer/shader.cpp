@@ -1,10 +1,10 @@
-#include "nmpch.hpp"
-#include "core.hpp"
-
 #include "renderer/shader.hpp"
 
 #include <fstream>
 #include <sstream>
+
+#include "core.hpp"
+#include "nmpch.hpp"
 
 namespace nimbus
 {
@@ -64,7 +64,7 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 }
 
 Shader::~Shader()
-{   
+{
     NM_PROFILE_DETAIL();
 
     glDeleteProgram(m_id);
@@ -97,14 +97,36 @@ void Shader::setBool(const std::string& name, bool value) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform1i(_getUniformLocation(name), (uint32_t)value);
+    glUniform1i(_getUniformLocation(name), (GLuint)value);
 }
 
-void Shader::setInt(const std::string& name, uint32_t value) const
+void Shader::setInt(const std::string&          name,
+                    const std::vector<int32_t>& value,
+                    uint32_t                    count) const
+{
+    NM_PROFILE_TRACE();
+
+    glUniform1iv(_getUniformLocation(name),
+                 count,
+                 reinterpret_cast<const GLint*>(value.data()));
+}
+
+void Shader::setInt(const std::string& name, int32_t value) const
 {
     NM_PROFILE_TRACE();
 
     glUniform1i(_getUniformLocation(name), value);
+}
+
+void Shader::setFloat(const std::string&        name,
+                      const std::vector<float>& value,
+                      uint32_t                  count) const
+{
+    NM_PROFILE_TRACE();
+
+    glUniform1fv(_getUniformLocation(name),
+                 count,
+                 reinterpret_cast<const GLfloat*>(value.data()));
 }
 
 void Shader::setFloat(const std::string& name, float value) const
@@ -114,12 +136,22 @@ void Shader::setFloat(const std::string& name, float value) const
     glUniform1f(_getUniformLocation(name), value);
 }
 
+void Shader::setVec2(const std::string&            name,
+                     const std::vector<glm::vec2>& value,
+                     uint32_t                      count) const
+{
+    NM_PROFILE_TRACE();
+
+    glUniform2fv(_getUniformLocation(name),
+                 count,
+                 reinterpret_cast<const GLfloat*>(value.data()));
+}
+
 void Shader::setVec2(const std::string& name, const glm::vec2& value) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform2fv(
-        _getUniformLocation(name), 1, glm::value_ptr(value));
+    glUniform2fv(_getUniformLocation(name), 1, glm::value_ptr(value));
 }
 
 void Shader::setVec2(const std::string& name, float x, float y) const
@@ -129,12 +161,22 @@ void Shader::setVec2(const std::string& name, float x, float y) const
     glUniform2f(_getUniformLocation(name), x, y);
 }
 
+void Shader::setVec3(const std::string&            name,
+                     const std::vector<glm::vec3>& value,
+                     uint32_t                      count) const
+{
+    NM_PROFILE_TRACE();
+
+    glUniform3fv(_getUniformLocation(name),
+                 count,
+                 reinterpret_cast<const GLfloat*>(value.data()));
+}
+
 void Shader::setVec3(const std::string& name, const glm::vec3& value) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform3fv(
-        _getUniformLocation(name), 1, glm::value_ptr(value));
+    glUniform3fv(_getUniformLocation(name), 1, glm::value_ptr(value));
 }
 
 void Shader::setVec3(const std::string& name, float x, float y, float z) const
@@ -144,12 +186,22 @@ void Shader::setVec3(const std::string& name, float x, float y, float z) const
     glUniform3f(_getUniformLocation(name), x, y, z);
 }
 
+void Shader::setVec4(const std::string&            name,
+                     const std::vector<glm::vec4>& value,
+                     uint32_t                      count) const
+{
+    NM_PROFILE_TRACE();
+
+    glUniform4fv(_getUniformLocation(name),
+                 count,
+                 reinterpret_cast<const GLfloat*>(value.data()));
+}
+
 void Shader::setVec4(const std::string& name, const glm::vec4& value) const
 {
     NM_PROFILE_TRACE();
 
-    glUniform4fv(
-        _getUniformLocation(name), 1, glm::value_ptr(value));
+    glUniform4fv(_getUniformLocation(name), 1, glm::value_ptr(value));
 }
 
 void Shader::setVec4(const std::string& name,
@@ -163,24 +215,56 @@ void Shader::setVec4(const std::string& name,
     glUniform4f(_getUniformLocation(name), x, y, z, w);
 }
 
-void Shader::setMat2(const std::string& name, const glm::mat2& mat) const
+void Shader::setMat2(const std::string&            name,
+                     const std::vector<glm::mat2>& value,
+                     uint32_t                      count) const
 {
     NM_PROFILE_TRACE();
 
     glUniformMatrix2fv(_getUniformLocation(name),
-                       1,
+                       count,
                        GL_FALSE,
-                       glm::value_ptr(mat));
+                       reinterpret_cast<const GLfloat*>(value.data()));
+}
+
+void Shader::setMat2(const std::string& name, const glm::mat2& mat) const
+{
+    NM_PROFILE_TRACE();
+
+    glUniformMatrix2fv(
+        _getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void Shader::setMat3(const std::string&            name,
+                     const std::vector<glm::mat3>& value,
+                     uint32_t                      count) const
+{
+    NM_PROFILE_TRACE();
+
+    glUniformMatrix3fv(_getUniformLocation(name),
+                       count,
+                       GL_FALSE,
+                       reinterpret_cast<const GLfloat*>(value.data()));
 }
 
 void Shader::setMat3(const std::string& name, const glm::mat3& mat) const
 {
     NM_PROFILE_TRACE();
 
-    glUniformMatrix3fv(_getUniformLocation(name),
-                       1,
+    glUniformMatrix3fv(
+        _getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void Shader::setMat4(const std::string&            name,
+                     const std::vector<glm::mat4>& value,
+                     uint32_t                      count) const
+{
+    NM_PROFILE_TRACE();
+
+    glUniformMatrix4fv(_getUniformLocation(name),
+                       count,
                        GL_FALSE,
-                       glm::value_ptr(mat));
+                       reinterpret_cast<const GLfloat*>(value.data()));
 }
 
 void Shader::setMat4(const std::string& name, const glm::mat4& mat) const
@@ -202,9 +286,8 @@ uint32_t Shader::s_getShaderType(Shader::ShaderType type)
         case (ShaderType::BOOL):
             return GL_BOOL;
         default:
-            NM_CORE_ASSERT_STATIC(
-                false, "Unknown Shader::ShaderType %i", type);
-            return GL_INT; // compiler snuffing
+            NM_CORE_ASSERT_STATIC(false, "Unknown Shader::ShaderType %i", type);
+            return GL_INT;  // compiler snuffing
     }
 }
 
@@ -290,7 +373,7 @@ std::int32_t Shader::_getUniformLocation(const std::string& name) const
 
         if (location == -1)
         {
-            Log::coreError(
+            Log::coreWarn(
                 "Uniform %s not found in shader program (vertex: "
                 "%s, fragment: %s",
                 name.c_str(),

@@ -243,7 +243,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(nimbus PRIVATE 
         -Wno-microsoft-enum-value 
         -Wno-deprecated-copy)
-endif()
+    
+    target_link_options(nimbus PRIVATE
+        -fuse-ld=lld)
+    endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Add debug-specific flags
@@ -258,6 +261,3 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     # Add release-specific flags
     target_compile_options(nimbus PRIVATE -O3 -march=native -DGLM_FORCE_INTRINSICS)
 endif()
-
-target_link_options(nimbus PRIVATE
-    -fuse-ld=lld)

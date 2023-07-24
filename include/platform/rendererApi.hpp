@@ -19,13 +19,6 @@ class RendererApi
         SOURCE_ALPHA_ADDITIVE,  // GL_SRC_ALPHA, GL_ONE
     };
 
-    enum class Type
-    {
-        INT,
-        FLOAT,
-        BOOL
-    };
-
     static void init();
     static void clear();
 

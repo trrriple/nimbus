@@ -11,13 +11,14 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 // Public Functions
 ////////////////////////////////////////////////////////////////////////////////
-FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t samples)
-    : m_width(width), m_height(height), m_samples(samples)
+FrameBuffer::FrameBuffer(FrameBuffer::Spec& spec)
+    : m_spec(spec)
 {
     NM_PROFILE_DETAIL();
 
-    if (width == 0 || height == 0 || width > FrameBuffer::k_maxDimension
-        || height > FrameBuffer::k_maxDimension)
+    if (m_spec.width == 0 || m_spec.height == 0
+        || m_spec.width > FrameBuffer::k_maxDimension
+        || m_spec.height > FrameBuffer::k_maxDimension)
     {
         NM_CORE_ASSERT(
             false,
@@ -26,16 +27,16 @@ FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t samples)
             FrameBuffer::k_maxDimension);
     }
 
-    NM_CORE_ASSERT(m_samples, "Must have at least 1 sample ");
+    NM_CORE_ASSERT(m_spec.samples, "Must have at least 1 sample ");
 
-    if (m_samples > 1)
+    if (spec.samples > 1)
     {
         int32_t maxSamples;
         glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
 
-        NM_CORE_ASSERT(((int32_t)samples <= maxSamples),
+        NM_CORE_ASSERT(((int32_t)spec.samples <= maxSamples),
                        "Sample count %i exceeds max supported samples %i",
-                       m_samples,
+                       spec.samples,
                        maxSamples);
     }
 
@@ -47,7 +48,7 @@ FrameBuffer::~FrameBuffer()
     NM_PROFILE_DETAIL();
 
     glDeleteFramebuffers(1, &m_fbo);
-    glDeleteTextures(1, &m_texture);
+    glDeleteTextures(m_textures.size(), m_textures.data());
     glDeleteRenderbuffers(1, &m_rbo);
 }
 
@@ -61,62 +62,94 @@ void FrameBuffer::construct()
     if (m_fbo)
     {
         glDeleteFramebuffers(1, &m_fbo);
-        glDeleteTextures(1, &m_texture);
+        glDeleteTextures(m_textures.size(), m_textures.data());
         glDeleteRenderbuffers(1, &m_rbo);
+
+        m_textures.clear();
     }
 
     glCreateFramebuffers(1, &m_fbo);
 
-    ////////////////////////////////////////////////////////////////////////////
-    // generate and bind the texture in which to write
-    ////////////////////////////////////////////////////////////////////////////
-    Texture::s_gen(m_texture, m_samples > 1);
-    glBindTexture(_textureType(), m_texture);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // setup texture and parameters
-    ////////////////////////////////////////////////////////////////////////////
-    if (m_samples == 1)
+    for (auto texSpec : m_spec.colorAttachments)
     {
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, m_width, m_height);
+        ////////////////////////////////////////////////////////////////////////
+        // generate and bind the texture in which to write
+        ////////////////////////////////////////////////////////////////////////
+        uint32_t texture;
+        Texture::s_gen(texture, m_spec.samples > 1);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    }
-    else
-    {
-        glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
-                                  m_samples,
-                                  GL_RGBA8,
-                                  m_width,
-                                  m_height,
-                                  GL_TRUE);
-    }
+        m_textures.push_back(texture);
 
-    glBindTexture(_textureType(), 0);
-    glNamedFramebufferTexture(m_fbo, GL_COLOR_ATTACHMENT0, m_texture, 0);
+        glBindTexture(_textureType(), texture);
+
+        ////////////////////////////////////////////////////////////////////////
+        // setup texture and parameters
+        ////////////////////////////////////////////////////////////////////////
+        if (m_spec.samples == 1)
+        {
+            glTexStorage2D(
+                GL_TEXTURE_2D, 1, GL_RGBA8, m_spec.width, m_spec.height);
+
+            ///////////////////////////
+            // Texture parameters
+            ///////////////////////////
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_MAG_FILTER,
+                            _textureFilterType(texSpec.filterTypeMag));
+
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_MIN_FILTER,
+                            _textureFilterType(texSpec.filterTypeMin));
+
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_WRAP_R,
+                            _textureWrapType(texSpec.wrapTypeR));
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_WRAP_S,
+                            _textureWrapType(texSpec.wrapTypeS));
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_WRAP_T,
+                            _textureWrapType(texSpec.wrapTypeT));
+        }
+        else
+        {
+            glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
+                                      m_spec.samples,
+                                      GL_RGBA8,
+                                      m_spec.width,
+                                      m_spec.height,
+                                      GL_TRUE);
+        }
+
+        glBindTexture(_textureType(), 0);
+        glNamedFramebufferTexture(m_fbo, GL_COLOR_ATTACHMENT0, texture, 0);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // use render buffer for depth and stencil
     ////////////////////////////////////////////////////////////////////////////
-    glCreateRenderbuffers(1, &m_rbo);
-    // allocate
-    if (m_samples == 1)
-    {
-        glNamedRenderbufferStorage(
-            m_rbo, GL_DEPTH24_STENCIL8, m_width, m_height);
-    }
-    else
-    {
-        glNamedRenderbufferStorageMultisample(
-            m_rbo, m_samples, GL_DEPTH24_STENCIL8, m_width, m_height);
-    }
 
-    glNamedFramebufferRenderbuffer(
-        m_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
+    if (_textureDepthType(m_spec.depthType))
+    {
+        glCreateRenderbuffers(1, &m_rbo);
+        // allocate
+        if (m_spec.samples == 1)
+        {
+            glNamedRenderbufferStorage(
+                m_rbo, GL_DEPTH24_STENCIL8, m_spec.width, m_spec.height);
+        }
+        else
+        {
+            glNamedRenderbufferStorageMultisample(m_rbo,
+                                                  m_spec.samples,
+                                                  GL_DEPTH24_STENCIL8,
+                                                  m_spec.width,
+                                                  m_spec.height);
+        }
+
+        glNamedFramebufferRenderbuffer(
+            m_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Verify complete frame buffer
@@ -128,7 +161,7 @@ void FrameBuffer::construct()
                        glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
         Log::coreCritical("Incomplete framebuffer! Error 0x%X",
-                         glCheckFramebufferStatus(GL_FRAMEBUFFER));
+                          glCheckFramebufferStatus(GL_FRAMEBUFFER));
     }
 
     // bind the default frame buffer
@@ -149,8 +182,8 @@ void FrameBuffer::resize(uint32_t width, uint32_t height)
             FrameBuffer::k_maxDimension);
     }
 
-    m_width  = width;
-    m_height = height;
+    m_spec.width  = width;
+    m_spec.height = height;
 
     construct();
 }
@@ -164,12 +197,12 @@ void FrameBuffer::blit(const FrameBuffer& destination) const
 
     glBlitFramebuffer(0,
                       0,
-                      m_width,
-                      m_height,
+                      m_spec.width,
+                      m_spec.height,
                       0,
                       0,
-                      destination.m_width,
-                      destination.m_height,
+                      destination.m_spec.width,
+                      destination.m_spec.height,
                       GL_COLOR_BUFFER_BIT,
                       GL_NEAREST);
 
@@ -200,7 +233,7 @@ void FrameBuffer::bind(Mode mode) const
         }
     }
 
-    glViewport(0, 0, m_width, m_height);
+    glViewport(0, 0, m_spec.width, m_spec.height);
 }
 
 void FrameBuffer::unbind(Mode mode) const
@@ -227,22 +260,24 @@ void FrameBuffer::unbind(Mode mode) const
     }
 }
 
-void FrameBuffer::bindTexture(const uint32_t textureUnit) const
+void FrameBuffer::bindTexture(const uint32_t textureUnit,
+                              const uint32_t attachmentIdx) const
 {
-    Texture::s_bind(m_texture, textureUnit, m_samples > 1);
+    Texture::s_bind(m_textures[attachmentIdx], textureUnit, m_spec.samples > 1);
 }
 
 void FrameBuffer::unbindTexture() const
 {
-    Texture::s_unbind(m_samples > 1);
+    Texture::s_unbind(m_spec.samples > 1);
 }
 
-void FrameBuffer::clear()
+
+void FrameBuffer::clear(const uint32_t attachmentIdx) const
 {
     NM_PROFILE_DETAIL();
 
     int val = -1;
-    glClearTexImage(m_texture, 0, GL_RGBA, GL_INT, &val);
+    glClearTexImage(m_textures[attachmentIdx], 0, GL_RGBA, GL_INT, &val);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,7 +285,79 @@ void FrameBuffer::clear()
 ////////////////////////////////////////////////////////////////////////////////
 uint32_t FrameBuffer::_textureType() const
 {
-    return m_samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+    return m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 }
 
+uint32_t FrameBuffer::_textureFormat(TextureFormat format) const
+
+{
+    switch (format)
+    {
+        case (TextureFormat::RGBA8):
+        {
+            return GL_RGBA8;
+        }
+        default:
+        {
+            NM_CORE_ASSERT(false, "Unknown Texture Format %i", format);
+            return 0;
+        }
+    }
+}
+
+uint32_t FrameBuffer::_textureFilterType(TextureFilterType filterType) const
+{
+    switch (filterType)
+    {
+        case (TextureFilterType::LINEAR):
+        {
+            return GL_LINEAR;
+        }
+        default:
+        {
+            NM_CORE_ASSERT(false, "Unknown Texture Filter Type %i", filterType);
+            return 0;
+        }
+    }
+}
+
+uint32_t FrameBuffer::_textureWrapType(TextureWrapType wrapType) const
+{
+    switch (wrapType)
+    {
+        case (TextureWrapType::CLAMP_TO_EDGE):
+        {
+            return GL_CLAMP_TO_EDGE;
+        }
+        case (TextureWrapType::REPEAT):
+        {
+            return GL_REPEAT;
+        }
+        default:
+        {
+            NM_CORE_ASSERT(false, "Unknown Texture Wrap Type %i", wrapType);
+            return 0;
+        }
+    }
+}
+
+uint32_t FrameBuffer::_textureDepthType(TextureDepthType depthType) const
+{
+    switch (depthType)
+    {
+        case (TextureDepthType::NONE):
+        {
+            return 0;
+        }
+        case (TextureDepthType::DEPTH24STENCIL8):
+        {
+            return GL_DEPTH24_STENCIL8;
+        }
+        default:
+        {
+            NM_CORE_ASSERT(false, "Unknown Depth/Stencil Type %i", depthType);
+            return 0;
+        }
+    }
+}
 }  // namespace nimbus

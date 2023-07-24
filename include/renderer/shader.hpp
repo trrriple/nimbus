@@ -13,7 +13,6 @@ namespace nimbus
 class Shader
 {
    public:
-    
     enum class ShaderType
     {
         INT,
@@ -73,12 +72,36 @@ class Shader
     /// Sets an integer uniform.
     /// @param name The name of the uniform.
     /// @param value The value to set.
-    void setInt(const std::string& name, uint32_t value) const;
+    /// @param count The number of ints in the data
+    void setInt(const std::string&          name,
+                const std::vector<int32_t>& value,
+                uint32_t                    count) const;
+
+    /// Sets an integer uniform.
+    /// @param name The name of the uniform.
+    /// @param value The value to set.
+    void setInt(const std::string& name, int32_t value) const;
+
+    /// Sets a float uniform.
+    /// @param name The name of the uniform.
+    /// @param value The value to set.
+    /// @param count The number of floats in the data
+    void setFloat(const std::string&        name,
+                  const std::vector<float>& value,
+                  uint32_t                  count) const;
 
     /// Sets a float uniform.
     /// @param name The name of the uniform.
     /// @param value The value to set.
     void setFloat(const std::string& name, float value) const;
+
+    /// Sets a 2D vector uniform.
+    /// @param name The name of the uniform.
+    /// @param value Vector of values to set.
+    /// @param count The number of vectors in the data
+    void setVec2(const std::string&            name,
+                 const std::vector<glm::vec2>& value,
+                 uint32_t                      count = 1) const;
 
     /// Sets a 2D vector uniform.
     /// @param name The name of the uniform.
@@ -93,6 +116,14 @@ class Shader
 
     /// Sets a 3D vector uniform.
     /// @param name The name of the uniform.
+    /// @param value Vector of values to set.
+    /// @param count The number of vectors in the data
+    void setVec3(const std::string&            name,
+                 const std::vector<glm::vec3>& value,
+                 uint32_t                      count = 1) const;
+
+    /// Sets a 3D vector uniform.
+    /// @param name The name of the uniform.
     /// @param value The value to set.
     void setVec3(const std::string& name, const glm::vec3& value) const;
 
@@ -102,6 +133,14 @@ class Shader
     /// @param y The y component.
     /// @param z The z component.
     void setVec3(const std::string& name, float x, float y, float z) const;
+
+    /// Sets a 4D vector uniform.
+    /// @param name The name of the uniform.
+    /// @param value Vector of values to set.
+    /// @param count The number of vectors in the data
+    void setVec4(const std::string&            name,
+                 const std::vector<glm::vec4>& value,
+                 uint32_t                      count = 1) const;
 
     /// Sets a 4D vector uniform.
     /// @param name The name of the uniform.
@@ -122,8 +161,24 @@ class Shader
 
     /// Sets a 2x2 matrix uniform.
     /// @param name The name of the uniform.
+    /// @param value Vector of values to set.
+    /// @param count The number of matrix in the data
+    void setMat2(const std::string&            name,
+                 const std::vector<glm::mat2>& value,
+                 uint32_t                      count = 1) const;
+
+    /// Sets a 2x2 matrix uniform.
+    /// @param name The name of the uniform.
     /// @param mat The matrix to set.
     void setMat2(const std::string& name, const glm::mat2& mat) const;
+
+    /// Sets a 3x3 matrix uniform.
+    /// @param name The name of the uniform.
+    /// @param value Vector of values to set.
+    /// @param count The number of matrix in the data
+    void setMat3(const std::string&            name,
+                 const std::vector<glm::mat3>& value,
+                 uint32_t                      count = 1) const;
 
     /// Sets a 3x3 matrix uniform.
     /// @param name The name of the uniform.
@@ -132,11 +187,18 @@ class Shader
 
     /// Sets a 4x4 matrix uniform.
     /// @param name The name of the uniform.
+    /// @param value Vector of values to set.
+    /// @param count The number of matrix in the data
+    void setMat4(const std::string&            name,
+                 const std::vector<glm::mat4>& value,
+                 uint32_t                      count = 1) const;
+
+    /// Sets a 4x4 matrix uniform.
+    /// @param name The name of the uniform.
     /// @param mat The matrix to set.
     void setMat4(const std::string& name, const glm::mat4& mat) const;
-    
-    static uint32_t s_getShaderType(ShaderType type);
 
+    static uint32_t s_getShaderType(ShaderType type);
 
    private:
     std::uint32_t m_id;            ///< The unique ID of the shader.
