@@ -7,6 +7,8 @@ cmake_minimum_required(VERSION 3.6)
 # #########################
 # General Setup
 # #########################
+project(nimbus)
+
 if(NOT CMAKE_CXX_COMPILER)
     if(CMAKE_SYSTEM_NAME MATCHES Windows)
         set(CMAKE_CXX_COMPILER "clang++")
@@ -32,7 +34,6 @@ if(NOT CMAKE_AR)
 endif()
 
 
-project(nimbus)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_PARALLEL_LEVEL 32)
