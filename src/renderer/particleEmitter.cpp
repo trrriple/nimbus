@@ -60,13 +60,13 @@ const std::string k_particleFragmentShader = R"(
 
     out vec4 FragColor;
 
-    uniform sampler2D texDiff_0;
+    uniform sampler2D particleTexture;
 
     void main()
     {
         // Sample the texture at the given coordinates and multiply it by the 
         // color
-        FragColor = texture(texDiff_0, TexCoords) * Color;
+        FragColor = texture(particleTexture, TexCoords) * Color;
     }
 )";
 
@@ -305,10 +305,9 @@ void ParticleEmitter::draw()
         return;
     }
 
-    const std::string& uniformNm = mp_texture->getUniformNm(0);
     mp_texture->bind(0);
     mp_shader->use();
-    mp_shader->setInt(uniformNm, 0);
+    mp_shader->setInt("particleTexture", 0);
 
     mp_instanceVbo->bind();
     mp_instanceVbo->setData(&m_particleInstanceData[0],

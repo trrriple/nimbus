@@ -22,7 +22,85 @@ Texture::Texture(const Type         type,
                    "s_maxTextures not initialized. Did you call "
                    "Texture::s_setMaxTextures?");
 
-    _load();
+    s_gen(m_id);
+
+    stbi_set_flip_vertically_on_load(m_flipOnLoad);
+
+    int32_t numComponents;
+
+    uint8_t* data
+        = stbi_load(m_path.c_str(), &m_width, &m_height, &numComponents, 0);
+
+    if (data)
+    {
+        if (numComponents == 1)
+        {
+            m_spec.format         = TexFormat::RED;
+            m_spec.formatInternal = TexFormatInternal::R8;
+        }
+        else if (numComponents == 3)
+        {
+            m_spec.format         = TexFormat::RGB;
+            m_spec.formatInternal = TexFormatInternal::RGB8;
+        }
+        else if (numComponents == 4)
+        {
+            m_spec.format         = TexFormat::RGBA;
+            m_spec.formatInternal = TexFormatInternal::RGBA8;
+        }
+        else
+        {
+            NM_CORE_ASSERT(
+                0, "Unknown image format has %i components", numComponents);
+        }
+
+        glBindTexture(GL_TEXTURE_2D, m_id);
+
+        // TODO, determine how to set this
+        m_spec.dataType      = TexDataType::UNSIGNED_BYTE;
+        m_spec.filterTypeMin = TexFilterType::MIPMAP_LINEAR;
+        m_spec.filterTypeMag = TexFilterType::LINEAR;
+        m_spec.wrapTypeS     = TexWrapType::REPEAT;
+        m_spec.wrapTypeT     = TexWrapType::REPEAT;
+        m_spec.wrapTypeR     = TexWrapType::REPEAT;
+   
+        // safety check for:
+        // If a non-zero named buffer object is bound to the
+        // GL_PIXEL_UNPACK_BUFFER target (see glBindBuffer) while a texture
+        // image is specified, data is treated as a byte offset into the buffer
+        // object's data store.
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     s_texFormatInternal(m_spec.formatInternal),
+                     m_width,
+                     m_height,
+                     0,
+                     s_texFormat(m_spec.format),
+                     s_texDataType(m_spec.dataType),
+                     data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D,
+                        GL_TEXTURE_MIN_FILTER,
+                        s_texFilterType(m_spec.filterTypeMin));
+        glTexParameteri(GL_TEXTURE_2D,
+                        GL_TEXTURE_MAG_FILTER,
+                        s_texFilterType(m_spec.filterTypeMag));
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s_texWrapType(m_spec.wrapTypeS));
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, s_texWrapType(m_spec.wrapTypeT));
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, s_texWrapType(m_spec.wrapTypeR));
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        Log::coreError("Texture failed to load at path: %s", m_path.c_str());
+        stbi_image_free(data);
+    }
 }
 
 Texture::~Texture()
@@ -31,42 +109,8 @@ Texture::~Texture()
 }
 
 void Texture::bind(const uint32_t glTextureUnit) const
-{   
-    s_bind(m_id, glTextureUnit);
-}
-
-const std::string& Texture::getUniformNm(uint32_t index) const
 {
-    NM_PROFILE_TRACE();
-
-    switch (m_type)
-    {
-        case (Type::DIFFUSE):
-        {
-            return s_texDiffUniformNms[index];
-        }
-        case (Type::SPECULAR):
-        {
-            return s_texSpecUniformNms[index];
-        }
-        case (Type::AMBIENT):
-        {
-            return s_texAmbiUniformNms[index];
-        }
-        case (Type::NORMAL):
-        {
-            return s_texNormUniformNms[index];
-        }
-        case (Type::HEIGHT):
-        {
-            return s_texHghtUniformNms[index];
-        }
-        default:
-        {
-            NM_CORE_ASSERT(false, "Unsupported texture type!");
-            return s_texDiffUniformNms[index];
-        }
-    }
+    s_bind(m_id, glTextureUnit);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +119,6 @@ const std::string& Texture::getUniformNm(uint32_t index) const
 void Texture::s_setMaxTextures(uint32_t maxTextures)
 {
     s_maxTextures = maxTextures;
-    _initializeUniformNames();
 }
 
 uint32_t Texture::s_getMaxTextures()
@@ -122,99 +165,136 @@ void Texture::s_gen(uint32_t& id, bool multisample)
         multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &id);
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Private Functions
-////////////////////////////////////////////////////////////////////////////////
-void Texture::_load()
+uint32_t Texture::s_texFormat(TexFormat format)
 {
-    s_gen(m_id);
-
-    stbi_set_flip_vertically_on_load(m_flipOnLoad);
-
-    uint8_t* data
-        = stbi_load(m_path.c_str(), &m_width, &m_height, &m_numComponents, 0);
-
-    if (data)
+    switch (format)
     {
-        GLenum format = 0;
-        if (m_numComponents == 1)
+        case TexFormat::NONE:
+            return 0;
+        case TexFormat::RGBA:
+            return GL_RGBA;
+        case TexFormat::RGB:
+            return GL_RGB;
+        case TexFormat::RG:
+            return GL_RG;
+        case TexFormat::RED:
+            return GL_RED;
+        default:
         {
-            format = GL_RED;
+            NM_CORE_ASSERT_STATIC(
+                false, "Unsupported texture format %i", format);
+            return 0;
         }
-        else if (m_numComponents == 3)
-        {
-            format = GL_RGB;
-        }
-        else if (m_numComponents == 4)
-        {
-            format = GL_RGBA;
-        }
-        else
-        {
-            NM_CORE_ASSERT(0, "Unknown image format 0x%x", m_numComponents);
-        }
-
-        glBindTexture(GL_TEXTURE_2D, m_id);
-
-        // safety check for:
-        // If a non-zero named buffer object is bound to the
-        // GL_PIXEL_UNPACK_BUFFER target (see glBindBuffer) while a texture
-        // image is specified, data is treated as a byte offset into the buffer
-        // object's data store.
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     format,
-                     m_width,
-                     m_height,
-                     0,
-                     format,
-                     GL_UNSIGNED_BYTE,
-                     data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    }
-    else
-    {
-        Log::coreError("Texture failed to load at path: %s", m_path.c_str());
-        stbi_image_free(data);
     }
 }
 
-
-void Texture::_initializeUniformNames()
+uint32_t Texture::s_texFormatInternal(TexFormatInternal format)
 {
-    /* initialize uniform names */
-    s_texDiffUniformNms.clear();
-    s_texSpecUniformNms.clear();
-    s_texAmbiUniformNms.clear();
-    s_texNormUniformNms.clear();
-    s_texHghtUniformNms.clear();
-
-    for (uint32_t i = 0; i < s_maxTextures; i++)
+    switch (format)
     {
-        std::string name = k_texDiffNm + "_" + std::to_string(i);
-        s_texDiffUniformNms.push_back(name);
+        case TexFormatInternal::NONE:
+            return 0;
+        case TexFormatInternal::RGBA8:
+            return GL_RGBA8;
+        case TexFormatInternal::RGBA16F:
+            return GL_RGBA16F;
+        case TexFormatInternal::RGBA32F:
+            return GL_RGBA32F;
+        case TexFormatInternal::RGB8:
+            return GL_RGB8;
+        case TexFormatInternal::RGB16F:
+            return GL_RGB16F;
+        case TexFormatInternal::RGB32F:
+            return GL_RGB32F;
+        case TexFormatInternal::RG8:
+            return GL_RG8;
+        case TexFormatInternal::RG16F:
+            return GL_RG16F;
+        case TexFormatInternal::RG32F:
+            return GL_RG32F;
+        case TexFormatInternal::R8:
+            return GL_R8;
+        case TexFormatInternal::R16F:
+            return GL_R16F;
+        case TexFormatInternal::R32F:
+            return GL_R32F;
+        case TexFormatInternal::DEPTH_COMPONENT16:
+            return GL_DEPTH_COMPONENT16;
+        case TexFormatInternal::DEPTH_COMPONENT24:
+            return GL_DEPTH_COMPONENT24;
+        case TexFormatInternal::DEPTH_COMPONENT32F:
+            return GL_DEPTH_COMPONENT32F;
+        case TexFormatInternal::DEPTH24_STENCIL8:
+            return GL_DEPTH24_STENCIL8;
+        default:
+        {
+            NM_CORE_ASSERT_STATIC(
+                false, "Unsupported internal texture format %i", format);
+            return 0;
+        }
+    }
+}
 
-        name = k_texSpecNm + "_" + std::to_string(i);
-        s_texSpecUniformNms.push_back(name);
+uint32_t Texture::s_texDataType(TexDataType dataType)
+{
+    switch (dataType)
+    {
+        case TexDataType::UNSIGNED_BYTE:
+            return GL_UNSIGNED_BYTE;
+        case TexDataType::BYTE:
+            return GL_BYTE;
+        case TexDataType::UNSIGNED_SHORT:
+            return GL_UNSIGNED_SHORT;
+        case TexDataType::SHORT:
+            return GL_SHORT;
+        case TexDataType::UNSIGNED_INT:
+            return GL_UNSIGNED_INT;
+        case TexDataType::INT:
+            return GL_INT;
+        case TexDataType::FLOAT:
+            return GL_FLOAT;
+        case TexDataType::HALF_FLOAT:
+            return GL_HALF_FLOAT;
+        // Add more conversions as needed
+        default:
+        {
+            NM_CORE_ASSERT_STATIC(
+                false, "Unsupported texture data type %i", dataType);
+            return 0;
+        }
+    }
+}
 
-        name = k_texAmbiNm + "_" + std::to_string(i);
-        s_texAmbiUniformNms.push_back(name);
+uint32_t Texture::s_texFilterType(TexFilterType filterType)
+{
+    switch (filterType)
+    {
+        case (TexFilterType::LINEAR):
+            return GL_LINEAR;
+        case (TexFilterType::MIPMAP_LINEAR):
+            return GL_LINEAR_MIPMAP_LINEAR;
+        default:
+        {
+            NM_CORE_ASSERT_STATIC(
+                false, "Unknown Texture Filter Type %i", filterType);
+            return 0;
+        }
+    }
+}
 
-        name = k_texNormNm + "_" + std::to_string(i);
-        s_texNormUniformNms.push_back(name);
-
-        name = k_texHghtNm + "_" + std::to_string(i);
-        s_texHghtUniformNms.push_back(name);
+uint32_t Texture::s_texWrapType(TexWrapType wrapType)
+{
+    switch (wrapType)
+    {
+        case (TexWrapType::CLAMP_TO_EDGE):
+            return GL_CLAMP_TO_EDGE;
+        case (TexWrapType::REPEAT):
+            return GL_REPEAT;
+        default:
+        {
+            NM_CORE_ASSERT_STATIC(false, "Unknown Texture Wrap Type %i", wrapType);
+            return 0;
+        }
     }
 }
 

@@ -80,48 +80,52 @@ void FrameBuffer::construct()
 
         m_textures.push_back(texture);
 
-        glBindTexture(_textureType(), texture);
+        glBindTexture(_textureTarget(), texture);
 
         ////////////////////////////////////////////////////////////////////////
         // setup texture and parameters
         ////////////////////////////////////////////////////////////////////////
         if (m_spec.samples == 1)
         {
-            glTexStorage2D(
-                GL_TEXTURE_2D, 1, GL_RGBA8, m_spec.width, m_spec.height);
+            glTexStorage2D(GL_TEXTURE_2D,
+                           1,
+                           Texture::s_texFormatInternal(texSpec.formatInternal),
+                           m_spec.width,
+                           m_spec.height);
 
             ///////////////////////////
             // Texture parameters
             ///////////////////////////
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MAG_FILTER,
-                            _textureFilterType(texSpec.filterTypeMag));
+                            Texture::s_texFilterType(texSpec.filterTypeMag));
 
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MIN_FILTER,
-                            _textureFilterType(texSpec.filterTypeMin));
+                            Texture::s_texFilterType(texSpec.filterTypeMin));
 
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_WRAP_R,
-                            _textureWrapType(texSpec.wrapTypeR));
+                            Texture::s_texWrapType(texSpec.wrapTypeR));
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_WRAP_S,
-                            _textureWrapType(texSpec.wrapTypeS));
+                            Texture::s_texWrapType(texSpec.wrapTypeS));
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_WRAP_T,
-                            _textureWrapType(texSpec.wrapTypeT));
+                             Texture::s_texWrapType(texSpec.wrapTypeT));
         }
         else
         {
-            glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,
-                                      m_spec.samples,
-                                      GL_RGBA8,
-                                      m_spec.width,
-                                      m_spec.height,
-                                      GL_TRUE);
+            glTexStorage2DMultisample(
+                GL_TEXTURE_2D_MULTISAMPLE,
+                m_spec.samples,
+                Texture::s_texFormatInternal(texSpec.formatInternal),
+                m_spec.width,
+                m_spec.height,
+                GL_TRUE);
         }
 
-        glBindTexture(_textureType(), 0);
+        glBindTexture(_textureTarget(), 0);
         glNamedFramebufferTexture(m_fbo, GL_COLOR_ATTACHMENT0, texture, 0);
     }
 
@@ -129,7 +133,7 @@ void FrameBuffer::construct()
     // use render buffer for depth and stencil
     ////////////////////////////////////////////////////////////////////////////
 
-    if (_textureDepthType(m_spec.depthType))
+    if (Texture::s_texFormatInternal(m_spec.depthType))
     {
         glCreateRenderbuffers(1, &m_rbo);
         // allocate
@@ -283,81 +287,9 @@ void FrameBuffer::clear(const uint32_t attachmentIdx) const
 ////////////////////////////////////////////////////////////////////////////////
 // Private Functions
 ////////////////////////////////////////////////////////////////////////////////
-uint32_t FrameBuffer::_textureType() const
+uint32_t FrameBuffer::_textureTarget() const
 {
     return m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 }
 
-uint32_t FrameBuffer::_textureFormat(TextureFormat format) const
-
-{
-    switch (format)
-    {
-        case (TextureFormat::RGBA8):
-        {
-            return GL_RGBA8;
-        }
-        default:
-        {
-            NM_CORE_ASSERT(false, "Unknown Texture Format %i", format);
-            return 0;
-        }
-    }
-}
-
-uint32_t FrameBuffer::_textureFilterType(TextureFilterType filterType) const
-{
-    switch (filterType)
-    {
-        case (TextureFilterType::LINEAR):
-        {
-            return GL_LINEAR;
-        }
-        default:
-        {
-            NM_CORE_ASSERT(false, "Unknown Texture Filter Type %i", filterType);
-            return 0;
-        }
-    }
-}
-
-uint32_t FrameBuffer::_textureWrapType(TextureWrapType wrapType) const
-{
-    switch (wrapType)
-    {
-        case (TextureWrapType::CLAMP_TO_EDGE):
-        {
-            return GL_CLAMP_TO_EDGE;
-        }
-        case (TextureWrapType::REPEAT):
-        {
-            return GL_REPEAT;
-        }
-        default:
-        {
-            NM_CORE_ASSERT(false, "Unknown Texture Wrap Type %i", wrapType);
-            return 0;
-        }
-    }
-}
-
-uint32_t FrameBuffer::_textureDepthType(TextureDepthType depthType) const
-{
-    switch (depthType)
-    {
-        case (TextureDepthType::NONE):
-        {
-            return 0;
-        }
-        case (TextureDepthType::DEPTH24STENCIL8):
-        {
-            return GL_DEPTH24_STENCIL8;
-        }
-        default:
-        {
-            NM_CORE_ASSERT(false, "Unknown Depth/Stencil Type %i", depthType);
-            return 0;
-        }
-    }
-}
 }  // namespace nimbus

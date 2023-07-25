@@ -13,6 +13,12 @@ namespace nimbus
 
 class Mesh
 {
+    inline static const std::string k_texDiffNm = "texDiff";
+    inline static const std::string k_texSpecNm = "texSpec";
+    inline static const std::string k_texAmbiNm = "texAmbi";
+    inline static const std::string k_texNormNm = "texNorm";
+    inline static const std::string k_texHghtNm = "texHght";
+
    public:
     struct Vertex
     {
@@ -66,16 +72,25 @@ class Mesh
     void draw(glm::mat4& model) const;
 
    private:
-    std::vector<Vertex>        m_vertices;
-    std::vector<uint32_t>      m_indices;
-    std::vector<ref<Texture>>  m_textures;
-    bool                       m_normalize;
-    ref<Shader>                mp_shader = nullptr;
-    ref<VertexBuffer>          mp_vbo    = nullptr;
-    ref<VertexArray>           mp_vao    = nullptr;
-    ref<IndexBuffer>           mp_ebo    = nullptr;
+    std::vector<Vertex>       m_vertices;
+    std::vector<uint32_t>     m_indices;
+    std::vector<ref<Texture>> m_textures;
+    bool                      m_normalize;
+    ref<Shader>               mp_shader = nullptr;
+    ref<VertexBuffer>         mp_vbo    = nullptr;
+    ref<VertexArray>          mp_vao    = nullptr;
+    ref<IndexBuffer>          mp_ebo    = nullptr;
+
+    std::vector<std::string> m_texDiffUniformNms;
+    std::vector<std::string> m_texSpecUniformNms;
+    std::vector<std::string> m_texAmbiUniformNms;
+    std::vector<std::string> m_texNormUniformNms;
+    std::vector<std::string> m_texHghtUniformNms;
 
     void _setupMesh();
+
+    void _setupTextureUniforms();
+
 };
 
 }  // namespace nimbus

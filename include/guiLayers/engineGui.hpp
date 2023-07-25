@@ -7,6 +7,8 @@ namespace nimbus
 {
 class EngineGui : public Layer
 {
+    inline static const uint32_t k_frameHistoryLength = 60 * 2 + 1;
+
    public:
     EngineGui();
 
@@ -20,5 +22,8 @@ class EngineGui : public Layer
 
     virtual void onGuiUpdate() override;
 
+   private:
+    std::vector<float> m_frameTimes_s;
+    uint32_t           m_frameHistoryCaptureCount = 0;
 };
 }  // namespace nimbus

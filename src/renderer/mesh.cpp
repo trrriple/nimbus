@@ -1,16 +1,16 @@
-#include "nmpch.hpp"
-#include "core.hpp"
-
 #include "renderer/mesh.hpp"
+
+#include "core.hpp"
+#include "nmpch.hpp"
 #include "renderer/renderer.hpp"
 
 namespace nimbus
 {
 
-Mesh::Mesh(std::vector<Vertex>        verticies,
-           std::vector<uint32_t>      indicies,
-           std::vector<ref<Texture>>  textures,
-           bool                       normalize)
+Mesh::Mesh(std::vector<Vertex>       verticies,
+           std::vector<uint32_t>     indicies,
+           std::vector<ref<Texture>> textures,
+           bool                      normalize)
     : m_vertices(verticies), m_indices(indicies), m_normalize(normalize)
 {
     NM_PROFILE_DETAIL();
@@ -24,11 +24,12 @@ Mesh::Mesh(std::vector<Vertex>        verticies,
     m_textures = textures;
 
     _setupMesh();
+    _setupTextureUniforms();
 }
 
-Mesh::Mesh(std::vector<Vertex>        verticies,
-           std::vector<ref<Texture>>  textures,
-           bool                       normalize)
+Mesh::Mesh(std::vector<Vertex>       verticies,
+           std::vector<ref<Texture>> textures,
+           bool                      normalize)
     : m_vertices(verticies), m_normalize(normalize)
 {
     NM_PROFILE_DETAIL();
@@ -80,42 +81,40 @@ void Mesh::draw(glm::mat4& model) const
 {
     NM_PROFILE();
 
-
-    uint32_t  diffIndex   = 0;
-    uint32_t  specIndex   = 0;
-    uint32_t  ambIndex    = 0;
-    uint32_t  normalIndex = 0;
-    uint32_t  heightIndex = 0;
-    uint32_t* typeIndex   = nullptr;
+    uint32_t diffIndex   = 0;
+    uint32_t specIndex   = 0;
+    uint32_t ambIndex    = 0;
+    uint32_t normalIndex = 0;
+    uint32_t heightIndex = 0;
 
     // go through and bind all of our textures
     for (uint32_t i = 0; i < m_textures.size(); i++)
     {
-        switch (m_textures[i]->m_type)
+        switch (m_textures[i]->getType())
         {
             case (Texture::Type::DIFFUSE):
             {
-                typeIndex = &diffIndex;
+                mp_shader->setInt(m_texDiffUniformNms[diffIndex++], i);
                 break;
             }
             case (Texture::Type::SPECULAR):
             {
-                typeIndex = &specIndex;
+                mp_shader->setInt(m_texSpecUniformNms[specIndex++], i);
                 break;
             }
             case (Texture::Type::AMBIENT):
             {
-                typeIndex = &ambIndex;
+                mp_shader->setInt(m_texAmbiUniformNms[ambIndex++], i);
                 break;
             }
             case (Texture::Type::NORMAL):
             {
-                typeIndex = &normalIndex;
+                mp_shader->setInt(m_texNormUniformNms[normalIndex++], i);
                 break;
             }
             case (Texture::Type::HEIGHT):
             {
-                typeIndex = &heightIndex;
+                mp_shader->setInt(m_texHghtUniformNms[heightIndex++], i);
                 break;
             }
             default:
@@ -123,11 +122,6 @@ void Mesh::draw(glm::mat4& model) const
                 NM_CORE_ASSERT(0, "Texture type unsupported.");
             }
         }
-
-        const std::string& uniformNm
-            = m_textures[i]->getUniformNm(*typeIndex++);
-
-        mp_shader->setInt(uniformNm.c_str(), i);
 
         m_textures[i]->bind(i);
     }
@@ -199,6 +193,57 @@ void Mesh::_setupMesh()
 
             mp_vao->setIndexBuffer(
                 makeRef<IndexBuffer>(&indices32[0], indices32.size()));
+        }
+    }
+}
+
+void Mesh::_setupTextureUniforms()
+{
+    uint32_t diffIndex   = 0;
+    uint32_t specIndex   = 0;
+    uint32_t ambIndex    = 0;
+    uint32_t normalIndex = 0;
+    uint32_t heightIndex = 0;
+
+    for (auto& tex : m_textures)
+    {
+        switch (tex->getType())
+        {
+            case (Texture::Type::DIFFUSE):
+            {
+                std::string name
+                    = k_texDiffNm + "_" + std::to_string(diffIndex++);
+                m_texDiffUniformNms.push_back(name);
+                break;
+            }
+            case (Texture::Type::SPECULAR):
+            {
+                std::string name
+                    = k_texDiffNm + "_" + std::to_string(specIndex++);
+                m_texSpecUniformNms.push_back(name);
+                break;
+            }
+            case (Texture::Type::AMBIENT):
+            {
+                std::string name
+                    = k_texDiffNm + "_" + std::to_string(ambIndex++);
+                m_texAmbiUniformNms.push_back(name);
+                break;
+            }
+            case (Texture::Type::NORMAL):
+            {
+                std::string name
+                    = k_texDiffNm + "_" + std::to_string(normalIndex++);
+                m_texNormUniformNms.push_back(name);
+                break;
+            }
+            case (Texture::Type::HEIGHT):
+            {
+                std::string name
+                    = k_texDiffNm + "_" + std::to_string(heightIndex++);
+                m_texHghtUniformNms.push_back(name);
+                break;
+            }
         }
     }
 }

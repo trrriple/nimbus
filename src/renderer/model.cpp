@@ -18,7 +18,7 @@ Model::Model(std::string path, bool flipOnLoad, bool normalize)
     Log::coreInfo("Loaded Textures for model %s", path.c_str());
     for (const auto& pair : m_loadedTextures)
     {
-        Log::coreInfo("\t %s", pair.second->m_path.c_str());
+        Log::coreInfo("\t %s", pair.second->getPath().c_str());
     }
 }
 

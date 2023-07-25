@@ -1,21 +1,16 @@
 #pragma once
 
-#include <string>
 #include <cstdint>
 #include <mutex>
+#include <string>
 
 namespace nimbus
 {
 
-static const uint32_t    k_maxTexturesUninit = 0;
-static const std::string k_texDiffNm         = "texDiff";
-static const std::string k_texSpecNm         = "texSpec";
-static const std::string k_texAmbiNm         = "texAmbi";
-static const std::string k_texNormNm         = "texNorm";
-static const std::string k_texHghtNm         = "texHght";
-
 class Texture
 {
+    static const uint32_t k_maxTexturesUninit = 0;
+
    public:
     enum class Type
     {
@@ -26,13 +21,71 @@ class Texture
         HEIGHT
     };
 
-    uint32_t    m_id;
-    Type        m_type;
-    std::string m_path;
-    bool        m_flipOnLoad;
-    int32_t     m_numComponents;
-    int32_t     m_height;
-    int32_t     m_width;
+    enum class TexFormat
+    {
+        NONE,
+        RGBA,
+        RGB,
+        RG,
+        RED,
+    };
+
+    enum class TexFormatInternal
+    {
+        NONE,
+        RGBA8,
+        RGBA16F,
+        RGBA32F,
+        RGB8,
+        RGB16F,
+        RGB32F,
+        RG8,
+        RG16F,
+        RG32F,
+        R8,
+        R16F,
+        R32F,
+        DEPTH_COMPONENT16,
+        DEPTH_COMPONENT24,
+        DEPTH_COMPONENT32F,
+        DEPTH24_STENCIL8,
+    };
+
+    enum class TexDataType
+    {
+        UNSIGNED_BYTE,
+        BYTE,
+        UNSIGNED_SHORT,
+        SHORT,
+        UNSIGNED_INT,
+        INT,
+        FLOAT,
+        HALF_FLOAT,
+    };
+
+    enum class TexFilterType
+    {
+        LINEAR,
+        MIPMAP_LINEAR
+    };
+
+    enum class TexWrapType
+    {
+        CLAMP_TO_EDGE,
+        REPEAT
+    };
+
+    struct TextureSpec
+    {
+        TexFormat         format         = TexFormat::RGBA;
+        TexFormatInternal formatInternal = TexFormatInternal::RGBA8;
+        TexDataType       dataType       = TexDataType::UNSIGNED_BYTE;
+        TexFilterType     filterTypeMin  = TexFilterType::LINEAR;
+        TexFilterType     filterTypeMag  = TexFilterType::LINEAR;
+        TexWrapType       wrapTypeS      = TexWrapType::CLAMP_TO_EDGE;
+        TexWrapType       wrapTypeT      = TexWrapType::CLAMP_TO_EDGE;
+        TexWrapType       wrapTypeR      = TexWrapType::CLAMP_TO_EDGE;
+    };
 
 
     Texture(const Type         type,
@@ -43,7 +96,20 @@ class Texture
 
     void bind(const uint32_t glTextureUnit) const;
 
-    const std::string& getUniformNm(uint32_t index) const;
+    Type getType() const
+    {
+        return m_type;
+    }
+
+    const std::string& getPath() const
+    {
+        return m_path;
+    }
+    
+    const TextureSpec& getSpec() const
+    {
+        return m_spec;
+    }
 
     static void s_setMaxTextures(uint32_t maxTextures);
 
@@ -57,20 +123,31 @@ class Texture
 
     static void s_gen(uint32_t& id, bool multisample = false);
 
+    static uint32_t s_texFormat(TexFormat format);
+
+    static uint32_t s_texFormatInternal(TexFormatInternal format);
+
+    static uint32_t s_texDataType(TexDataType dataType);
+
+    static uint32_t s_texFilterType(TexFilterType filterType);
+
+    static uint32_t s_texWrapType(TexWrapType wrapType);
+
    private:
+    TextureSpec m_spec;
+    uint32_t    m_id;
+    Type        m_type;
+    std::string m_path;
+    bool        m_flipOnLoad;
+    int32_t     m_numComponents;
+    int32_t     m_height;
+    int32_t     m_width;
+
     inline static uint32_t                 s_maxTextures = k_maxTexturesUninit;
-    inline static std::vector<std::string> s_texDiffUniformNms;
-    inline static std::vector<std::string> s_texSpecUniformNms;
-    inline static std::vector<std::string> s_texAmbiUniformNms;
-    inline static std::vector<std::string> s_texNormUniformNms;
-    inline static std::vector<std::string> s_texHghtUniformNms;
+
     inline static std::uint32_t            s_currBoundId          = 0;
     inline static std::uint32_t            s_currBoundTextureUnit = 0;
     inline static std::mutex               s_genLock = std::mutex();
-
-    void _load();
-
-    static void _initializeUniformNames();
 };
 
 }  // namespace nimbus

@@ -1,5 +1,6 @@
 #pragma once
 #include "common.hpp"
+#include "renderer/texture.hpp"
 
 namespace nimbus
 {
@@ -10,47 +11,15 @@ class FrameBuffer
     // does anyone even have 8k res?
     inline static const uint32_t k_maxDimension = 8192;
 
-    // TODO: should this be in texture class?
-    enum class TextureFormat
-    {
-        RGBA8
-    };
-
-    enum class TextureFilterType
-    {
-        LINEAR
-    };
-
-    enum class TextureWrapType
-    {
-        CLAMP_TO_EDGE,
-        REPEAT
-    };
-
-    enum class TextureDepthType
-    {
-        NONE,
-        DEPTH24STENCIL8
-    };
-
-    struct TextureSpec
-    {
-        TextureFormat     type          = TextureFormat::RGBA8;
-        TextureFilterType filterTypeMin = TextureFilterType::LINEAR;
-        TextureFilterType filterTypeMag = TextureFilterType::LINEAR;
-        TextureWrapType   wrapTypeR     = TextureWrapType::CLAMP_TO_EDGE;
-        TextureWrapType   wrapTypeS     = TextureWrapType::CLAMP_TO_EDGE;
-        TextureWrapType   wrapTypeT     = TextureWrapType::CLAMP_TO_EDGE;
-    };
-
     struct Spec
     {
         uint32_t width   = 1280;
         uint32_t height  = 720;
         uint32_t samples = 1;
 
-        std::vector<TextureSpec> colorAttachments;
-        TextureDepthType         depthType = TextureDepthType::DEPTH24STENCIL8;
+        std::vector<Texture::TextureSpec> colorAttachments;
+        Texture::TexFormatInternal        depthType
+            = Texture::TexFormatInternal::DEPTH24_STENCIL8;
     };
 
     enum class Mode
@@ -92,15 +61,8 @@ class FrameBuffer
     std::vector<uint32_t> m_textures;  // for texture (color) attachments
     uint32_t              m_rbo = 0;   // for depth/stencil texture
 
-    uint32_t _textureType() const;
+    uint32_t _textureTarget() const;
 
-    uint32_t _textureFormat(TextureFormat format) const;
-
-    uint32_t _textureFilterType(TextureFilterType filterType) const;
-
-    uint32_t _textureWrapType(TextureWrapType wrapType) const;
-
-    uint32_t _textureDepthType(TextureDepthType depthType) const;
 };
 
 }  // namespace nimbus

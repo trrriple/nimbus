@@ -16,7 +16,9 @@ namespace nimbus
 static Application* sp_appRef    = nullptr;
 static Window*      sp_appWinRef = nullptr;
 
-EngineGui::EngineGui() : Layer(Layer::Type::OVERLAY, "engineGUI")
+EngineGui::EngineGui()
+    : Layer(Layer::Type::OVERLAY, "engineGUI"),
+      m_frameTimes_s(k_frameHistoryLength, 0.0f)
 {
     sp_appRef    = &Application::get();
     sp_appWinRef = &sp_appRef->getWindow();
@@ -50,6 +52,22 @@ void EngineGui::onGuiUpdate()
                  0,
                  ImGuiWindowFlags_AlwaysAutoResize
                      | ImGuiWindowFlags_NoFocusOnAppearing);
+
+
+    // this is kinda inefficient :(
+    m_frameTimes_s.push_back(sp_appWinRef->m_tFrame_s);
+    
+    if (m_frameHistoryCaptureCount < k_frameHistoryLength)
+    {
+        m_frameHistoryCaptureCount++;
+    }
+    else
+    {
+        m_frameTimes_s.erase(m_frameTimes_s.begin());
+    }
+
+    ImGui::PlotLines(
+        "Frame Times", m_frameTimes_s.data(), k_frameHistoryLength);
 
     ImGui::Text("Draw Parameters");
 

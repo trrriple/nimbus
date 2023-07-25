@@ -29,9 +29,9 @@ ref<Texture>& ResourceManager::loadTexture(const Texture::Type type,
         auto texturePair = m_loadedTextures.emplace(
             path, makeRef<Texture>(type, path, flipOnLoad));
 
-        Log::coreInfo("ResourceManager::Texture loaded %s, components %i",
-                     texturePair.first->second->m_path.c_str(),
-                     texturePair.first->second->m_numComponents);
+        Log::coreInfo("ResourceManager::Texture loaded %s, format %i",
+                     texturePair.first->second->getPath().c_str(),
+                     texturePair.first->second->getSpec().format);
 
         return texturePair.first->second;
     }
