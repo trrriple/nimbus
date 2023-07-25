@@ -6,6 +6,7 @@
 #include "nmpch.hpp"
 #include "platform/rendererApi.hpp"
 #include "renderer/renderer.hpp"
+#include "renderer/font.hpp"
 
 namespace nimbus
 {
@@ -30,6 +31,8 @@ Application::Application(const std::string& name,
     mp_window->graphicsContextInit();
 
     Renderer::init();
+
+    Font testFont = Font("../resources/fonts/Roboto/Roboto-Regular.ttf");
 
     mp_window->setEventCallback(
         std::bind(&Application::onEvent, this, std::placeholders::_1));

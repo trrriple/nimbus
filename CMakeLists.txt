@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
 
-# we want a makefile
-# set(CMAKE_GENERATOR "MinGW Makefiles" CACHE INTERNAL "" FORCE)
-# set(CMAKE_VERBOSE_MAKEFILE ON)
-
 # #########################
 # General Setup
 # #########################
@@ -32,7 +28,6 @@ if(NOT CMAKE_AR)
         set(CMAKE_AR "ar")
     endif()
 endif()
-
 
 
 set(CMAKE_CXX_STANDARD 20)
@@ -109,18 +104,22 @@ endif()
 
 
 # #########################
-# Tracy (profiling)
+# MSDF atlas gen
 # #########################
 FetchContent_Declare(
-    tracy
-    GIT_REPOSITORY https://github.com/wolfpld/tracy
-    GIT_TAG v0.9
+    msdf-atlas-gen
+    GIT_REPOSITORY https://github.com/Chlumsky/msdf-atlas-gen.git
+
+    GIT_TAG b1af88cfcaa8a02dc5c4e7de593b6af70bb73ae8
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(tracy)
-target_compile_options(TracyClient PRIVATE -Wno-format)
+set(MSDF_ATLAS_USE_SKIA OFF CACHE BOOL "" FORCE)
+set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(msdf-atlas-gen)
+
+target_compile_options(msdf-atlas-gen PRIVATE -Wno-deprecated-declarations)
 
 
 # #########################
@@ -145,7 +144,6 @@ add_library(glad STATIC ${GLAD_LIB_SRC})
 # glad lib include paths
 target_include_directories(glad PRIVATE "${VENDOR_PATH}")
 target_include_directories(glad PRIVATE "${VENDOR_PATH}/glad")
-
 
 
 # #########################
@@ -178,6 +176,23 @@ target_include_directories(imgui PRIVATE "${imgui_SOURCE_DIR}")
 target_include_directories(imgui PRIVATE "${sdl2_SOURCE_DIR}/include")
 
 
+
+# #########################
+# Tracy (profiling)
+# #########################
+FetchContent_Declare(
+    tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy
+    GIT_TAG v0.9
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(tracy)
+target_compile_options(TracyClient PRIVATE -Wno-format)
+
+
+
 # #########################
 # Self: Nimbus
 # #########################
@@ -187,13 +202,13 @@ add_library(nimbus STATIC ${NIMBUS_LIB_SRC})
 set(CMAKE_USE_PCH ON)
 target_precompile_headers(nimbus PRIVATE "${INCLUDE_PATH}/nmpch.hpp")
 
-target_link_libraries(nimbus PRIVATE assimp)
 target_link_libraries(nimbus PRIVATE SDL2-static)
+target_link_libraries(nimbus PRIVATE assimp)
+target_link_libraries(nimbus PRIVATE msdf-atlas-gen)
 target_link_libraries(nimbus PRIVATE glad)
 target_link_libraries(nimbus PRIVATE stb_image)
 target_link_libraries(nimbus PRIVATE imgui)
-
-target_link_libraries (nimbus PUBLIC TracyClient )
+target_link_libraries(nimbus PUBLIC TracyClient)
 
 
 # #########################
@@ -203,14 +218,17 @@ target_link_libraries (nimbus PUBLIC TracyClient )
 # self
 target_include_directories(nimbus PRIVATE "${INCLUDE_PATH}")
 
-# libraries build with fetchcontent
+#sdl
+target_include_directories(nimbus PRIVATE "${sdl2_SOURCE_DIR}/include")
+
 #assimp
 target_include_directories(nimbus PRIVATE "${assimp_SOURCE_DIR}/include")
 # this is needed because assimp builds a file callled config.h here
 target_include_directories(nimbus PRIVATE "${assimp_BINARY_DIR}/include")
 
-#sdl
-target_include_directories(nimbus PRIVATE "${sdl2_SOURCE_DIR}/include")
+#msdf-atlas-gen
+target_include_directories(nimbus PRIVATE "${msdf-atlas-gen}/include")
+
 
 #glm
 target_include_directories(nimbus PUBLIC "${glm_SOURCE_DIR}/glm")
@@ -222,12 +240,14 @@ target_include_directories(nimbus PUBLIC "${imgui_SOURCE_DIR}")
 target_include_directories(nimbus PUBLIC "${tracy_SOURCE_DIR}/public/tracy")
 
 
-
-
-# vendors (not fetch content)
+# raw vendor path
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}")
+
+#glad 
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/glad")
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/KHR")
+
+#stb_mage
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/stb_image")
 
 

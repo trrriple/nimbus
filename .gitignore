@@ -12,6 +12,7 @@ vendor/sdl2*
 vendor/glm*
 vendor/imgui*
 vendor/tracy*
+vendor/msdf-atlas-gen*
 
 # cmake stuff
 CMakeFiles/

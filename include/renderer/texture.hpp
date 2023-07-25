@@ -139,7 +139,6 @@ class Texture
     Type        m_type;
     std::string m_path;
     bool        m_flipOnLoad;
-    int32_t     m_numComponents;
     int32_t     m_height;
     int32_t     m_width;
 
