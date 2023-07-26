@@ -23,7 +23,6 @@ class EngineGui : public Layer
     virtual void onGuiUpdate() override;
 
    private:
-    std::vector<float> m_frameTimes_s;
-    uint32_t           m_frameHistoryCaptureCount = 0;
+    std::vector<float> m_frameTimes_ms;
 };
 }  // namespace nimbus

@@ -5,16 +5,18 @@
 namespace nimbus
 {
 
-const float K_YAW_DEFAULT         = 0.0f;
-const float K_PITCH_DEFAULT       = 0.0f;
-const float K_SPEED_DEFAULT       = 10.0f;
-const float K_SENSITIVITY_DEFAULT = 0.05f;
-const float K_FOV_DEFAULT         = 45.0f;
-const float K_NEAR_DEFAULT        = 0.1f;
-const float K_FAR_DEFAULT         = 300.0f;
 
 class Camera
 {
+    inline static const float k_yaw_default         = 0.0f;
+    inline static const float k_pitch_default       = 0.0f;
+    inline static const float k_speed_default       = 10.0f;
+    inline static const float k_sensitivity_default = 0.05f;
+    inline static const float k_fov_default         = 45.0f;
+    inline static const float k_zoom_default        = 1.0f;
+    inline static const float k_near_default        = 0.1f;
+    inline static const float k_far_default         = 300.0f;
+
    public:
     // Defines several possible options for camera movement.
     // Used as abstraction to stay away from window-system specific input
@@ -29,14 +31,23 @@ class Camera
         DOWN,
     };
 
-    //3d camera
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
-           glm::vec3 up       = glm::vec3(0.0f, 1.0f, 0.0f),
-           float     yaw      = K_YAW_DEFAULT,
-           float     pitch    = K_PITCH_DEFAULT);
+    struct Bounds
+    {
+        glm::vec4 topLeft;
+        glm::vec4 topRight;
+        glm::vec4 bottomLeft;
+        glm::vec4 bottomRight;
+    };
+
+    // 3d camera
+    Camera(glm::vec3 position    = glm::vec3(0.0f, 0.0f, 0.0f),
+           glm::vec3 up          = glm::vec3(0.0f, 1.0f, 0.0f),
+           float     yaw         = k_yaw_default,
+           float     pitch       = k_pitch_default,
+           float     aspectRatio = 1.0f);
 
     //2d camera
-    Camera(float left, float right, float bottom, float top);
+    Camera(float aspectRatio = 1.0f);
 
     // processes input received from any position movement input system.
     // Accepts input parameter in the form of camera defined ENUM
@@ -49,7 +60,7 @@ class Camera
                            bool  constrainPitch = true);
 
     // processes input received from a canera zoom event
-    void processZoom(float yOffset);
+    void processFov(float yOffset);
 
     void       updateView();
     glm::mat4& getView();
@@ -60,16 +71,47 @@ class Camera
     void       updateViewProjection();
     glm::mat4& getViewProjection();
 
-    void setAspectRatio(float width, float height);
+    Bounds& getVisibleWorldBounds();
+
+    void setAspectRatio(float aspectRatio);
+
+    float getAspectRatio() const
+    {
+        return m_aspectRatio;
+    }
+
+    void setPosition(glm::vec3& position);
+
+    void setZoom(float zoom);
+
+    const glm::vec3& getPosition() const
+    {
+        return m_position;
+    }
+
+    void  setSpeed(float speed);
+
+    float getSpeed() const
+    {
+        return m_speed;
+    }
+
+    void  setSensitivity(float sensitivity);
+
+    float getSensitivity() const
+    {
+        return m_sensitivity;
+    }
 
    private:
     glm::mat4 m_projection;
     glm::mat4 m_view;
     glm::mat4 m_viewProjection;
+    Bounds    m_worldBounds;
 
     bool m_staleProjection;
     bool m_staleView;
-    bool m_staleViewProjection;
+    bool m_staleWorldBounds;
 
     // location
     glm::vec3 m_position;
@@ -86,6 +128,7 @@ class Camera
     float m_speed;
     float m_sensitivity;
     float m_fov;
+    float m_zoom;
     float m_aspectRatio;
 
     float m_near;
@@ -102,7 +145,6 @@ class Camera
     // calculates the front vector from the Camera's (updated) Euler Angles
     void _updateCameraVectors();
     float _getAspectRatio();
-
 };
 
 }  // namespace nimbus

@@ -48,7 +48,7 @@ Sprite::Sprite(const std::string& textureFileNm,
     ResourceManager& rm = ResourceManager::get();
 
     ref<Texture>& p_spriteTexture
-        = rm.loadTexture(Texture::Type::DIFFUSE, textureFileNm);
+        = rm.loadTexture(Texture::Type::DIFFUSE, textureFileNm, true);
 
     std::vector<ref<Texture>> spriteTextures = {p_spriteTexture};
 

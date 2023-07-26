@@ -133,7 +133,7 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
 
         // speed ditribution
         m_speedDist = std::uniform_real_distribution<float>(
-            m_parameters.speedMin, m_parameters.speedMax);
+            m_parameters.initSpeedMin, m_parameters.initSpeedMax);
 
         // accel distribution
         m_accelDistX = std::uniform_real_distribution<float>(
@@ -147,7 +147,7 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
 
         // size distribution
         m_sizeDist = std::uniform_real_distribution<float>(
-            m_parameters.sizeMin, m_parameters.sizeMax);
+            m_parameters.initSizeMin, m_parameters.initSizeMax);
 
         // project angle distribution
         m_angleDist = std::uniform_real_distribution<float>(

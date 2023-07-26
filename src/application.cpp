@@ -13,9 +13,8 @@ namespace nimbus
 
 Application::Application(const std::string& name,
                          uint32_t           windowWidth,
-                         uint32_t           windowHeight,
-                         bool               is3d)
-    : m_name(name), m_is3d(is3d)
+                         uint32_t           windowHeight)
+    : m_name(name)
 {
     NM_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
 
@@ -30,28 +29,13 @@ Application::Application(const std::string& name,
 
     mp_window->graphicsContextInit();
 
-    Renderer::init();
-
     mp_window->setEventCallback(
         std::bind(&Application::onEvent, this, std::placeholders::_1));
 
     mp_window->setExitCallback(
         std::bind(&Application::shouldQuit, this, std::placeholders::_1));
 
-    if (m_is3d)
-    {
-        RendererApi::setDepthTest(true);
-        mp_camera = makeScope<Camera>(glm::vec3(0.0f, 0.0f, 0.0f));
-    }
-    else
-    {
-        RendererApi::setDepthTest(false);
-        mp_camera = makeScope<Camera>(0.0f,
-                                      (float)mp_window->getWidth(),
-                                      (float)mp_window->getHeight(),
-                                      0.0f);
-    }
-
+ 
     mp_guiSubsystemLayer = makeRef<GuiSubsystem>();
     insertLayer(mp_guiSubsystemLayer);
     insertLayer(makeRef<EngineGui>());
@@ -165,11 +149,6 @@ LayerDeck& Application::getLayerDeck()
 Window& Application::getWindow()
 {
     return *mp_window;
-}
-
-Camera& Application::getCamera()
-{
-    return *mp_camera;
 }
 
 void Application::setMenuMode(bool mode)

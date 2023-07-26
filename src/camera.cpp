@@ -7,22 +7,24 @@
 namespace nimbus
 {
 
-Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
+Camera::Camera(glm::vec3 position,
+               glm::vec3 up,
+               float     yaw,
+               float     pitch,
+               float     aspectRatio)
     : m_position(position),
       m_front(glm::vec3(0.0f, 0.0f, -1.0f)),
       m_worldUp(up),
       m_yaw(yaw),
       m_pitch(pitch),
-      m_speed(K_SPEED_DEFAULT),
-      m_sensitivity(K_SENSITIVITY_DEFAULT),
-      m_fov(K_FOV_DEFAULT),
-      m_near(K_NEAR_DEFAULT),
-      m_far(K_FAR_DEFAULT),
+      m_speed(k_speed_default),
+      m_sensitivity(k_sensitivity_default),
+      m_fov(k_fov_default),
+      m_aspectRatio(aspectRatio),
+      m_near(k_near_default),
+      m_far(k_far_default),
       m_is3d(true)
 {
-    setAspectRatio(Application::get().getWindow().getWidth(),
-                   Application::get().getWindow().getHeight());
-
     _updateCameraVectors();
 
     updateView();
@@ -30,16 +32,14 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     updateViewProjection();
 }
 
-Camera::Camera(float left, float right, float bottom, float top)
+Camera::Camera(float aspectRatio)
     : m_position({0.0f, 0.0f, 0.0f}),
       m_yaw(0.0f),
-      m_orthoLeft(left),
-      m_orthoRight(right),
-      m_orthoBottom(bottom),
-      m_orthoTop(top),
+      m_zoom(k_zoom_default),
+      m_aspectRatio(aspectRatio),
       m_is3d(false)
-
 {
+
     updateView();
     updateProjection();
     updateViewProjection();
@@ -84,8 +84,9 @@ void Camera::processPosiUpdate(Movement direction, float deltaTime)
             break;
     }
 
-    m_staleView = true;
+    m_staleView           = true;
 }
+
 
 void Camera::processViewUpdate(float xOffset,
                                float yOffset,
@@ -110,10 +111,10 @@ void Camera::processViewUpdate(float xOffset,
     // update Front, Right and Up Vectors using the updated Euler angles
     _updateCameraVectors();
 
-    m_staleView = true;
+    m_staleView           = true;
 }
 
-void Camera::processZoom(float yOffset)
+void Camera::processFov(float yOffset)
 {
     NM_PROFILE_TRACE();
 
@@ -123,7 +124,7 @@ void Camera::processZoom(float yOffset)
     if (m_fov > 45.0f)
         m_fov = 45.0f;
 
-    m_staleProjection = true;
+    m_staleProjection     = true;
 }
 
 void Camera::updateView()
@@ -145,7 +146,6 @@ void Camera::updateView()
     }
 
     m_staleView           = false;
-    m_staleViewProjection = true;
 }
 
 glm::mat4& Camera::getView()
@@ -171,17 +171,15 @@ void Camera::updateProjection()
     }
     else
     {
-        m_projection
-            = glm::ortho(m_orthoLeft,
-                         (float)Application::get().getWindow().getWidth(),
-                         (float)Application::get().getWindow().getHeight(),
-                         m_orthoTop,
-                         -1.0f,
-                         1.0f);
+        m_projection = glm::ortho(-m_aspectRatio * m_zoom,
+                                  m_aspectRatio * m_zoom,
+                                  -m_zoom,
+                                  m_zoom,
+                                  -1.0f,
+                                  1.0f);
     }
 
-    m_staleProjection     = false;
-    m_staleViewProjection = true;
+    m_staleProjection = false;
 }
 
 glm::mat4& Camera::getProjection()
@@ -202,18 +200,53 @@ void Camera::updateViewProjection()
 
     m_viewProjection = (getView() * getProjection());
 
-    m_staleViewProjection = false;
+    m_staleWorldBounds = true;
+
 }
 
 glm::mat4& Camera::getViewProjection()
 {
     NM_PROFILE_TRACE();
 
-    if (m_staleViewProjection)
+    if (m_staleView || m_staleProjection)
     {
         updateViewProjection();
     }
     return m_viewProjection;
+}
+
+Camera::Bounds& Camera::getVisibleWorldBounds()
+{
+    // Calculate the inverse view-projection matrix
+
+    if (m_staleWorldBounds)
+    {
+        glm::mat4 inverseViewProjectionMatrix = glm::inverse(m_viewProjection);
+
+        // Corner positions in NDC
+        glm::vec4 topLeftNDC(-1.0f, 1.0f, 0.0f, 1.0f);
+        glm::vec4 topRightNDC(1.0f, 1.0f, 0.0f, 1.0f);
+        glm::vec4 bottomLeftNDC(-1.0f, -1.0f, 0.0f, 1.0f);
+        glm::vec4 bottomRightNDC(1.0f, -1.0f, 0.0f, 1.0f);
+
+        // Transform NDC coordinates to world coordinates using the inverse
+        // view-projection matrix
+        m_worldBounds.topLeft    = inverseViewProjectionMatrix * topLeftNDC;
+        m_worldBounds.topRight   = inverseViewProjectionMatrix * topRightNDC;
+        m_worldBounds.bottomLeft = inverseViewProjectionMatrix * bottomLeftNDC;
+        m_worldBounds.bottomRight
+            = inverseViewProjectionMatrix * bottomRightNDC;
+
+        // Convert the homogeneous coordinates to 3D coordinates
+        m_worldBounds.topLeft     /= m_worldBounds.topLeft.w;
+        m_worldBounds.topRight    /= m_worldBounds.topRight.w;
+        m_worldBounds.bottomLeft  /= m_worldBounds.bottomLeft.w;
+        m_worldBounds.bottomRight /= m_worldBounds.bottomRight.w;
+
+        m_staleWorldBounds = false;
+    }
+
+    return m_worldBounds;
 }
 
 void Camera::_updateCameraVectors()
@@ -235,10 +268,32 @@ void Camera::_updateCameraVectors()
     m_up = glm::normalize(glm::cross(m_right, m_front));
 }
 
-void Camera::setAspectRatio(float width, float height)
+void Camera::setAspectRatio(float aspectRatio)
 {
-    m_aspectRatio     = width / height;
+    m_aspectRatio     = aspectRatio;
     m_staleProjection = true;
+}
+
+void Camera::setPosition(glm::vec3& position)
+{
+    m_position            = position;
+    m_staleView           = true;
+}
+
+void Camera::setZoom(float zoom)
+{
+    m_zoom            = zoom;
+    m_staleProjection = true;
+}
+
+void Camera::setSpeed(float speed)
+{
+    m_speed = speed;
+}
+
+void Camera::setSensitivity(float sensitivity)
+{
+    m_sensitivity = sensitivity;
 }
 
 }  // namespace nimbus

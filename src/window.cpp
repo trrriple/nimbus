@@ -2,6 +2,8 @@
 #include "core.hpp"
 
 #include "window.hpp"
+#include "renderer/renderer.hpp"
+#include "renderer/renderer2D.hpp"
 #include "platform/rendererApi.hpp"
 #include "keyCode.hpp"
 
@@ -11,7 +13,9 @@ namespace nimbus
 Window::Window(const std::string& windowCaption,
                uint32_t           width,
                uint32_t           height)
-    : m_width(width), m_height(height)
+    : m_width(width),
+      m_height(height),
+      m_aspectRatio(static_cast<float>(width) / static_cast<float>(height))
 {
     NM_PROFILE_DETAIL();
 
@@ -83,6 +87,10 @@ void Window::graphicsContextInit()
     {
         NM_CORE_ASSERT_STATIC(0, "Failed to initialize Glad %s");
     }
+
+    Renderer::init();
+    Renderer2D::init();
+
 }
 
 void Window::setEventCallback(const nbWindowEvtCallback_t& callback)
@@ -146,6 +154,9 @@ void Window::_handleWindowEvents()
             m_width  = m_event.getDetails().window.data1;
             m_height = m_event.getDetails().window.data2;
 
+            m_aspectRatio
+                = static_cast<float>(m_width) / static_cast<float>(m_height);
+
             RendererApi::setViewportSize(0, 0, m_width, m_height);
 
             Log::coreInfo("Window Resized %d x %d", m_width, m_height);
@@ -171,9 +182,6 @@ void Window::_pollEvents()
 
     while (SDL_PollEvent(reinterpret_cast<SDL_Event*>(&m_event.getDetails())))
     {
-        // call the event callback for each event
-        m_evtCallback(m_event);
-
         // handle internal window event stuff
         // SDL_QUIT comes if all windows are closed
         if (m_event.getEventType() == Event::Type::QUIT)
@@ -189,6 +197,9 @@ void Window::_pollEvents()
                 _handleWindowEvents();
             }
         }
+        
+        // call the event callback for each event
+        m_evtCallback(m_event);
 
         m_event.clear();
     }

@@ -40,6 +40,11 @@ class Window
         return m_width;
     }
 
+    float getAspectRatio() const
+    {
+        return m_aspectRatio;
+    }
+
     void* getOsWindow() const
     {
         return mp_window;
@@ -66,6 +71,7 @@ class Window
     uint32_t m_sdlWindowId;
     uint32_t m_width;
     uint32_t m_height;
+    float    m_aspectRatio;
     bool     m_VSyncOn = true;
 
     void _handleWindowEvents();

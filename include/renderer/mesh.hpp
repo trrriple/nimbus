@@ -77,9 +77,7 @@ class Mesh
     std::vector<ref<Texture>> m_textures;
     bool                      m_normalize;
     ref<Shader>               mp_shader = nullptr;
-    ref<VertexBuffer>         mp_vbo    = nullptr;
     ref<VertexArray>          mp_vao    = nullptr;
-    ref<IndexBuffer>          mp_ebo    = nullptr;
 
     std::vector<std::string> m_texDiffUniformNms;
     std::vector<std::string> m_texSpecUniformNms;

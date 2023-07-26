@@ -16,8 +16,7 @@ class Application
    public:
     Application(const std::string& name         = "Program",
                 uint32_t           windowWidth  = 1280,
-                uint32_t           windowHeight = 720,
-                bool               is3d         = true);
+                uint32_t           windowHeight = 720);
 
     virtual ~Application() = default;
 
@@ -51,8 +50,6 @@ class Application
 
     Window& getWindow();
 
-    Camera& getCamera();
-
     void setMenuMode(bool mode);
 
     bool getMenuMode() const;
@@ -68,7 +65,6 @@ class Application
     // Parameters
     ///////////////////////////
     std::string m_name;
-    bool        m_is3d;
 
     ///////////////////////////
     // State
@@ -82,7 +78,6 @@ class Application
     ///////////////////////////
     inline static Application* sp_instance          = nullptr;
     scope<Window>              mp_window            = nullptr;
-    scope<Camera>              mp_camera            = nullptr;
     ref<GuiSubsystem>          mp_guiSubsystemLayer = nullptr;
 
 };

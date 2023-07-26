@@ -9,44 +9,50 @@ namespace nimbus
 
 void RendererApi::init()
 {
-    NM_PROFILE_DETAIL();
+    static std::once_flag initFlag;
+    std::call_once(
+        initFlag,
+        []()
+        {
+            NM_PROFILE_DETAIL();
 
-    Log::coreInfo("Vendor:   %s", glGetString(GL_VENDOR));
-    Log::coreInfo("Renderer: %s", glGetString(GL_RENDERER));
-    Log::coreInfo("Version:  %s", glGetString(GL_VERSION));
+            Log::coreInfo("Vendor:   %s", glGetString(GL_VENDOR));
+            Log::coreInfo("Renderer: %s", glGetString(GL_RENDERER));
+            Log::coreInfo("Version:  %s", glGetString(GL_VERSION));
 
-    if (s_depthTest)
-    {
-        glEnable(GL_DEPTH_TEST);
-    }
+            if (s_depthTest)
+            {
+                glEnable(GL_DEPTH_TEST);
+            }
 
-    glEnable(GL_LINE_SMOOTH);
+            glEnable(GL_LINE_SMOOTH);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // set the gl clear color
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            // set the gl clear color
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-    {
-        _enableGlErrPrint();
-    }
+            int flags;
+            glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+            if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+            {
+                _enableGlErrPrint();
+            }
 
-    int numAttributes;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &numAttributes);
-    Log::coreInfo("Max number of vertex attributes supported: %i",
-                 numAttributes);
+            int numAttributes;
+            glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &numAttributes);
+            Log::coreInfo("Max number of vertex attributes supported: %i",
+                          numAttributes);
 
-    int maxTextureUnits;
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
+            int maxTextureUnits;
+            glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 
-    Texture::s_setMaxTextures(maxTextureUnits);
+            Texture::s_setMaxTextures(maxTextureUnits);
 
-    Log::coreInfo("Max number of Texture Units: supported: %i",
-                 Texture::s_getMaxTextures());
+            Log::coreInfo("Max number of Texture Units: supported: %i",
+                          Texture::s_getMaxTextures());
+        });
 }
 
 void RendererApi::drawElements(const ref<VertexArray>& p_vertexArray,

@@ -17,11 +17,12 @@ static Application* sp_appRef    = nullptr;
 static Window*      sp_appWinRef = nullptr;
 
 EngineGui::EngineGui()
-    : Layer(Layer::Type::OVERLAY, "engineGUI"),
-      m_frameTimes_s(k_frameHistoryLength, 0.0f)
+    : Layer(Layer::Type::OVERLAY, "engineGUI")
 {
     sp_appRef    = &Application::get();
     sp_appWinRef = &sp_appRef->getWindow();
+
+    m_frameTimes_ms.reserve(k_frameHistoryLength);
 }
 
 void EngineGui::onInsert()
@@ -54,20 +55,23 @@ void EngineGui::onGuiUpdate()
                      | ImGuiWindowFlags_NoFocusOnAppearing);
 
 
-    // this is kinda inefficient :(
-    m_frameTimes_s.push_back(sp_appWinRef->m_tFrame_s);
-    
-    if (m_frameHistoryCaptureCount < k_frameHistoryLength)
+    // this is kinda inefficient, could draw over instead of
+    // scroll?
+    if(m_frameTimes_ms.size() == m_frameTimes_ms.capacity())
     {
-        m_frameHistoryCaptureCount++;
+        m_frameTimes_ms.erase(m_frameTimes_ms.begin());
     }
-    else
-    {
-        m_frameTimes_s.erase(m_frameTimes_s.begin());
-    }
+    m_frameTimes_ms.push_back(sp_appWinRef->m_tFrame_s * 1000.0);
 
-    ImGui::PlotLines(
-        "Frame Times", m_frameTimes_s.data(), k_frameHistoryLength);
+    ImGui::PlotLines("Frame Times",
+                     m_frameTimes_ms.data(),
+                     m_frameTimes_ms.size(),
+                     0,
+                     nullptr,
+                     0.0f,
+                     20.0f,
+                     ImVec2(0, 0),
+                     sizeof(float));
 
     ImGui::Text("Draw Parameters");
 
@@ -104,23 +108,6 @@ void EngineGui::onGuiUpdate()
     }
 
     ImGui::End();
-
-#if 0
-    ImGui::Begin("Camera Menu", 0, ImGuiWindowFlags_AlwaysAutoResize);
-
-    ImGui::Text("Camera Pos (X: %.03f, Y: %.03f, Z: %.03f)",
-                mp_camera->m_position[0],
-                mp_camera->m_position[1],
-                mp_camera->m_position[2]);
-
-    ImGui::Text("Camera Attitude (Yaw: %.03f, Pitch: %.03f)",
-                mp_camera->m_yaw,
-                mp_camera->m_pitch);
-
-    ImGui::SliderFloat("Speed", &mp_camera->m_speed, 1.0f, 100.0f);
-    ImGui::SliderFloat("Sensitivity", &mp_camera->m_sensitivity, 0.01f, 0.5f);
-    ImGui::End();
-#endif
 
     // ImGui::ShowDemoWindow();
 
