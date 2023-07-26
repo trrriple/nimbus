@@ -9,6 +9,7 @@
 #include "log.hpp"
 #include "platform/buffer.hpp"
 #include "platform/rendererApi.hpp"
+#include "renderer/font.hpp"
 #include "renderer/frameBuffer.hpp"
 #include "renderer/mesh.hpp"
 #include "renderer/model.hpp"

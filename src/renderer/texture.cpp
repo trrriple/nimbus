@@ -1,8 +1,8 @@
+#include "nmpch.hpp"
+#include "core.hpp"
 
 #include "renderer/texture.hpp"
 
-#include "core.hpp"
-#include "nmpch.hpp"
 #include "stb_image.h"
 
 namespace nimbus
@@ -35,18 +35,18 @@ Texture::Texture(const Type         type,
     {
         if (numComponents == 1)
         {
-            m_spec.format         = TexFormat::RED;
-            m_spec.formatInternal = TexFormatInternal::R8;
+            m_spec.format         = Format::RED;
+            m_spec.formatInternal = FormatInternal::R8;
         }
         else if (numComponents == 3)
         {
-            m_spec.format         = TexFormat::RGB;
-            m_spec.formatInternal = TexFormatInternal::RGB8;
+            m_spec.format         = Format::RGB;
+            m_spec.formatInternal = FormatInternal::RGB8;
         }
         else if (numComponents == 4)
         {
-            m_spec.format         = TexFormat::RGBA;
-            m_spec.formatInternal = TexFormatInternal::RGBA8;
+            m_spec.format         = Format::RGBA;
+            m_spec.formatInternal = FormatInternal::RGBA8;
         }
         else
         {
@@ -57,13 +57,13 @@ Texture::Texture(const Type         type,
         glBindTexture(GL_TEXTURE_2D, m_id);
 
         // TODO, determine how to set this
-        m_spec.dataType      = TexDataType::UNSIGNED_BYTE;
-        m_spec.filterTypeMin = TexFilterType::MIPMAP_LINEAR;
-        m_spec.filterTypeMag = TexFilterType::LINEAR;
-        m_spec.wrapTypeS     = TexWrapType::REPEAT;
-        m_spec.wrapTypeT     = TexWrapType::REPEAT;
-        m_spec.wrapTypeR     = TexWrapType::REPEAT;
-   
+        m_spec.dataType      = DataType::UNSIGNED_BYTE;
+        m_spec.filterTypeMin = FilterType::MIPMAP_LINEAR;
+        m_spec.filterTypeMag = FilterType::LINEAR;
+        m_spec.wrapTypeS     = WrapType::REPEAT;
+        m_spec.wrapTypeT     = WrapType::REPEAT;
+        m_spec.wrapTypeR     = WrapType::REPEAT;
+
         // safety check for:
         // If a non-zero named buffer object is bound to the
         // GL_PIXEL_UNPACK_BUFFER target (see glBindBuffer) while a texture
@@ -72,27 +72,27 @@ Texture::Texture(const Type         type,
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     s_texFormatInternal(m_spec.formatInternal),
+                     s_formatInternal(m_spec.formatInternal),
                      m_width,
                      m_height,
                      0,
-                     s_texFormat(m_spec.format),
-                     s_texDataType(m_spec.dataType),
+                     s_format(m_spec.format),
+                     s_dataType(m_spec.dataType),
                      data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glTexParameteri(GL_TEXTURE_2D,
                         GL_TEXTURE_MIN_FILTER,
-                        s_texFilterType(m_spec.filterTypeMin));
+                        s_filterType(m_spec.filterTypeMin));
         glTexParameteri(GL_TEXTURE_2D,
                         GL_TEXTURE_MAG_FILTER,
-                        s_texFilterType(m_spec.filterTypeMag));
+                        s_filterType(m_spec.filterTypeMag));
         glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s_texWrapType(m_spec.wrapTypeS));
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s_wrapType(m_spec.wrapTypeS));
         glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, s_texWrapType(m_spec.wrapTypeT));
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, s_wrapType(m_spec.wrapTypeT));
         glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, s_texWrapType(m_spec.wrapTypeR));
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, s_wrapType(m_spec.wrapTypeR));
 
         stbi_image_free(data);
     }
@@ -103,6 +103,33 @@ Texture::Texture(const Type         type,
     }
 }
 
+Texture::Texture(const Type type, uint32_t width, uint32_t height, Spec& spec)
+    : m_type(type), m_width(width), m_height(height), m_spec(spec)
+{
+    s_gen(m_id);
+
+    glTextureStorage2D(m_id,
+                       1,
+                       Texture::s_formatInternal(m_spec.formatInternal),
+                       m_width,
+                       m_height);
+
+    glTextureParameteri(m_id,
+                        GL_TEXTURE_MAG_FILTER,
+                        Texture::s_filterType(m_spec.filterTypeMag));
+
+    glTextureParameteri(m_id,
+                        GL_TEXTURE_MIN_FILTER,
+                        Texture::s_filterType(m_spec.filterTypeMin));
+
+    glTextureParameteri(
+        m_id, GL_TEXTURE_WRAP_R, Texture::s_wrapType(m_spec.wrapTypeR));
+    glTextureParameteri(
+        m_id, GL_TEXTURE_WRAP_S, Texture::s_wrapType(m_spec.wrapTypeS));
+    glTextureParameteri(
+        m_id, GL_TEXTURE_WRAP_T, Texture::s_wrapType(m_spec.wrapTypeT));
+}
+
 Texture::~Texture()
 {
     glDeleteTextures(1, &m_id);
@@ -111,6 +138,85 @@ Texture::~Texture()
 void Texture::bind(const uint32_t glTextureUnit) const
 {
     s_bind(m_id, glTextureUnit);
+}
+
+void Texture::setData(void* data, uint32_t size)
+{
+    uint32_t elements        = 0;
+    uint32_t bytesPerElement = 0;
+    switch (m_spec.format)
+    {
+        case (Format::RGBA):
+        {
+            elements = 4;
+            break;
+        }
+        case (Format::RGB):
+        {
+            elements = 3;
+            break;
+        }
+        case (Format::RG):
+        {
+            elements = 2;
+            break;
+        }
+        case (Format::RED):
+        {
+            elements = 1;
+            break;
+        }
+        default:
+            NM_CORE_ASSERT(false, "Unknown texture format %i\n", m_spec.format);
+    }
+
+    switch (m_spec.dataType)
+    {
+        case (DataType::UNSIGNED_BYTE):
+        case (DataType::BYTE):
+        {
+            bytesPerElement = 1;
+            break;
+        }
+        case (DataType::UNSIGNED_SHORT):
+        case (DataType::SHORT):
+        case (DataType::HALF_FLOAT):
+        {
+            bytesPerElement = 2;
+            break;
+        }
+        case (DataType::UNSIGNED_INT):
+        case (DataType::INT):
+        case (DataType::FLOAT):
+        {
+            bytesPerElement = 4;
+            break;
+        }
+        default:
+            NM_CORE_ASSERT(
+                false, "Unknown texture data type %i\n", m_spec.dataType);
+    }
+
+    uint32_t bytesPerPixel = elements * bytesPerElement;
+
+    NM_CORE_ASSERT((size == m_width * m_height * bytesPerPixel),
+                   "Data size (%i) must be equal to texture Size (W:%i * H:%i "
+                   "* Bpp:%i = %i)",
+                   size,
+                   m_width,
+                   m_height,
+                   bytesPerPixel,
+                   m_width * m_height * bytesPerPixel);
+
+    glTextureSubImage2D(m_id,
+                        0,
+                        0,
+                        0,
+                        m_width,
+                        m_height,
+                        s_format(m_spec.format),
+                        s_dataType(m_spec.dataType),
+                        data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -165,19 +271,19 @@ void Texture::s_gen(uint32_t& id, bool multisample)
         multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &id);
 }
 
-uint32_t Texture::s_texFormat(TexFormat format)
+uint32_t Texture::s_format(Format format)
 {
     switch (format)
     {
-        case TexFormat::NONE:
+        case Format::NONE:
             return 0;
-        case TexFormat::RGBA:
+        case Format::RGBA:
             return GL_RGBA;
-        case TexFormat::RGB:
+        case Format::RGB:
             return GL_RGB;
-        case TexFormat::RG:
+        case Format::RG:
             return GL_RG;
-        case TexFormat::RED:
+        case Format::RED:
             return GL_RED;
         default:
         {
@@ -188,43 +294,43 @@ uint32_t Texture::s_texFormat(TexFormat format)
     }
 }
 
-uint32_t Texture::s_texFormatInternal(TexFormatInternal format)
+uint32_t Texture::s_formatInternal(FormatInternal format)
 {
     switch (format)
     {
-        case TexFormatInternal::NONE:
+        case FormatInternal::NONE:
             return 0;
-        case TexFormatInternal::RGBA8:
+        case FormatInternal::RGBA8:
             return GL_RGBA8;
-        case TexFormatInternal::RGBA16F:
+        case FormatInternal::RGBA16F:
             return GL_RGBA16F;
-        case TexFormatInternal::RGBA32F:
+        case FormatInternal::RGBA32F:
             return GL_RGBA32F;
-        case TexFormatInternal::RGB8:
+        case FormatInternal::RGB8:
             return GL_RGB8;
-        case TexFormatInternal::RGB16F:
+        case FormatInternal::RGB16F:
             return GL_RGB16F;
-        case TexFormatInternal::RGB32F:
+        case FormatInternal::RGB32F:
             return GL_RGB32F;
-        case TexFormatInternal::RG8:
+        case FormatInternal::RG8:
             return GL_RG8;
-        case TexFormatInternal::RG16F:
+        case FormatInternal::RG16F:
             return GL_RG16F;
-        case TexFormatInternal::RG32F:
+        case FormatInternal::RG32F:
             return GL_RG32F;
-        case TexFormatInternal::R8:
+        case FormatInternal::R8:
             return GL_R8;
-        case TexFormatInternal::R16F:
+        case FormatInternal::R16F:
             return GL_R16F;
-        case TexFormatInternal::R32F:
+        case FormatInternal::R32F:
             return GL_R32F;
-        case TexFormatInternal::DEPTH_COMPONENT16:
+        case FormatInternal::DEPTH_COMPONENT16:
             return GL_DEPTH_COMPONENT16;
-        case TexFormatInternal::DEPTH_COMPONENT24:
+        case FormatInternal::DEPTH_COMPONENT24:
             return GL_DEPTH_COMPONENT24;
-        case TexFormatInternal::DEPTH_COMPONENT32F:
+        case FormatInternal::DEPTH_COMPONENT32F:
             return GL_DEPTH_COMPONENT32F;
-        case TexFormatInternal::DEPTH24_STENCIL8:
+        case FormatInternal::DEPTH24_STENCIL8:
             return GL_DEPTH24_STENCIL8;
         default:
         {
@@ -235,25 +341,25 @@ uint32_t Texture::s_texFormatInternal(TexFormatInternal format)
     }
 }
 
-uint32_t Texture::s_texDataType(TexDataType dataType)
+uint32_t Texture::s_dataType(DataType dataType)
 {
     switch (dataType)
     {
-        case TexDataType::UNSIGNED_BYTE:
+        case DataType::UNSIGNED_BYTE:
             return GL_UNSIGNED_BYTE;
-        case TexDataType::BYTE:
+        case DataType::BYTE:
             return GL_BYTE;
-        case TexDataType::UNSIGNED_SHORT:
+        case DataType::UNSIGNED_SHORT:
             return GL_UNSIGNED_SHORT;
-        case TexDataType::SHORT:
+        case DataType::SHORT:
             return GL_SHORT;
-        case TexDataType::UNSIGNED_INT:
+        case DataType::UNSIGNED_INT:
             return GL_UNSIGNED_INT;
-        case TexDataType::INT:
+        case DataType::INT:
             return GL_INT;
-        case TexDataType::FLOAT:
+        case DataType::FLOAT:
             return GL_FLOAT;
-        case TexDataType::HALF_FLOAT:
+        case DataType::HALF_FLOAT:
             return GL_HALF_FLOAT;
         // Add more conversions as needed
         default:
@@ -265,13 +371,13 @@ uint32_t Texture::s_texDataType(TexDataType dataType)
     }
 }
 
-uint32_t Texture::s_texFilterType(TexFilterType filterType)
+uint32_t Texture::s_filterType(FilterType filterType)
 {
     switch (filterType)
     {
-        case (TexFilterType::LINEAR):
+        case (FilterType::LINEAR):
             return GL_LINEAR;
-        case (TexFilterType::MIPMAP_LINEAR):
+        case (FilterType::MIPMAP_LINEAR):
             return GL_LINEAR_MIPMAP_LINEAR;
         default:
         {
@@ -282,17 +388,18 @@ uint32_t Texture::s_texFilterType(TexFilterType filterType)
     }
 }
 
-uint32_t Texture::s_texWrapType(TexWrapType wrapType)
+uint32_t Texture::s_wrapType(WrapType wrapType)
 {
     switch (wrapType)
     {
-        case (TexWrapType::CLAMP_TO_EDGE):
+        case (WrapType::CLAMP_TO_EDGE):
             return GL_CLAMP_TO_EDGE;
-        case (TexWrapType::REPEAT):
+        case (WrapType::REPEAT):
             return GL_REPEAT;
         default:
         {
-            NM_CORE_ASSERT_STATIC(false, "Unknown Texture Wrap Type %i", wrapType);
+            NM_CORE_ASSERT_STATIC(
+                false, "Unknown Texture Wrap Type %i", wrapType);
             return 0;
         }
     }

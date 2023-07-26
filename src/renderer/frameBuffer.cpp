@@ -89,7 +89,7 @@ void FrameBuffer::construct()
         {
             glTexStorage2D(GL_TEXTURE_2D,
                            1,
-                           Texture::s_texFormatInternal(texSpec.formatInternal),
+                           Texture::s_formatInternal(texSpec.formatInternal),
                            m_spec.width,
                            m_spec.height);
 
@@ -98,28 +98,28 @@ void FrameBuffer::construct()
             ///////////////////////////
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MAG_FILTER,
-                            Texture::s_texFilterType(texSpec.filterTypeMag));
+                            Texture::s_filterType(texSpec.filterTypeMag));
 
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MIN_FILTER,
-                            Texture::s_texFilterType(texSpec.filterTypeMin));
+                            Texture::s_filterType(texSpec.filterTypeMin));
 
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_WRAP_R,
-                            Texture::s_texWrapType(texSpec.wrapTypeR));
+                            Texture::s_wrapType(texSpec.wrapTypeR));
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_WRAP_S,
-                            Texture::s_texWrapType(texSpec.wrapTypeS));
+                            Texture::s_wrapType(texSpec.wrapTypeS));
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_WRAP_T,
-                             Texture::s_texWrapType(texSpec.wrapTypeT));
+                             Texture::s_wrapType(texSpec.wrapTypeT));
         }
         else
         {
             glTexStorage2DMultisample(
                 GL_TEXTURE_2D_MULTISAMPLE,
                 m_spec.samples,
-                Texture::s_texFormatInternal(texSpec.formatInternal),
+                Texture::s_formatInternal(texSpec.formatInternal),
                 m_spec.width,
                 m_spec.height,
                 GL_TRUE);
@@ -133,7 +133,7 @@ void FrameBuffer::construct()
     // use render buffer for depth and stencil
     ////////////////////////////////////////////////////////////////////////////
 
-    if (Texture::s_texFormatInternal(m_spec.depthType))
+    if (Texture::s_formatInternal(m_spec.depthType))
     {
         glCreateRenderbuffers(1, &m_rbo);
         // allocate

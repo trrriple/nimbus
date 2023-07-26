@@ -121,7 +121,8 @@ set(MSDF_ATLAS_USE_VCPKG ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(msdf-atlas-gen)
 
-target_compile_options(msdf-atlas-gen PRIVATE -Wno-deprecated-declarations)
+target_compile_options(msdf-atlas-gen PRIVATE -Wno-deprecated-declarations 
+                        -D_CRT_SECURE_NO_WARNINGS)
 
 # #########################
 # GLM (header only)

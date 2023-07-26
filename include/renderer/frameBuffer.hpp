@@ -17,9 +17,9 @@ class FrameBuffer
         uint32_t height  = 720;
         uint32_t samples = 1;
 
-        std::vector<Texture::TextureSpec> colorAttachments;
-        Texture::TexFormatInternal        depthType
-            = Texture::TexFormatInternal::DEPTH24_STENCIL8;
+        std::vector<Texture::Spec> colorAttachments;
+        Texture::FormatInternal    depthType
+            = Texture::FormatInternal::DEPTH24_STENCIL8;
     };
 
     enum class Mode

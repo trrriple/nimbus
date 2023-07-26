@@ -2,14 +2,26 @@
 
 #include "core.hpp"
 #include "renderer/font.hpp"
+#include "renderer/texture.hpp"
 
 #include "msdf-atlas-gen/msdf-atlas-gen.h"
 
 namespace nimbus
 {
-Font::Font(const std::string& fontPath)
+
+struct Font::MsdfData
 {
-    bool success = false;
+    // Storage for glyph geometry and their coordinates in the atlas
+    std::vector<msdf_atlas::GlyphGeometry> glyphs;
+
+    // FontGeometry is a helper class that loads a set of glyphs from a
+    // single font. It can also be used to get additional font metrics,
+    // kerning information, etc.
+    msdf_atlas::FontGeometry fontGeometry;
+};
+
+Font::Font(const std::string& fontPath) : m_data(new MsdfData())
+{
     // Initialize instance of FreeType library
     if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype())
     {
@@ -17,38 +29,44 @@ Font::Font(const std::string& fontPath)
         if (msdfgen::FontHandle* font = msdfgen::loadFont(
                 ft, fontPath.c_str()))
         {
-            // Storage for glyph geometry and their coordinates in the atlas
-            std::vector<msdf_atlas::GlyphGeometry> glyphs;
+            m_data->fontGeometry = msdf_atlas::FontGeometry(&m_data->glyphs);
             // FontGeometry is a helper class that loads a set of glyphs from a
             // single font. It can also be used to get additional font metrics,
             // kerning information, etc.
-            msdf_atlas::FontGeometry fontGeometry(&glyphs);
             // Load a set of character glyphs:
             // The second argument can be ignored unless you mix different font
             // sizes in one atlas. In the last argument, you can specify a
             // charset other than ASCII. To load specific glyph indices, use
             // loadGlyphs instead.
-            fontGeometry.loadCharset(font, 1.0, msdf_atlas::Charset::ASCII);
+            int glyphsLoaded = m_data->fontGeometry.loadCharset(
+                font, 1.0, msdf_atlas::Charset::ASCII);
+
+            Log::coreInfo("Loaded %i glyphs from font out of %i",
+                          glyphsLoaded,
+                          msdf_atlas::Charset::ASCII.size());
+
             // Apply MSDF edge coloring. See edge-coloring.h for other coloring
             // strategies.
             const double maxCornerAngle = 3.0;
-            for (msdf_atlas::GlyphGeometry& glyph : glyphs)
+            for (msdf_atlas::GlyphGeometry& glyph : m_data->glyphs)
                 glyph.edgeColoring(
                     &msdfgen::edgeColoringInkTrap, maxCornerAngle, 0);
             // TightAtlasPacker class computes the layout of the atlas.
             msdf_atlas::TightAtlasPacker packer;
             // Set atlas parameters:
             // setDimensions or setDimensionsConstraint to find the best value
-            packer.setDimensionsConstraint(
-                msdf_atlas::TightAtlasPacker::DimensionsConstraint::SQUARE);
+            // RRR - makes it tilted, is that okay?
+            // packer.setDimensionsConstraint(
+            //     msdf_atlas::TightAtlasPacker::DimensionsConstraint::SQUARE);
             // setScale for a fixed size or setMinimumScale to use the largest
             // that fits
-            packer.setMinimumScale(24.0);
+            // packer.setMinimumScale(24.0);
+            packer.setScale(40.0f);
             // setPixelRange or setUnitRange
             packer.setPixelRange(2.0);
             packer.setMiterLimit(1.0);
             // Compute atlas layout - pack glyphs
-            packer.pack(glyphs.data(), glyphs.size());
+            packer.pack(m_data->glyphs.data(), m_data->glyphs.size());
             // Get final atlas dimensions
             int width = 0, height = 0;
             packer.getDimensions(width, height);
@@ -70,15 +88,40 @@ Font::Font(const std::string& fontPath)
             // GeneratorAttributes can be modified to change the generator's
             // default settings.
             msdf_atlas::GeneratorAttributes attributes;
+
+    		attributes.config.overlapSupport = true;
+	    	attributes.scanlinePass = true;
             generator.setAttributes(attributes);
-            generator.setThreadCount(4);
+            generator.setThreadCount(16);
             // Generate atlas bitmap
-            generator.generate(glyphs.data(), glyphs.size());
+            generator.generate(m_data->glyphs.data(), m_data->glyphs.size());
             // The atlas bitmap can now be retrieved via atlasStorage as a
             // BitmapConstRef. The glyphs array (or fontGeometry) contains
             // positioning data for typesetting text.
             // success = myProject::submitAtlasBitmapAndLayout(
             //     generator.atlasStorage(), glyphs);
+
+            msdfgen::BitmapConstRef<msdfgen::byte, 3> bitmap
+                = (msdfgen::BitmapConstRef<msdfgen::byte, 3>)
+                      generator.atlasStorage();
+
+            msdf_atlas::saveImage(bitmap,
+                                  msdf_atlas::ImageFormat::PNG,
+                                  "test.png",
+                                  msdf_atlas::YDirection::TOP_DOWN);
+
+            Texture::Spec texSpec;
+
+            texSpec.format         = Texture::Format::RGB;
+            texSpec.formatInternal = Texture::FormatInternal::RGB8;
+
+            m_atlasTex = makeRef<Texture>(
+                Texture::Type::DIFFUSE, bitmap.width, bitmap.height, texSpec);
+
+            // todo configure size
+            m_atlasTex->setData((void*)bitmap.pixels,
+                               bitmap.width * bitmap.height * 3);
+
             // Cleanup
             msdfgen::destroyFont(font);
         }
@@ -88,5 +131,6 @@ Font::Font(const std::string& fontPath)
 
 Font::~Font()
 {
+    delete m_data;
 }
 };  // namespace nimbus

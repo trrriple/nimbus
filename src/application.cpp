@@ -32,8 +32,6 @@ Application::Application(const std::string& name,
 
     Renderer::init();
 
-    Font testFont = Font("../resources/fonts/Roboto/Roboto-Regular.ttf");
-
     mp_window->setEventCallback(
         std::bind(&Application::onEvent, this, std::placeholders::_1));
 

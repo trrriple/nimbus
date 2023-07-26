@@ -21,7 +21,7 @@ class Texture
         HEIGHT
     };
 
-    enum class TexFormat
+    enum class Format
     {
         NONE,
         RGBA,
@@ -30,7 +30,7 @@ class Texture
         RED,
     };
 
-    enum class TexFormatInternal
+    enum class FormatInternal
     {
         NONE,
         RGBA8,
@@ -51,7 +51,7 @@ class Texture
         DEPTH24_STENCIL8,
     };
 
-    enum class TexDataType
+    enum class DataType
     {
         UNSIGNED_BYTE,
         BYTE,
@@ -63,38 +63,57 @@ class Texture
         HALF_FLOAT,
     };
 
-    enum class TexFilterType
+    enum class FilterType
     {
         LINEAR,
         MIPMAP_LINEAR
     };
 
-    enum class TexWrapType
+    enum class WrapType
     {
         CLAMP_TO_EDGE,
         REPEAT
     };
 
-    struct TextureSpec
+    struct Spec
     {
-        TexFormat         format         = TexFormat::RGBA;
-        TexFormatInternal formatInternal = TexFormatInternal::RGBA8;
-        TexDataType       dataType       = TexDataType::UNSIGNED_BYTE;
-        TexFilterType     filterTypeMin  = TexFilterType::LINEAR;
-        TexFilterType     filterTypeMag  = TexFilterType::LINEAR;
-        TexWrapType       wrapTypeS      = TexWrapType::CLAMP_TO_EDGE;
-        TexWrapType       wrapTypeT      = TexWrapType::CLAMP_TO_EDGE;
-        TexWrapType       wrapTypeR      = TexWrapType::CLAMP_TO_EDGE;
+        Format         format         = Format::RGBA;
+        FormatInternal formatInternal = FormatInternal::RGBA8;
+        DataType       dataType       = DataType::UNSIGNED_BYTE;
+        FilterType     filterTypeMin  = FilterType::LINEAR;
+        FilterType     filterTypeMag  = FilterType::LINEAR;
+        WrapType       wrapTypeS      = WrapType::CLAMP_TO_EDGE;
+        WrapType       wrapTypeT      = WrapType::CLAMP_TO_EDGE;
+        WrapType       wrapTypeR      = WrapType::CLAMP_TO_EDGE;
     };
-
 
     Texture(const Type         type,
             const std::string& path,
             const bool         flipOnLoad = false);
 
+    Texture(const Type type, uint32_t width, uint32_t height, Spec& spec);
+
     ~Texture();
 
     void bind(const uint32_t glTextureUnit) const;
+
+    void setData(void* data, uint32_t size);
+
+    uint32_t getId() const
+    {
+        return m_id;
+    }
+    
+    uint32_t getWidth() const
+    {
+        return m_width;
+    }
+
+  uint32_t getHeight() const
+    {
+        return m_height;
+    }
+
 
     Type getType() const
     {
@@ -105,8 +124,8 @@ class Texture
     {
         return m_path;
     }
-    
-    const TextureSpec& getSpec() const
+
+    const Spec& getSpec() const
     {
         return m_spec;
     }
@@ -123,30 +142,31 @@ class Texture
 
     static void s_gen(uint32_t& id, bool multisample = false);
 
-    static uint32_t s_texFormat(TexFormat format);
+    static uint32_t s_format(Format format);
 
-    static uint32_t s_texFormatInternal(TexFormatInternal format);
+    static uint32_t s_formatInternal(FormatInternal format);
 
-    static uint32_t s_texDataType(TexDataType dataType);
+    static uint32_t s_dataType(DataType dataType);
 
-    static uint32_t s_texFilterType(TexFilterType filterType);
+    static uint32_t s_filterType(FilterType filterType);
 
-    static uint32_t s_texWrapType(TexWrapType wrapType);
+    static uint32_t s_wrapType(WrapType wrapType);
 
    private:
-    TextureSpec m_spec;
-    uint32_t    m_id;
     Type        m_type;
+    int32_t     m_width;
+    int32_t     m_height;
+    Spec        m_spec;
+
+    uint32_t    m_id;
     std::string m_path;
     bool        m_flipOnLoad;
-    int32_t     m_height;
-    int32_t     m_width;
 
-    inline static uint32_t                 s_maxTextures = k_maxTexturesUninit;
+    inline static uint32_t s_maxTextures = k_maxTexturesUninit;
 
-    inline static std::uint32_t            s_currBoundId          = 0;
-    inline static std::uint32_t            s_currBoundTextureUnit = 0;
-    inline static std::mutex               s_genLock = std::mutex();
+    inline static std::uint32_t s_currBoundId          = 0;
+    inline static std::uint32_t s_currBoundTextureUnit = 0;
+    inline static std::mutex    s_genLock              = std::mutex();
 };
 
 }  // namespace nimbus
