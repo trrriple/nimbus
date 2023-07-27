@@ -39,7 +39,6 @@ Camera::Camera(float aspectRatio)
       m_aspectRatio(aspectRatio),
       m_is3d(false)
 {
-
     updateView();
     updateProjection();
     updateViewProjection();
@@ -84,9 +83,8 @@ void Camera::processPosiUpdate(Movement direction, float deltaTime)
             break;
     }
 
-    m_staleView           = true;
+    m_staleView = true;
 }
-
 
 void Camera::processViewUpdate(float xOffset,
                                float yOffset,
@@ -111,7 +109,7 @@ void Camera::processViewUpdate(float xOffset,
     // update Front, Right and Up Vectors using the updated Euler angles
     _updateCameraVectors();
 
-    m_staleView           = true;
+    m_staleView = true;
 }
 
 void Camera::processFov(float yOffset)
@@ -124,7 +122,7 @@ void Camera::processFov(float yOffset)
     if (m_fov > 45.0f)
         m_fov = 45.0f;
 
-    m_staleProjection     = true;
+    m_staleProjection = true;
 }
 
 void Camera::updateView()
@@ -145,7 +143,7 @@ void Camera::updateView()
         m_view = glm::inverse(transform);
     }
 
-    m_staleView           = false;
+    m_staleView = false;
 }
 
 glm::mat4& Camera::getView()
@@ -201,7 +199,6 @@ void Camera::updateViewProjection()
     m_viewProjection = (getView() * getProjection());
 
     m_staleWorldBounds = true;
-
 }
 
 glm::mat4& Camera::getViewProjection()
@@ -238,9 +235,9 @@ Camera::Bounds& Camera::getVisibleWorldBounds()
             = inverseViewProjectionMatrix * bottomRightNDC;
 
         // Convert the homogeneous coordinates to 3D coordinates
-        m_worldBounds.topLeft     /= m_worldBounds.topLeft.w;
-        m_worldBounds.topRight    /= m_worldBounds.topRight.w;
-        m_worldBounds.bottomLeft  /= m_worldBounds.bottomLeft.w;
+        m_worldBounds.topLeft /= m_worldBounds.topLeft.w;
+        m_worldBounds.topRight /= m_worldBounds.topRight.w;
+        m_worldBounds.bottomLeft /= m_worldBounds.bottomLeft.w;
         m_worldBounds.bottomRight /= m_worldBounds.bottomRight.w;
 
         m_staleWorldBounds = false;
@@ -276,8 +273,8 @@ void Camera::setAspectRatio(float aspectRatio)
 
 void Camera::setPosition(glm::vec3& position)
 {
-    m_position            = position;
-    m_staleView           = true;
+    m_position  = position;
+    m_staleView = true;
 }
 
 void Camera::setZoom(float zoom)

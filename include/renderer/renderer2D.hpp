@@ -18,10 +18,24 @@ class Renderer2D
     static void destroy();
 
     static void setScene(Camera& camera);
-    
-    static void drawText(const std::string& text, const Font& font);
+
+    static void drawText(const std::string& text,
+                         const Font&        font,
+                         const glm::vec3&   pos);
 
    private:
+    ///////////////////////////
+    // Generic Data
+    ///////////////////////////
+    struct GeneralData
+    {
+        glm::vec4 quadVertexPositions[4];
+        glm::vec2 quadTextureCoords[4];
+    };
+
+    static GeneralData s_genData;
+
+
     ///////////////////////////
     //  Text layout and data
     ///////////////////////////
@@ -30,32 +44,30 @@ class Renderer2D
     inline static const uint32_t k_textVerticesMaxCount  = 10000;
 
     inline static const BufferFormat k_TextVertexFormat = {
-        {k_shaderVec3, "position"},
+        {k_shaderVec4, "position"},
+        {k_shaderVec2, "texCoords"},
+        {k_shaderVec4, "fgColor"},
+        {k_shaderVec4, "bgColor"},
+        
     };
     struct TextVertex
     {
-        glm::vec3 position;
-    };
-
-    inline static const BufferFormat k_TextVertexInstanceFormat = {
-        {k_shaderVec3, "offset"},
-        {k_shaderVec2, "texCoords"},
-        {k_shaderVec4, "color"},
-    };
-    struct TextVertexInstance
-    {
-        glm::vec3 offset;
+        glm::vec4 position;
         glm::vec2 texCoord;
-        glm::vec4 color;
+        glm::vec4 fgColor;
+        glm::vec4 bgColor;
+        
     };
 
     struct TextData
     {
-        std::vector<TextVertexInstance> vertices;
-        ref<VertexBuffer>       p_vbo = nullptr;
-        ref<VertexArray>        p_vao = nullptr;
-
-        uint32_t charCount = 0;
+        std::vector<TextVertex> vertices;
+        uint32_t                vertexIdx = 0;
+        ref<VertexBuffer>       p_vbo     = nullptr;
+        ref<VertexArray>        p_vao     = nullptr;
+        ref<Shader>             p_shader  = nullptr;
+        ref<Texture>            p_atlas   = nullptr;
+        uint32_t                charCount = 0;
     };
 
     static TextData s_textData;

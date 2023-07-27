@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "application.hpp"
@@ -15,10 +16,12 @@
 #include "renderer/model.hpp"
 #include "renderer/particleEmitter.hpp"
 #include "renderer/renderer.hpp"
+#include "renderer/renderer2D.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/sprite.hpp"
 #include "renderer/texture.hpp"
 #include "resourceManager.hpp"
+#include "utility.hpp"
 
 ///////////////////////
 /// Dear Imgui stuff

@@ -3,24 +3,19 @@
 #include "core.hpp"
 #include "renderer/font.hpp"
 #include "renderer/texture.hpp"
+#include "renderer/fontData.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include "msdf-atlas-gen/msdf-atlas-gen.h"
+#pragma GCC diagnostic pop
 
 namespace nimbus
 {
 
-struct Font::MsdfData
-{
-    // Storage for glyph geometry and their coordinates in the atlas
-    std::vector<msdf_atlas::GlyphGeometry> glyphs;
-
-    // FontGeometry is a helper class that loads a set of glyphs from a
-    // single font. It can also be used to get additional font metrics,
-    // kerning information, etc.
-    msdf_atlas::FontGeometry fontGeometry;
-};
-
-Font::Font(const std::string& fontPath) : m_data(new MsdfData())
+Font::Font(const std::string& fontPath)
+    : m_path(fontPath), m_data(new FontData())
 {
     // Initialize instance of FreeType library
     if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype())
@@ -60,10 +55,12 @@ Font::Font(const std::string& fontPath) : m_data(new MsdfData())
             //     msdf_atlas::TightAtlasPacker::DimensionsConstraint::SQUARE);
             // setScale for a fixed size or setMinimumScale to use the largest
             // that fits
-            // packer.setMinimumScale(24.0);
-            packer.setScale(40.0f);
+            // TODO: determine parameters
+            packer.setMinimumScale(24.0); 
+            // packer.setScale(40.0f);
             // setPixelRange or setUnitRange
-            packer.setPixelRange(2.0);
+            m_data->pixelRange = 2.0;
+            packer.setPixelRange(m_data->pixelRange);
             packer.setMiterLimit(1.0);
             // Compute atlas layout - pack glyphs
             packer.pack(m_data->glyphs.data(), m_data->glyphs.size());
@@ -105,10 +102,10 @@ Font::Font(const std::string& fontPath) : m_data(new MsdfData())
                 = (msdfgen::BitmapConstRef<msdfgen::byte, 3>)
                       generator.atlasStorage();
 
-            msdf_atlas::saveImage(bitmap,
-                                  msdf_atlas::ImageFormat::PNG,
-                                  "test.png",
-                                  msdf_atlas::YDirection::TOP_DOWN);
+            // msdf_atlas::saveImage(bitmap,
+            //                       msdf_atlas::ImageFormat::PNG,
+            //                       "test.png",
+            //                       msdf_atlas::YDirection::TOP_DOWN);
 
             Texture::Spec texSpec;
 

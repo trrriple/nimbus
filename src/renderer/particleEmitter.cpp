@@ -20,8 +20,8 @@ const std::string k_particleVertexShader = R"(
     layout (location = 3) in vec4 aParticleColor;
     layout (location = 4) in float aParticleSize;
 
-    out vec2 TexCoords;
-    out vec4 Color;
+    layout (location = 0) out vec2 TexCoords;
+    layout (location = 1) out vec4 Color;
 
     uniform mat4 u_model;
     uniform mat4 u_viewProjection;
@@ -55,8 +55,8 @@ const std::string k_particleVertexShader = R"(
 const std::string k_particleFragmentShader = R"(
     #version 460 core
 
-    in vec2 TexCoords;
-    in vec4 Color;
+    layout (location = 0) in vec2 TexCoords;
+    layout (location = 1) in vec4 Color;
 
     out vec4 FragColor;
 
