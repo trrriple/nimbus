@@ -14,23 +14,22 @@ VertexBuffer::VertexBuffer(const void*        vertices,
     : m_size(size), m_type(type)
 {
     glCreateBuffers(1, &m_id);
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
 
     switch (m_type)
     {
         case (VertexBuffer::Type::STATIC_DRAW):
         {
-            glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+            glNamedBufferData(m_id, size, vertices, GL_STATIC_DRAW);
             break;
         }
         case (VertexBuffer::Type::DYNAMIC_DRAW):
         {
-            glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_DYNAMIC_DRAW);
+            glNamedBufferData(m_id, size, vertices, GL_DYNAMIC_DRAW);
             break;
         }
         case (VertexBuffer::Type::STREAM_DRAW):
         {
-            glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STREAM_DRAW);
+            glNamedBufferData(m_id, size, vertices, GL_STREAM_DRAW);
             break;
         }
     }
@@ -38,6 +37,7 @@ VertexBuffer::VertexBuffer(const void*        vertices,
 
 VertexBuffer::~VertexBuffer()
 {
+    unbind();
     glDeleteBuffers(1, &m_id);
 }
 
@@ -59,8 +59,7 @@ void VertexBuffer::unbind() const
 
 void VertexBuffer::setData(const void* data, uint32_t size)
 {
-    bind();
-    glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+    glNamedBufferSubData(m_id, 0, size, data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,37 +69,32 @@ IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count) : m_count(count)
 {
     glCreateBuffers(1, &m_id);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(
-        GL_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+    glNamedBufferData(m_id, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
 
     m_type = GL_UNSIGNED_INT;
 }
 
-IndexBuffer::IndexBuffer(uint16_t* indices, uint16_t count) : m_count(count)
+IndexBuffer::IndexBuffer(uint16_t* indices, uint32_t count) : m_count(count)
 {
     glCreateBuffers(1, &m_id);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(
-        GL_ARRAY_BUFFER, count * sizeof(uint16_t), indices, GL_STATIC_DRAW);
+    glNamedBufferData(m_id, count * sizeof(uint16_t), indices, GL_STATIC_DRAW);
 
     m_type = GL_UNSIGNED_SHORT;
 }
 
-IndexBuffer::IndexBuffer(uint8_t* indices, uint8_t count) : m_count(count)
+IndexBuffer::IndexBuffer(uint8_t* indices, uint32_t count) : m_count(count)
 {
     glCreateBuffers(1, &m_id);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_id);
-    glBufferData(
-        GL_ARRAY_BUFFER, count * sizeof(uint8_t), indices, GL_STATIC_DRAW);
+    glNamedBufferData(m_id, count * sizeof(uint8_t), indices, GL_STATIC_DRAW);
 
     m_type = GL_UNSIGNED_BYTE;
 }
 
 IndexBuffer::~IndexBuffer()
 {
+    unbind();
     glDeleteBuffers(1, &m_id);
 }
 
@@ -124,6 +118,7 @@ VertexArray::VertexArray()
 
 VertexArray::~VertexArray()
 {
+    unbind();
     glDeleteVertexArrays(1, &m_id);
 }
 
@@ -143,15 +138,15 @@ void VertexArray::unbind() const
     s_currBoundId = 0;
 }
 
-void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
+void VertexArray::addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer)
 {
-    NM_CORE_ASSERT(vertexBuffer->getFormat().getComponents().size(),
+    NM_CORE_ASSERT(p_vertexBuffer->getFormat().getComponents().size(),
                    "VBO format is required to create VBA");
 
-    glBindVertexArray(m_id);
-    vertexBuffer->bind();
+    bind();
+    p_vertexBuffer->bind();
 
-    const auto& format = vertexBuffer->getFormat();
+    const auto& format = p_vertexBuffer->getFormat();
     for (const auto& component : format)
     {
         uint32_t glType
@@ -219,7 +214,7 @@ void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
         }
     }
 
-    uint32_t thisVboVertexCount = vertexBuffer->getSize() / format.getStride();
+    uint32_t thisVboVertexCount = p_vertexBuffer->getSize() / format.getStride();
 
     // accumulate the size of the vertex
     m_vertexSize += format.getStride();
@@ -232,15 +227,16 @@ void VertexArray::addVertexBuffer(const ref<VertexBuffer>& vertexBuffer)
         m_expectedVboVertexCount = thisVboVertexCount;
     }
 
-    m_vertexBuffers.push_back(vertexBuffer);
+    m_vertexBuffers.push_back(p_vertexBuffer);
 }
 
-void VertexArray::setIndexBuffer(const ref<IndexBuffer>& indexBuffer)
+void VertexArray::setIndexBuffer(const ref<IndexBuffer>& p_indexBuffer)
 {
-    glBindVertexArray(m_id);
-    indexBuffer->bind();
+    bind();
+    p_indexBuffer->bind();
 
-    m_indexBuffer = indexBuffer;
+    m_indexBuffer = p_indexBuffer;
 }
+
 
 };  // namespace nimbus

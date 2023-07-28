@@ -63,6 +63,7 @@ void RendererApi::drawElements(const ref<VertexArray>& p_vertexArray,
                                  : p_vertexArray->getIndexBuffer()->getCount();
 
     p_vertexArray->bind();
+    
     glDrawElements(GL_TRIANGLES,
                    count,
                    p_vertexArray->getIndexBuffer()->getType(),

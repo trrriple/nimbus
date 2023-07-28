@@ -17,7 +17,10 @@ class Renderer2D
     static void init();
     static void destroy();
 
-    static void setScene(Camera& camera);
+    static void begin(Camera& camera);
+
+    static void end();
+
 
     static void drawText(const std::string& text,
                          const Font&        font,
@@ -29,6 +32,7 @@ class Renderer2D
     ///////////////////////////
     struct GeneralData
     {
+        bool      inScene = false;
         glm::vec4 quadVertexPositions[4];
         glm::vec2 quadTextureCoords[4];
     };
@@ -39,7 +43,7 @@ class Renderer2D
     ///////////////////////////
     //  Text layout and data
     ///////////////////////////
-    inline static const uint32_t k_textVerticesInitCount = 1000;
+    inline static const uint32_t k_textVerticesInitCount = 500;
     inline static const uint32_t k_textVerticesGrowCount = 500;
     inline static const uint32_t k_textVerticesMaxCount  = 10000;
 
@@ -68,8 +72,16 @@ class Renderer2D
         ref<Shader>             p_shader  = nullptr;
         ref<Texture>            p_atlas   = nullptr;
         uint32_t                charCount = 0;
+        glm::vec2               unitRange = {0.0, 0.0};
     };
 
     static TextData s_textData;
+
+    ///////////////////////////
+    // Private functions
+    ///////////////////////////
+    static void _s_submit();
+    static void _s_createTextBuffers();
+
 };
 }  // namespace nimbus

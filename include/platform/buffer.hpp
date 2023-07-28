@@ -13,7 +13,6 @@
 namespace nimbus
 {
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Shader Types MetaData
 ////////////////////////////////////////////////////////////////////////////////
@@ -209,8 +208,8 @@ class IndexBuffer
 {
    public:
     IndexBuffer(uint32_t* indices, uint32_t count);
-    IndexBuffer(uint16_t* indices, uint16_t count);
-    IndexBuffer(uint8_t* indices, uint8_t count);
+    IndexBuffer(uint16_t* indices, uint32_t count);
+    IndexBuffer(uint8_t* indices, uint32_t count);
 
     ~IndexBuffer();
 
@@ -245,9 +244,9 @@ class VertexArray
     void bind() const;
     void unbind() const;
 
-    void addVertexBuffer(const ref<VertexBuffer>& vertexBuffer);
+    void addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer);
 
-    void setIndexBuffer(const ref<IndexBuffer>& indexBuffer);
+    void setIndexBuffer(const ref<IndexBuffer>& p_indexBuffer);
 
     const std::vector<ref<VertexBuffer>>& getVertexBuffers() const
     {
