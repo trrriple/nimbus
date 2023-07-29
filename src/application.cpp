@@ -4,7 +4,7 @@
 #include "guiLayers/engineGui.hpp"
 #include "guiLayers/guiSubsystem.hpp"
 #include "nmpch.hpp"
-#include "platform/rendererApi.hpp"
+#include "platform/graphicsApi.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/font.hpp"
 
@@ -53,7 +53,7 @@ void Application::execute()
     {
         NM_PROFILE();
 
-        RendererApi::clear();
+        GraphicsApi::clear();
 
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions

@@ -313,12 +313,12 @@ void ParticleEmitter::draw()
     mp_instanceVbo->setData(&m_particleInstanceData[0],
                             m_numLiveParticles * sizeof(particleInstanceData));
 
-    RendererApi::BlendingMode currBlendMode = RendererApi::getBlendingMode();
-    RendererApi::setBlendingMode(m_parameters.blendingMode);
+    GraphicsApi::BlendingMode currBlendMode = GraphicsApi::getBlendingMode();
+    GraphicsApi::setBlendingMode(m_parameters.blendingMode);
 
-    Renderer::submitInstanced(mp_shader, mp_vao, m_numLiveParticles);
+    Renderer::s_submitInstanced(mp_shader, mp_vao, m_numLiveParticles);
 
-    RendererApi::setBlendingMode(currBlendMode);
+    GraphicsApi::setBlendingMode(currBlendMode);
 }
 
 bool ParticleEmitter::isDone()

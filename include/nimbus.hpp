@@ -9,7 +9,7 @@
 #include "layer.hpp"
 #include "log.hpp"
 #include "platform/buffer.hpp"
-#include "platform/rendererApi.hpp"
+#include "platform/graphicsApi.hpp"
 #include "renderer/font.hpp"
 #include "renderer/frameBuffer.hpp"
 #include "renderer/mesh.hpp"
@@ -24,6 +24,14 @@
 #include "utility.hpp"
 
 ///////////////////////
-/// Dear Imgui stuff
+// Dear Imgui stuff
 //////////////////////
 #include "imgui.h"
+
+
+///////////////////////////
+// GLM Stuff
+///////////////////////////
+#include "glm.hpp"
+#include "gtc/matrix_transform.hpp"
+#include "gtc/type_ptr.hpp"

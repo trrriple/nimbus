@@ -1,4 +1,4 @@
-#include "platform/rendererApi.hpp"
+#include "platform/graphicsApi.hpp"
 
 #include "core.hpp"
 #include "nmpch.hpp"
@@ -7,7 +7,7 @@
 namespace nimbus
 {
 
-void RendererApi::init()
+void GraphicsApi::init()
 {
     static std::once_flag initFlag;
     std::call_once(
@@ -55,7 +55,7 @@ void RendererApi::init()
         });
 }
 
-void RendererApi::drawElements(const ref<VertexArray>& p_vertexArray,
+void GraphicsApi::drawElements(const ref<VertexArray>& p_vertexArray,
                                uint32_t                vertexCount)
 {
     NM_PROFILE_DETAIL();
@@ -70,7 +70,7 @@ void RendererApi::drawElements(const ref<VertexArray>& p_vertexArray,
                    nullptr);
 }
 
-void RendererApi::drawArrays(const ref<VertexArray>& p_vertexArray,
+void GraphicsApi::drawArrays(const ref<VertexArray>& p_vertexArray,
                              uint32_t                vertexCount)
 {
     NM_PROFILE_DETAIL();
@@ -81,7 +81,7 @@ void RendererApi::drawArrays(const ref<VertexArray>& p_vertexArray,
     glDrawArrays(GL_TRIANGLES, 0, count);
 }
 
-void RendererApi::drawElementsInstanced(const ref<VertexArray>& p_vertexArray,
+void GraphicsApi::drawElementsInstanced(const ref<VertexArray>& p_vertexArray,
                                         uint32_t                instanceCount,
                                         uint32_t                vertexCount)
 {
@@ -97,7 +97,7 @@ void RendererApi::drawElementsInstanced(const ref<VertexArray>& p_vertexArray,
                             instanceCount);
 }
 
-void RendererApi::drawArraysInstanced(const ref<VertexArray>& p_vertexArray,
+void GraphicsApi::drawArraysInstanced(const ref<VertexArray>& p_vertexArray,
                                       uint32_t                instanceCount,
                                       uint32_t                vertexCount)
 {
@@ -109,21 +109,21 @@ void RendererApi::drawArraysInstanced(const ref<VertexArray>& p_vertexArray,
     glDrawArraysInstanced(GL_TRIANGLES, 0, count, instanceCount);
 }
 
-void RendererApi::clear()
+void GraphicsApi::clear()
 {
     NM_PROFILE_TRACE();
 
     glClear(GL_COLOR_BUFFER_BIT | (GL_DEPTH_BUFFER_BIT && getDepthTest()));
 }
 
-void RendererApi::setViewportSize(int x, int y, int w, int h)
+void GraphicsApi::setViewportSize(int x, int y, int w, int h)
 {
     NM_PROFILE_TRACE();
 
     glViewport(x, y, w, h);
 }
 
-void RendererApi::setWireframe(bool on)
+void GraphicsApi::setWireframe(bool on)
 {
     NM_PROFILE_TRACE();
 
@@ -143,14 +143,14 @@ void RendererApi::setWireframe(bool on)
     }
 }
 
-bool RendererApi::getWireframe()
+bool GraphicsApi::getWireframe()
 {
     NM_PROFILE_TRACE();
 
     return s_wireframeOn;
 }
 
-void RendererApi::setDepthTest(bool on)
+void GraphicsApi::setDepthTest(bool on)
 {
     NM_PROFILE_TRACE();
 
@@ -165,14 +165,14 @@ void RendererApi::setDepthTest(bool on)
     s_depthTest = on;
 }
 
-bool RendererApi::getDepthTest()
+bool GraphicsApi::getDepthTest()
 {
     NM_PROFILE_TRACE();
 
     return s_depthTest;
 }
 
-void RendererApi::setBlendingMode(RendererApi::BlendingMode mode)
+void GraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
 {
     if (mode == s_currBlendingMode)
     {
@@ -213,7 +213,7 @@ void RendererApi::setBlendingMode(RendererApi::BlendingMode mode)
     s_currBlendingMode = mode;
 }
 
-RendererApi::BlendingMode RendererApi::getBlendingMode()
+GraphicsApi::BlendingMode GraphicsApi::getBlendingMode()
 {
     return s_currBlendingMode;
 }
@@ -304,7 +304,7 @@ void APIENTRY _glDebugOutput(GLenum       source,
     }
 }
 
-void RendererApi::_enableGlErrPrint()
+void GraphicsApi::_enableGlErrPrint()
 {
     Log::coreInfo("GL Debug Enabled");
     glEnable(GL_DEBUG_OUTPUT);

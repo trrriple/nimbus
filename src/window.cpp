@@ -4,7 +4,7 @@
 #include "window.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/renderer2D.hpp"
-#include "platform/rendererApi.hpp"
+#include "platform/graphicsApi.hpp"
 #include "keyCode.hpp"
 
 namespace nimbus
@@ -88,8 +88,8 @@ void Window::graphicsContextInit()
         NM_CORE_ASSERT_STATIC(0, "Failed to initialize Glad %s");
     }
 
-    Renderer::init();
-    Renderer2D::init();
+    Renderer::s_init();
+    Renderer2D::s_init();
 
 }
 
@@ -157,7 +157,7 @@ void Window::_handleWindowEvents()
             m_aspectRatio
                 = static_cast<float>(m_width) / static_cast<float>(m_height);
 
-            RendererApi::setViewportSize(0, 0, m_width, m_height);
+            GraphicsApi::setViewportSize(0, 0, m_width, m_height);
 
             Log::coreInfo("Window Resized %d x %d", m_width, m_height);
             break;

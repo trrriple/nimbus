@@ -36,9 +36,10 @@ Font::Font(const std::string& fontPath)
             int glyphsLoaded = m_data->fontGeometry.loadCharset(
                 font, 1.0, msdf_atlas::Charset::ASCII);
 
-            Log::coreInfo("Loaded %i glyphs from font out of %i",
+            Log::coreInfo("Loaded %i glyphs out of %i from %s",
                           glyphsLoaded,
-                          msdf_atlas::Charset::ASCII.size());
+                          msdf_atlas::Charset::ASCII.size(),
+                          m_path.c_str());
 
             // Apply MSDF edge coloring. See edge-coloring.h for other coloring
             // strategies.
@@ -56,8 +57,8 @@ Font::Font(const std::string& fontPath)
             // setScale for a fixed size or setMinimumScale to use the largest
             // that fits
             // TODO: determine parameters
-            packer.setMinimumScale(24.0); 
-            // packer.setScale(40.0f);
+            // packer.setMinimumScale(24.0); 
+            packer.setScale(40.0f);
             // setPixelRange or setUnitRange
             m_data->pixelRange = 2.0;
             packer.setPixelRange(m_data->pixelRange);

@@ -4,35 +4,35 @@
 
 #include "core.hpp"
 #include "nmpch.hpp"
-#include "platform/rendererApi.hpp"
+#include "platform/graphicsApi.hpp"
 
 namespace nimbus
 {
 
-void Renderer::init()
+void Renderer::s_init()
 {
-    RendererApi::init();
+    GraphicsApi::init();
 }
-void Renderer::destroy()
+void Renderer::s_destroy()
 {
 }
 
-void Renderer::setScene(Camera& camera)
+void Renderer::s_setScene(Camera& camera)
 {
     mp_vpMatrix = &camera.getViewProjection();
 }
 
-void Renderer::submit(const ref<Shader>&      p_shader,
-                      const ref<VertexArray>& p_vertexArray,
-                      const glm::mat4&        p_model,
-                      int32_t                 vertexCount,
-                      bool                    setViewProjection)
+void Renderer::s_submit(const ref<Shader>&      p_shader,
+                        const ref<VertexArray>& p_vertexArray,
+                        const glm::mat4&        p_model,
+                        int32_t                 vertexCount,
+                        bool                    setViewProjection)
 {
     NM_PROFILE();
 
     p_shader->use();
     p_shader->setMat4("u_model", p_model);
-    
+
     if (setViewProjection)
     {
         p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
@@ -44,11 +44,11 @@ void Renderer::submit(const ref<Shader>&      p_shader,
         // we do, so drawElements
         if (vertexCount == k_detectCountIfPossible)
         {
-            RendererApi::drawElements(p_vertexArray);
+            GraphicsApi::drawElements(p_vertexArray);
         }
         else
         {
-            RendererApi::drawElements(p_vertexArray, vertexCount);
+            GraphicsApi::drawElements(p_vertexArray, vertexCount);
         }
     }
     else
@@ -56,19 +56,19 @@ void Renderer::submit(const ref<Shader>&      p_shader,
         // we don't so drawArrays
         if (vertexCount == k_detectCountIfPossible)
         {
-            RendererApi::drawArrays(p_vertexArray);
+            GraphicsApi::drawArrays(p_vertexArray);
         }
         else
         {
-            RendererApi::drawArrays(p_vertexArray, vertexCount);
+            GraphicsApi::drawArrays(p_vertexArray, vertexCount);
         }
     }
 }
 
-void Renderer::submit(const ref<Shader>&      p_shader,
-                      const ref<VertexArray>& p_vertexArray,
-                      int32_t                 vertexCount,
-                      bool                    setViewProjection)
+void Renderer::s_submit(const ref<Shader>&      p_shader,
+                        const ref<VertexArray>& p_vertexArray,
+                        int32_t                 vertexCount,
+                        bool                    setViewProjection)
 {
     NM_PROFILE();
 
@@ -85,11 +85,11 @@ void Renderer::submit(const ref<Shader>&      p_shader,
         // we do, so drawElements
         if (vertexCount == k_detectCountIfPossible)
         {
-            RendererApi::drawElements(p_vertexArray);
+            GraphicsApi::drawElements(p_vertexArray);
         }
         else
         {
-            RendererApi::drawElements(p_vertexArray, vertexCount);
+            GraphicsApi::drawElements(p_vertexArray, vertexCount);
         }
     }
     else
@@ -97,27 +97,27 @@ void Renderer::submit(const ref<Shader>&      p_shader,
         // we don't so drawArrays
         if (vertexCount == k_detectCountIfPossible)
         {
-            RendererApi::drawArrays(p_vertexArray);
+            GraphicsApi::drawArrays(p_vertexArray);
         }
         else
         {
-            RendererApi::drawArrays(p_vertexArray, vertexCount);
+            GraphicsApi::drawArrays(p_vertexArray, vertexCount);
         }
     }
 }
 
-void Renderer::submitInstanced(const ref<Shader>&      p_shader,
-                               const ref<VertexArray>& p_vertexArray,
-                               int32_t                 instanceCount,
-                               const glm::mat4&        p_model,
-                               int32_t                 vertexCount,
-                               bool                    setViewProjection)
+void Renderer::s_submitInstanced(const ref<Shader>&      p_shader,
+                                 const ref<VertexArray>& p_vertexArray,
+                                 int32_t                 instanceCount,
+                                 const glm::mat4&        p_model,
+                                 int32_t                 vertexCount,
+                                 bool                    setViewProjection)
 {
     NM_PROFILE();
 
     p_shader->use();
     p_shader->setMat4("u_model", p_model);
-    
+
     if (setViewProjection)
     {
         p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
@@ -129,11 +129,11 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
         // we do, so drawElements
         if (vertexCount == k_detectCountIfPossible)
         {
-            RendererApi::drawElementsInstanced(p_vertexArray, instanceCount);
+            GraphicsApi::drawElementsInstanced(p_vertexArray, instanceCount);
         }
         else
         {
-            RendererApi::drawElementsInstanced(
+            GraphicsApi::drawElementsInstanced(
                 p_vertexArray, instanceCount, vertexCount);
         }
     }
@@ -142,21 +142,21 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
         // we don't so drawArrays
         if (vertexCount == k_detectCountIfPossible)
         {
-            RendererApi::drawArraysInstanced(p_vertexArray, instanceCount);
+            GraphicsApi::drawArraysInstanced(p_vertexArray, instanceCount);
         }
         else
         {
-            RendererApi::drawArraysInstanced(
+            GraphicsApi::drawArraysInstanced(
                 p_vertexArray, instanceCount, vertexCount);
         }
     }
 }
 
-void Renderer::submitInstanced(const ref<Shader>&      p_shader,
-                               const ref<VertexArray>& p_vertexArray,
-                               int32_t                 instanceCount,
-                               int32_t                 vertexCount,
-                               bool                    setViewProjection)
+void Renderer::s_submitInstanced(const ref<Shader>&      p_shader,
+                                 const ref<VertexArray>& p_vertexArray,
+                                 int32_t                 instanceCount,
+                                 int32_t                 vertexCount,
+                                 bool                    setViewProjection)
 {
     NM_PROFILE();
 
@@ -173,11 +173,11 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
         // we do, so drawElements
         if (vertexCount == k_detectCountIfPossible)
         {
-            RendererApi::drawElementsInstanced(p_vertexArray, instanceCount);
+            GraphicsApi::drawElementsInstanced(p_vertexArray, instanceCount);
         }
         else
         {
-            RendererApi::drawElementsInstanced(
+            GraphicsApi::drawElementsInstanced(
                 p_vertexArray, instanceCount, vertexCount);
         }
     }
@@ -186,11 +186,11 @@ void Renderer::submitInstanced(const ref<Shader>&      p_shader,
         // we don't so drawArrays
         if (vertexCount == k_detectCountIfPossible)
         {
-            RendererApi::drawArraysInstanced(p_vertexArray, instanceCount);
+            GraphicsApi::drawArraysInstanced(p_vertexArray, instanceCount);
         }
         else
         {
-            RendererApi::drawArraysInstanced(
+            GraphicsApi::drawArraysInstanced(
                 p_vertexArray, instanceCount, vertexCount);
         }
     }

@@ -7,7 +7,7 @@
 #include "platform/buffer.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/texture.hpp"
-#include "platform/rendererApi.hpp"
+#include "platform/graphicsApi.hpp"
 
 namespace nimbus
 {
@@ -65,8 +65,8 @@ class ParticleEmitter
         bool                      persist = false;
         bool                      fade    = false;
         bool                      shrink  = false;
-        RendererApi::BlendingMode blendingMode
-            = RendererApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
+        GraphicsApi::BlendingMode blendingMode
+            = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
     };
 
     ParticleEmitter(uint32_t            particleCount,

@@ -4,7 +4,7 @@
 
 namespace nimbus
 {
-class RendererApi
+class GraphicsApi
 {
    public:
     enum class BlendingMode
@@ -46,9 +46,9 @@ class RendererApi
 
     static bool getDepthTest();
 
-    static void setBlendingMode(RendererApi::BlendingMode);
+    static void setBlendingMode(GraphicsApi::BlendingMode);
 
-    static RendererApi::BlendingMode getBlendingMode();
+    static GraphicsApi::BlendingMode getBlendingMode();
 
    private:
     inline static bool         s_wireframeOn      = false;

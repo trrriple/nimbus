@@ -3,7 +3,7 @@
 
 #include "guiLayers/guiSubsystem.hpp"
 #include "application.hpp"
-#include "platform/rendererApi.hpp"
+#include "platform/graphicsApi.hpp"
 
 ///////////////////////
 /// Dear Imgui stuff

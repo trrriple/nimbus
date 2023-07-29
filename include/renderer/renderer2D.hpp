@@ -4,27 +4,38 @@
 #include "common.hpp"
 #include "glm.hpp"
 #include "platform/buffer.hpp"
-#include "renderer/shader.hpp"
 #include "renderer/font.hpp"
-
+#include "renderer/shader.hpp"
 
 namespace nimbus
 {
 class Renderer2D
-{  
-    
-   public:    
-    static void init();
-    static void destroy();
+{
+   public:
+    struct TextFormat
+    {
+        ref<Font> p_font      = nullptr;
+        glm::vec4 fgColor     = glm::vec4(1.0f);
+        glm::vec4 bgColor     = glm::vec4(0.0f);
+        float     kerning     = 0.0f;
+        float     lineSpacing = 0.0f;
+    };
 
-    static void begin(Camera& camera);
+    static void s_init();
+    static void s_destroy();
 
-    static void end();
+    static void s_begin(Camera& camera);
 
+    static void s_end();
 
-    static void drawText(const std::string& text,
-                         const Font&        font,
-                         const glm::vec3&   pos);
+    static void s_drawText(const std::string& text,
+                           const TextFormat&  textFormat,
+                           const glm::vec3&   position,
+                           const glm::vec2&   size);
+
+    static void s_drawText(const std::string& text,
+                           const TextFormat&  textFormat,
+                           const glm::mat4&   transform);
 
    private:
     ///////////////////////////
@@ -39,7 +50,6 @@ class Renderer2D
 
     static GeneralData s_genData;
 
-
     ///////////////////////////
     //  Text layout and data
     ///////////////////////////
@@ -52,7 +62,8 @@ class Renderer2D
         {k_shaderVec2, "texCoords"},
         {k_shaderVec4, "fgColor"},
         {k_shaderVec4, "bgColor"},
-        
+        {k_shaderVec2, "unitRange"},
+        {k_shaderFloat, "texIndex"},
     };
     struct TextVertex
     {
@@ -60,19 +71,19 @@ class Renderer2D
         glm::vec2 texCoord;
         glm::vec4 fgColor;
         glm::vec4 bgColor;
-        
+        glm::vec2 unitRange;
+        float     texIndex;
     };
 
     struct TextData
     {
-        std::vector<TextVertex> vertices;
-        uint32_t                vertexIdx = 0;
-        ref<VertexBuffer>       p_vbo     = nullptr;
-        ref<VertexArray>        p_vao     = nullptr;
-        ref<Shader>             p_shader  = nullptr;
-        ref<Texture>            p_atlas   = nullptr;
-        uint32_t                charCount = 0;
-        glm::vec2               unitRange = {0.0, 0.0};
+        std::vector<TextVertex>   vertices;
+        uint32_t                  vertexIdx = 0;
+        ref<VertexBuffer>         p_vbo     = nullptr;
+        ref<VertexArray>          p_vao     = nullptr;
+        ref<Shader>               p_shader  = nullptr;
+        uint32_t                  charCount = 0;
+        std::vector<ref<Texture>> atlases;
     };
 
     static TextData s_textData;
@@ -82,6 +93,5 @@ class Renderer2D
     ///////////////////////////
     static void _s_submit();
     static void _s_createTextBuffers();
-
 };
 }  // namespace nimbus

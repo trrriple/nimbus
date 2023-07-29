@@ -3,7 +3,7 @@
 
 #include "guiLayers/engineGui.hpp"
 #include "application.hpp"
-#include "platform/rendererApi.hpp"
+#include "platform/graphicsApi.hpp"
 
 #include "imgui.h"
 
@@ -75,9 +75,9 @@ void EngineGui::onGuiUpdate()
 
     ImGui::Text("Draw Parameters");
 
-    bool newWireFrameMode = RendererApi::getWireframe();
+    bool newWireFrameMode = GraphicsApi::getWireframe();
     ImGui::Checkbox("Wireframe Mode", &newWireFrameMode);
-    RendererApi::setWireframe(newWireFrameMode);
+    GraphicsApi::setWireframe(newWireFrameMode);
 
     ImGui::SameLine();
 
