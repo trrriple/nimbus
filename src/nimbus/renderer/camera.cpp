@@ -1,7 +1,7 @@
 #include "nimbus/nmpch.hpp"
 #include "nimbus/core.hpp"
 
-#include "nimbus/camera.hpp"
+#include "nimbus/renderer/camera.hpp"
 
 #include "nimbus/application.hpp"
 

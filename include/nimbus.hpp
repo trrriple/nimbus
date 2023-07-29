@@ -2,7 +2,6 @@
 #pragma once
 
 #include "nimbus/application.hpp"
-#include "nimbus/camera.hpp"
 #include "nimbus/common.hpp"
 #include "nimbus/event.hpp"
 #include "nimbus/keyCode.hpp"
@@ -11,6 +10,7 @@
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/font.hpp"
 #include "nimbus/renderer/frameBuffer.hpp"
+#include "nimbus/renderer/camera.hpp"
 #include "nimbus/renderer/mesh.hpp"
 #include "nimbus/renderer/model.hpp"
 #include "nimbus/renderer/particleEmitter.hpp"

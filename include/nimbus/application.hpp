@@ -1,12 +1,12 @@
 #pragma once
 
-#include "camera.hpp"
-#include "common.hpp"
-#include "event.hpp"
-#include "guiLayers/guiSubsystem.hpp"
-#include "layerDeck.hpp"
-#include "log.hpp"
-#include "window.hpp"
+#include "nimbus/renderer/camera.hpp"
+#include "nimbus/common.hpp"
+#include "nimbus/event.hpp"
+#include "nimbus/guiLayers/guiSubsystem.hpp"
+#include "nimbus/layerDeck.hpp"
+#include "nimbus/log.hpp"
+#include "nimbus/window.hpp"
 
 namespace nimbus
 {

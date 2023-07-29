@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nimbus/common.hpp"
-#include "nimbus/camera.hpp"
+#include "nimbus/renderer/camera.hpp"
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/font.hpp"
 #include "nimbus/renderer/shader.hpp"
