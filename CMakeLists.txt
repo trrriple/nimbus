@@ -39,15 +39,10 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 
 # #########################
-# Paths
+# Vendor Libraries
 # #########################
-set(SRC_PATH "${CMAKE_CURRENT_LIST_DIR}/src")
-set(INCLUDE_PATH "${CMAKE_CURRENT_LIST_DIR}/include")
 set(VENDOR_PATH "${CMAKE_CURRENT_LIST_DIR}/vendor")
 
-# #########################
-# Libraries
-# #########################
 include(FetchContent)
 Set(FETCHCONTENT_QUIET FALSE)
 
@@ -195,16 +190,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(tracy)
 target_compile_options(TracyClient PRIVATE -Wno-format)
 
-
-
 # #########################
 # Self: Nimbus
 # #########################
-file(GLOB_RECURSE NIMBUS_LIB_SRC "${SRC_PATH}/*.cpp")
+file(GLOB_RECURSE NIMBUS_LIB_SRC 
+    "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
+
 add_library(nimbus STATIC ${NIMBUS_LIB_SRC})
 
 set(CMAKE_USE_PCH ON)
-target_precompile_headers(nimbus PRIVATE "${INCLUDE_PATH}/nmpch.hpp")
+target_precompile_headers(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/nimbus/nmpch.hpp")
 
 target_link_libraries(nimbus PRIVATE SDL2-static)
 target_link_libraries(nimbus PRIVATE assimp)
@@ -220,7 +215,7 @@ target_link_libraries(nimbus PUBLIC TracyClient)
 # #########################
 
 # self
-target_include_directories(nimbus PRIVATE "${INCLUDE_PATH}")
+target_include_directories(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
 
 #sdl
 target_include_directories(nimbus PRIVATE "${sdl2_SOURCE_DIR}/include")
@@ -265,8 +260,7 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(nimbus PRIVATE
         -Wall
-        -Wextra
-        -Wpedantic)
+        -Wextra)
 
     # from assimp header
     target_compile_options(nimbus PRIVATE 
