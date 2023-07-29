@@ -40,11 +40,11 @@ class Camera
     };
 
     // 3d camera
-    Camera(glm::vec3 position    = glm::vec3(0.0f, 0.0f, 0.0f),
-           glm::vec3 up          = glm::vec3(0.0f, 1.0f, 0.0f),
-           float     yaw         = k_yaw_default,
-           float     pitch       = k_pitch_default,
-           float     aspectRatio = 1.0f);
+    Camera(const glm::vec3 position    = glm::vec3(0.0f, 0.0f, 0.0f),
+           const glm::vec3 up          = glm::vec3(0.0f, 1.0f, 0.0f),
+           float           yaw         = k_yaw_default,
+           float           pitch       = k_pitch_default,
+           float           aspectRatio = 1.0f);
 
     //2d camera
     Camera(float aspectRatio = 1.0f);
@@ -80,7 +80,7 @@ class Camera
         return m_aspectRatio;
     }
 
-    void setPosition(glm::vec3& position);
+    void setPosition(const glm::vec3& position);
 
     void setZoom(float zoom);
 
@@ -89,7 +89,7 @@ class Camera
         return m_position;
     }
 
-    void  setSpeed(float speed);
+    void setSpeed(float speed);
 
     float getSpeed() const
     {

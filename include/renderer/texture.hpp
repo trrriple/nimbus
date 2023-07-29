@@ -130,6 +130,8 @@ class Texture
         return m_spec;
     }
 
+    bool operator==(const Texture& other) const;
+
     static void s_setMaxTextures(uint32_t maxTextures);
 
     static uint32_t s_getMaxTextures();

@@ -67,6 +67,8 @@ const std::string k_particleFragmentShader = R"(
         // Sample the texture at the given coordinates and multiply it by the 
         // color
         FragColor = texture(particleTexture, TexCoords) * Color;
+        if(FragColor.a == 0.0f)
+            discard;
     }
 )";
 

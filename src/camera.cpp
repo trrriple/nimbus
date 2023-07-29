@@ -7,11 +7,11 @@
 namespace nimbus
 {
 
-Camera::Camera(glm::vec3 position,
-               glm::vec3 up,
-               float     yaw,
-               float     pitch,
-               float     aspectRatio)
+Camera::Camera(const glm::vec3 position,
+               const glm::vec3 up,
+               float           yaw,
+               float           pitch,
+               float           aspectRatio)
     : m_position(position),
       m_front(glm::vec3(0.0f, 0.0f, -1.0f)),
       m_worldUp(up),
@@ -271,7 +271,7 @@ void Camera::setAspectRatio(float aspectRatio)
     m_staleProjection = true;
 }
 
-void Camera::setPosition(glm::vec3& position)
+void Camera::setPosition(const glm::vec3& position)
 {
     m_position  = position;
     m_staleView = true;

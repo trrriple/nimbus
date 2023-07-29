@@ -40,7 +40,7 @@ FrameBuffer::FrameBuffer(FrameBuffer::Spec& spec)
                        maxSamples);
     }
 
-    construct();
+    _construct();
 }
 
 FrameBuffer::~FrameBuffer()
@@ -52,7 +52,7 @@ FrameBuffer::~FrameBuffer()
     glDeleteRenderbuffers(1, &m_rbo);
 }
 
-void FrameBuffer::construct()
+void FrameBuffer::_construct()
 {
     NM_PROFILE();
 
@@ -189,7 +189,7 @@ void FrameBuffer::resize(uint32_t width, uint32_t height)
     m_spec.width  = width;
     m_spec.height = height;
 
-    construct();
+    _construct();
 }
 
 void FrameBuffer::blit(const FrameBuffer& destination) const

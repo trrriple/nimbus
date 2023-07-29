@@ -32,7 +32,6 @@ class FrameBuffer
     FrameBuffer(Spec& spec);
     ~FrameBuffer();
 
-    void construct();
 
     void resize(uint32_t width, uint32_t height);
 
@@ -63,6 +62,7 @@ class FrameBuffer
 
     uint32_t _textureTarget() const;
 
+    void _construct();
 };
 
 }  // namespace nimbus

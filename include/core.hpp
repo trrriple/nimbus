@@ -15,7 +15,7 @@
 #define NM_PROFILE_LEVEL_NORM   1
 #define NM_PROFILE_LEVEL_NONE   0
 
-#define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_DETAIL
+#define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_NONE
 
 #ifdef NM_RUNTIME_ASSERTS
 ////////////////////////////////////////////////////////////////////////////////
