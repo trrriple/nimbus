@@ -204,7 +204,7 @@ void Camera::updateViewProjection()
 {
     NM_PROFILE_DETAIL();
 
-    m_viewProjection = (getProjection() * getView());
+    m_viewProjection = getProjection() * getView();
 
     m_staleWorldBounds = true;
 }

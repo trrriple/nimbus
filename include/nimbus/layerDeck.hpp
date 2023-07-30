@@ -23,7 +23,7 @@ class LayerDeck
 
     void removeLayer(const ref<Layer>& p_layer);
 
-    std::vector<std::string*> getLayerNames();
+    const std::vector<std::string*> getLayerNames() const;
 
     ////////////////////////////////////////////////////////////////////
     // Foward Interator Helpers

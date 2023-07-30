@@ -20,7 +20,7 @@ class EngineGui : public Layer
 
     virtual void onEvent(Event& event) override;
 
-    virtual void onGuiUpdate() override;
+    virtual void onGuiUpdate(float deltaTime) override;
 
    private:
     std::vector<float> m_frameTimes_ms;

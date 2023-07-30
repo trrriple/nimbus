@@ -35,7 +35,9 @@ class Application
 
     void shouldQuit(Event& event);
 
-    void execute();
+    // ironically these could mean the same thing but are totally different :)
+    void execute();    // main execution function
+    void terminate();  // termination function if desired for testing
 
     void onEvent(Event& event);
 
@@ -46,35 +48,60 @@ class Application
 
     void guiSubsystemCaptureEvents(bool capture);
 
-    float getFrametime() const;
-
     const uint8_t* getKeyboardState() const;
-
-    LayerDeck& getLayerDeck();
-
-    Window& getWindow();
 
     void setMenuMode(bool mode);
 
-    bool getMenuMode() const;
+    void setUpdatePeriodLimit(float limit);
 
-    const Log& getAppLog() const;
+    void setDrawPeriodLimit(float limit);
 
-    const Log& getCoreLog() const;
+    bool getMenuMode() const
+    {
+        return m_menuMode;
+    }
 
-    void kill();
+    const LayerDeck& getLayerDeck()
+    {
+        return m_layerDeck;
+    }
+
+    Window& getWindow()
+    {
+        return *mp_window;
+    }
+
+    float getUpdateLag() const
+    {
+        return m_updateLag;
+    }
+
+    float getDrawLag() const
+    {
+        return m_drawLag;
+    }
+
+    float getGameTime() const
+    {
+        return m_gameTime;
+    }
 
    private:
     ///////////////////////////
     // Parameters
     ///////////////////////////
     std::string m_name;
+    float       m_updatePeriodLimit = 0.0167f;
+    float       m_drawPeriodLimit   = 0.0167f;
 
     ///////////////////////////
     // State
     ///////////////////////////
-    bool          m_menuMode = false;
-    volatile bool m_Active   = true;
+    bool          m_menuMode  = false;
+    volatile bool m_Active    = true;
+    double        m_gameTime  = 0.0f;
+    float         m_updateLag = 0.0f;
+    float         m_drawLag   = 0.0f;
     LayerDeck     m_layerDeck;
 
     ///////////////////////////

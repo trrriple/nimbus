@@ -39,14 +39,14 @@ void EngineGui::onEvent(Event& event)
     UNUSED(event);
 }
 
-void EngineGui::onGuiUpdate()
+void EngineGui::onGuiUpdate(float deltaTime)
 {
     // todo handle enable/disable for this
     char buf[128];
     snprintf(buf,
              128,
              "%.02f ms/frame (%.02f FPS)###RenderStatus",
-             sp_appRef->getFrametime() * 1000.0f,
+             deltaTime * 1000.0f,
              sp_appWinRef->m_fps);
 
     ImGui::Begin(buf,
@@ -54,14 +54,13 @@ void EngineGui::onGuiUpdate()
                  ImGuiWindowFlags_AlwaysAutoResize
                      | ImGuiWindowFlags_NoFocusOnAppearing);
 
-
     // this is kinda inefficient, could draw over instead of
     // scroll?
-    if(m_frameTimes_ms.size() == m_frameTimes_ms.capacity())
+    if (m_frameTimes_ms.size() == m_frameTimes_ms.capacity())
     {
         m_frameTimes_ms.erase(m_frameTimes_ms.begin());
     }
-    m_frameTimes_ms.push_back(sp_appWinRef->m_tFrame_s * 1000.0);
+    m_frameTimes_ms.push_back(deltaTime * 1000.0);
 
     ImGui::PlotLines("Frame Times",
                      m_frameTimes_ms.data(),
@@ -110,7 +109,6 @@ void EngineGui::onGuiUpdate()
     ImGui::End();
 
     // ImGui::ShowDemoWindow();
-
 }
 
 }  // namespace nimbus

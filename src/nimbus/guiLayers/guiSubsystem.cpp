@@ -31,6 +31,12 @@ void GuiSubsystem::onInsert()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+    float fontSize = 13.0f; 
+    io.Fonts->AddFontFromFileTTF("../resources/fonts/Roboto/Roboto-Regular.ttf",
+                                 fontSize);
+    io.FontDefault = io.Fonts->AddFontFromFileTTF(
+        "../resources/fonts/Roboto/Roboto-Regular.ttf", fontSize);
+
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 

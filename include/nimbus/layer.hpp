@@ -30,12 +30,19 @@ class Layer
     {
     }
 
-    virtual void onUpdate()
+    virtual void onUpdate(float deltaTime)
     {
+        UNUSED(deltaTime);
     }
     
-    virtual void onGuiUpdate()
+    virtual void onGuiUpdate(float deltaTime)
     {
+        UNUSED(deltaTime);
+    }
+
+    virtual void onDraw(float deltaTime)
+    {
+        UNUSED(deltaTime);
     }
 
     virtual void onEvent(Event& event)

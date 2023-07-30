@@ -50,39 +50,103 @@ void Application::shouldQuit(Event& event)
 
 void Application::execute()
 {
+    float currentTime = core::getTime_s();
+    
     while (m_Active)
     {
         NM_PROFILE();
 
-        GraphicsApi::clear();
+        ///////////////////////////
+        // Loop time handling
+        ///////////////////////////
+        float newTime  = core::getTime_s();
+        float loopTime = newTime - currentTime;
+        currentTime    = newTime;
+
+        // prevent spiral of death if we're running really slow
+        if(loopTime >= 0.1f)
+        {
+            loopTime = 0.1f;
+        }
+
+        m_updateLag += loopTime;
+        m_drawLag   += loopTime;
+
+        ///////////////////////////
+        // Updates are fixed step
+        ///////////////////////////
+        bool     doUpdate        = m_updateLag >= m_updatePeriodLimit;
+        uint32_t updatesRequired = 0;
+        if (doUpdate)
+        {
+            // we can run multiple updates if we're behind
+            updatesRequired = m_updateLag / m_updatePeriodLimit;
+            
+            // calculate how much time we're about to process
+            float gameTimeProgression
+                = (float)updatesRequired * m_updatePeriodLimit;
+            
+            // remove the lag we're about to update through
+            m_updateLag -= gameTimeProgression;
+
+            // game time is a product of game updates, not renders
+            m_gameTime += gameTimeProgression;
+        }
+
+        ///////////////////////////
+        // Draws are limited
+        ///////////////////////////
+        bool doDraw = m_drawLag >= m_drawPeriodLimit;
 
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions
         ////////////////////////////////////////////////////////////////////////
-        for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); ++it)
+        for (uint32_t i = 0; i < updatesRequired; i++)
         {
-            (*it)->onUpdate();
+            for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
+            {
+                // call each update with a fixed time step
+                (*it)->onUpdate(m_updatePeriodLimit);
+            }
         }
 
         ////////////////////////////////////////////////////////////////////////
-        // Call layer GUI update functions
+        // Call layer draw functions
         ////////////////////////////////////////////////////////////////////////
-        mp_guiSubsystemLayer->begin();
+        if (doDraw)
+        {   
+            GraphicsApi::clear();
+            for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
+            {
+                // call each draw with how long it's been since last draw
+                (*it)->onDraw(m_drawLag);
+            }
 
-        for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); ++it)
-        {
-            (*it)->onGuiUpdate();
+
+            ///////////////////////////
+            // Call all gui updates
+            ///////////////////////////
+            mp_guiSubsystemLayer->begin();
+            for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
+            {
+                (*it)->onGuiUpdate(m_drawLag);
+            }
+            mp_guiSubsystemLayer->end();
+
+            ////////////////////////////////////////////////////////////////////
+            // Call window update function (events polled and buffers swapped)
+            ////////////////////////////////////////////////////////////////////
+            mp_window->onUpdate();
+            m_drawLag = 0.0f;
         }
-
-        mp_guiSubsystemLayer->end();
-
-        ////////////////////////////////////////////////////////////////////////
-        // Call window update function (events polled and buffers swapped)
-        ////////////////////////////////////////////////////////////////////////
-        mp_window->onUpdate();
     }
 
     Log::coreInfo("Quitting");
+}
+
+void Application::terminate()
+{
+    m_Active = false;
 }
 
 void Application::onEvent(Event& event)
@@ -132,24 +196,9 @@ void Application::guiSubsystemCaptureEvents(bool capture)
     mp_guiSubsystemLayer->captureEvents(capture);
 }
 
-float Application::getFrametime() const
-{
-    return mp_window->m_tFrame_s;
-}
-
 const uint8_t* Application::getKeyboardState() const
 {
     return SDL_GetKeyboardState(nullptr);
-}
-
-LayerDeck& Application::getLayerDeck()
-{
-    return m_layerDeck;
-}
-
-Window& Application::getWindow()
-{
-    return *mp_window;
 }
 
 void Application::setMenuMode(bool mode)
@@ -173,15 +222,25 @@ void Application::setMenuMode(bool mode)
     m_menuMode = mode;
 }
 
-void Application::kill()
+void Application::setUpdatePeriodLimit(float limit)
 {
-    m_Active = false;
+    if (limit < 0.0f)
+    {
+        Log::coreWarn("Update Period limit can't be less then 0.0");
+        limit = 0.0f;
+    }
+
+    m_updatePeriodLimit = limit;
 }
 
-
-bool Application::getMenuMode() const
+void Application::setDrawPeriodLimit(float limit)
 {
-    return m_menuMode;
+    if (limit < 0.0f)
+    {
+        Log::coreWarn("Draw Period limit can't be less then 0.0");
+        limit = 0.0f;
+    }
+    m_drawPeriodLimit = limit;
 }
 
 };  // namespace nimbus
