@@ -8,8 +8,6 @@
 #include "nimbus/renderer/renderer2D.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 
-#include "glad.h"
-
 namespace nimbus
 {
 
@@ -84,12 +82,6 @@ void Window::graphicsContextInit()
 
     // Set V-sync
     SDL_GL_SetSwapInterval(m_VSyncOn);
-
-    // TODO: PULL OUT setup GLAD
-    if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
-    {
-        NM_CORE_ASSERT_STATIC(0, "Failed to initialize Glad %s");
-    }
 
     Renderer::s_init();
     Renderer2D::s_init();

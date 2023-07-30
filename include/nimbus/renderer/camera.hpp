@@ -103,6 +103,16 @@ class Camera
         return m_sensitivity;
     }
 
+    float getYaw() const
+    {
+        return m_yaw;
+    }
+
+    float getPitch() const
+    {
+        return m_pitch;
+    }
+
    private:
     glm::mat4 m_projection;
     glm::mat4 m_view;

@@ -14,7 +14,7 @@ Camera::Camera(const glm::vec3 position,
                float           pitch,
                float           aspectRatio)
     : m_position(position),
-      m_front(glm::vec3(0.0f, 0.0f, -1.0f)),
+      m_front({0.0f, 0.0f, -1.0f}),
       m_worldUp(up),
       m_yaw(yaw),
       m_pitch(pitch),
@@ -35,11 +35,18 @@ Camera::Camera(const glm::vec3 position,
 
 Camera::Camera(float aspectRatio)
     : m_position({0.0f, 0.0f, 0.0f}),
-      m_yaw(0.0f),
+      m_front({0.0f, 0.0f, -1.0f}),
+      m_worldUp({0.0f, 1.0f, 0.0f}),
+      m_yaw(k_yaw_default),
+      m_pitch(k_pitch_default),
+      m_speed(k_speed_default),
+      m_sensitivity(k_sensitivity_default),
       m_zoom(k_zoom_default),
       m_aspectRatio(aspectRatio),
       m_is3d(false)
 {
+    _updateCameraVectors();
+
     updateView();
     updateProjection();
     updateViewProjection();

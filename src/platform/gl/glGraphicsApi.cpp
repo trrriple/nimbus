@@ -14,6 +14,11 @@ void GlGraphicsApi::init()
 {
     NM_PROFILE_DETAIL();
 
+    if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
+    {
+        NM_CORE_ASSERT_STATIC(0, "Failed to initialize Glad %s");
+    }
+
     Log::coreInfo("Vendor:   %s", glGetString(GL_VENDOR));
     Log::coreInfo("Renderer: %s", glGetString(GL_RENDERER));
     Log::coreInfo("Version:  %s", glGetString(GL_VERSION));
