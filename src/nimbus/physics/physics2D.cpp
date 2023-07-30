@@ -21,7 +21,7 @@ Physics2D::~Physics2D()
     delete m_worldData;
 }
 
-Body2D Physics2D::addRigidBody(const RigidBodySpec& spec)
+Physics2D::RigidBody Physics2D::addRigidBody(const RigidBodySpec& spec)
 {
     b2BodyDef bodyDef;
 
@@ -42,22 +42,25 @@ Body2D Physics2D::addRigidBody(const RigidBodySpec& spec)
 
     b2Body* p_body = m_worldData->world->CreateBody(&bodyDef);
 
-    return static_cast<Body2D>(p_body);
+    Physics2D::RigidBody body;
+
+    body.p_data = p_body;
+
+    return body;
 }
 
-void Physics2D::addFixture(Body2D&                body,
-                           const FixtureSpec&     FixtureSpec,
-                           const util::Transform& transform)
+void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
+                                      const util::Transform& transform)
 {
     b2FixtureDef fixtureDef;
 
     ///////////////////////////
     // Set Shape specifics
     ///////////////////////////
-    if (FixtureSpec.shape->type == ShapeType::RECTANGLE)
+    if (fixtureSpec.shape->type == ShapeType::RECTANGLE)
     {
         const Rectangle* rect
-            = static_cast<const Rectangle*>(FixtureSpec.shape);
+            = static_cast<const Rectangle*>(fixtureSpec.shape);
 
         b2PolygonShape rectShape;
         rectShape.SetAsBox(rect->size.x * transform.scale.x,
@@ -67,9 +70,9 @@ void Physics2D::addFixture(Body2D&                body,
 
         fixtureDef.shape = &rectShape;
     }
-    else if (FixtureSpec.shape->type == ShapeType::CIRCLE)
+    else if (fixtureSpec.shape->type == ShapeType::CIRCLE)
     {
-        const Circle* circle = static_cast<const Circle*>(FixtureSpec.shape);
+        const Circle* circle = static_cast<const Circle*>(fixtureSpec.shape);
         b2CircleShape circleShape;
         circleShape.m_p.Set(circle->offset.x, circle->offset.y);
         circleShape.m_radius = transform.scale.x * circle->radius;
@@ -78,13 +81,13 @@ void Physics2D::addFixture(Body2D&                body,
     ///////////////////////////
     // General attributes
     ///////////////////////////
-    fixtureDef.friction             = FixtureSpec.friction;
-    fixtureDef.restitution          = FixtureSpec.restitution;
-    fixtureDef.restitutionThreshold = FixtureSpec.restitutionThreshold;
-    fixtureDef.density              = FixtureSpec.density;
-    fixtureDef.isSensor             = FixtureSpec.isSensor;
+    fixtureDef.friction             = fixtureSpec.friction;
+    fixtureDef.restitution          = fixtureSpec.restitution;
+    fixtureDef.restitutionThreshold = fixtureSpec.restitutionThreshold;
+    fixtureDef.density              = fixtureSpec.density;
+    fixtureDef.isSensor             = fixtureSpec.isSensor;
 
-    b2Body* p_body = static_cast<b2Body*>(body);
+    b2Body* p_body = static_cast<b2Body*>(p_data);
 
     p_body->CreateFixture(&fixtureDef);
 }

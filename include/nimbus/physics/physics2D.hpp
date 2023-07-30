@@ -78,14 +78,18 @@ class Physics2D
         float  isSensor             = false;
     };
 
+    struct RigidBody
+    {
+        void* p_data;
+
+        void addFixture(const FixtureSpec&     fixtureSpec,
+                        const util::Transform& transform);
+    };
+
     Physics2D();
     ~Physics2D();
 
-    Body2D addRigidBody(const RigidBodySpec& spec);
-
-    void addFixture(Body2D&                body,
-                    const FixtureSpec&     FixtureSpec,
-                    const util::Transform& transform);
+    RigidBody addRigidBody(const RigidBodySpec& spec);
 
    private:
     struct WorldData;

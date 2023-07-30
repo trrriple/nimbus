@@ -7,6 +7,7 @@
 #include "nimbus/keyCode.hpp"
 #include "nimbus/layer.hpp"
 #include "nimbus/log.hpp"
+#include "nimbus/physics/physics2D.hpp"
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/font.hpp"
 #include "nimbus/renderer/frameBuffer.hpp"
