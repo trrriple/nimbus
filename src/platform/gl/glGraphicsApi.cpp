@@ -115,8 +115,15 @@ void GlGraphicsApi::clear()
 {
     NM_PROFILE_TRACE();
 
-    glClear(GL_COLOR_BUFFER_BIT | (GL_DEPTH_BUFFER_BIT && getDepthTest()));
+    glClear(getDepthTest() ? (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+                           : GL_COLOR_BUFFER_BIT);
 }
+
+void GlGraphicsApi::clearColor(glm::vec4 color)
+{
+    glClearColor(color.r, color.g, color.b, color.a);
+}
+
 
 void GlGraphicsApi::setViewportSize(int x, int y, int w, int h)
 {

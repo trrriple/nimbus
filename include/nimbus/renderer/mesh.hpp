@@ -70,7 +70,7 @@ class Mesh
 
     ref<Shader>& getShader();
 
-    void draw(glm::mat4& model) const;
+    void draw(const glm::mat4& model) const;
 
    private:
     std::vector<Vertex>       m_vertices;

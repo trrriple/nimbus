@@ -5,6 +5,7 @@
 #include "platform/gl/glFrameBuffer.hpp"
 
 #include "nimbus/renderer/texture.hpp"
+#include "nimbus/renderer/graphicsApi.hpp"
 
 #include "glad.h"
 
@@ -260,6 +261,8 @@ void GlFrameBuffer::_construct()
                           glCheckFramebufferStatus(GL_FRAMEBUFFER));
     }
 
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    GraphicsApi::clearColor({0.1f, 0.1f, 0.1f, 1.0f});
     // bind the default frame buffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

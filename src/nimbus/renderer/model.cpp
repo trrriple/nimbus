@@ -23,7 +23,7 @@ Model::Model(std::string path, bool flipOnLoad, bool normalize)
     }
 }
 
-void Model::draw(ref<Shader>& shader, glm::mat4& model)
+void Model::draw(ref<Shader>& shader, const glm::mat4& model)
 {
     for (uint32_t i = 0; i < mp_meshes.size(); i++)
     {

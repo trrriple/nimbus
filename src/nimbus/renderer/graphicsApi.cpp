@@ -49,6 +49,11 @@ void GraphicsApi::clear()
     GlGraphicsApi::clear();
 }
 
+void GraphicsApi::clearColor(glm::vec4 color)
+{
+    GlGraphicsApi::clearColor(color);
+}
+
 void GraphicsApi::setViewportSize(int x, int y, int w, int h)
 {
     GlGraphicsApi::setViewportSize(x, y, w, h);

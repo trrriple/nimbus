@@ -44,6 +44,8 @@ Mesh::Mesh(std::vector<Vertex>       verticies,
     m_textures = textures;
 
     _setupMesh();
+    _setupTextureUniforms();
+
 }
 
 Mesh::Mesh(std::vector<Vertex>   verticies,
@@ -78,7 +80,7 @@ ref<Shader>& Mesh::getShader()
     return mp_shader;
 }
 
-void Mesh::draw(glm::mat4& model) const
+void Mesh::draw(const glm::mat4& model) const
 {
     NM_PROFILE();
 
@@ -87,6 +89,8 @@ void Mesh::draw(glm::mat4& model) const
     uint32_t ambIndex    = 0;
     uint32_t normalIndex = 0;
     uint32_t heightIndex = 0;
+
+    mp_shader->bind();
 
     // go through and bind all of our textures
     for (uint32_t i = 0; i < m_textures.size(); i++)
@@ -220,28 +224,28 @@ void Mesh::_setupTextureUniforms()
             case (Texture::Type::SPECULAR):
             {
                 std::string name
-                    = k_texDiffNm + "_" + std::to_string(specIndex++);
+                    = k_texSpecNm + "_" + std::to_string(specIndex++);
                 m_texSpecUniformNms.push_back(name);
                 break;
             }
             case (Texture::Type::AMBIENT):
             {
                 std::string name
-                    = k_texDiffNm + "_" + std::to_string(ambIndex++);
+                    = k_texAmbiNm + "_" + std::to_string(ambIndex++);
                 m_texAmbiUniformNms.push_back(name);
                 break;
             }
             case (Texture::Type::NORMAL):
             {
                 std::string name
-                    = k_texDiffNm + "_" + std::to_string(normalIndex++);
+                    = k_texNormNm + "_" + std::to_string(normalIndex++);
                 m_texNormUniformNms.push_back(name);
                 break;
             }
             case (Texture::Type::HEIGHT):
             {
                 std::string name
-                    = k_texDiffNm + "_" + std::to_string(heightIndex++);
+                    = k_texHghtNm + "_" + std::to_string(heightIndex++);
                 m_texHghtUniformNms.push_back(name);
                 break;
             }

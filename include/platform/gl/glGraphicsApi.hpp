@@ -8,7 +8,11 @@ class GlGraphicsApi : public GraphicsApi
 {
    public:
     static void init();
+
     static void clear();
+
+    static void clearColor(glm::vec4 color);
+
 
     static void drawElements(const ref<VertexArray>& p_vertexArray,
                              uint32_t                vertexCount = 0);

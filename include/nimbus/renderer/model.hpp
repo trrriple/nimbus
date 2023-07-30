@@ -17,7 +17,7 @@ class Model
 
     Model(std::string path, bool flipOnLoad = false, bool normalize = false);
 
-    void draw(ref<Shader>& shader, glm::mat4& model);
+    void draw(ref<Shader>& shader, const glm::mat4& model);
 
    private:
     std::vector<scope<Mesh>> mp_meshes;
