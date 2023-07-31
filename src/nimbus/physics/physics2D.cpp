@@ -21,6 +21,12 @@ Physics2D::~Physics2D()
     delete m_worldData;
 }
 
+void Physics2D::update(float deltaTime)
+{
+    m_worldData->world->Step(
+        deltaTime, k_solverVelocityIterations, k_solverPositionIterations);
+}
+
 Physics2D::RigidBody Physics2D::addRigidBody(const RigidBodySpec& spec)
 {
     b2BodyDef bodyDef;
@@ -90,6 +96,18 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
     b2Body* p_body = static_cast<b2Body*>(p_data);
 
     p_body->CreateFixture(&fixtureDef);
+}
+
+util::Transform& Physics2D::RigidBody::updateTransform()
+{
+    b2Body* p_body = static_cast<b2Body*>(p_data);
+
+    const auto& position    = p_body->GetPosition();
+    transform.translation.x = position.x;
+    transform.translation.y = position.y;
+    transform.rotation.z    = p_body->GetAngle();
+
+    return transform;
 }
 
 uint32_t Physics2D::_bodyType(BodyType bodyType) const

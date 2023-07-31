@@ -80,18 +80,26 @@ class Physics2D
 
     struct RigidBody
     {
-        void* p_data;
+        void*           p_data = nullptr;
+        util::Transform transform;
 
         void addFixture(const FixtureSpec&     fixtureSpec,
                         const util::Transform& transform);
+
+        util::Transform& updateTransform();
     };
 
     Physics2D();
     ~Physics2D();
 
+    void update(float deltaTime);
+
     RigidBody addRigidBody(const RigidBodySpec& spec);
 
    private:
+    const int32_t k_solverVelocityIterations = 6;
+    const int32_t k_solverPositionIterations = 2;
+    
     struct WorldData;
     WorldData* m_worldData;
 
