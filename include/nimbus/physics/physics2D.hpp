@@ -61,7 +61,7 @@ class Physics2D
 
     struct Circle : Shape
     {
-        float radius = 0.0f;
+        float radius = 0.5f;
 
         Circle() : Shape(ShapeType::CIRCLE)
         {
@@ -75,18 +75,29 @@ class Physics2D
         float  restitution          = 0.0f;
         float  restitutionThreshold = 1.0f;
         float  density              = 0.0f;
-        float  isSensor             = false;
+        bool   isSensor             = false;
     };
 
-    struct RigidBody
+    struct RigidBody : std::enable_shared_from_this<RigidBody>
     {
-        void*           p_data = nullptr;
+        struct RigidBodyData;
+
+        RigidBodyData*  p_data;
         util::Transform transform;
+        std::string     name           = "setMe";
+        ref<RigidBody>  p_collidedWith = nullptr;
 
         void addFixture(const FixtureSpec&     fixtureSpec,
                         const util::Transform& transform);
 
-        util::Transform& updateTransform();
+        util::Transform& getTransform();
+        glm::vec2        getVelocity();
+        void             forceTransform();
+        void             forceVelocity(const glm::vec2& velocity);
+        void             impulse(const glm::vec2& velocity);
+
+        RigidBody();
+        ~RigidBody();
     };
 
     Physics2D();
@@ -94,14 +105,15 @@ class Physics2D
 
     void update(float deltaTime);
 
-    RigidBody addRigidBody(const RigidBodySpec& spec);
+    ref<RigidBody> addRigidBody(const RigidBodySpec& spec);
+    void           removeRigidBody(ref<RigidBody>& body);
 
    private:
     const int32_t k_solverVelocityIterations = 6;
     const int32_t k_solverPositionIterations = 2;
-    
+
     struct WorldData;
-    WorldData* m_worldData;
+    WorldData* mp_worldData;
 
     uint32_t _bodyType(BodyType bodyType) const;
 };
