@@ -1,9 +1,9 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
 #include "nimbus/renderer/camera.hpp"
 
-#include "nimbus/application.hpp"
+#include "nimbus/core/application.hpp"
 
 namespace nimbus
 {

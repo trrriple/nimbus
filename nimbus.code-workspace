@@ -11,7 +11,8 @@
 			"-DVCPKG_TARGET_TRIPLET=x64-windows-static"
 		],
 		"files.associations": {
-			"type_traits": "cpp"
+			"type_traits": "cpp",
+			"fstream": "cpp"
 		}
 	}
 }

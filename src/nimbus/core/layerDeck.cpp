@@ -1,7 +1,7 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
-#include "nimbus/layerDeck.hpp"
+#include "nimbus/core/layerDeck.hpp"
 
 namespace nimbus
 {

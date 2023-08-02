@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nimbus/common.hpp"
+#include "nimbus/core/common.hpp"
 
 #include <cstdint>
 #include <string>

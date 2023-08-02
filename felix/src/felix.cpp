@@ -1,5 +1,5 @@
 #include "nimbus.hpp"
-#include "nimbus/entry.hpp"
+#include "nimbus/core/entry.hpp"
 
 namespace nimbus
 {
@@ -12,9 +12,11 @@ class FelixLayer : public Layer
    public:
     Application* mp_appRef;
     Window*      mp_appWinRef;
-    glm::vec2    m_viewportSize = {800, 600};
-    float        m_aspectRatio  = 800 / 600;
-    bool         m_wireFrame    = false;
+    glm::vec2    m_viewportSize    = {800, 600};
+    float        m_aspectRatio     = 800 / 600;
+    bool         m_wireFrame       = false;
+    bool         m_viewportFocused = false;
+    bool         m_viewportHovered = false;
 
     ///////////////////////////
     // Framebuffers
@@ -92,8 +94,11 @@ class FelixLayer : public Layer
     }
 
     virtual void onUpdate(float deltaTime) override
-    {
-        _processKeyboardState(deltaTime);
+    {   
+        if(m_viewportFocused)
+        {
+            _processKeyboardState(deltaTime);
+        }
     }
 
     virtual void onDraw(float deltaTime) override
@@ -115,22 +120,25 @@ class FelixLayer : public Layer
         transform.rotation = {0.0f, 0.0f, glm::radians(45.0f)};
 
 
-        glm::vec4 color     = glm::vec4(0.7f, 0.0f, 0.5f, 1.0f);
+        glm::vec4 color     = glm::vec4(0.2f, 0.0f, 0.2f, 1.0f);
 
-        const int quadsPerSide = 50;
-        const float padding = 0.17;
-        for(int x = 0; x < quadsPerSide; x++)
+        const int   quadsPerSide = 100;
+        const float padding      = 0.16;
+        for (int x = 0; x < quadsPerSide; x++)
         {
             transform.translation.y = -1.0;
+            color.r = 0.2;
 
-            for(int y = 0; y < quadsPerSide; y++)
+            for (int y = 0; y < quadsPerSide; y++)
             {
-                transform.translation.y += (-1.0 / 50) + padding;
-                Renderer2D::s_drawQuad(transform.getModel(), color);
+                transform.translation.y += (-1.0 / quadsPerSide) + padding;
+                color.r += 0.8 / quadsPerSide;
 
+                Renderer2D::s_drawQuad(transform.getModel(), color);
             }
 
-            transform.translation.x += (-1.0 / 50) + padding;
+            transform.translation.x += (-1.0 / quadsPerSide) + padding;
+            color.b += 0.8 / quadsPerSide;
         }
 
         Renderer2D::s_end();
@@ -154,7 +162,7 @@ class FelixLayer : public Layer
             case(Event::Type::MOUSEWHEEL):
             {
                 
-                const float zoomScale = 0.25;
+                const float zoomScale = 0.1;
                 float       zoomAmount
                     = event.getDetails().wheel.preciseY * zoomScale;
 
@@ -251,8 +259,8 @@ class FelixLayer : public Layer
         m_viewPortRegion[1] = {viewportMaxRegion.x + viewportOffset.x,
                                viewportMaxRegion.y + viewportOffset.y};
 
-        bool m_viewportFocused = ImGui::IsWindowFocused();
-        bool m_viewportHovered = ImGui::IsWindowHovered();
+        m_viewportFocused = ImGui::IsWindowFocused();
+        m_viewportHovered = ImGui::IsWindowHovered();
 
         mp_appRef->guiSubsystemCaptureEvents(!m_viewportHovered);
 

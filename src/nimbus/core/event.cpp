@@ -1,7 +1,7 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
-#include "nimbus/event.hpp"
+#include "nimbus/core/event.hpp"
 
 
 

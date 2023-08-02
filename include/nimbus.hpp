@@ -1,12 +1,14 @@
 
 #pragma once
 
-#include "nimbus/application.hpp"
-#include "nimbus/common.hpp"
-#include "nimbus/event.hpp"
-#include "nimbus/keyCode.hpp"
-#include "nimbus/layer.hpp"
-#include "nimbus/log.hpp"
+#include "nimbus/core/application.hpp"
+#include "nimbus/core/common.hpp"
+#include "nimbus/core/event.hpp"
+#include "nimbus/core/keyCode.hpp"
+#include "nimbus/core/layer.hpp"
+#include "nimbus/core/log.hpp"
+#include "nimbus/core/resourceManager.hpp"
+#include "nimbus/core/utility.hpp"
 #include "nimbus/physics/physics2D.hpp"
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/font.hpp"
@@ -20,8 +22,6 @@
 #include "nimbus/renderer/shader.hpp"
 #include "nimbus/renderer/sprite.hpp"
 #include "nimbus/renderer/texture.hpp"
-#include "nimbus/resourceManager.hpp"
-#include "nimbus/utility.hpp"
 
 ///////////////////////
 // Dear Imgui stuff

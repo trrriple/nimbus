@@ -1,9 +1,9 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
-#include "nimbus/window.hpp"
+#include "nimbus/core/window.hpp"
 
-#include "nimbus/keyCode.hpp"
+#include "nimbus/core/keyCode.hpp"
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/renderer/renderer2D.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"

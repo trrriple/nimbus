@@ -1,5 +1,5 @@
 #pragma once
-#include "nimbus/common.hpp"
+#include "nimbus/core/common.hpp"
 #include "nimbus/renderer/frameBuffer.hpp"
 
 namespace nimbus

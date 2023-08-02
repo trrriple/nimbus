@@ -1,5 +1,5 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
 #include "nimbus/renderer/renderer2D.hpp"
 
@@ -7,7 +7,7 @@
 #include "nimbus/renderer/fontData.hpp"
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/renderer/renderer2D.hpp"
-#include "nimbus/resourceManager.hpp"
+#include "nimbus/core/resourceManager.hpp"
 
 namespace nimbus
 {

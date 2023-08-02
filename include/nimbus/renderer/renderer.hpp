@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nimbus/common.hpp"
+#include "nimbus/core/common.hpp"
 #include "nimbus/renderer/camera.hpp"
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/shader.hpp"

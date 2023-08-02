@@ -1,5 +1,5 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
 #include "nimbus/physics/physics2D.hpp"
 #include "box2d/box2d.h"

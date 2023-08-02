@@ -1,7 +1,7 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
-#include "nimbus/resourceManager.hpp"
+#include "nimbus/core/resourceManager.hpp"
 
 #include "nimbus/renderer/texture.hpp"
 #include "nimbus/renderer/shader.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nimbus/event.hpp"
-#include "nimbus/layer.hpp"
+#include "nimbus/core/event.hpp"
+#include "nimbus/core/layer.hpp"
 
 namespace nimbus
 {

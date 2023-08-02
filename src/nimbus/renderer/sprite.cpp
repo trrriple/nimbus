@@ -1,5 +1,5 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
 #include "nimbus/renderer/sprite.hpp"
 #include "nimbus/renderer/renderer2D.hpp"

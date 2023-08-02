@@ -1,10 +1,10 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
 #include "nimbus/renderer/font.hpp"
 #include "nimbus/renderer/texture.hpp"
 #include "nimbus/renderer/fontData.hpp"
-#include "nimbus/resourceManager.hpp"
+#include "nimbus/core/resourceManager.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"

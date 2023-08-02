@@ -1,7 +1,7 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
-#include "nimbus/log.hpp"
+#include "nimbus/core/log.hpp"
 
 #include <cstdarg>
 

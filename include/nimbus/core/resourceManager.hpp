@@ -3,9 +3,9 @@
 #include <string>
 #include <unordered_map>
 
-#include "common.hpp"
-#include "renderer/shader.hpp"
-#include "renderer/texture.hpp"
+#include "nimbus/core/common.hpp"
+#include "nimbus/renderer/shader.hpp"
+#include "nimbus/renderer/texture.hpp"
 
 namespace nimbus
 {

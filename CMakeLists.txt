@@ -216,7 +216,7 @@ file(GLOB_RECURSE NIMBUS_LIB_SRC
 add_library(nimbus STATIC ${NIMBUS_LIB_SRC})
 
 set(CMAKE_USE_PCH ON)
-target_precompile_headers(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/nimbus/nmpch.hpp")
+target_precompile_headers(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/nimbus/core/nmpch.hpp")
 
 target_link_libraries(nimbus PRIVATE SDL2-static)
 target_link_libraries(nimbus PRIVATE assimp)

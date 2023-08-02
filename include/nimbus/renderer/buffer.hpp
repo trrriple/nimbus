@@ -3,7 +3,7 @@
 // Hazel. Credit where credit is due!
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "nimbus/common.hpp"
+#include "nimbus/core/common.hpp"
 #include "nimbus/renderer/shader.hpp"
 
 #include <cstdint>

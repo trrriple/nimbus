@@ -1,8 +1,8 @@
-#include "nimbus/nmpch.hpp"
-#include "nimbus/core.hpp"
+#include "nimbus/core/nmpch.hpp"
+#include "nimbus/core/core.hpp"
 
 #include "nimbus/renderer/model.hpp"
-#include "nimbus/resourceManager.hpp"
+#include "nimbus/core/resourceManager.hpp"
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"

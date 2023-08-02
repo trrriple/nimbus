@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nimbus/common.hpp"
+#include "nimbus/core/common.hpp"
 #include "nimbus/renderer/camera.hpp"
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/font.hpp"
@@ -66,7 +66,7 @@ class Renderer2D
     ///////////////////////////
     inline static const uint32_t k_quadVerticesInitCount = 5000;
     inline static const uint32_t k_quadVerticesGrowCount = 5000;
-    inline static const uint32_t k_quadVerticesMaxCount  = 50000;
+    inline static const uint32_t k_quadVerticesMaxCount  = 200000;
 
     inline static const BufferFormat k_quadVertexFormat = {
         {k_shaderVec4,  "position"},

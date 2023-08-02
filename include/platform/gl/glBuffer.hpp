@@ -5,7 +5,7 @@
 #pragma once
 #include "nimbus/renderer/buffer.hpp"
 
-#include "nimbus/common.hpp"
+#include "nimbus/core/common.hpp"
 
 #include <cstdint>
 #include <vector>
