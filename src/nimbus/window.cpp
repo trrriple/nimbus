@@ -27,7 +27,7 @@ Window::Window(const std::string& windowCaption,
     }
 
     // relative mouse
-    SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_SetRelativeMouseMode(SDL_FALSE);
 
     mp_window = static_cast<void*>(SDL_CreateWindow(
         windowCaption.c_str(),

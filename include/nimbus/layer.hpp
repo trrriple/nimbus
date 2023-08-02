@@ -35,11 +35,6 @@ class Layer
         UNUSED(deltaTime);
     }
     
-    virtual void onGuiUpdate(float deltaTime)
-    {
-        UNUSED(deltaTime);
-    }
-
     virtual void onDraw(float deltaTime)
     {
         UNUSED(deltaTime);
@@ -49,6 +44,13 @@ class Layer
     {
         UNUSED(event);
     }
+
+    virtual void onGuiUpdate(float deltaTime)
+    {
+        UNUSED(deltaTime);
+    }
+
+
     
 };
 }  // namespace nimbus

@@ -31,12 +31,13 @@ struct Transform
     {
     }
 
-    glm::mat4 getTransform() const
+    glm::mat4 getModel() const
     {
-        glm::mat4 rotation = glm::toMat4(glm::quat(rotation));
+        glm::mat4 rot = glm::toMat4(glm::quat(rotation));
+        
+        glm::mat4 preScale = glm::translate(glm::mat4(1.0f), translation) * rot;
 
-        return glm::translate(glm::mat4(1.0f), translation) * rotation
-               * glm::scale(glm::mat4(1.0f), scale);
+        return  glm::scale(preScale, scale);
     }
 };
 

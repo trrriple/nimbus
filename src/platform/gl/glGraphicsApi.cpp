@@ -140,12 +140,10 @@ void GlGraphicsApi::setWireframe(bool on)
     {
         if (!on)
         {
-            Log::coreInfo("Wireframe off");
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
         else
         {
-            Log::coreInfo("Wireframe on");
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
         s_wireframeOn = on;

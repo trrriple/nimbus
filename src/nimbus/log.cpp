@@ -23,7 +23,7 @@ void Log::init()
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 }
 
-void Log::appInfo(const char* format, ...)
+void Log::info(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     UNUSED(format);
@@ -43,7 +43,7 @@ void Log::appInfo(const char* format, ...)
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::appWarn(const char* format, ...)
+void Log::warn(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     UNUSED(format);
@@ -63,7 +63,7 @@ void Log::appWarn(const char* format, ...)
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::appError(const char* format, ...)
+void Log::error(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     UNUSED(format);
@@ -83,7 +83,7 @@ void Log::appError(const char* format, ...)
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::appCritical(const char* format, ...)
+void Log::critical(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     UNUSED(format);

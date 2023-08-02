@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cmake.configureArgs": [
+			"-G Unix Makefiles",
+			"-DCMAKE_TOOLCHAIN_FILE=../nimbus/vendor/vcpkg/scripts/buildsystems/vcpkg.cmake",
+			"-DVCPKG_TARGET_TRIPLET=x64-windows-static"
+		],
+		"files.associations": {
+			"type_traits": "cpp"
+		}
+	}
+}

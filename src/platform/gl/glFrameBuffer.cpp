@@ -74,6 +74,13 @@ void GlFrameBuffer::resize(uint32_t width, uint32_t height)
     m_spec.width  = width;
     m_spec.height = height;
 
+    // force colorAttachments to be the correct size also
+    for (auto& attachment : m_spec.colorAttachments)
+    {
+        attachment.width  = width;
+        attachment.height = height;
+    }
+
     _construct();
 }
 

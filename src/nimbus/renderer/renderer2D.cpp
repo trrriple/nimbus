@@ -43,8 +43,8 @@ void Renderer2D::s_init()
         // Quad data init
         ///////////////////////////
         s_quadData.p_shader = ResourceManager::s_get().loadShader(
-            "../resources/breakout/shaders/quad.v.glsl",
-            "../resources/breakout/shaders/quad.f.glsl");
+            "../resources/shaders/quad.v.glsl",
+            "../resources/shaders/quad.f.glsl");
 
         s_quadData.textures.reserve(Texture::s_getMaxTextures());
 
@@ -65,8 +65,8 @@ void Renderer2D::s_init()
         // Text data init
         ///////////////////////////
         s_textData.p_shader = ResourceManager::s_get().loadShader(
-            "../resources/breakout/shaders/text.v.glsl",
-            "../resources/breakout/shaders/text.f.glsl");
+            "../resources/shaders/text.v.glsl",
+            "../resources/shaders/text.f.glsl");
 
         s_textData.atlases.reserve(Texture::s_getMaxTextures());
 

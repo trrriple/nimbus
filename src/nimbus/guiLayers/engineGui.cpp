@@ -74,10 +74,6 @@ void EngineGui::onGuiUpdate(float deltaTime)
 
     ImGui::Text("Draw Parameters");
 
-    bool newWireFrameMode = GraphicsApi::getWireframe();
-    ImGui::Checkbox("Wireframe Mode", &newWireFrameMode);
-    GraphicsApi::setWireframe(newWireFrameMode);
-
     ImGui::SameLine();
 
     bool newVsyncMode = sp_appWinRef->getVSync();

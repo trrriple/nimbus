@@ -84,6 +84,11 @@ class Camera
 
     void setZoom(float zoom);
 
+    float getZoom()
+    {
+        return m_zoom;
+    }
+
     const glm::vec3& getPosition() const
     {
         return m_position;

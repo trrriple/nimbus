@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 3.6)
 # #########################
 project(nimbus)
 
+option(NIMBUS_BUILD_FELIX "Build the Felix Editor" ON)
+
+
 if(NOT CMAKE_CXX_COMPILER)
     if(CMAKE_SYSTEM_NAME MATCHES Windows)
         set(CMAKE_CXX_COMPILER "clang++")
@@ -302,4 +305,45 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     # Add release-specific flags
     target_compile_options(nimbus PRIVATE -O3 -march=native -DGLM_FORCE_INTRINSICS)
+endif()
+
+if(NIMBUS_BUILD_FELIX)
+    # #########################
+    # Felix (Editor)
+    # #########################
+    file(GLOB FELIX_SRC "felix/src/*.cpp")
+    add_executable(felix WIN32 ${FELIX_SRC})
+
+    target_link_libraries(felix PRIVATE nimbus)
+
+    target_include_directories(felix PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
+
+    # #########################
+    # Felix Compiler/Linker flags
+    # #########################
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(felix PRIVATE
+            -Wall
+            -Wextra)
+
+        target_link_options(felix PRIVATE
+            -fuse-ld=lld)
+
+        target_link_options(felix PRIVATE -Xlinker /subsystem:console)
+    endif()
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        # Add debug-specific flags
+        target_compile_options(felix PRIVATE -g)
+
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            # clang lets us get an pdb file for debugging with remedybg/vs
+            target_compile_options(felix PRIVATE -gcodeview)
+            target_link_options(felix PRIVATE -g -gcodeview -Wl,/debug,/pdb:)
+        endif()
+
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+        # Add release-specific flags
+        target_compile_options(felix PRIVATE -O3 -march=native -DGLM_FORCE_INTRINSICS)
+    endif()
 endif()

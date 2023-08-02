@@ -53,7 +53,7 @@ class Window
     void* getContext() const
     {
         return mp_context;
-    }
+    } 
 
     void setVSync(bool on);
 

@@ -76,6 +76,8 @@ struct Physics2D::RigidBody::RigidBodyData
 ////////////////////////////////////////////////////////////////////////////////
 Physics2D::Physics2D() : mp_worldData(new Physics2D::WorldData())
 {
+    NM_PROFILE_DETAIL();
+    
     mp_worldData->p_world = makeRef<b2World>(b2Vec2(0.0f, -9.81f));
 
     mp_worldData->p_cl = makeScope<ContactListener>(this);
@@ -84,11 +86,16 @@ Physics2D::Physics2D() : mp_worldData(new Physics2D::WorldData())
 }
 Physics2D::~Physics2D()
 {
+    NM_PROFILE_DETAIL();
+
     delete mp_worldData;
 }
 
 void Physics2D::update(float deltaTime)
 {
+    NM_PROFILE();
+
+    
     mp_worldData->p_world->Step(
         deltaTime, k_solverVelocityIterations, k_solverPositionIterations);
 }
@@ -96,6 +103,8 @@ void Physics2D::update(float deltaTime)
 
 ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
 {
+    NM_PROFILE_DETAIL();
+    
     ref<Physics2D::RigidBody> p_rbody = makeRef<Physics2D::RigidBody>();
 
     b2BodyDef bodyDef;
@@ -118,13 +127,20 @@ ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
     bodyDef.gravityScale    = spec.gravityScale;
 
     p_rbody->p_data->p_body = mp_worldData->p_world->CreateBody(&bodyDef);
+    p_rbody->inWorld        = true;
 
     return p_rbody;
 }
 
-void Physics2D::removeRigidBody(ref<Physics2D::RigidBody>& body)
+void Physics2D::removeRigidBody(ref<Physics2D::RigidBody>& p_body)
 {
-    mp_worldData->p_world->DestroyBody(body->p_data->p_body);
+    NM_PROFILE_DETAIL();
+    
+    NM_CORE_ASSERT(p_body->inWorld, "Not in world");
+
+    mp_worldData->p_world->DestroyBody(p_body->p_data->p_body);
+
+    p_body->inWorld = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -132,16 +148,23 @@ void Physics2D::removeRigidBody(ref<Physics2D::RigidBody>& body)
 ////////////////////////////////////////////////////////////////////////////////
 Physics2D::RigidBody::RigidBody() : p_data(new RigidBodyData())
 {
+    NM_PROFILE_DETAIL();
+
 }
 
 Physics2D::RigidBody::~RigidBody()
 {
+    NM_PROFILE_DETAIL();
+
     delete p_data;
 } 
 
 void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
                                       const util::Transform& transform)
 {
+    NM_PROFILE_DETAIL();
+
+    
     b2FixtureDef fixtureDef;
 
     fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
@@ -156,22 +179,21 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
         const Rectangle* rect
             = static_cast<const Rectangle*>(fixtureSpec.shape);
 
-        b2PolygonShape rectShape;
-        rectShape.SetAsBox(rect->size.x * transform.scale.x,
-                           rect->size.y * transform.scale.y,
-                           b2Vec2(rect->offset.x, rect->offset.y),
-                           0.0f);
+        b2PolygonShape* shape = new b2PolygonShape();
+        shape->SetAsBox(rect->size.x * transform.scale.x,
+                        rect->size.y * transform.scale.y,
+                        b2Vec2(rect->offset.x, rect->offset.y),
+                        0.0f);
 
-        fixtureDef.shape = &rectShape;
+        fixtureDef.shape = shape;
     }
     else if (fixtureSpec.shape->type == ShapeType::CIRCLE)
     {
-        const Circle* circle = static_cast<const Circle*>(fixtureSpec.shape);
-        b2CircleShape circleShape;
-        circleShape.m_p.Set(circle->offset.x, circle->offset.y);
-        circleShape.m_radius = transform.scale.x * circle->radius;
-
-        fixtureDef.shape = &circleShape;
+        const Circle*  circle = static_cast<const Circle*>(fixtureSpec.shape);
+        b2CircleShape* shape  = new b2CircleShape();
+        shape->m_p.Set(circle->offset.x, circle->offset.y);
+        shape->m_radius = transform.scale.x * circle->radius;
+        fixtureDef.shape = shape;
     }
 
     ///////////////////////////
@@ -183,27 +205,40 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
     fixtureDef.density              = fixtureSpec.density;
     fixtureDef.isSensor             = fixtureSpec.isSensor;
 
-    p_data->p_fixture =   p_data->p_body->CreateFixture(&fixtureDef);
+    p_data->p_body->CreateFixture(&fixtureDef);
+    delete fixtureDef.shape;
+
 }
 
 util::Transform& Physics2D::RigidBody::getTransform()
 {
+    NM_PROFILE_TRACE();
+
+    NM_CORE_ASSERT(inWorld, "Not in world");
+
     const auto& position    = p_data->p_body->GetPosition();
     transform.translation.x = position.x;
     transform.translation.y = position.y;
     transform.rotation.z    = p_data->p_body->GetAngle();
-
     return transform;
 }
 
 glm::vec2 Physics2D::RigidBody::getVelocity()
 {
+    NM_PROFILE_TRACE();
+
+    NM_CORE_ASSERT(inWorld, "Not in world");
+
     auto velocity = p_data->p_body->GetLinearVelocity();
     return {velocity.x, velocity.y};
 }
 
 void Physics2D::RigidBody::forceTransform()
 {
+    NM_PROFILE_TRACE();
+
+    NM_CORE_ASSERT(inWorld, "Not in world");
+
     p_data->p_body->SetTransform(
         b2Vec2(transform.translation.x, transform.translation.y),
         transform.rotation.z);
@@ -211,12 +246,47 @@ void Physics2D::RigidBody::forceTransform()
 
 void Physics2D::RigidBody::forceVelocity(const glm::vec2& velocity)
 {
+    NM_PROFILE_TRACE();
+
+    NM_CORE_ASSERT(inWorld, "Not in world");
+
     p_data->p_body->SetLinearVelocity({velocity.x, velocity.y});
 }
 
 void Physics2D::RigidBody::impulse(const glm::vec2& impulse)
 {
+    NM_PROFILE_TRACE();
+    
+    NM_CORE_ASSERT(inWorld, "Not in world");
+
     p_data->p_body->ApplyLinearImpulseToCenter({impulse.x, impulse.y}, true);
+}
+
+void Physics2D::RigidBody::halt()
+{
+    NM_PROFILE_TRACE();
+    
+    NM_CORE_ASSERT(inWorld, "Not in world");
+
+    if(p_data->p_body->GetType() != b2_staticBody)
+    {
+        p_data->p_body->SetLinearVelocity({0.0f, 0.0f});
+        p_data->p_body->SetAwake(false);
+    }
+}
+
+
+void Physics2D::RigidBody::removeFromWorld()
+{
+    NM_PROFILE_DETAIL();
+
+    NM_CORE_ASSERT(inWorld, "Not in world");
+
+    b2World* p_world = p_data->p_body->GetWorld();
+
+    p_world->DestroyBody(p_data->p_body);
+
+    inWorld = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

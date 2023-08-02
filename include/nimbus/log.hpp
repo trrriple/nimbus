@@ -19,13 +19,13 @@ class Log
     ////////////////////////////////////////////////////////////////////////////
     // Log a App message. Ideally don't use these in core
     ////////////////////////////////////////////////////////////////////////////
-    static void appInfo(const char* format, ...);
+    static void info(const char* format, ...);
 
-    static void appWarn(const char* format, ...);
+    static void warn(const char* format, ...);
 
-    static void appError(const char* format, ...);
+    static void error(const char* format, ...);
 
-    static void appCritical(const char* format, ...);
+    static void critical(const char* format, ...);
 
     ////////////////////////////////////////////////////////////////////////////
     // Log a Core message. Ideally don't use these in application

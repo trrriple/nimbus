@@ -84,8 +84,10 @@ class Physics2D
 
         RigidBodyData*  p_data;
         util::Transform transform;
+        bool            inWorld        = false;
         std::string     name           = "setMe";
         ref<RigidBody>  p_collidedWith = nullptr;
+        void*           p_userData     = nullptr;
 
         void addFixture(const FixtureSpec&     fixtureSpec,
                         const util::Transform& transform);
@@ -95,6 +97,8 @@ class Physics2D
         void             forceTransform();
         void             forceVelocity(const glm::vec2& velocity);
         void             impulse(const glm::vec2& velocity);
+        void             halt();
+        void             removeFromWorld();
 
         RigidBody();
         ~RigidBody();
@@ -106,7 +110,7 @@ class Physics2D
     void update(float deltaTime);
 
     ref<RigidBody> addRigidBody(const RigidBodySpec& spec);
-    void           removeRigidBody(ref<RigidBody>& body);
+    void           removeRigidBody(ref<RigidBody>& p_body);
 
    private:
     const int32_t k_solverVelocityIterations = 6;
