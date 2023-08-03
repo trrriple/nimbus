@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.hpp"
+#include "nimbus/core/common.hpp"
 
 #include <string>
 

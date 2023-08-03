@@ -1,6 +1,6 @@
 #pragma once
 
-#include "event.hpp"
+#include "nimbus/core/event.hpp"
 
 #include <string>
 
@@ -32,22 +32,22 @@ class Layer
 
     virtual void onUpdate(float deltaTime)
     {
-        UNUSED(deltaTime);
+        NM_UNUSED(deltaTime);
     }
     
     virtual void onDraw(float deltaTime)
     {
-        UNUSED(deltaTime);
+        NM_UNUSED(deltaTime);
     }
 
     virtual void onEvent(Event& event)
     {
-        UNUSED(event);
+        NM_UNUSED(event);
     }
 
     virtual void onGuiUpdate(float deltaTime)
     {
-        UNUSED(deltaTime);
+        NM_UNUSED(deltaTime);
     }
 
 

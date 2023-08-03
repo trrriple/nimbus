@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-#include "log.hpp"
-#include "common.hpp"
+#include "nimbus/core/common.hpp"
+#include "nimbus/core/log.hpp"
 
-#include "SDL.h"
+#include <memory>
+
 
 // TODO do this smarter
 #define NM_RUNTIME_ASSERTS

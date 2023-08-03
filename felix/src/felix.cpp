@@ -1,7 +1,6 @@
 #include "nimbus.hpp"
 #include "nimbus/core/entry.hpp"
 
-
 namespace nimbus
 {
 
@@ -14,15 +13,13 @@ class FelixLayer : public Layer
     Application* mp_appRef;
     Window*      mp_appWinRef;
 
+    ref<Scene> m_scene;
 
-    ref<Scene>   m_scene;
-
-
-    glm::vec2    m_viewportSize    = {800, 600};
-    float        m_aspectRatio     = 800 / 600;
-    bool         m_wireFrame       = false;
-    bool         m_viewportFocused = false;
-    bool         m_viewportHovered = false;
+    glm::vec2 m_viewportSize    = {800, 600};
+    float     m_aspectRatio     = 800 / 600;
+    bool      m_wireFrame       = false;
+    bool      m_viewportFocused = false;
+    bool      m_viewportHovered = false;
 
     ///////////////////////////
     // Framebuffers
@@ -30,7 +27,13 @@ class FelixLayer : public Layer
     ref<FrameBuffer> mp_frameBuffer;
     ref<FrameBuffer> mp_screenBuffer;
 
-    Camera* mp_camera2D;
+    CameraCmp* mp_sceneCamera2DCmp;
+    Camera*    mp_sceneCamera2D;
+
+    CameraCmp* mp_editCamera3DCmp;
+    Camera*    mp_editCamera3D;
+
+    Camera* mp_currCamera;
 
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
@@ -44,21 +47,39 @@ class FelixLayer : public Layer
         mp_appWinRef = &mp_appRef->getWindow();
         mp_appRef->setDrawPeriodLimit(0.0f);
 
-        m_scene           = makeRef<Scene>();
-        auto cameraEntity = m_scene->addEntity();
-        mp_camera2D       = &(cameraEntity.addComponent<CameraCmp>().camera);
-        mp_camera2D->setAspectRatio(m_aspectRatio);
+        m_scene = makeRef<Scene>();
 
-        auto quadEntity   = m_scene->addEntity();
+        // add our cameras
+        {
+            auto cameraEntity   = m_scene->addEntity();
+            mp_sceneCamera2DCmp = &(cameraEntity.addComponent<CameraCmp>());
+            mp_sceneCamera2DCmp->renderWith = true;
+            mp_sceneCamera2D                = &mp_sceneCamera2DCmp->camera;
+            mp_sceneCamera2D->setAspectRatio(m_aspectRatio);
+        }
+
+        {
+            auto cameraEntity  = m_scene->addEntity();
+            mp_editCamera3DCmp = &(cameraEntity.addComponent<CameraCmp>());
+            mp_editCamera3DCmp->renderWith = false;
+            mp_editCamera3D                = &mp_editCamera3DCmp->camera;
+            mp_editCamera3D->setType(true);
+            mp_editCamera3D->setAspectRatio(m_aspectRatio);
+            mp_editCamera3D->setPosition({0.0f, 0.0f, -2.4125f});
+            mp_editCamera3D->setYaw(90.0f);
+        }
+
+        mp_currCamera = mp_sceneCamera2D;
+
+        auto quadEntity = m_scene->addEntity();
 
         auto transformCmp = quadEntity.addComponent<TransformCmp>();
-        
+
         transformCmp.setScale({0.5f, 0.5f, 1.0f});
 
         auto& spriteCmp = quadEntity.addComponent<SpriteCmp>();
 
         spriteCmp.color = {0.0f, 1.0f, 0.0f, 1.0f};
-
 
         ///////////////////////////
         // Setup Framebuffers
@@ -113,8 +134,8 @@ class FelixLayer : public Layer
     }
 
     virtual void onUpdate(float deltaTime) override
-    {   
-        if(m_viewportFocused)
+    {
+        if (m_viewportFocused)
         {
             _processKeyboardState(deltaTime);
         }
@@ -125,88 +146,65 @@ class FelixLayer : public Layer
         mp_frameBuffer->bind();
         GraphicsApi::clear();
 
-        if(m_wireFrame != GraphicsApi::getWireframe())
+        if (m_wireFrame != GraphicsApi::getWireframe())
         {
             GraphicsApi::setWireframe(m_wireFrame);
         }
 
-
         m_scene->onUpdate(deltaTime);
 
-
-        // Renderer2D::s_begin(*mp_camera2D);
-
-        // util::Transform transform;
-
-        // transform.translation = {-1.0, -1.0, 0.0f};
-        // transform.scale = {0.1f, 0.1f, 1.0f};
-        // transform.rotation = {0.0f, 0.0f, glm::radians(45.0f)};
-
-
-        // glm::vec4 color     = glm::vec4(0.2f, 0.0f, 0.2f, 1.0f);
-
-        // const int   quadsPerSide = 25;
-        // const float padding      = 0.16;
-        // for (int x = 0; x < quadsPerSide; x++)
-        // {
-        //     transform.translation.y = -1.0;
-        //     color.r = 0.2;
-
-        //     for (int y = 0; y < quadsPerSide; y++)
-        //     {
-        //         transform.translation.y += (-1.0 / quadsPerSide) + padding;
-        //         color.r += 0.8 / quadsPerSide;
-
-        //         Renderer2D::s_drawQuad(transform.getModel(), color);
-        //     }
-
-        //     transform.translation.x += (-1.0 / quadsPerSide) + padding;
-        //     color.b += 0.8 / quadsPerSide;
-        // }
-
-        // Renderer2D::s_end();
-
         // turn it off for the blit
-        if(m_wireFrame)
+        if (m_wireFrame)
         {
             GraphicsApi::setWireframe(false);
         }
 
         mp_frameBuffer->blit(*mp_screenBuffer.get());
 
-        UNUSED(deltaTime);
+        NM_UNUSED(deltaTime);
     }
     virtual void onEvent(Event& event) override
     {
         Event::Type eventType = event.getEventType();
 
-        switch(eventType)
+        switch (eventType)
         {
-            case(Event::Type::MOUSEWHEEL):
+            case (Event::Type::MOUSEWHEEL):
             {
-                
-                const float zoomScale = 0.1;
-                float       zoomAmount
-                    = event.getDetails().wheel.preciseY * zoomScale;
-
-                float zoom = mp_camera2D->getZoom() - zoomAmount ;
-
-                if(zoom <= 0.1)
+                if (m_viewportFocused)
                 {
-                    zoom = 0.1;
+                    mp_currCamera->processZoom(
+                        event.getDetails().wheel.preciseY);
                 }
-
-                mp_camera2D->setZoom(zoom);
                 break;
             }
             default:
                 break;
         }
+
+        if (mp_currCamera == mp_editCamera3D)
+        {
+            if (eventType == Event::Type::MOUSEMOTION)
+            {
+                if (m_viewportFocused
+                    && mp_appWinRef->mouseButtonPressed(MouseButton::MIDDLE))
+                {
+                    const float orbitScale = 4.0f;
+
+                    float xOffset
+                        = (float)event.getDetails().motion.xrel * orbitScale;
+                    float yOffset
+                        = (float)event.getDetails().motion.yrel * orbitScale;
+
+                    mp_currCamera->processViewUpdate(xOffset, yOffset, true);
+                }
+            }
+        }
     }
 
     virtual void onGuiUpdate(float deltaTime) override
     {
-        UNUSED(deltaTime);
+        NM_UNUSED(deltaTime);
 
         // Note: Switch this to true to enable dockspace
         static bool               dockspaceOpen             = true;
@@ -298,7 +296,8 @@ class FelixLayer : public Layer
 
             mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
             mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-            mp_camera2D->setAspectRatio(m_aspectRatio);
+
+            m_scene->onResize(m_viewportSize.x, m_viewportSize.y);
         }
 
         uint64_t textureID = mp_screenBuffer->getTextureId();
@@ -314,39 +313,66 @@ class FelixLayer : public Layer
         ///////////////////////////
         ImGui::Begin("Camera Menu", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
+        if(ImGui::Button("Reset Camera"))
+        {
+            if(mp_currCamera == mp_editCamera3D)
+            {
+                mp_currCamera->setPosition({0.0f, 0.0f, -2.4125f});
+                mp_currCamera->setYaw(90.0f);
+                mp_currCamera->setPitch(0.0f);
+                mp_currCamera->setFov(45.0f);
+            }
+            else
+            {
+                mp_currCamera->setPosition({0.0f, 0.0f, 0.0f});
+                mp_currCamera->setYaw(0.0f);
+                mp_currCamera->setPitch(0.0f);
+                mp_currCamera->setZoom(1.0f);
+            }
+        }
+        
+
+        bool editorCamera = mp_currCamera == mp_editCamera3D;
+        if (ImGui::Checkbox("Editor Camera", &editorCamera))
+        {
+            if (editorCamera)
+            {
+                mp_currCamera                   = mp_editCamera3D;
+                mp_editCamera3DCmp->renderWith  = true;
+                mp_sceneCamera2DCmp->renderWith = false;
+            }
+            else
+            {
+                mp_currCamera                   = mp_sceneCamera2D;
+                mp_editCamera3DCmp->renderWith  = false;
+                mp_sceneCamera2DCmp->renderWith = true;
+            }
+        }
+
         ImGui::Text("Viewport dimensions %i, %i (%f)",
                     (int)m_viewportSize.x,
                     (int)m_viewportSize.y,
-                    mp_camera2D->getAspectRatio());
+                    mp_currCamera->getAspectRatio());
 
-        glm::vec3 cameraPos = mp_camera2D->getPosition();
+        glm::vec3 cameraPos = mp_currCamera->getPosition();
 
-        float xPos  = cameraPos.x;
-        float yPos  = cameraPos.y;
-        float zPos  = cameraPos.z;
-
-        ImGui::InputFloat("X", &xPos);
-        ImGui::InputFloat("Y", &yPos);
-        ImGui::InputFloat("Z", &zPos);
+        if (ImGui::DragFloat3("Camera Pos", glm::value_ptr(cameraPos), 0.1f))
+            ;
+        {
+            mp_currCamera->setPosition(cameraPos);
+        }
 
         ImGui::Spacing();
 
-
-        float pitch = mp_camera2D->getPitch();
-        float yaw   = mp_camera2D->getYaw();
-        ImGui::Text("Pitch %.02f, Yaw %.02f, Zoom %.02f",
-                    pitch,
-                    yaw,
-                    mp_camera2D->getZoom());
-
-        if (xPos != cameraPos.x || yPos != cameraPos.y || zPos != cameraPos.z)
-        {
-            mp_camera2D->setPosition({xPos, yPos, zPos});
-        }
+        ImGui::Text("Pitch %.02f, Yaw %.02f, Zoom %.02f, FOV %.02f",
+                    mp_currCamera->getPitch(),
+                    mp_currCamera->getYaw(),
+                    mp_currCamera->getZoom(),
+                    mp_currCamera->getFov());
 
         if (ImGui::CollapsingHeader("Visible World Bounds"))
         {
-            Camera::Bounds worldBounds = mp_camera2D->getVisibleWorldBounds();
+            Camera::Bounds worldBounds = mp_currCamera->getVisibleWorldBounds();
 
             ImGui::BeginTable(
                 "Visible World Bounds", 2, ImGuiTableFlags_Borders);
@@ -391,7 +417,6 @@ class FelixLayer : public Layer
 
         ImGui::End();  // camera menu
 
-
         ///////////////////////////
         // General Options
         ///////////////////////////
@@ -400,27 +425,66 @@ class FelixLayer : public Layer
 
         ImGui::End();  // options
 
-
         ImGui::End();  // dockspace
     }
 
     void _processKeyboardState(float deltaTime)
     {
-        if (mp_appWinRef->keyPressed(ScanCode::W))
+        if (mp_currCamera == mp_sceneCamera2D)
         {
-            mp_camera2D->processPosiUpdate(Camera::Movement::UP, deltaTime);
+            if (mp_appWinRef->keyPressed(ScanCode::W))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::UP,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::A))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::BACKWARD,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::S))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::DOWN,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::D))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::FORWARD,
+                                                 deltaTime);
+            }
         }
-        if (mp_appWinRef->keyPressed(ScanCode::A))
+        else if (mp_currCamera == mp_editCamera3D)
         {
-            mp_camera2D->processPosiUpdate(Camera::Movement::BACKWARD, deltaTime);
-        }
-        if (mp_appWinRef->keyPressed(ScanCode::S))
-        {
-            mp_camera2D->processPosiUpdate(Camera::Movement::DOWN, deltaTime);
-        }
-        if (mp_appWinRef->keyPressed(ScanCode::D))
-        {
-            mp_camera2D->processPosiUpdate(Camera::Movement::FORWARD, deltaTime);
+            if (mp_appWinRef->keyPressed(ScanCode::W))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::FORWARD,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::S))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::BACKWARD,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::SPACE))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::UP,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::C))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::DOWN,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::A))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::LEFT,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::D))
+            {
+                mp_currCamera->processPosiUpdate(Camera::Movement::RIGHT,
+                                                 deltaTime);
+            }
         }
     }
 };

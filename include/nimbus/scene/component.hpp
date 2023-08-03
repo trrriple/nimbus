@@ -10,11 +10,19 @@
 
 namespace nimbus
 {
+struct NameCmp
+{
+    std::string name;
+
+    NameCmp()               = default;
+    NameCmp(const std::string& iname) : name(iname)
+    {
+    }
+};
 
 struct TransformCmp
 {
     TransformCmp()                    = default;
-    // TransformCmp(const TransformCmp&) = default;
     TransformCmp(const glm::vec3& itranslation) : translation(itranslation)
     {
     }
@@ -152,7 +160,6 @@ struct SpriteCmp
     float        tilingFactor = 1.0f;
 
     SpriteCmp()                 = default;
-    // SpriteCmp(const SpriteCmp&) = default;
     SpriteCmp(const glm::vec4& icolor) : color(icolor)
     {
     }
@@ -164,15 +171,13 @@ struct SpriteCmp
     }
 };
 
-
 struct CameraCmp
 {
     Camera camera;
+    bool   renderWith  = true;
+    bool   fixedAspect = false;
 
-    CameraCmp()                            = default;
-    // CameraCmp(const CameraCmp&)            = default;
-    // CameraCmp& operator=(const CameraCmp&) = default;
+    CameraCmp() = default;
 };
-
 
 }  // namespace nimbus

@@ -1,8 +1,9 @@
 #pragma once
 
-#include <string>
+#include "nimbus/core/common.hpp"
+#include "nimbus/core/keyCode.hpp"
 
-#include "keyCode.hpp"
+#include <string>
 
 namespace nimbus
 {

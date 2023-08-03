@@ -5,6 +5,7 @@
 #include "nimbus/core/common.hpp"
 #include "nimbus/core/event.hpp"
 #include "nimbus/core/keyCode.hpp"
+#include "nimbus/core/mouseButton.hpp"
 #include "nimbus/core/layer.hpp"
 #include "nimbus/core/log.hpp"
 #include "nimbus/core/resourceManager.hpp"

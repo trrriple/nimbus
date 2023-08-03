@@ -3,8 +3,8 @@
 #include <deque>
 #include <vector>
 
-#include "common.hpp"
-#include "layer.hpp"
+#include "nimbus/core/common.hpp"
+#include "nimbus/core/layer.hpp"
 
 namespace nimbus
 {

@@ -4,6 +4,7 @@
 #include "nimbus/core/window.hpp"
 
 #include "nimbus/core/keyCode.hpp"
+#include "nimbus/core/mouseButton.hpp"
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/renderer/renderer2D.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
@@ -115,10 +116,20 @@ bool Window::keyPressed(ScanCode scanCode) const
 {
     NM_PROFILE_DETAIL();
 
-    static const uint8_t* keyboardState = SDL_GetKeyboardState(nullptr);
+    const uint8_t* keyboardState = SDL_GetKeyboardState(nullptr);
 
     // Will break if SDL changes their keymap
     return keyboardState[static_cast<uint32_t>(scanCode)];
+}
+
+bool Window::mouseButtonPressed(MouseButton button) const
+{
+    NM_PROFILE_DETAIL();
+
+    const uint32_t mouseState = SDL_GetMouseState(nullptr, nullptr);
+
+    // Will break if SDL changes their button map
+    return mouseState & SDL_BUTTON(static_cast<uint32_t>(button));
 }
 
 void Window::setVSync(bool on)

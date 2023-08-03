@@ -81,15 +81,27 @@ void Camera::processViewUpdate(float xOffset,
     m_staleView = true;
 }
 
-void Camera::processFov(float yOffset)
+void Camera::processZoom(float offset)
 {
     NM_PROFILE_TRACE();
+    const float zoomScale = 0.1;
 
-    m_fov -= (float)yOffset;
-    if (m_fov < 1.0f)
-        m_fov = 1.0f;
-    if (m_fov > 45.0f)
-        m_fov = 45.0f;
+    if (m_is3d)
+    {
+        m_fov -= offset;
+        if (m_fov < 1.0f)
+            m_fov = 1.0f;
+        if (m_fov > 110.0f)
+            m_fov = 110.0f;
+    }
+    else
+    {
+        m_zoom -= offset * zoomScale;
+        if (m_zoom <= 0.1)
+        {
+            m_zoom = 0.1;
+        }
+    }
 
     m_staleProjection = true;
 }
@@ -219,6 +231,22 @@ void Camera::setAspectRatio(float aspectRatio)
     m_staleProjection = true;
 }
 
+void Camera::setClip(float near, float far)
+{
+    if (m_is3d)
+    {
+        m_near = near;
+        m_far  = far;
+    }
+    else
+    {
+        m_orthoNear = near;
+        m_orthFar   = far;
+    }
+
+    m_staleProjection = true;
+}
+
 void Camera::setPosition(const glm::vec3& position)
 {
     m_position  = position;
@@ -231,9 +259,31 @@ void Camera::setZoom(float zoom)
     m_staleProjection = true;
 }
 
+void Camera::setFov(float fov)
+{
+    m_fov             = fov;
+    m_staleProjection = true;
+}
+
 void Camera::setSpeed(float speed)
 {
     m_speed = speed;
+}
+
+void Camera::setYaw(float yaw)
+{
+    m_yaw = yaw;
+    _updateCameraVectors();
+
+    m_staleView = true;
+}
+
+void Camera::setPitch(float pitch)
+{
+    m_pitch = pitch;
+    _updateCameraVectors();
+
+    m_staleView = true;
 }
 
 void Camera::setSensitivity(float sensitivity)

@@ -34,19 +34,19 @@ class ContactListener : public b2ContactListener
 
     void EndContact(b2Contact* contact) override
     {
-        UNUSED(contact);
+        NM_UNUSED(contact);
     }
 
     void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override
     {
-        UNUSED(contact);
-        UNUSED(oldManifold);
+        NM_UNUSED(contact);
+        NM_UNUSED(oldManifold);
     }
 
     void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override
     {
-        UNUSED(contact);
-        UNUSED(impulse);
+        NM_UNUSED(contact);
+        NM_UNUSED(impulse);
     }
 
     void registerSave()

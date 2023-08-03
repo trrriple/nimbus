@@ -26,7 +26,7 @@ void Log::init()
 void Log::info(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
-    UNUSED(format);
+    NM_UNUSED(format);
 #else
     va_list args;
     va_start(args, format);
@@ -46,7 +46,7 @@ void Log::info(const char* format, ...)
 void Log::warn(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
-    UNUSED(format);
+    NM_UNUSED(format);
 #else    
     va_list args;
     va_start(args, format);
@@ -66,7 +66,7 @@ void Log::warn(const char* format, ...)
 void Log::error(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
-    UNUSED(format);
+    NM_UNUSED(format);
 #else
     va_list args;
     va_start(args, format);
@@ -86,7 +86,7 @@ void Log::error(const char* format, ...)
 void Log::critical(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
-    UNUSED(format);
+    NM_UNUSED(format);
 #else
     va_list args;
     va_start(args, format);
@@ -106,7 +106,7 @@ void Log::critical(const char* format, ...)
 void Log::coreInfo(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
-    UNUSED(format);
+    NM_UNUSED(format);
 #else
     va_list args;
     va_start(args, format);
@@ -126,7 +126,7 @@ void Log::coreInfo(const char* format, ...)
 void Log::coreWarn(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
-    UNUSED(format);
+    NM_UNUSED(format);
 #else
     va_list args;
     va_start(args, format);
@@ -146,7 +146,7 @@ void Log::coreWarn(const char* format, ...)
 void Log::coreError(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
-    UNUSED(format);
+    NM_UNUSED(format);
 #else
     va_list args;
     va_start(args, format);
@@ -166,7 +166,7 @@ void Log::coreError(const char* format, ...)
 void Log::coreCritical(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
-    UNUSED(format);
+    NM_UNUSED(format);
 #else
     va_list args;
     va_start(args, format);

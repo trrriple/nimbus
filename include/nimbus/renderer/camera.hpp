@@ -48,8 +48,7 @@ class Camera
                            float yOffset,
                            bool  constrainPitch = true);
 
-    // processes input received from a canera zoom event
-    void processFov(float yOffset);
+    void processZoom(float offset);
 
     glm::mat4& getView();
 
@@ -66,6 +65,8 @@ class Camera
         return m_aspectRatio;
     }
 
+    void setClip(float near, float far);
+
     void setPosition(const glm::vec3& position);
 
     void setZoom(float zoom);
@@ -73,6 +74,13 @@ class Camera
     float getZoom()
     {
         return m_zoom;
+    }
+
+    void setFov(float fov);
+
+    float getFov()
+    {
+        return m_fov;
     }
 
     const glm::vec3& getPosition() const
@@ -94,10 +102,14 @@ class Camera
         return m_sensitivity;
     }
 
+    void setYaw(float yaw);
+
     float getYaw() const
     {
         return m_yaw;
     }
+
+    void setPitch(float pitch);
 
     float getPitch() const
     {

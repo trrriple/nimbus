@@ -4,8 +4,9 @@
 #include <functional>
 #include <string>
 
-#include "event.hpp"
-#include "keyCode.hpp"
+#include "nimbus/core/event.hpp"
+#include "nimbus/core/keyCode.hpp"
+#include "nimbus/core/mouseButton.hpp"
 
 namespace nimbus
 {
@@ -30,6 +31,9 @@ class Window
     void onUpdate();
 
     bool keyPressed(ScanCode ScanCode) const;
+
+    bool mouseButtonPressed(MouseButton button) const;
+
 
     uint32_t getHeight() const
     {

@@ -36,7 +36,7 @@ void EngineGui::onRemove()
 
 void EngineGui::onEvent(Event& event)
 {
-    UNUSED(event);
+    NM_UNUSED(event);
 }
 
 void EngineGui::onGuiUpdate(float deltaTime)

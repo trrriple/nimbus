@@ -44,7 +44,7 @@ Application::Application(const std::string& name,
 
 void Application::shouldQuit(Event& event)
 {
-    UNUSED(event);
+    NM_UNUSED(event);
     m_Active = false;
 }
 

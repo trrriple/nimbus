@@ -17,10 +17,12 @@ class Scene
     Scene();
     ~Scene();
 
-    Entity addEntity();
+    Entity addEntity(const std::string& name = std::string());
     
 
     void onUpdate(float deltaTime);
+
+    void onResize(uint32_t width, uint32_t height);
 
    private:
     entt::registry m_registry;
