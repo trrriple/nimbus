@@ -8,48 +8,9 @@
 namespace nimbus
 {
 
-Camera::Camera(const glm::vec3 position,
-               const glm::vec3 up,
-               float           yaw,
-               float           pitch,
-               float           aspectRatio)
-    : m_position(position),
-      m_front({0.0f, 0.0f, -1.0f}),
-      m_worldUp(up),
-      m_yaw(yaw),
-      m_pitch(pitch),
-      m_speed(k_speed_default),
-      m_sensitivity(k_sensitivity_default),
-      m_fov(k_fov_default),
-      m_aspectRatio(aspectRatio),
-      m_near(k_near_default),
-      m_far(k_far_default),
-      m_is3d(true)
+Camera::Camera()
 {
     _updateCameraVectors();
-
-    updateView();
-    updateProjection();
-    updateViewProjection();
-}
-
-Camera::Camera(float aspectRatio)
-    : m_position({0.0f, 0.0f, 0.0f}),
-      m_front({0.0f, 0.0f, -1.0f}),
-      m_worldUp({0.0f, 1.0f, 0.0f}),
-      m_yaw(k_yaw_default),
-      m_pitch(k_pitch_default),
-      m_speed(k_speed_default),
-      m_sensitivity(k_sensitivity_default),
-      m_zoom(k_zoom_default),
-      m_aspectRatio(aspectRatio),
-      m_is3d(false)
-{
-    _updateCameraVectors();
-
-    updateView();
-    updateProjection();
-    updateViewProjection();
 }
 
 void Camera::processPosiUpdate(Movement direction, float deltaTime)
@@ -133,89 +94,68 @@ void Camera::processFov(float yOffset)
     m_staleProjection = true;
 }
 
-void Camera::updateView()
+glm::mat4& Camera::getView()
 {
     NM_PROFILE_DETAIL();
 
-    if (m_is3d)
-    {
-        m_view = glm::lookAt(m_position, m_position + m_front, m_up);
-    }
-    else
-    {
-        glm::mat4 transform
-            = glm::translate(glm::mat4(1.0f), m_position)
-              * glm::rotate(
-                  glm::mat4(1.0f), glm::radians(m_yaw), glm::vec3(0, 0, 1));
-
-        m_view = glm::inverse(transform);
-    }
-
-    m_staleView = false;
-}
-
-glm::mat4& Camera::getView()
-{
-    NM_PROFILE_TRACE();
-
     if (m_staleView)
     {
-        updateView();
+        if (m_is3d)
+        {
+            m_view = glm::lookAt(m_position, m_position + m_front, m_up);
+        }
+        else
+        {
+            glm::mat4 transform
+                = glm::translate(glm::mat4(1.0f), m_position)
+                  * glm::rotate(
+                      glm::mat4(1.0f), glm::radians(m_yaw), glm::vec3(0, 0, 1));
+
+            m_view = glm::inverse(transform);
+        }
+
+        m_staleView = false;
     }
 
     return m_view;
 }
 
-void Camera::updateProjection()
+glm::mat4& Camera::getProjection()
 {
     NM_PROFILE_DETAIL();
 
-    if (m_is3d)
-    {
-        m_projection = glm::perspective(
-            glm::radians(m_fov), m_aspectRatio, m_near, m_far);
-    }
-    else
-    {
-        m_projection = glm::ortho(-m_aspectRatio * m_zoom,
-                                  m_aspectRatio * m_zoom,
-                                  -m_zoom,
-                                  m_zoom,
-                                  -1.0f,
-                                  1.0f);
-    }
-
-    m_staleProjection = false;
-}
-
-glm::mat4& Camera::getProjection()
-{
-    NM_PROFILE_TRACE();
-
     if (m_staleProjection)
     {
-        updateProjection();
+        if (m_is3d)
+        {
+            m_projection = glm::perspective(
+                glm::radians(m_fov), m_aspectRatio, m_near, m_far);
+        }
+        else
+        {
+            m_projection = glm::ortho(-m_aspectRatio * m_zoom,
+                                      m_aspectRatio * m_zoom,
+                                      -m_zoom,
+                                      m_zoom,
+                                      m_orthoNear,
+                                      m_orthFar);
+        }
+
+        m_staleProjection = false;
     }
 
     return m_projection;
 }
 
-void Camera::updateViewProjection()
+glm::mat4& Camera::getViewProjection()
 {
     NM_PROFILE_DETAIL();
 
-    m_viewProjection = getProjection() * getView();
-
-    m_staleWorldBounds = true;
-}
-
-glm::mat4& Camera::getViewProjection()
-{
-    NM_PROFILE_TRACE();
-
     if (m_staleView || m_staleProjection)
     {
-        updateViewProjection();
+        m_viewProjection = getProjection() * getView();
+
+        m_staleWorldBounds = true;
     }
     return m_viewProjection;
 }

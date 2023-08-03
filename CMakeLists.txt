@@ -138,6 +138,21 @@ FetchContent_MakeAvailable(glm)
 
 
 # #########################
+# Entt (header only)
+# #########################
+FetchContent_Declare(
+    entt
+    GIT_REPOSITORY https://github.com/skypjack/entt.git
+    GIT_TAG v3.12.2
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
+
+FetchContent_MakeAvailable(entt)
+
+
+# #########################
 # Glad
 # #########################
 file(GLOB GLAD_LIB_SRC "${VENDOR_PATH}/glad/*.cpp")
@@ -249,6 +264,10 @@ target_include_directories(nimbus PRIVATE "${msdf-atlas-gen}/include")
 
 #glm
 target_include_directories(nimbus PUBLIC "${glm_SOURCE_DIR}/glm")
+
+#entt
+target_include_directories(nimbus PUBLIC "${entt_SOURCE_DIR}/src/")
+
 
 #imgui
 target_include_directories(nimbus PUBLIC "${imgui_SOURCE_DIR}")

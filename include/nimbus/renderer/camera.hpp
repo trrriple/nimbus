@@ -8,15 +8,6 @@ namespace nimbus
 
 class Camera
 {
-    inline static const float k_yaw_default         = 0.0f;
-    inline static const float k_pitch_default       = 0.0f;
-    inline static const float k_speed_default       = 10.0f;
-    inline static const float k_sensitivity_default = 0.05f;
-    inline static const float k_fov_default         = 45.0f;
-    inline static const float k_zoom_default        = 1.0f;
-    inline static const float k_near_default        = 0.1f;
-    inline static const float k_far_default         = 300.0f;
-
    public:
     // Defines several possible options for camera movement.
     // Used as abstraction to stay away from window-system specific input
@@ -40,14 +31,12 @@ class Camera
     };
 
     // 3d camera
-    Camera(const glm::vec3 position    = glm::vec3(0.0f, 0.0f, 0.0f),
-           const glm::vec3 up          = glm::vec3(0.0f, 1.0f, 0.0f),
-           float           yaw         = k_yaw_default,
-           float           pitch       = k_pitch_default,
-           float           aspectRatio = 1.0f);
+    Camera();
 
-    //2d camera
-    Camera(float aspectRatio = 1.0f);
+    void setType(bool is3d)
+    {
+        m_is3d = is3d;
+    }
 
     // processes input received from any position movement input system.
     // Accepts input parameter in the form of camera defined ENUM
@@ -62,13 +51,10 @@ class Camera
     // processes input received from a canera zoom event
     void processFov(float yOffset);
 
-    void       updateView();
     glm::mat4& getView();
 
-    void       updateProjection();
     glm::mat4& getProjection();
 
-    void       updateViewProjection();
     glm::mat4& getViewProjection();
 
     Bounds& getVisibleWorldBounds();
@@ -124,41 +110,38 @@ class Camera
     glm::mat4 m_viewProjection;
     Bounds    m_worldBounds;
 
-    bool m_staleProjection;
-    bool m_staleView;
-    bool m_staleWorldBounds;
+    volatile bool m_staleProjection  = true;
+    volatile bool m_staleView        = true;
+    volatile bool m_staleWorldBounds = true;
 
     // location
-    glm::vec3 m_position;
-    glm::vec3 m_front;
+    glm::vec3 m_position = {0.0f, 0.0f, 0.0f};
+    glm::vec3 m_worldUp  = {0.0f, 1.0f, 0.0f};
+    glm::vec3 m_front    = {0.0f, 0.0f, -1.0f};
     glm::vec3 m_up;
     glm::vec3 m_right;
-    glm::vec3 m_worldUp;
 
     // euler angles
-    float m_yaw;
-    float m_pitch;
+    float m_yaw   = 0.0f;
+    float m_pitch = 0.0f;
 
     // tuning values
-    float m_speed;
-    float m_sensitivity;
-    float m_fov;
-    float m_zoom;
-    float m_aspectRatio;
+    float m_speed       = 10.0f;
+    float m_sensitivity = 0.05f;
+    float m_fov         = 45.0f;
+    float m_zoom        = 1.0f;
+    float m_aspectRatio = 1.0;
 
-    float m_near;
-    float m_far;
+    float m_near = 0.1f;
+    float m_far  = 300.0f;
 
-    // ortho specific parameters (2d)
-    float m_orthoLeft;
-    float m_orthoRight;
-    float m_orthoBottom;
-    float m_orthoTop;
+    float m_orthoNear = -1.0f;
+    float m_orthFar   = 1.0f;
 
-    bool m_is3d;
+    bool m_is3d = false;
 
     // calculates the front vector from the Camera's (updated) Euler Angles
-    void _updateCameraVectors();
+    void  _updateCameraVectors();
     float _getAspectRatio();
 };
 

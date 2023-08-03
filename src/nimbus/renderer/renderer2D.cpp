@@ -135,27 +135,34 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
     }
 
     float texIdx = 0.0f;  // In GL, float is used for idx
-    for (size_t i = 1; i < s_quadData.textures.size(); i++)
+    if (p_texture != nullptr)
     {
-        if (*(s_quadData.textures[i]) == *p_texture)
+        for (size_t i = 1; i < s_quadData.textures.size(); i++)
         {
-            // this fellow is the same, so reuse it
-            texIdx = static_cast<float>(i);
-            break;
+            if (*(s_quadData.textures[i]) == *p_texture)
+            {
+                // this fellow is the same, so reuse it
+                texIdx = static_cast<float>(i);
+                break;
+            }
+        }
+        // we didn't find it, so it's a new texture
+        if (texIdx == 0.0f)
+        {
+            if (s_quadData.textures.size() == s_quadData.textures.capacity())
+            {
+                // we've used all texture slots, send it;
+                _s_submit();
+            }
+
+            // grab the location and store it
+            texIdx = s_quadData.textures.size();
+            s_quadData.textures.push_back(p_texture);
         }
     }
-    // we didn't find it, so it's a new texture
-    if (texIdx == 0.0f)
+    else
     {
-        if (s_quadData.textures.size() == s_quadData.textures.capacity())
-        {
-            // we've used all texture slots, send it;
-            _s_submit();
-        }
-
-        // grab the location and store it
-        texIdx = s_quadData.textures.size();
-        s_quadData.textures.push_back(p_texture);
+        texIdx = 0.0f; // white texture
     }
 
     for (uint32_t i = 0; i < 4; i++)

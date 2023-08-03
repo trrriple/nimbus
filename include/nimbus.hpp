@@ -22,6 +22,9 @@
 #include "nimbus/renderer/shader.hpp"
 #include "nimbus/renderer/sprite.hpp"
 #include "nimbus/renderer/texture.hpp"
+#include "nimbus/scene/scene.hpp"
+#include "nimbus/scene/entity.hpp"
+#include "nimbus/scene/component.hpp"
 
 ///////////////////////
 // Dear Imgui stuff

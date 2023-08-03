@@ -19,6 +19,8 @@ glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity,
                                         float     screenWidth,
                                         float     screenHeight);
 
+
+// TODO remove
 struct Transform
 {
     glm::vec3 translation = {0.0f, 0.0f, 0.0f};

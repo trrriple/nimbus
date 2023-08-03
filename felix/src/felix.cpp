@@ -1,6 +1,7 @@
 #include "nimbus.hpp"
 #include "nimbus/core/entry.hpp"
 
+
 namespace nimbus
 {
 
@@ -12,6 +13,11 @@ class FelixLayer : public Layer
    public:
     Application* mp_appRef;
     Window*      mp_appWinRef;
+
+
+    ref<Scene>   m_scene;
+
+
     glm::vec2    m_viewportSize    = {800, 600};
     float        m_aspectRatio     = 800 / 600;
     bool         m_wireFrame       = false;
@@ -24,7 +30,7 @@ class FelixLayer : public Layer
     ref<FrameBuffer> mp_frameBuffer;
     ref<FrameBuffer> mp_screenBuffer;
 
-    scope<Camera> mp_camera2D;
+    Camera* mp_camera2D;
 
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
@@ -36,10 +42,23 @@ class FelixLayer : public Layer
 
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
-
         mp_appRef->setDrawPeriodLimit(0.0f);
 
-        mp_camera2D = makeScope<Camera>(m_aspectRatio);
+        m_scene           = makeRef<Scene>();
+        auto cameraEntity = m_scene->addEntity();
+        mp_camera2D       = &(cameraEntity.addComponent<CameraCmp>().camera);
+        mp_camera2D->setAspectRatio(m_aspectRatio);
+
+        auto quadEntity   = m_scene->addEntity();
+
+        auto transformCmp = quadEntity.addComponent<TransformCmp>();
+        
+        transformCmp.setScale({0.5f, 0.5f, 1.0f});
+
+        auto& spriteCmp = quadEntity.addComponent<SpriteCmp>();
+
+        spriteCmp.color = {0.0f, 1.0f, 0.0f, 1.0f};
+
 
         ///////////////////////////
         // Setup Framebuffers
@@ -111,37 +130,41 @@ class FelixLayer : public Layer
             GraphicsApi::setWireframe(m_wireFrame);
         }
 
-        Renderer2D::s_begin(*mp_camera2D);
 
-        util::Transform transform;
-
-        transform.translation = {-1.0, -1.0, 0.0f};
-        transform.scale = {0.1f, 0.1f, 1.0f};
-        transform.rotation = {0.0f, 0.0f, glm::radians(45.0f)};
+        m_scene->onUpdate(deltaTime);
 
 
-        glm::vec4 color     = glm::vec4(0.2f, 0.0f, 0.2f, 1.0f);
+        // Renderer2D::s_begin(*mp_camera2D);
 
-        const int   quadsPerSide = 100;
-        const float padding      = 0.16;
-        for (int x = 0; x < quadsPerSide; x++)
-        {
-            transform.translation.y = -1.0;
-            color.r = 0.2;
+        // util::Transform transform;
 
-            for (int y = 0; y < quadsPerSide; y++)
-            {
-                transform.translation.y += (-1.0 / quadsPerSide) + padding;
-                color.r += 0.8 / quadsPerSide;
+        // transform.translation = {-1.0, -1.0, 0.0f};
+        // transform.scale = {0.1f, 0.1f, 1.0f};
+        // transform.rotation = {0.0f, 0.0f, glm::radians(45.0f)};
 
-                Renderer2D::s_drawQuad(transform.getModel(), color);
-            }
 
-            transform.translation.x += (-1.0 / quadsPerSide) + padding;
-            color.b += 0.8 / quadsPerSide;
-        }
+        // glm::vec4 color     = glm::vec4(0.2f, 0.0f, 0.2f, 1.0f);
 
-        Renderer2D::s_end();
+        // const int   quadsPerSide = 25;
+        // const float padding      = 0.16;
+        // for (int x = 0; x < quadsPerSide; x++)
+        // {
+        //     transform.translation.y = -1.0;
+        //     color.r = 0.2;
+
+        //     for (int y = 0; y < quadsPerSide; y++)
+        //     {
+        //         transform.translation.y += (-1.0 / quadsPerSide) + padding;
+        //         color.r += 0.8 / quadsPerSide;
+
+        //         Renderer2D::s_drawQuad(transform.getModel(), color);
+        //     }
+
+        //     transform.translation.x += (-1.0 / quadsPerSide) + padding;
+        //     color.b += 0.8 / quadsPerSide;
+        // }
+
+        // Renderer2D::s_end();
 
         // turn it off for the blit
         if(m_wireFrame)
@@ -290,6 +313,11 @@ class FelixLayer : public Layer
         // Camera Menu
         ///////////////////////////
         ImGui::Begin("Camera Menu", 0, ImGuiWindowFlags_AlwaysAutoResize);
+
+        ImGui::Text("Viewport dimensions %i, %i (%f)",
+                    (int)m_viewportSize.x,
+                    (int)m_viewportSize.y,
+                    mp_camera2D->getAspectRatio());
 
         glm::vec3 cameraPos = mp_camera2D->getPosition();
 
