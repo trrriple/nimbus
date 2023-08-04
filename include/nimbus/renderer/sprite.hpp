@@ -1,5 +1,8 @@
 #pragma once
 
+// TODO DEPRECATED BY COMPONENT
+
+
 #include "nimbus/core/common.hpp"
 #include "nimbus/renderer/texture.hpp"
 

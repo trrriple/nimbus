@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nimbus/core/common.hpp"
-#include "nimbus/renderer/camera.hpp"
+#include "nimbus/scene/camera.hpp"
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/font.hpp"
 #include "nimbus/renderer/shader.hpp"
@@ -14,20 +14,25 @@ namespace nimbus
 class Renderer2D
 {
    public:
-    struct TextFormat
+
+    struct Stats
     {
-        ref<Font> p_font      = nullptr;
-        glm::vec4 fgColor     = glm::vec4(1.0f);
-        glm::vec4 bgColor     = glm::vec4(0.0f);
-        float     kerning     = 0.0f;
-        float     lineSpacing = 0.0f;
+        uint32_t drawCalls     = 0;
+        uint32_t quads         = 0;
+        uint32_t characters    = 0;
+        uint32_t quadVertices  = 0;
+        uint32_t textVertices  = 0;
+        uint32_t totalVertices = 0;
+
+        uint32_t quadVertsAvail = 0;
+        uint32_t textVertsAvail = 0;
     };
 
     static void s_init();
 
     static void s_destroy();
 
-    static void s_begin(Camera& camera);
+    static void s_begin(const glm::mat4& vpMatrix);
 
     static void s_end();
 
@@ -38,14 +43,21 @@ class Renderer2D
 
     static void s_drawQuad(const glm::mat4& transform, const glm::vec4& color);
 
-    static void s_drawText(const std::string& text,
-                           const TextFormat&  textFormat,
-                           const glm::vec3&   position,
-                           const glm::vec2&   size);
+    static void s_drawText(const std::string&  text,
+                           const Font::Format& fontFormat,
+                           const glm::vec3&    position,
+                           const glm::vec2&    size);
 
-    static void s_drawText(const std::string& text,
-                           const TextFormat&  textFormat,
-                           const glm::mat4&   transform);
+    static void s_drawText(const std::string&  text,
+                           const Font::Format& fontFormat,
+                           const glm::mat4&    transform);
+
+    static void s_resetStats();
+
+    static Stats s_getStats()
+    {
+        return s_stats;
+    }
 
    private:
     ///////////////////////////
@@ -139,6 +151,7 @@ class Renderer2D
 
     static TextData s_textData;
 
+    static Stats s_stats;
 
     ///////////////////////////
     // Private functions
@@ -146,6 +159,5 @@ class Renderer2D
     static void _s_submit();
     static void _s_createTextBuffers();
     static void _s_createQuadBuffers();
-
 };
 }  // namespace nimbus

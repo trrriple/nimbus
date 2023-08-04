@@ -1,7 +1,6 @@
 #pragma once
 
 #include "nimbus/core/common.hpp"
-#include "nimbus/renderer/camera.hpp"
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/shader.hpp"
 
@@ -17,7 +16,7 @@ class Renderer
     static void s_init();
     static void s_destroy();
 
-    static void s_setScene(Camera& camera);
+    static void s_setScene(const glm::mat4& vpMatrix);
 
     static void s_submit(const ref<Shader>&      p_shader,
                          const ref<VertexArray>& p_vertexArray,
@@ -44,6 +43,6 @@ class Renderer
                                   bool    setViewProjection = true);
 
    private:
-    inline static glm::mat4* mp_vpMatrix = nullptr;
+    inline static glm::mat4 mp_vpMatrix = glm::mat4(1.0f);
 };
 }  // namespace nimbus

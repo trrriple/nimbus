@@ -4,6 +4,9 @@
 #include "nimbus/renderer/sprite.hpp"
 #include "nimbus/renderer/renderer2D.hpp"
 
+
+// TODO DEPRECATED BY COMPONENT
+
 namespace nimbus
 {
 

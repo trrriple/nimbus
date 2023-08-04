@@ -30,8 +30,7 @@ class Camera
         glm::vec4 bottomRight;
     };
 
-    // 3d camera
-    Camera();
+    Camera(bool is3d = false);
 
     void setType(bool is3d)
     {
@@ -44,9 +43,7 @@ class Camera
     void processPosiUpdate(Movement direction, float deltaTime);
 
     // processes input received from a view update.
-    void processViewUpdate(float xOffset,
-                           float yOffset,
-                           bool  constrainPitch = true);
+    void processViewUpdate(const glm::vec2& offset, bool constrainPitch = true);
 
     void processZoom(float offset);
 

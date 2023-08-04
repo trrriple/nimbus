@@ -47,4 +47,24 @@ glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity,
     return screenVelocity;
 }
 
+glm::vec2 mapPixToScreen(glm::vec2 pixPos,
+                         float     screenMinX,
+                         float     screenMaxX,
+                         float     screenMinY,
+                         float     screenMaxY,
+                         int       imgWidth,
+                         int       imgHeight)
+{
+    // Normalize pixel values to the range [0, 1]
+    float normX = pixPos.x / imgWidth;
+    float normY = pixPos.y / imgHeight;
+
+    // Map normalized pixel values to screen space
+    glm::vec2 screen;
+    screen.x = screenMinX + normX * (screenMaxX - screenMinX);
+    screen.y = screenMinY + normY * (screenMaxY - screenMinY);
+
+    return screen;
+}
+
 }  // namespace nimbus::util

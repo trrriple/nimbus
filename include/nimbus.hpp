@@ -14,7 +14,7 @@
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/font.hpp"
 #include "nimbus/renderer/frameBuffer.hpp"
-#include "nimbus/renderer/camera.hpp"
+#include "nimbus/scene/camera.hpp"
 #include "nimbus/renderer/mesh.hpp"
 #include "nimbus/renderer/model.hpp"
 #include "nimbus/renderer/particleEmitter.hpp"
@@ -25,6 +25,7 @@
 #include "nimbus/renderer/texture.hpp"
 #include "nimbus/scene/scene.hpp"
 #include "nimbus/scene/entity.hpp"
+#include "nimbus/scene/entityLogic.hpp"
 #include "nimbus/scene/component.hpp"
 
 ///////////////////////

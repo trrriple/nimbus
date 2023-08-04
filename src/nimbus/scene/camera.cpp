@@ -1,14 +1,14 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
 
-#include "nimbus/renderer/camera.hpp"
+#include "nimbus/scene/camera.hpp"
 
-#include "nimbus/core/application.hpp"
+#include "glm.hpp"
 
 namespace nimbus
 {
 
-Camera::Camera()
+Camera::Camera(bool is3d) : m_is3d(is3d)
 {
     _updateCameraVectors();
 }
@@ -55,15 +55,10 @@ void Camera::processPosiUpdate(Movement direction, float deltaTime)
     m_staleView = true;
 }
 
-void Camera::processViewUpdate(float xOffset,
-                               float yOffset,
-                               bool  constrainPitch)
+void Camera::processViewUpdate(const glm::vec2& offset, bool constrainPitch)
 {
-    xOffset *= m_sensitivity;
-    yOffset *= m_sensitivity;
-
-    m_yaw += xOffset;
-    m_pitch += yOffset;
+    m_yaw += offset.x * m_sensitivity;
+    m_pitch += offset.y * m_sensitivity;
 
     // make sure that when pitch is out of bounds, screen doesn't get
     // flipped

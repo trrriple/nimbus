@@ -8,6 +8,8 @@
 #include "nimbus/core/keyCode.hpp"
 #include "nimbus/core/mouseButton.hpp"
 
+#include "glm.hpp"
+
 namespace nimbus
 {
 
@@ -34,6 +36,9 @@ class Window
 
     bool mouseButtonPressed(MouseButton button) const;
 
+    glm::vec2 mousePos() const;
+
+    float  mouseWheelPos() const;
 
     uint32_t getHeight() const
     {
@@ -72,11 +77,12 @@ class Window
 
     Event m_event;
 
-    uint32_t m_sdlWindowId;
+    uint32_t m_windowId;
     uint32_t m_width;
     uint32_t m_height;
     float    m_aspectRatio;
-    bool     m_VSyncOn = true;
+    bool     m_VSyncOn       = true;
+    float    m_mouseWheelPos = 0.0f;
 
     void _handleWindowEvents();
 

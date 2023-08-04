@@ -1,6 +1,7 @@
 #pragma once
 #include "nimbus/core/common.hpp"
 #include "nimbus/scene/scene.hpp"
+#include "entt/entity/registry.hpp"
 
 namespace nimbus
 {

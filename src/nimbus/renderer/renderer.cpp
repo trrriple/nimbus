@@ -6,7 +6,6 @@
 
 #include <sstream>
 
-
 namespace nimbus
 {
 
@@ -18,9 +17,9 @@ void Renderer::s_destroy()
 {
 }
 
-void Renderer::s_setScene(Camera& camera)
+void Renderer::s_setScene(const glm::mat4& vpMatrix)
 {
-    mp_vpMatrix = &camera.getViewProjection();
+    mp_vpMatrix = vpMatrix;
 }
 
 void Renderer::s_submit(const ref<Shader>&      p_shader,
@@ -36,16 +35,7 @@ void Renderer::s_submit(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        if (mp_vpMatrix != nullptr)
-        {
-            p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
-        }
-        else
-        {
-            Log::coreError(
-                "Renderer::s_setScene() must be called before submitting to "
-                "render!");
-        }
+        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
     }
 
     // do we have an index buffer?
@@ -86,16 +76,7 @@ void Renderer::s_submit(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        if (mp_vpMatrix != nullptr)
-        {
-            p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
-        }
-        else
-        {
-            Log::coreError(
-                "Renderer::s_setScene() must be called before submitting to "
-                "render!");
-        }
+        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
     }
 
     // do we have an index buffer?
@@ -139,16 +120,7 @@ void Renderer::s_submitInstanced(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        if (mp_vpMatrix != nullptr)
-        {
-            p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
-        }
-        else
-        {
-            Log::coreError(
-                "Renderer::s_setScene() must be called before submitting to "
-                "render!");
-        }
+        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
     }
 
     // do we have an index buffer?
@@ -192,16 +164,7 @@ void Renderer::s_submitInstanced(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        if (mp_vpMatrix != nullptr)
-        {
-            p_shader->setMat4("u_viewProjection", *mp_vpMatrix);
-        }
-        else
-        {
-            Log::coreError(
-                "Renderer::s_setScene() must be called before submitting to "
-                "render!");
-        }
+        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
     }
 
     // do we have an index buffer?

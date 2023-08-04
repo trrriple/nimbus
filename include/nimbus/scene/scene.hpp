@@ -19,8 +19,10 @@ class Scene
 
     Entity addEntity(const std::string& name = std::string());
     
-
+    void onStart();
     void onUpdate(float deltaTime);
+    void onDraw(float deltaTime);
+    void onStop();
 
     void onResize(uint32_t width, uint32_t height);
 

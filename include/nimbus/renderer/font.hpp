@@ -9,6 +9,15 @@ struct FontData;
 class Font
 {
    public:
+    struct Format
+    {
+        ref<Font> p_font      = nullptr;
+        glm::vec4 fgColor     = glm::vec4(1.0f);
+        glm::vec4 bgColor     = glm::vec4(0.0f);
+        float     kerning     = 0.0f;
+        float     lineSpacing = 0.0f;
+    };
+
     Font(const std::string& fontPath);
     ~Font();
 

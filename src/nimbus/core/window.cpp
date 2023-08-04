@@ -38,7 +38,7 @@ Window::Window(const std::string& windowCaption,
         m_height,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL));
 
-    m_sdlWindowId = SDL_GetWindowID(static_cast<SDL_Window*>(mp_window));
+    m_windowId = SDL_GetWindowID(static_cast<SDL_Window*>(mp_window));
 
     NM_CORE_ASSERT(mp_window,
                    "Window could not be created. sdl error %s",
@@ -132,6 +132,23 @@ bool Window::mouseButtonPressed(MouseButton button) const
     return mouseState & SDL_BUTTON(static_cast<uint32_t>(button));
 }
 
+glm::vec2 Window::mousePos() const
+{
+    NM_PROFILE_DETAIL();
+
+    int xPos;
+    int yPos;
+
+    SDL_GetMouseState(&xPos, &yPos);
+
+    return {xPos, yPos};
+}
+
+float Window::mouseWheelPos() const
+{
+    return m_mouseWheelPos;
+}
+
 void Window::setVSync(bool on)
 {
     NM_PROFILE_TRACE();
@@ -190,19 +207,33 @@ void Window::_pollEvents()
     {
         // handle internal window event stuff
         // SDL_QUIT comes if all windows are closed
-        if (m_event.getEventType() == Event::Type::QUIT)
+        switch (m_event.getEventType())
         {
-            m_exitCallback(m_event);
-        }
-        else if (m_event.getEventType() == Event::Type::WINDOW)
-        {
-            // we only want to handle window events for this window
-            if (m_event.getDetails().window.windowID == m_sdlWindowId)
+            case (Event::Type::QUIT):
             {
-                _handleWindowEvents();
+                m_exitCallback(m_event);
+                break;
             }
+            case (Event::Type::WINDOW):
+            {
+                // we only want to handle window events for this window
+                if (m_event.getDetails().window.windowID == m_windowId)
+                {
+                    _handleWindowEvents();
+                }
+                break;
+            }
+            case (Event::Type::MOUSEWHEEL):
+            {
+                // track the mouse wheel because SDL doesn't g78ive us a way 
+                // to get current position, just event based relative 
+                // position
+                m_mouseWheelPos += m_event.getDetails().wheel.preciseY;
+            }
+            default:
+                break;
         }
-        
+
         // call the event callback for each event
         m_evtCallback(m_event);
 

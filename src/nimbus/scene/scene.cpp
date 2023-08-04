@@ -5,6 +5,7 @@
 #include "nimbus/scene/component.hpp"
 #include "nimbus/renderer/renderer2D.hpp"
 #include "nimbus/scene/entity.hpp"
+#include "nimbus/scene/entityLogic.hpp"
 
 namespace nimbus
 {
@@ -28,10 +29,62 @@ Entity Scene::addEntity(const std::string& name)
     return entity;
 }
 
+void Scene::onStart()
+{
+    ///////////////////////////
+    // Initialize Logic
+    ///////////////////////////
+    m_registry.view<nativeLogicCmp>().each(
+        [=](auto entity, auto& nsc)
+        {
+            if (!nsc.p_logic)
+            {
+                nsc.p_logic           = nsc.initLogic();
+                nsc.p_logic->m_entity = Entity{entity, this};
+                nsc.p_logic->onCreate();
+            }
+        });
+}
+
+void Scene::onStop()
+{
+    ///////////////////////////
+    // Destruct Logic
+    ///////////////////////////
+    m_registry.view<nativeLogicCmp>().each(
+        [=](auto entity, auto& nsc)
+        {
+            NM_UNUSED(entity);
+            if (nsc.p_logic)
+            {
+                nsc.p_logic->onDestroy();
+                delete nsc.p_logic;
+                nsc.p_logic = nullptr;
+            }
+        });
+}
+
 void Scene::onUpdate(float deltaTime)
 {
     NM_UNUSED(deltaTime);
 
+    ///////////////////////////
+    // Update Logic
+    ///////////////////////////
+    m_registry.view<nativeLogicCmp>().each(
+        [=](auto entity, auto& nsc)
+        {
+            NM_UNUSED(entity);
+            if (nsc.p_logic)
+            {
+                nsc.p_logic->onUpdate(deltaTime);
+            }
+        });
+}
+
+void Scene::onDraw(float deltaTime)
+{
+    NM_UNUSED(deltaTime);
     ///////////////////////////
     // Get Camera
     ///////////////////////////
@@ -45,7 +98,7 @@ void Scene::onUpdate(float deltaTime)
         // grab the first camera that's flagged to be used for rendering
         if (camera.renderWith == true)
         {
-            mainCamera = &camera.camera;
+            mainCamera = camera.p_camera.get();
             break;
         }
     }
@@ -56,12 +109,14 @@ void Scene::onUpdate(float deltaTime)
         return;
     }
 
-    ///////////////////////////
-    // Begin rendering
-    ///////////////////////////
-    Renderer2D::s_begin(*mainCamera);
+    ////////////////////////////////////////////////////////////////////////////
+    // Render
+    ////////////////////////////////////////////////////////////////////////////
+    Renderer2D::s_begin(mainCamera->getViewProjection());
 
-    // sprites
+    ///////////////////////////
+    // Sprites
+    ///////////////////////////
     auto spriteGroup = m_registry.group<TransformCmp>(entt::get<SpriteCmp>);
     for (auto entity : spriteGroup)
     {
@@ -72,6 +127,18 @@ void Scene::onUpdate(float deltaTime)
                                sprite.texture,
                                sprite.color,
                                sprite.tilingFactor);
+    }
+
+    ///////////////////////////
+    // Text
+    ///////////////////////////
+    auto textView = m_registry.view<TransformCmp, TextCmp>();
+    for (auto entity : textView)
+    {
+        auto [transform, text] = textView.get<TransformCmp, TextCmp>(entity);
+
+        Renderer2D::s_drawText(
+            text.text, text.format, transform.getTransform());
     }
 
     Renderer2D::s_end();
@@ -90,7 +157,7 @@ void Scene::onResize(uint32_t width, uint32_t height)
 
         if (!camera.fixedAspect)
         {
-            camera.camera.setAspectRatio(aspectRatio);
+            camera.p_camera->setAspectRatio(aspectRatio);
         }
     }
 }

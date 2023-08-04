@@ -3,7 +3,6 @@
 
 #include "nimbus/core/application.hpp"
 
-#include "nimbus/guiLayers/engineGui.hpp"
 #include "nimbus/guiLayers/guiSubsystem.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 #include "nimbus/renderer/renderer.hpp"
@@ -39,7 +38,6 @@ Application::Application(const std::string& name,
  
     mp_guiSubsystemLayer = makeRef<GuiSubsystem>();
     insertLayer(mp_guiSubsystemLayer);
-    insertLayer(makeRef<EngineGui>());
 }
 
 void Application::shouldQuit(Event& event)
@@ -50,7 +48,7 @@ void Application::shouldQuit(Event& event)
 
 void Application::execute()
 {
-    float currentTime = core::getTime_s();
+    double currentTime = core::getTime_s();
     
     while (m_Active)
     {
@@ -59,9 +57,9 @@ void Application::execute()
         ///////////////////////////
         // Loop time handling
         ///////////////////////////
-        float newTime  = core::getTime_s();
-        float loopTime = newTime - currentTime;
-        currentTime    = newTime;
+        double newTime  = core::getTime_s();
+        float  loopTime = newTime - currentTime;
+        currentTime     = newTime;
 
         // prevent spiral of death if we're running really slow
         if(loopTime >= 0.1f)

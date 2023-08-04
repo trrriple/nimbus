@@ -1,7 +1,9 @@
 #pragma once
 #include "nimbus/core/common.hpp"
 #include "nimbus/renderer/texture.hpp"
-#include "nimbus/renderer/camera.hpp"
+#include "nimbus/renderer/font.hpp"
+#include "nimbus/scene/camera.hpp"
+#include "nimbus/core/window.hpp"
 
 #include "glm.hpp"
 #include "gtx/quaternion.hpp"
@@ -10,6 +12,30 @@
 
 namespace nimbus
 {
+
+class EntityLogic;  // forward decl
+
+struct nativeLogicCmp
+{
+    EntityLogic* p_logic = nullptr;
+
+    EntityLogic* (*initLogic)();
+    void (*destroyLogic)(nativeLogicCmp*);
+
+    template <typename T>
+    void bind()
+    {
+        initLogic    = []() -> EntityLogic* { return new T(); };
+        
+        // TOOD figure out why this can't get called
+        destroyLogic = [](nativeLogicCmp* nsc)
+        {
+            delete nsc->p_logic;
+            nsc->p_logic = nullptr;
+        };
+    }
+};
+
 struct NameCmp
 {
     std::string name;
@@ -49,16 +75,16 @@ struct TransformCmp
         return transform;
     }
 
-    void setPosition(const glm::vec3& itranslation,
-                     const glm::vec3& irotation,
-                     const glm::vec3& iscale)
+    void setTransform(const glm::vec3& itranslation,
+                      const glm::vec3& irotation,
+                      const glm::vec3& iscale)
     {
         translation    = itranslation;
         rotation       = irotation;
         scale          = iscale;
         transformStale = true;
     }
-
+    
     const glm::vec3& getTranslation() const
     {
         return translation;
@@ -171,13 +197,44 @@ struct SpriteCmp
     }
 };
 
+struct TextCmp
+{
+    std::string  text;
+    Font::Format format;
+
+    TextCmp() = default;
+    TextCmp(const std::string& itext, const Font::Format& iformat)
+        : text(itext), format(iformat)
+    {
+    }
+
+};
+
 struct CameraCmp
 {
-    Camera camera;
-    bool   renderWith  = true;
-    bool   fixedAspect = false;
+    ref<Camera> p_camera;
+    bool        renderWith  = true;
+    bool        fixedAspect = false;
 
-    CameraCmp() = default;
+    CameraCmp(const ref<Camera>& p_icamera) : p_camera(p_icamera)
+    {
+    }
+};
+
+struct RefCmp
+{
+    void* p_ref;
+    RefCmp(void* p_iref) : p_ref(p_iref)
+    {
+    }
+};
+
+struct WindowRefCmp
+{
+    Window* p_window;
+    WindowRefCmp(Window* p_iwindow) : p_window(p_iwindow)
+    {
+    }
 };
 
 }  // namespace nimbus

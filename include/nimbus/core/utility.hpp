@@ -19,6 +19,13 @@ glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity,
                                         float     screenWidth,
                                         float     screenHeight);
 
+glm::vec2 mapPixToScreen(glm::vec2 pixPos,
+                         float     screenMinX,
+                         float     screenMaxX,
+                         float     screenMinY,
+                         float     screenMaxY,
+                         int       imgWidth,
+                         int       imgHeight);
 
 // TODO remove
 struct Transform
