@@ -39,18 +39,23 @@ class Renderer2D
     static void s_drawQuad(const glm::mat4&    transform,
                            const ref<Texture>& p_texture,
                            const glm::vec4&    color,
-                           float               texTilingFactor = 1.0f);
+                           float               texTilingFactor = 1.0f,
+                           int                 entityId        = -1);
 
-    static void s_drawQuad(const glm::mat4& transform, const glm::vec4& color);
+    static void s_drawQuad(const glm::mat4& transform,
+                           const glm::vec4& color,
+                           int              entityId = -1);
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::vec3&    position,
-                           const glm::vec2&    size);
+                           const glm::vec2&    size,
+                           int                 entityId = -1);
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
-                           const glm::mat4&    transform);
+                           const glm::mat4&    transform,
+                           int                 entityId = -1);
 
     static void s_resetStats();
 
@@ -81,11 +86,12 @@ class Renderer2D
     inline static const uint32_t k_quadVerticesMaxCount  = 200000;
 
     inline static const BufferFormat k_quadVertexFormat = {
-        {k_shaderVec4,  "position"},
-        {k_shaderVec2,  "texCoords"},
-        {k_shaderVec4,  "color"},
+        {k_shaderVec4, "position"},
+        {k_shaderVec2, "texCoords"},
+        {k_shaderVec4, "color"},
         {k_shaderFloat, "texIndex"},
         {k_shaderFloat, "texTilingFactor"},
+        {k_shaderInt, "entityId"},
     };
 
     struct QuadVertex
@@ -95,6 +101,7 @@ class Renderer2D
         glm::vec4 color;
         float     texIndex;
         float     texTilingFactor;
+        int       entityId;
     };
 
     struct QuadData
@@ -119,14 +126,15 @@ class Renderer2D
     inline static const uint32_t k_textVerticesMaxCount  = 10000;
 
     inline static const BufferFormat k_TextVertexFormat = {
-        {k_shaderVec4,  "position"},
-        {k_shaderVec2,  "texCoords"},
-        {k_shaderVec4,  "fgColor"},
-        {k_shaderVec4,  "bgColor"},
-        {k_shaderVec2,  "unitRange"},
+        {k_shaderVec4, "position"},
+        {k_shaderVec2, "texCoords"},
+        {k_shaderVec4, "fgColor"},
+        {k_shaderVec4, "bgColor"},
+        {k_shaderVec2, "unitRange"},
         {k_shaderFloat, "texIndex"},
+        {k_shaderInt, "entityId"},
     };
-    
+
     struct TextVertex
     {
         glm::vec4 position;
@@ -135,6 +143,8 @@ class Renderer2D
         glm::vec4 bgColor;
         glm::vec2 unitRange;
         float     texIndex;
+        int       entityId;
+
     };
 
     struct TextData

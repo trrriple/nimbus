@@ -31,6 +31,8 @@ class Scene
 
     friend class Entity;
 
+    // felix only
+    friend class SceneHeirarchyPanel;
 };
 
 }  // namespace nimbus

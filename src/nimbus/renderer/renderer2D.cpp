@@ -123,7 +123,8 @@ void Renderer2D::s_end()
 void Renderer2D::s_drawQuad(const glm::mat4&    transform,
                             const ref<Texture>& p_texture,
                             const glm::vec4&    color,
-                            float               texTilingFactor)
+                            float               texTilingFactor,
+                            int                 entityId)
 {
     // first make sure we can fit this quad:
     //  verify we have room left for this character
@@ -176,6 +177,7 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
         s_quadData.vertices[s_quadData.vertexIdx].texIndex = texIdx;
         s_quadData.vertices[s_quadData.vertexIdx].texTilingFactor
             = texTilingFactor;
+        s_quadData.vertices[s_quadData.vertexIdx].entityId = entityId;
 
         s_quadData.vertexIdx++;
     }
@@ -183,48 +185,30 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
     s_quadData.quadCount++;
 }
 
-void Renderer2D::s_drawQuad(const glm::mat4& transform, const glm::vec4& color)
+void Renderer2D::s_drawQuad(const glm::mat4& transform,
+                            const glm::vec4& color,
+                            int              entityId)
 {
-    // first make sure we can fit this quad:
-    //  verify we have room left for this character
-    if (s_quadData.vertexIdx + 4 > s_quadData.vertices.size())
-    {
-        // We're full, We need to submit data to render.
-        _s_submit();
-        // this will resize the buffers if possible on begin()
-        s_quadData.needsResize = true;
-    }
-
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        s_quadData.vertices[s_quadData.vertexIdx].position
-            = transform * s_genData.quadVertexPositions[i];
-        s_quadData.vertices[s_quadData.vertexIdx].texCoord
-            = s_genData.quadTextureCoords[i];
-        s_quadData.vertices[s_quadData.vertexIdx].color           = color;
-        s_quadData.vertices[s_quadData.vertexIdx].texIndex        = 0.0f;
-        s_quadData.vertices[s_quadData.vertexIdx].texTilingFactor = 1.0f;
-
-        s_quadData.vertexIdx++;
-    }
-
-    s_quadData.quadCount++;
+    NM_PROFILE_TRACE();
+    s_drawQuad(transform, nullptr, color, 1.0f, entityId);
 }
 
 void Renderer2D::s_drawText(const std::string&  text,
                             const Font::Format& fontFormat,
                             const glm::vec3&    position,
-                            const glm::vec2&    size)
+                            const glm::vec2&    size,
+                            int                 entityId)
 {
     NM_PROFILE_TRACE();
     glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
     transform           = glm::scale(transform, {size.x, size.y, 1.0f});
-    s_drawText(text, fontFormat, transform);
+    s_drawText(text, fontFormat, transform, entityId);
 }
 
 void Renderer2D::s_drawText(const std::string&  text,
                             const Font::Format& fontFormat,
-                            const glm::mat4&    transform)
+                            const glm::mat4&    transform,
+                            int                 entityId)
 
 {
     NM_PROFILE();
@@ -376,6 +360,8 @@ void Renderer2D::s_drawText(const std::string&  text,
         s_textData.vertices[s_textData.vertexIdx].bgColor = fontFormat.bgColor;
         s_textData.vertices[s_textData.vertexIdx].unitRange = unitRange;
         s_textData.vertices[s_textData.vertexIdx].texIndex  = texIdx;
+        s_textData.vertices[s_textData.vertexIdx].entityId = entityId;
+
         s_textData.vertexIdx++;
 
         s_textData.vertices[s_textData.vertexIdx].position
@@ -386,6 +372,8 @@ void Renderer2D::s_drawText(const std::string&  text,
         s_textData.vertices[s_textData.vertexIdx].bgColor = fontFormat.bgColor;
         s_textData.vertices[s_textData.vertexIdx].unitRange = unitRange;
         s_textData.vertices[s_textData.vertexIdx].texIndex  = texIdx;
+        s_textData.vertices[s_textData.vertexIdx].entityId = entityId;
+
         s_textData.vertexIdx++;
 
         s_textData.vertices[s_textData.vertexIdx].position
@@ -396,6 +384,8 @@ void Renderer2D::s_drawText(const std::string&  text,
         s_textData.vertices[s_textData.vertexIdx].bgColor = fontFormat.bgColor;
         s_textData.vertices[s_textData.vertexIdx].unitRange = unitRange;
         s_textData.vertices[s_textData.vertexIdx].texIndex  = texIdx;
+        s_textData.vertices[s_textData.vertexIdx].entityId = entityId;
+
         s_textData.vertexIdx++;
 
         s_textData.vertices[s_textData.vertexIdx].position
@@ -406,6 +396,8 @@ void Renderer2D::s_drawText(const std::string&  text,
         s_textData.vertices[s_textData.vertexIdx].bgColor = fontFormat.bgColor;
         s_textData.vertices[s_textData.vertexIdx].unitRange = unitRange;
         s_textData.vertices[s_textData.vertexIdx].texIndex  = texIdx;
+        s_textData.vertices[s_textData.vertexIdx].entityId = entityId;
+
         s_textData.vertexIdx++;
 
         s_textData.charCount++;

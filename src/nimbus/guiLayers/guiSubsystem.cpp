@@ -12,9 +12,16 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "imgui.h"
+#include "IconsFontAwesome6.h"
 
 namespace nimbus
 {
+
+static const std::string k_defaultFontPath
+    = "../resources/fonts/Roboto/Roboto-Regular.ttf";
+
+static const std::string k_defaultIconFontPath
+    = "../resources/fonts/FontAwesome6/" FONT_ICON_FILE_NAME_FAS;
 
 GuiSubsystem::GuiSubsystem() : Layer(Layer::Type::OVERLAY, "guiSubsystem")
 {
@@ -31,11 +38,49 @@ void GuiSubsystem::onInsert()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-    float fontSize = 13.0f; 
-    io.Fonts->AddFontFromFileTTF("../resources/fonts/Roboto/Roboto-Regular.ttf",
-                                 fontSize);
-    io.FontDefault = io.Fonts->AddFontFromFileTTF(
-        "../resources/fonts/Roboto/Roboto-Regular.ttf", fontSize);
+    ///////////////////////////
+    // Change font
+    ///////////////////////////
+    float   fontSize = 13.0f;
+    ImFont* p_roboto
+        = io.Fonts->AddFontFromFileTTF(k_defaultFontPath.c_str(), fontSize);
+
+    if (p_roboto != nullptr)
+    {
+        io.FontDefault = p_roboto;
+    }
+    else
+    {
+        Log::coreCritical("Could not load GUI font: %s\n",
+                          k_defaultFontPath.c_str());
+    }
+
+    ///////////////////////////
+    // Add icons to font
+    ///////////////////////////
+    float baseFontSize = fontSize;
+
+    // FontAwesome fonts need to have their sizes reduced
+    // by 2.0f/3.0f in order to align correctly
+    float iconFontSize = baseFontSize * 2.0f / 3.0f;
+
+    // merge in icons from Font Awesome
+    static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+    ImFontConfig         icons_config;
+    icons_config.MergeMode        = true;
+    icons_config.PixelSnapH       = true;
+    icons_config.GlyphMinAdvanceX = iconFontSize;
+    ImFont* p_iconFont
+        = io.Fonts->AddFontFromFileTTF(k_defaultIconFontPath.c_str(),
+                                       iconFontSize,
+                                       &icons_config,
+                                       icons_ranges);
+
+    if (p_iconFont == nullptr)
+    {
+        Log::coreCritical("Could not load GUI Icon font: %s\n",
+                          k_defaultIconFontPath.c_str());
+    }
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();

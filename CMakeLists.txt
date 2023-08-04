@@ -289,6 +289,9 @@ target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/KHR")
 #stb_mage
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/stb_image")
 
+#symbol font header
+target_include_directories(nimbus PUBLIC "${VENDOR_PATH}/IconFontCppHeaders")
+
 
 # #########################
 # Self Compiler/Linker flags
@@ -336,6 +339,8 @@ if(NIMBUS_BUILD_FELIX)
     target_link_libraries(felix PRIVATE nimbus)
 
     target_include_directories(felix PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
+    target_include_directories(felix PRIVATE "${CMAKE_CURRENT_LIST_DIR}/felix/include")
+
 
     # #########################
     # Felix Compiler/Linker flags

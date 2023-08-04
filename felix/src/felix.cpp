@@ -1,5 +1,10 @@
 #include "nimbus.hpp"
 #include "nimbus/core/entry.hpp"
+#include "panels/viewportPanel.hpp"
+#include "panels/renderStatsPanel.hpp"
+#include "panels/cameraMenuPanel.hpp"
+#include "panels/sceneHierarchyPanel.hpp"
+
 
 namespace nimbus
 {
@@ -143,9 +148,7 @@ class editCameraController : public EntityLogic
 // Main application implementation is in this layer
 ////////////////////////////////////////////////////////////////////////////////
 class FelixLayer : public Layer
-{
-    inline static const uint32_t k_frameHistoryLength = 60 * 2 + 1;
-   
+{   
    public:
 
     ///////////////////////////
@@ -157,14 +160,13 @@ class FelixLayer : public Layer
     ///////////////////////////
     // Scene
     ///////////////////////////
-    ref<Scene>   m_scene;
+    ref<Scene>   mp_scene;
 
     ///////////////////////////
     // Viewport Info
     ///////////////////////////
     glm::vec2 m_viewportSize    = {800, 600};
     float     m_aspectRatio     = 800 / 600;
-    bool      m_wireFrame       = false;
     bool      m_viewportFocused = false;
     bool      m_viewportHovered = false;
 
@@ -185,12 +187,13 @@ class FelixLayer : public Layer
     ref<Camera> mp_editCamera3D;
     ref<Camera> mp_currCamera;
 
-
     ///////////////////////////
-    // Performance monitors
+    // Panels
     ///////////////////////////
-    std::vector<float> m_frameTimes_ms;
-
+    scope<ViewportPanel>       mp_viewportPanel;
+    scope<RenderStatsPanel>    mp_renderStatsPanel;
+    scope<SceneHeirarchyPanel> mp_sceneHierarchyPanel;
+    scope<CameraMenuPanel>     mp_cameraMenuPanel;
 
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
@@ -204,18 +207,16 @@ class FelixLayer : public Layer
         mp_appWinRef = &mp_appRef->getWindow();
         mp_appRef->setDrawPeriodLimit(0.0f);
 
-        m_scene = makeRef<Scene>();
-
-        m_frameTimes_ms.reserve(k_frameHistoryLength);
-
+        mp_scene = makeRef<Scene>();
 
         ///////////////////////////
         // Cameras
         ///////////////////////////
         //scene camera
-        auto sceneCameraEntity = m_scene->addEntity("Scene Camera");
+        auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
         mp_sceneCamera2D       = makeRef<Camera>(false);
         mp_sceneCamera2D->setAspectRatio(m_aspectRatio);
+        mp_sceneCamera2D->setSpeed(5.0f);
 
         mp_sceneCamera2DCmp
             = &(sceneCameraEntity.addComponent<CameraCmp>(mp_sceneCamera2D));
@@ -227,11 +228,13 @@ class FelixLayer : public Layer
             .bind<sceneCameraController>();
 
         // edit camera
-        auto editCameraEntity = m_scene->addEntity("Edit Camera");
+        auto editCameraEntity = mp_scene->addEntity("Edit Camera");
         mp_editCamera3D       = makeRef<Camera>(true);
         mp_editCamera3D->setAspectRatio(m_aspectRatio);
         mp_editCamera3D->setPosition({0.0f, 0.0f, 2.4125f});
         mp_editCamera3D->setYaw(-90.0f);
+        mp_editCamera3D->setSpeed(5.0f);
+
         mp_editCamera3DCmp
             = &(editCameraEntity.addComponent<CameraCmp>(mp_editCamera3D));
         mp_editCamera3DCmp->renderWith = false;
@@ -244,9 +247,20 @@ class FelixLayer : public Layer
         mp_currCamera = mp_sceneCamera2D;
 
         ///////////////////////////
+        // Panels
+        ///////////////////////////
+        mp_viewportPanel    = makeScope<ViewportPanel>();
+        mp_renderStatsPanel = makeScope<RenderStatsPanel>();
+        mp_sceneHierarchyPanel = makeScope<SceneHeirarchyPanel>(mp_scene);
+        mp_cameraMenuPanel  = makeScope<CameraMenuPanel>(mp_sceneCamera2D.get(),
+                                                        mp_editCamera3D.get());
+
+        
+
+        ///////////////////////////
         // Test Sprite
         ///////////////////////////
-        auto quadEntity = m_scene->addEntity("Test Sprite");
+        auto quadEntity = mp_scene->addEntity("Test Sprite");
         auto& transformCmp = quadEntity.addComponent<TransformCmp>();
         transformCmp.setScale({0.5f, 0.5f, 1.0f});
         auto& spriteCmp = quadEntity.addComponent<SpriteCmp>();
@@ -264,7 +278,7 @@ class FelixLayer : public Layer
         format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
         format.kerning = 0.0f;
 
-        auto  textEntity   = m_scene->addEntity("Hello Text");
+        auto  textEntity   = mp_scene->addEntity("Hello Text");
         auto& transformCmp2 = textEntity.addComponent<TransformCmp>();
         transformCmp2.setScale({0.25f, 0.25f, 1.0f});
         transformCmp2.setTranslationX(-0.25f);
@@ -320,7 +334,7 @@ class FelixLayer : public Layer
 
 
         // TODO: this is part of stop/start
-        m_scene->onStart();
+        mp_scene->onStart();
 
     }
 
@@ -332,7 +346,7 @@ class FelixLayer : public Layer
     {
         if (m_viewportHovered)
         {
-            m_scene->onUpdate(deltaTime);
+            mp_scene->onUpdate(deltaTime);
         }
     }
 
@@ -341,16 +355,16 @@ class FelixLayer : public Layer
         mp_frameBuffer->bind();
         GraphicsApi::clear();
 
-        if (m_wireFrame != GraphicsApi::getWireframe())
+        if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
         {
-            GraphicsApi::setWireframe(m_wireFrame);
+            GraphicsApi::setWireframe(mp_renderStatsPanel->m_wireFrame);
         }
 
         Renderer2D::s_resetStats();
-        m_scene->onDraw(deltaTime);
+        mp_scene->onDraw(deltaTime);
 
         // turn it off for the blit
-        if (m_wireFrame)
+        if (mp_renderStatsPanel->m_wireFrame)
         {
             GraphicsApi::setWireframe(false);
         }
@@ -365,22 +379,19 @@ class FelixLayer : public Layer
         NM_UNUSED(event);
     }
 
-    virtual void onGuiUpdate(float deltaTime) override
+    void _makeDockspace()
     {
-        NM_UNUSED(deltaTime);
-
-        // Note: Switch this to true to enable dockspace
-        static bool               dockspaceOpen             = true;
-        static bool               opt_fullscreen_persistant = true;
-        bool                      opt_fullscreen  = opt_fullscreen_persistant;
-        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+        static bool               dockspaceOpen           = true;
+        static bool               optFullscreenPersistant = true;
+        bool                      optFullscreen  = optFullscreenPersistant;
+        static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
 
         // We are using the ImGuiWindowFlags_NoDocking flag to make the parent
         // window not dockable into, because it would be confusing to have two
         // docking targets within each others.
-        ImGuiWindowFlags window_flags
+        ImGuiWindowFlags windowFlags
             = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        if (opt_fullscreen)
+        if (optFullscreen)
         {
             ImGuiViewport* viewport = ImGui::GetMainViewport();
             ImGui::SetNextWindowPos(viewport->Pos);
@@ -388,18 +399,18 @@ class FelixLayer : public Layer
             ImGui::SetNextWindowViewport(viewport->ID);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            window_flags
+            windowFlags
                 |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
                    | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus
-                            | ImGuiWindowFlags_NoNavFocus;
+            windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus
+                           | ImGuiWindowFlags_NoNavFocus;
         }
 
         // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will
         // render our background and handle the pass-thru hole, so we ask
         // Begin() to not render a background.
-        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-            window_flags |= ImGuiWindowFlags_NoBackground;
+        if (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
+            windowFlags |= ImGuiWindowFlags_NoBackground;
 
         // Important: note that we proceed even if Begin() returns false (aka
         // window is collapsed). This is because we want to keep our DockSpace()
@@ -409,317 +420,86 @@ class FelixLayer : public Layer
         // docking, otherwise any change of dockspace/settings would lead to
         // windows being stuck in limbo and never being visible.
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace", &dockspaceOpen, window_flags);
+        ImGui::Begin("DockSpace", &dockspaceOpen, windowFlags);
         ImGui::PopStyleVar();
-        ImGui::PopStyleVar(2);
+        if (optFullscreen)
+        {
+            ImGui::PopStyleVar(2);
+        }
 
-        // DockSpace
         ImGuiIO&    io          = ImGui::GetIO();
         ImGuiStyle& style       = ImGui::GetStyle();
         float       minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x   = 370.0f;
+        style.WindowMinSize.x   = 250.0f;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
-            ImGuiID dockspace_id = ImGui::GetID("FelixDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+            ImGuiID dockspaceId = ImGui::GetID("FelixDockSpace");
+            ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), dockspaceFlags);
         }
-
         style.WindowMinSize.x = minWinSizeX;
+    }
 
+    virtual void onGuiUpdate(float deltaTime) override
+    {
         // Bounds used for some calculations
         Camera::Bounds worldBounds = mp_currCamera->getVisibleWorldBounds();
 
         ///////////////////////////
-        // Render Stats
+        // Dockspace
         ///////////////////////////
-        char buf[128];
-        snprintf(buf,
-                 128,
-                 "%.02f ms/frame (%.02f FPS)###RenderStatus",
-                 deltaTime * 1000.0f,
-                 mp_appWinRef->m_fps);
-
-        ImGui::Begin(buf,
-                     0,
-                     ImGuiWindowFlags_AlwaysAutoResize
-                         | ImGuiWindowFlags_NoFocusOnAppearing);
-
-        bool newVsyncMode = mp_appWinRef->getVSync();
-        if (ImGui::Checkbox("Vertical Sync", &newVsyncMode))
-        {
-            mp_appWinRef->setVSync(newVsyncMode);
-        }
-
-        ImGui::SameLine();
-
-        ImGui::Checkbox("Wireframe Mode", &m_wireFrame);
-
-
-        // this is kinda inefficient, could draw over instead of
-        // scroll?
-        if (m_frameTimes_ms.size() == m_frameTimes_ms.capacity())
-        {
-            m_frameTimes_ms.erase(m_frameTimes_ms.begin());
-        }
-        m_frameTimes_ms.push_back(deltaTime * 1000.0);
-
-        ImGui::PlotLines("Frame Times",
-                         m_frameTimes_ms.data(),
-                         m_frameTimes_ms.size(),
-                         0,
-                         nullptr,
-                         0.0f,
-                         20.0f,
-                         ImVec2(0, 0),
-                         sizeof(float));
-
-        if (ImGui::CollapsingHeader("Renderer2D Stats"))
-        {
-            Renderer2D::Stats stats = Renderer2D::s_getStats();
-
-            ImGui::PushItemWidth(60.0f);
-            ImGui::LabelText("Draw Calls", "%i", stats.drawCalls);
-            ImGui::LabelText("Quads", "%i", stats.quads);
-            ImGui::LabelText("Characters", "%i", stats.characters);
-
-            ImGui::LabelText("Total Vertices", "%i", stats.totalVertices);
-            ImGui::LabelText(
-                "Quad Vertices Available", "%i", stats.quadVertsAvail);
-            ImGui::LabelText(
-                "Text Vertices Available", "%i", stats.textVertsAvail);
-
-            ImGui::PopItemWidth();
-        }
-
-        if (ImGui::CollapsingHeader("Layers"))
-        {
-            if (ImGui::BeginTable("Layer Order", 2))
-            {
-                ImGui::TableSetupColumn("#");
-                ImGui::TableSetupColumn("Name");
-                ImGui::TableHeadersRow();
-
-                auto layerNames = mp_appRef->getLayerDeck().getLayerNames();
-                for (uint32_t i = 0; i < layerNames.size(); i++)
-                {
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%d", i);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%s", layerNames[i]->c_str());
-                }
-
-                ImGui::EndTable();
-            }
-        }
-
-        ImGui::End();
+        _makeDockspace();
 
         ///////////////////////////
         // Viewport
         ///////////////////////////
-        ImGui::SetNextWindowSize(ImVec2(800.0, 600.0), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Viewport");
-
-        auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-        auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-        auto viewportOffset    = ImGui::GetWindowPos();
-
-        glm::vec2 m_viewPortRegion[2];
-
-        m_viewPortRegion[0] = {viewportMinRegion.x + viewportOffset.x,
-                               viewportMinRegion.y + viewportOffset.y};
-        m_viewPortRegion[1] = {viewportMaxRegion.x + viewportOffset.x,
-                               viewportMaxRegion.y + viewportOffset.y};
-
-        m_viewportFocused = ImGui::IsWindowFocused();
-        m_viewportHovered = ImGui::IsWindowHovered();
-
-        mp_appRef->guiSubsystemCaptureEvents(!m_viewportHovered);
-
-        ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-
-        if (viewportPanelSize.x != m_viewportSize.x
-            || viewportPanelSize.y != m_viewportSize.y)
+        mp_viewportPanel->onDraw(mp_screenBuffer, worldBounds);
+        m_viewportFocused = mp_viewportPanel->m_viewportFocused;
+        m_viewportHovered = mp_viewportPanel->m_viewportHovered;
+        if (mp_viewportPanel->wasResized())
         {
-            // we need to resize
-            m_viewportSize = {viewportPanelSize.x, viewportPanelSize.y};
+            // we need to resize some stuff
+            m_viewportSize = mp_viewportPanel->m_viewportSize;
             m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
 
             mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
             mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
 
-            m_scene->onResize(m_viewportSize.x, m_viewportSize.y);
+            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
         }
-
-        uint64_t textureID = mp_screenBuffer->getTextureId();
-        
-        ImGui::Image(reinterpret_cast<void*>(textureID),
-                     ImVec2{m_viewportSize.x, m_viewportSize.y},
-                     ImVec2{0, 1},
-                     ImVec2{1, 0});
-
-
-        float titleBarHeight
-            = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2;
-
-        ///////////////////////////
-        // Draw the cursor pos
-        ///////////////////////////
-        if (m_viewportHovered)
-        {
-            ImVec2 mousePos = ImGui::GetMousePos();
-
-            // Get the top-left corner of
-            // the current ImGui window
-            ImVec2 windowPos = ImGui::GetWindowPos();
-
-            glm::vec2 mousePosInViewportPix
-                = {mousePos.x - windowPos.x,
-                   mousePos.y - windowPos.y - titleBarHeight};
-
-            glm::vec2 mousePosInViewport = util::mapPixToScreen(
-                {mousePosInViewportPix.x, mousePosInViewportPix.y},
-                worldBounds.topLeft.x,
-                worldBounds.topRight.x,
-                worldBounds.topLeft.y,
-                worldBounds.bottomLeft.y,
-                m_viewportSize.x,
-                m_viewportSize.y);
-
-
-            // draw mouse position over image
-            ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-            char posString[32];
-
-            snprintf(posString,
-                     sizeof(posString),
-                     "X:%.04f, Y:%.04f",
-                     mousePosInViewport.x,
-                     mousePosInViewport.y);
-
-            ImVec2 texPos = {windowPos.x + m_viewportSize.x - 95.0f,
-                             windowPos.y + m_viewportSize.y};
-
-            // Draw the text on the draw list
-            drawList->AddText(texPos, IM_COL32(255, 255, 255, 255), posString);
-        }
-
-        ImGui::End();  // viewport
 
         ///////////////////////////
         // Camera Menu
         ///////////////////////////
-        ImGui::Begin("Camera Menu", 0, ImGuiWindowFlags_AlwaysAutoResize);
+        mp_cameraMenuPanel->onDraw(
+            mp_currCamera.get(), worldBounds, m_viewportSize);
 
-
-        if(ImGui::Button("Reset Camera"))
+        // TODO: remove
+        if (mp_cameraMenuPanel->m_useEditorCamera)
         {
-            if(mp_currCamera == mp_editCamera3D)
-            {
-                mp_currCamera->setPosition({0.0f, 0.0f, 2.4125f});
-                mp_currCamera->setYaw(-90.0f);
-                mp_currCamera->setPitch(0.0f);
-                mp_currCamera->setFov(45.0f);
-            }
-            else
-            {
-                mp_currCamera->setPosition({0.0f, 0.0f, 0.0f});
-                mp_currCamera->setYaw(0.0f);
-                mp_currCamera->setPitch(0.0f);
-                mp_currCamera->setZoom(1.0f);
-            }
+            mp_currCamera                   = mp_editCamera3D;
+            mp_editCamera3DCmp->renderWith  = true;
+            mp_sceneCamera2DCmp->renderWith = false;
         }
-        
-
-        bool editorCamera = mp_currCamera == mp_editCamera3D;
-        if (ImGui::Checkbox("Editor Camera", &editorCamera))
+        else
         {
-            if (editorCamera)
-            {
-                mp_currCamera                   = mp_editCamera3D;
-                mp_editCamera3DCmp->renderWith  = true;
-                mp_sceneCamera2DCmp->renderWith = false;
-            }
-            else
-            {
-                mp_currCamera                   = mp_sceneCamera2D;
-                mp_editCamera3DCmp->renderWith  = false;
-                mp_sceneCamera2DCmp->renderWith = true;
-            }
+            mp_currCamera                   = mp_sceneCamera2D;
+            mp_editCamera3DCmp->renderWith  = false;
+            mp_sceneCamera2DCmp->renderWith = true;
         }
 
-        ImGui::Text("Viewport dimensions %i, %i (%f)",
-                    (int)m_viewportSize.x,
-                    (int)m_viewportSize.y,
-                    mp_currCamera->getAspectRatio());
+        ///////////////////////////
+        // Render Stats
+        ///////////////////////////
+        mp_renderStatsPanel->onDraw(deltaTime);
 
-        glm::vec3 cameraPos = mp_currCamera->getPosition();
 
-        if (ImGui::DragFloat3("Camera Pos", glm::value_ptr(cameraPos), 0.1f))
-            ;
-        {
-            mp_currCamera->setPosition(cameraPos);
-        }
-
-        ImGui::Spacing();
-
-        ImGui::Text("Pitch %.02f, Yaw %.02f, Zoom %.02f, FOV %.02f",
-                    mp_currCamera->getPitch(),
-                    mp_currCamera->getYaw(),
-                    mp_currCamera->getZoom(),
-                    mp_currCamera->getFov());
-
-        if (ImGui::CollapsingHeader("Visible World Bounds"))
-        {
-
-            ImGui::BeginTable(
-                "Visible World Bounds", 2, ImGuiTableFlags_Borders);
-
-            // Row 1
-            ImGui::TableNextRow();
-
-            // Column 1, Row 1
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("(%.02f, %.02f %.02f)",
-                        worldBounds.topLeft.x,
-                        worldBounds.topLeft.y,
-                        worldBounds.topLeft.z);
-
-            // Column 2, Row 1
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("(%.02f, %.02f %.02f)",
-                        worldBounds.topRight.x,
-                        worldBounds.topRight.y,
-                        worldBounds.topRight.z);
-
-            // Row 2
-            ImGui::TableNextRow();
-
-            // Column 1, Row 2
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("(%.02f, %.02f %.02f)",
-                        worldBounds.bottomLeft.x,
-                        worldBounds.bottomLeft.y,
-                        worldBounds.bottomLeft.z);
-
-            // Column 2, Row 2
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("(%.02f, %.02f %.02f)",
-                        worldBounds.bottomRight.x,
-                        worldBounds.bottomRight.y,
-                        worldBounds.bottomLeft.z);
-
-            // End the table
-            ImGui::EndTable();
-        }
-
-        ImGui::End();  // camera menu
+        ///////////////////////////
+        // Scene Heirarchy
+        ///////////////////////////
+        mp_sceneHierarchyPanel->onDraw();
 
         ImGui::End();  // dockspace
     }
-
 };
 
 ////////////////////////////////////////////////////////////////////////////////
