@@ -68,6 +68,12 @@ void Camera::processViewUpdate(const glm::vec2& offset, bool constrainPitch)
     m_yaw += offset.x * m_sensitivity;
     m_pitch += offset.y * m_sensitivity;
 
+    // clamp yaw so we don't start losing precision
+    if(m_yaw > 360.0f || m_yaw < -360.0f)
+    {
+        m_yaw = 0.0f;
+    }
+
     // make sure that when pitch is out of bounds, screen doesn't get
     // flipped
     if (constrainPitch)

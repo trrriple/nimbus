@@ -96,27 +96,63 @@ class SceneHeirarchyPanel
 
     void _drawComponents(Entity entity)
     {
+        
+        ///////////////////////////
+        // Name  Component
+        ///////////////////////////
         if(entity.hasComponent<NameCmp>())
         {
-            auto& name = entity.getComponent<NameCmp>().name;
-
-            strncpy_s(m_scratch, name.c_str(), name.length());
-
-            if (ImGui::InputText("Name", m_scratch, sizeof(m_scratch)))
+            if (ImGui::TreeNodeEx("Name", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                name = std::string(m_scratch);
+                auto& name = entity.getComponent<NameCmp>().name;
+
+                strncpy_s(m_scratch, name.c_str(), name.length());
+
+                if (ImGui::InputText("##Name", m_scratch, sizeof(m_scratch)))
+                {
+                    name = std::string(m_scratch);
+                }
+                ImGui::TreePop();
             }
         }
 
+        ///////////////////////////
+        // Sprite Component
+        ///////////////////////////
+        if (entity.hasComponent<SpriteCmp>())
+        {
+            auto& spriteCmp = entity.getComponent<SpriteCmp>();
+
+            if (ImGui::TreeNodeEx("Color", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::ColorEdit4("Color",
+                                  glm::value_ptr(spriteCmp.color),
+                                  ImGuiColorEditFlags_AlphaBar
+                                      | ImGuiColorEditFlags_AlphaPreview);
+
+                ImGui::TreePop();
+            }
+        }
+
+        ///////////////////////////
+        // Text Component
+        ///////////////////////////
         if (entity.hasComponent<TextCmp>())
         {
             auto& textCmp = entity.getComponent<TextCmp>();
 
-            strncpy_s(m_scratch, textCmp.text.c_str(),  textCmp.text.length());
-
-            if (ImGui::InputTextMultiline("Text", m_scratch, sizeof(m_scratch)))
+            if (ImGui::TreeNodeEx("Text", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                textCmp.text = std::string(m_scratch);
+                strncpy_s(
+                    m_scratch, textCmp.text.c_str(), textCmp.text.length());
+
+                if (ImGui::InputTextMultiline(
+                        "##Text", m_scratch, sizeof(m_scratch)))
+                {
+                    textCmp.text = std::string(m_scratch);
+                }
+
+                ImGui::TreePop();
             }
 
             if (ImGui::TreeNodeEx("Format", ImGuiTreeNodeFlags_DefaultOpen))
@@ -139,55 +175,9 @@ class SceneHeirarchyPanel
             }
         }
 
-        if (entity.hasComponent<TransformCmp>())
-        {
-            auto& transformCmp = entity.getComponent<TransformCmp>();
-
-            if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                glm::vec3 translation = transformCmp.getTranslation();
-
-                if (ImGui::DragFloat3(
-                        "Translation", glm::value_ptr(translation), 0.01f))
-                {
-                    transformCmp.setTranslation(translation);
-                }
-
-                glm::vec3 rotation = transformCmp.getRotation();
-
-                if (ImGui::DragFloat3(
-                        "Rotation", glm::value_ptr(rotation), 0.01f))
-                {
-                    transformCmp.setRotation(rotation);
-                }
-
-                glm::vec3 scale = transformCmp.getScale();
-
-                if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f))
-                {
-                    transformCmp.setScale(scale);
-                }
-
-                ImGui::TreePop();
-            }
-        }
-
-        if (entity.hasComponent<SpriteCmp>())
-        {
-            auto& spriteCmp = entity.getComponent<SpriteCmp>();
-
-            if (ImGui::TreeNodeEx("Color", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::ColorEdit4("Color",
-                                  glm::value_ptr(spriteCmp.color),
-                                  ImGuiColorEditFlags_AlphaBar
-                                      | ImGuiColorEditFlags_AlphaPreview);
-
-                ImGui::TreePop();
-            }
-        }
-
-
+        ///////////////////////////
+        // Camera Component
+        ///////////////////////////
         if (entity.hasComponent<CameraCmp>())
         {
             auto& cameraCmp = entity.getComponent<CameraCmp>();
@@ -198,7 +188,6 @@ class SceneHeirarchyPanel
 
                 int currentType
                     = static_cast<int>(cameraCmp.p_camera->getType());
-
                 if (ImGui::Combo("Type",
                                  &currentType,
                                  cameraTypes,
@@ -213,6 +202,53 @@ class SceneHeirarchyPanel
                         cameraCmp.p_camera->setType(Camera::Type::PERSPECTIVE);
                     }
                 }
+
+
+                bool primary = cameraCmp.primary;
+                if (ImGui::Checkbox("Primary", &primary))
+                {
+                    // if this is the primary camera, disable primary
+                    // for any other camera that has it
+                    if (primary)
+                    {
+                        auto cameraView
+                            = mp_sceneContext->m_registry.view<CameraCmp>();
+
+                        for (auto entity : cameraView)
+                        {
+                            auto& cameraCmp2
+                                = cameraView.get<CameraCmp>(entity);
+
+                            cameraCmp2.primary = false;
+                        }
+                    }
+                }
+
+                // now set this one to the select state
+                // important this happens after because we just cleared
+                // the primary state on all camera components
+                cameraCmp.primary = primary;
+
+                ImGui::Checkbox("Fixed Aspect", &cameraCmp.fixedAspect);
+
+                if (cameraCmp.fixedAspect)
+                {
+                    float aspect = cameraCmp.p_camera->getAspectRatio();
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(100.0f);
+                    if (ImGui::DragFloat("##Aspect", &aspect, .001f))
+                    {
+                        cameraCmp.p_camera->setAspectRatio(aspect);
+                    }
+                }
+
+                auto position = cameraCmp.p_camera->getPosition();
+                if (ImGui::DragFloat3(
+                        "Position", glm::value_ptr(position), 0.01f))
+                {
+                    cameraCmp.p_camera->setPosition(position);
+                }
+
 
                 if (currentType == 0)
                 {
@@ -242,28 +278,42 @@ class SceneHeirarchyPanel
                 if(ImGui::DragFloat("Near Clip", &nearClip, 0.1f))
                 {
                     cameraCmp.p_camera->setNearClip(nearClip);
-                }
+                }              
 
-                auto position = cameraCmp.p_camera->getPosition();
-                ImGui::Checkbox("Primary", &cameraCmp.primary);
+                ImGui::TreePop();
+            }
+        }
 
-                ImGui::Checkbox("Fixed Aspect", &cameraCmp.fixedAspect);
+        ///////////////////////////
+        // Transform Component
+        ///////////////////////////
+        if (entity.hasComponent<TransformCmp>())
+        {
+            auto& transformCmp = entity.getComponent<TransformCmp>();
 
-                if(cameraCmp.fixedAspect)
-                {
-                    float aspect = cameraCmp.p_camera->getAspectRatio();
-                    ImGui::SameLine();
-                    ImGui::SetNextItemWidth(100.0f);
-                    if (ImGui::DragFloat("##Aspect", &aspect, .001f))
-                    {
-                        cameraCmp.p_camera->setAspectRatio(aspect);
-                    }
-                }
+            if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                glm::vec3 translation = transformCmp.getTranslation();
 
                 if (ImGui::DragFloat3(
-                        "Position", glm::value_ptr(position), 0.01f))
+                        "Translation", glm::value_ptr(translation), 0.01f))
                 {
-                    cameraCmp.p_camera->setPosition(position);
+                    transformCmp.setTranslation(translation);
+                }
+
+                glm::vec3 rotation = transformCmp.getRotation();
+
+                if (ImGui::DragFloat3(
+                        "Rotation", glm::value_ptr(rotation), 0.01f))
+                {
+                    transformCmp.setRotation(rotation);
+                }
+
+                glm::vec3 scale = transformCmp.getScale();
+
+                if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f))
+                {
+                    transformCmp.setScale(scale);
                 }
 
                 ImGui::TreePop();

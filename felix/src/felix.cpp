@@ -146,6 +146,9 @@ class FelixLayer : public Layer
         mp_appWinRef = &mp_appRef->getWindow();
         mp_appRef->setDrawPeriodLimit(0.00334f);
 
+        GraphicsApi::setDepthTest(false);
+
+
         mp_scene = makeRef<Scene>();
 
         ///////////////////////////
@@ -187,11 +190,17 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Test Sprite
         ///////////////////////////
-        auto quadEntity = mp_scene->addEntity("Test Sprite");
-        auto& transformCmp = quadEntity.addComponent<TransformCmp>();
-        transformCmp.setScale({0.5f, 0.5f, 1.0f});
-        auto& spriteCmp = quadEntity.addComponent<SpriteCmp>();
-        spriteCmp.color = {0.0f, 1.0f, 0.0f, 1.0f};
+        auto spriteEntity1 = mp_scene->addEntity("Test Sprite 1");
+        auto& transformCmp1 = spriteEntity1.addComponent<TransformCmp>();
+        transformCmp1.setScale({0.5f, 0.5f, 1.0f});
+        auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
+        spriteCmp1.color = {0.0f, 1.0f, 0.0f, 1.0f};
+
+        auto spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
+        auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
+        transformCmp2.setScale({0.75f, 0.75f, 1.0f});
+        auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
+        spriteCmp2.color = {1.9f, 0.0f, 0.0f, 1.0f};
 
         ///////////////////////////
         // Text text
@@ -205,11 +214,11 @@ class FelixLayer : public Layer
         format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
         format.kerning = 0.0f;
 
-        auto  textEntity   = mp_scene->addEntity("Test Text");
-        auto& transformCmp2 = textEntity.addComponent<TransformCmp>();
-        transformCmp2.setScale({0.25f, 0.25f, 1.0f});
-        transformCmp2.setTranslationX(-0.4f);
-        transformCmp2.setTranslationY(0.30f);
+        auto  textEntity    = mp_scene->addEntity("Test Text");
+        auto& transformCmp3 = textEntity.addComponent<TransformCmp>();
+        transformCmp3.setScale({0.25f, 0.25f, 1.0f});
+        transformCmp3.setTranslationX(-0.4f);
+        transformCmp3.setTranslationY(0.30f);
         auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
 
         ///////////////////////////
@@ -305,7 +314,6 @@ class FelixLayer : public Layer
         }
 
         Renderer2D::s_resetStats();
-        // TODO -> seelct draw call depending on "play"
 
         if (m_sceneState == State::PAUSE)
         {
@@ -570,7 +578,7 @@ class FelixLayer : public Layer
 class Felix : public Application
 {
    public:
-    Felix() : Application("Felix", 1280, 720)
+    Felix() : Application("Felix", 1920, 1080)
     {
         Application::insertLayer(makeRef<FelixLayer>());
     }
