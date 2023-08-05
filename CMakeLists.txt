@@ -292,6 +292,10 @@ target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/stb_image")
 #symbol font header
 target_include_directories(nimbus PUBLIC "${VENDOR_PATH}/IconFontCppHeaders")
 
+#L2DFileDialog
+target_include_directories(nimbus PUBLIC "${VENDOR_PATH}/L2DFileDialog")
+
+
 
 # #########################
 # Self Compiler/Linker flags

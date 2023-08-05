@@ -102,11 +102,14 @@ GlTexture::GlTexture(const Type         type,
             GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, s_wrapType(m_spec.wrapTypeR));
 
         stbi_image_free(data);
+
+        m_loaded = true;
     }
     else
     {
         Log::coreError("Texture failed to load at path: %s", m_path.c_str());
         stbi_image_free(data);
+        m_loaded = false;
     }
 }
 

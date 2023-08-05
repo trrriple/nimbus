@@ -9,6 +9,12 @@
 #include "nimbus/renderer/texture.hpp"
 #include "IconsFontAwesome6.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wformat-security"
+#include "L2DFileDialog.h"
+#pragma GCC diagnostic pop
+
 #include <filesystem>
 
 namespace nimbus
@@ -16,8 +22,10 @@ namespace nimbus
 
 class SceneHeirarchyPanel
 {
-   public:
+   private:
+    ref<Texture> mp_checkerboardTex = nullptr;
 
+   public:
     SceneHeirarchyPanel(ref<Scene>& p_scene)
     {
         mp_appRef    = &Application::s_get();
@@ -25,7 +33,8 @@ class SceneHeirarchyPanel
 
         mp_sceneContext = p_scene;
 
-
+        mp_checkerboardTex = ResourceManager::s_get().loadTexture(
+            Texture::Type::DIFFUSE, "../resources/textures/checkerboard.png");
     }
     ~SceneHeirarchyPanel()
     {
@@ -39,7 +48,7 @@ class SceneHeirarchyPanel
     void onDraw()
     {
         ImGui::Begin("Heirarchy");
-        
+
         for (auto [entityHandle] :
              mp_sceneContext->m_registry.storage<entt::entity>().each())
         {
@@ -48,8 +57,8 @@ class SceneHeirarchyPanel
         }
 
         // clear selection when clicked off of in window
-        if (m_selectionContext &&
-            ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+        if (m_selectionContext && ImGui::IsMouseDown(0)
+            && ImGui::IsWindowHovered())
         {
             m_selectionContext = {};
         }
@@ -60,9 +69,8 @@ class SceneHeirarchyPanel
             _drawComponents(m_selectionContext);
         }
         ImGui::End();
- 
 
-        ImGui::End(); // Heirarchy
+        ImGui::End();  // Heirarchy
     }
 
    private:
@@ -86,8 +94,10 @@ class SceneHeirarchyPanel
 
         auto name = entity.getComponent<NameCmp>().name;
 
-        if (ImGui::TreeNodeEx(
-                (void*)entity.getId(), flags, ICON_FA_CUBES " %s", name.c_str()))
+        if (ImGui::TreeNodeEx((void*)entity.getId(),
+                              flags,
+                              ICON_FA_CUBES " %s",
+                              name.c_str()))
         {
             ImGui::TreePop();
         }
@@ -98,30 +108,329 @@ class SceneHeirarchyPanel
         }
     }
 
+    void _drawNameCmp(Entity entity)
+    {
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
+                                          | ImGuiTreeNodeFlags_DefaultOpen
+                                          | ImGuiTreeNodeFlags_Framed;
+
+        if (ImGui::TreeNodeEx("Name", flags))
+        {
+            auto& name = entity.getComponent<NameCmp>().name;
+
+            strncpy_s(m_scratch, name.c_str(), name.length());
+
+            if (ImGui::InputText("##Name", m_scratch, sizeof(m_scratch)))
+            {
+                name = std::string(m_scratch);
+            }
+            ImGui::TreePop();
+        }
+    }
+
+    void _drawSpriteCmp(Entity entity)
+    {
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
+                                          | ImGuiTreeNodeFlags_DefaultOpen
+                                          | ImGuiTreeNodeFlags_Framed;
+
+        static char* fileDialogBuffer = nullptr;
+        static char  path[500]        = "";
+
+        auto& spriteCmp = entity.getComponent<SpriteCmp>();
+
+        if (ImGui::TreeNodeEx("Color", flags))
+        {
+            ImGui::ColorEdit4("Color",
+                              glm::value_ptr(spriteCmp.color),
+                              ImGuiColorEditFlags_AlphaBar
+                                  | ImGuiColorEditFlags_AlphaPreview);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNodeEx("Texture", flags))
+        {
+            // Draw the loaded texture as a button image
+            void* textureId = nullptr;
+            if (spriteCmp.texture == nullptr)
+            {
+                textureId
+                    = reinterpret_cast<void*>(mp_checkerboardTex->getId());
+            }
+            else
+            {
+                textureId = reinterpret_cast<void*>(spriteCmp.texture->getId());
+            }
+
+            ImGui::BeginTable("Textures",
+                              2,
+                              ImGuiTableFlags_SizingStretchSame
+                                  | ImGuiTableFlags_NoHostExtendX);
+            ImGui::TableSetupColumn(
+                "TexImage", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+            ImGui::TableSetupColumn("Options",
+                                    ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            if (ImGui::ImageButton(textureId, {50, 50}))
+            {
+                // open the file dialog
+                fileDialogBuffer             = path;
+                FileDialog::file_dialog_open = true;
+                FileDialog::file_dialog_open_type
+                    = FileDialog::FileDialogType::OpenFile;
+            }
+            // tooltip for button
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::Text(
+                    "Drag and drop texture files here, or click to browse");
+                ImGui::EndTooltip();
+            }
+
+            // support drag and drop files onto the image button
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload
+                    = ImGui::AcceptDragDropPayload("DND_FILE"))
+                {
+                    const char*  path    = (const char*)payload->Data;
+                    ref<Texture> texture = ResourceManager::s_get().loadTexture(
+                        Texture::Type::DIFFUSE, path, false);
+
+                    if (texture)
+                    {
+                        spriteCmp.texture = texture;
+                    }
+                    else
+                    {
+                        Log::warn("Could not load texture %s", path);
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Albedo");
+            ImGui::DragFloat(
+                "Tiling Factor", &spriteCmp.tilingFactor, 0.01f, 0.0f);
+
+            ImGui::EndTable();
+
+            ImGui::TreePop();
+        }
+
+        if (FileDialog::file_dialog_open)
+        {
+            if (FileDialog::ShowFileDialog(&FileDialog::file_dialog_open,
+                                           fileDialogBuffer,
+                                           sizeof(fileDialogBuffer),
+                                           FileDialog::file_dialog_open_type))
+            {
+                ref<Texture> texture = ResourceManager::s_get().loadTexture(
+                    Texture::Type::DIFFUSE, fileDialogBuffer, false);
+
+                if (texture)
+                {
+                    spriteCmp.texture = texture;
+                }
+                else
+                {
+                    Log::warn("Could not load texture %s", path);
+                }
+            }
+        }
+    }
+
+    void _drawTextCmp(Entity entity)
+    {
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
+                                          | ImGuiTreeNodeFlags_DefaultOpen
+                                          | ImGuiTreeNodeFlags_Framed;
+        auto& textCmp = entity.getComponent<TextCmp>();
+
+        if (ImGui::TreeNodeEx("Text", flags))
+        {
+            strncpy_s(m_scratch, textCmp.text.c_str(), textCmp.text.length());
+
+            if (ImGui::InputTextMultiline(
+                    "##Text", m_scratch, sizeof(m_scratch)))
+            {
+                textCmp.text = std::string(m_scratch);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNodeEx("Format", flags))
+        {
+            ImGui::ColorEdit4("Fg Color",
+                              glm::value_ptr(textCmp.format.fgColor),
+                              ImGuiColorEditFlags_AlphaBar
+                                  | ImGuiColorEditFlags_AlphaPreview);
+
+            ImGui::ColorEdit4("Bg Color",
+                              glm::value_ptr(textCmp.format.bgColor),
+                              ImGuiColorEditFlags_AlphaBar
+                                  | ImGuiColorEditFlags_AlphaPreview);
+
+            ImGui::DragFloat("Kerning", &textCmp.format.kerning, 0.01f);
+            ImGui::DragFloat("Leading", &textCmp.format.lineSpacing, 0.01f);
+
+            ImGui::TreePop();
+        }
+    }
+
+    void _drawCameraCmp(Entity entity)
+    {
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
+                                          | ImGuiTreeNodeFlags_DefaultOpen
+                                          | ImGuiTreeNodeFlags_Framed;
+
+        auto& cameraCmp = entity.getComponent<CameraCmp>();
+
+        if (ImGui::TreeNodeEx("Camera", flags))
+        {
+            const char* cameraTypes[] = {"Orthographic", "Perspective"};
+
+            int currentType = static_cast<int>(cameraCmp.p_camera->getType());
+            if (ImGui::Combo("Type",
+                             &currentType,
+                             cameraTypes,
+                             IM_ARRAYSIZE(cameraTypes)))
+            {
+                if (currentType == 0)
+                {
+                    cameraCmp.p_camera->setType(Camera::Type::ORTHOGRAPHIC);
+                }
+                else
+                {
+                    cameraCmp.p_camera->setType(Camera::Type::PERSPECTIVE);
+                }
+            }
+
+            bool primary = cameraCmp.primary;
+            if (ImGui::Checkbox("Primary", &primary))
+            {
+                // if this is the primary camera, disable primary
+                // for any other camera that has it
+                if (primary)
+                {
+                    auto cameraView
+                        = mp_sceneContext->m_registry.view<CameraCmp>();
+
+                    for (auto entity : cameraView)
+                    {
+                        auto& cameraCmp2 = cameraView.get<CameraCmp>(entity);
+
+                        cameraCmp2.primary = false;
+                    }
+                }
+            }
+
+            // now set this one to the select state
+            // important this happens after because we just cleared
+            // the primary state on all camera components
+            cameraCmp.primary = primary;
+
+            ImGui::Checkbox("Fixed Aspect", &cameraCmp.fixedAspect);
+
+            if (cameraCmp.fixedAspect)
+            {
+                float aspect = cameraCmp.p_camera->getAspectRatio();
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(100.0f);
+                if (ImGui::DragFloat("##Aspect", &aspect, .001f))
+                {
+                    cameraCmp.p_camera->setAspectRatio(aspect);
+                }
+            }
+
+            auto position = cameraCmp.p_camera->getPosition();
+
+            if (_drawVec3Control("Position", position, 0.0f, 0.01f))
+            {
+                cameraCmp.p_camera->setPosition(position);
+            }
+
+            if (currentType == 0)
+            {
+                float zoom = cameraCmp.p_camera->getZoom();
+                if (ImGui::DragFloat("Zoom", &zoom, 0.005f))
+                {
+                    cameraCmp.p_camera->setZoom(zoom);
+                }
+            }
+            else
+            {
+                float fov = cameraCmp.p_camera->getFov();
+                if (ImGui::DragFloat("FOV", &fov, 0.1f))
+                {
+                    cameraCmp.p_camera->setZoom(fov);
+                }
+            }
+
+            float farClip = cameraCmp.p_camera->getFarClip();
+            if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
+            {
+                cameraCmp.p_camera->setFarClip(farClip);
+            }
+
+            float nearClip = cameraCmp.p_camera->getNearClip();
+            if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f))
+            {
+                cameraCmp.p_camera->setNearClip(nearClip);
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    void _drawTransformCmp(Entity entity)
+    {
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
+                                          | ImGuiTreeNodeFlags_DefaultOpen
+                                          | ImGuiTreeNodeFlags_Framed;
+
+        auto& transformCmp = entity.getComponent<TransformCmp>();
+
+        if (ImGui::TreeNodeEx("Transform", flags))
+        {
+            glm::vec3 translation = transformCmp.getTranslation();
+
+            if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
+            {
+                transformCmp.setTranslation(translation);
+            }
+
+            glm::vec3 rotation = glm::degrees(transformCmp.getRotation());
+
+            if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
+            {
+                transformCmp.setRotation(glm::radians(rotation));
+            }
+
+            glm::vec3 scale = transformCmp.getScale();
+
+            if (_drawVec3Control("Scale", scale, 1.0f, 0.01f))
+            {
+                transformCmp.setScale(scale);
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
     void _drawComponents(Entity entity)
     {
-        
-         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                   | ImGuiTreeNodeFlags_DefaultOpen
-                                   | ImGuiTreeNodeFlags_Framed;
-
         ///////////////////////////
         // Name  Component
         ///////////////////////////
-        if(entity.hasComponent<NameCmp>())
+        if (entity.hasComponent<NameCmp>())
         {
-            if (ImGui::TreeNodeEx("Name", flags))
-            {
-                auto& name = entity.getComponent<NameCmp>().name;
-
-                strncpy_s(m_scratch, name.c_str(), name.length());
-
-                if (ImGui::InputText("##Name", m_scratch, sizeof(m_scratch)))
-                {
-                    name = std::string(m_scratch);
-                }
-                ImGui::TreePop();
-            }
+            _drawNameCmp(entity);
         }
 
         ///////////////////////////
@@ -129,45 +438,7 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<SpriteCmp>())
         {
-            auto& spriteCmp = entity.getComponent<SpriteCmp>();
-
-            if (ImGui::TreeNodeEx("Color", flags))
-            {
-                ImGui::ColorEdit4("Color",
-                                  glm::value_ptr(spriteCmp.color),
-                                  ImGuiColorEditFlags_AlphaBar
-                                      | ImGuiColorEditFlags_AlphaPreview);
-
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNodeEx("Texture", flags))
-            {
-                ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
-                if (ImGui::BeginDragDropTarget())
-                {
-                    if (const ImGuiPayload* payload
-                        = ImGui::AcceptDragDropPayload("DND_FILE"))
-                    {
-                        const char* path = (const char*)payload->Data;
-                        std::filesystem::path texturePath(path);
-                        ref<Texture>          texture
-                            = ResourceManager::s_get().loadTexture(
-                                Texture::Type::DIFFUSE,
-                                texturePath.string(),
-                                false);
-
-                        if (texture)
-                            spriteCmp.texture = texture;
-                        else
-                            Log::warn("Could not load texture {0}",
-                                      texturePath.filename().c_str());
-                     }
-                    ImGui::EndDragDropTarget();
-                }
-
-                ImGui::TreePop();
-            }
+            _drawSpriteCmp(entity);
         }
 
         ///////////////////////////
@@ -175,40 +446,7 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<TextCmp>())
         {
-            auto& textCmp = entity.getComponent<TextCmp>();
-
-            if (ImGui::TreeNodeEx("Text", flags))
-            {
-                strncpy_s(
-                    m_scratch, textCmp.text.c_str(), textCmp.text.length());
-
-                if (ImGui::InputTextMultiline(
-                        "##Text", m_scratch, sizeof(m_scratch)))
-                {
-                    textCmp.text = std::string(m_scratch);
-                }
-
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNodeEx("Format", flags))
-            {
-                ImGui::ColorEdit4("Fg Color",
-                                  glm::value_ptr(textCmp.format.fgColor),
-                                  ImGuiColorEditFlags_AlphaBar
-                                      | ImGuiColorEditFlags_AlphaPreview);
-
-                ImGui::ColorEdit4("Bg Color",
-                                  glm::value_ptr(textCmp.format.bgColor),
-                                  ImGuiColorEditFlags_AlphaBar
-                                      | ImGuiColorEditFlags_AlphaPreview);
-
-                ImGui::DragFloat("Kerning", &textCmp.format.kerning, 0.01f);
-                ImGui::DragFloat(
-                    "Leading", &textCmp.format.lineSpacing, 0.01f);
-
-                ImGui::TreePop();
-            }
+            _drawTextCmp(entity);
         }
 
         ///////////////////////////
@@ -216,107 +454,7 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<CameraCmp>())
         {
-            auto& cameraCmp = entity.getComponent<CameraCmp>();
-
-            if (ImGui::TreeNodeEx("Camera", flags))
-            {
-                const char* cameraTypes[] = {"Orthographic", "Perspective"};
-
-                int currentType
-                    = static_cast<int>(cameraCmp.p_camera->getType());
-                if (ImGui::Combo("Type",
-                                 &currentType,
-                                 cameraTypes,
-                                 IM_ARRAYSIZE(cameraTypes)))
-                {
-                    if (currentType == 0)
-                    {
-                        cameraCmp.p_camera->setType(Camera::Type::ORTHOGRAPHIC);
-                    }
-                    else
-                    {
-                        cameraCmp.p_camera->setType(Camera::Type::PERSPECTIVE);
-                    }
-                }
-
-
-                bool primary = cameraCmp.primary;
-                if (ImGui::Checkbox("Primary", &primary))
-                {
-                    // if this is the primary camera, disable primary
-                    // for any other camera that has it
-                    if (primary)
-                    {
-                        auto cameraView
-                            = mp_sceneContext->m_registry.view<CameraCmp>();
-
-                        for (auto entity : cameraView)
-                        {
-                            auto& cameraCmp2
-                                = cameraView.get<CameraCmp>(entity);
-
-                            cameraCmp2.primary = false;
-                        }
-                    }
-                }
-
-                // now set this one to the select state
-                // important this happens after because we just cleared
-                // the primary state on all camera components
-                cameraCmp.primary = primary;
-
-                ImGui::Checkbox("Fixed Aspect", &cameraCmp.fixedAspect);
-
-                if (cameraCmp.fixedAspect)
-                {
-                    float aspect = cameraCmp.p_camera->getAspectRatio();
-                    ImGui::SameLine();
-                    ImGui::SetNextItemWidth(100.0f);
-                    if (ImGui::DragFloat("##Aspect", &aspect, .001f))
-                    {
-                        cameraCmp.p_camera->setAspectRatio(aspect);
-                    }
-                }
-
-                auto position = cameraCmp.p_camera->getPosition();
-
-                if (_drawVec3Control("Position", position, 0.0f, 0.01f))
-                {
-                    cameraCmp.p_camera->setPosition(position);
-                }
-
-                if (currentType == 0)
-                {
-                    float zoom = cameraCmp.p_camera->getZoom();
-                    if (ImGui::DragFloat("Zoom", &zoom, 0.005f))
-                    {
-                        cameraCmp.p_camera->setZoom(zoom);
-                    }
-                }
-                else
-                {
-                    float fov = cameraCmp.p_camera->getFov();
-                    if (ImGui::DragFloat("FOV", &fov, 0.1f))
-                    {
-                        cameraCmp.p_camera->setZoom(fov);
-                    }
-                }
-
-                float farClip = cameraCmp.p_camera->getFarClip();
-                if(ImGui::DragFloat("Far Clip", &farClip, 0.1f))
-                {
-                    cameraCmp.p_camera->setFarClip(farClip);
-                }
-
-
-                float nearClip = cameraCmp.p_camera->getNearClip();
-                if(ImGui::DragFloat("Near Clip", &nearClip, 0.1f))
-                {
-                    cameraCmp.p_camera->setNearClip(nearClip);
-                }              
-
-                ImGui::TreePop();
-            }
+            _drawCameraCmp(entity);
         }
 
         ///////////////////////////
@@ -324,36 +462,11 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<TransformCmp>())
         {
-            auto& transformCmp = entity.getComponent<TransformCmp>();
-
-            if (ImGui::TreeNodeEx("Transform", flags))
-            {
-                glm::vec3 translation = transformCmp.getTranslation();
-
-                if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
-                {
-                    transformCmp.setTranslation(translation);
-                }
-
-                glm::vec3 rotation = glm::degrees(transformCmp.getRotation());
-
-                if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
-                {
-                    transformCmp.setRotation(glm::radians(rotation));
-                }
-
-                glm::vec3 scale = transformCmp.getScale();
-
-                if (_drawVec3Control("Scale", scale, 1.0f, 0.01f))
-                {
-                    transformCmp.setScale(scale);
-                }
-
-                ImGui::TreePop();
-            }
+            _drawTransformCmp(entity);
         }
     }
 
+    // custom stylized 3 input (X,Y,Z) control block
     static bool _drawVec3Control(const std::string& label,
                                  glm::vec3&         values,
                                  float              resetValue = 0.0f,
@@ -366,7 +479,7 @@ class SceneHeirarchyPanel
             = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 
         static ImVec2 buttonSize = {lineHeight - 3, lineHeight};
-        
+
         // set the size of the buttons
         bool changedX = false;
         bool changedY = false;
@@ -381,7 +494,7 @@ class SceneHeirarchyPanel
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
 
-                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
                               ImVec4{0.9f, 0.2f, 0.2f, 1.0f});

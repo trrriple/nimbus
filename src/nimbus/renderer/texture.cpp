@@ -11,7 +11,16 @@ ref<Texture> Texture::s_create(const Type         type,
                                const std::string& path,
                                const bool         flipOnLoad)
 {
-    return makeRef<GlTexture>(type, path, flipOnLoad);
+    ref<Texture> texture = makeRef<GlTexture>(type, path, flipOnLoad);
+    
+    if(texture->isLoaded())
+    {
+        return texture;
+    }
+    else
+    {
+        return  nullptr;
+    }
 }
 
 ref<Texture> Texture::s_create(const Type type, Spec& spec)

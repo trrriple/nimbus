@@ -98,26 +98,30 @@ class Texture
 
     virtual ~Texture() = default;
 
-    virtual void bind(const uint32_t glTextureUnit) const = 0;;
+    virtual void bind(const uint32_t glTextureUnit) const = 0;
 
     virtual void unbind() const = 0;
 
-    virtual void setData(void* data, uint32_t size) = 0;;
+    virtual void setData(void* data, uint32_t size) = 0;
 
     virtual uint32_t getId() const = 0;;
     
-    virtual uint32_t getWidth() const = 0;;
+    virtual uint32_t getWidth() const = 0;
 
-    virtual uint32_t getHeight() const = 0;;
-
+    virtual uint32_t getHeight() const = 0;
 
     virtual Type getType() const = 0;;
 
-    virtual const std::string& getPath() const = 0;;
+    virtual const std::string& getPath() const = 0;
 
-    virtual const Spec& getSpec() const = 0;;
+    virtual const Spec& getSpec() const = 0;
 
-    virtual bool operator==(const Texture& other) const = 0;;
+    virtual bool operator==(const Texture& other) const = 0;
+
+    bool isLoaded() const
+    {
+        return m_loaded;
+    }
 
     static void s_setMaxTextures(uint32_t maxTextures);
 
@@ -140,6 +144,7 @@ class Texture
     uint32_t    m_id;
     std::string m_path;
     bool        m_flipOnLoad;
+    bool        m_loaded = false;
 
     static const uint32_t k_maxTexturesUninit = 0;
     inline static uint32_t s_maxTextures = k_maxTexturesUninit;

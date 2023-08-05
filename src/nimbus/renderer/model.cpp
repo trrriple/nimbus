@@ -233,7 +233,7 @@ std::vector<ref<Texture>> Model::loadMaterialTextures(void*         mat,
         {
             ResourceManager& rm = ResourceManager::s_get();
 
-            ref<Texture>& p_texture
+            ref<Texture> p_texture
                 = rm.loadTexture(texType, path, m_flipOnLoad);
 
             textures.push_back(p_texture);

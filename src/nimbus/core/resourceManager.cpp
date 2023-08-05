@@ -16,9 +16,9 @@ ResourceManager& ResourceManager::s_get()
     return instance;
 }
 
-ref<Texture>& ResourceManager::loadTexture(const Texture::Type type,
-                                           const std::string&  path,
-                                           const bool          flipOnLoad)
+ref<Texture> ResourceManager::loadTexture(const Texture::Type type,
+                                          const std::string&  path,
+                                          const bool          flipOnLoad)
 {
     NM_PROFILE_DETAIL();
 
@@ -30,20 +30,31 @@ ref<Texture>& ResourceManager::loadTexture(const Texture::Type type,
     }
     else
     {
-        auto texturePair = m_loadedTextures.emplace(
-            path, Texture::s_create(type, path, flipOnLoad));
+        std::filesystem::path filePath(path);
 
-        Log::coreInfo("ResourceManager::Texture loaded %s, format %i",
-                     texturePair.first->second->getPath().c_str(),
-                     texturePair.first->second->getSpec().format);
+        ref<Texture> texture
+            = Texture::s_create(type, filePath.generic_string(), flipOnLoad);
 
-        return texturePair.first->second;
+        if (texture != nullptr)
+        {
+            auto texturePair = m_loadedTextures.emplace(path, texture);
+
+            Log::coreInfo("ResourceManager::Texture loaded %s, format %i",
+                          texturePair.first->second->getPath().c_str(),
+                          texturePair.first->second->getSpec().format);
+
+            return texturePair.first->second;
+        }
+        else
+        {
+            return nullptr;
+        }
     }
 }
 
-ref<Shader>& ResourceManager::loadShader(const std::string& name,
-                                         const std::string& vertexSource,
-                                         const std::string& fragmentSource)
+ref<Shader> ResourceManager::loadShader(const std::string& name,
+                                        const std::string& vertexSource,
+                                        const std::string& fragmentSource)
 {
     NM_PROFILE_DETAIL();
 
@@ -68,8 +79,8 @@ ref<Shader>& ResourceManager::loadShader(const std::string& name,
     }
 }
 
-ref<Shader>& ResourceManager::loadShader(const std::string& vertexPath,
-                                         const std::string& fragmentPath)
+ref<Shader> ResourceManager::loadShader(const std::string& vertexPath,
+                                        const std::string& fragmentPath)
 {
     NM_PROFILE_DETAIL();
 
@@ -82,8 +93,13 @@ ref<Shader>& ResourceManager::loadShader(const std::string& vertexPath,
     }
     else
     {
+        std::filesystem::path vertexFilePath(vertexPath);
+        std::filesystem::path fragmentFilePath(fragmentPath);
+
         auto shaderPair = m_loadedShaders.emplace(
-            name, Shader::create(vertexPath, fragmentPath));
+            name,
+            Shader::create(vertexFilePath.generic_string(),
+                           fragmentFilePath.generic_string()));
 
         Log::coreInfo(
             "ResourceManager::Shader Compiled from: \n\tVertex:   %s "
