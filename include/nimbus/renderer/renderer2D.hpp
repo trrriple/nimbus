@@ -89,7 +89,7 @@ class Renderer2D
         {k_shaderVec4, "position"},
         {k_shaderVec2, "texCoords"},
         {k_shaderVec4, "color"},
-        {k_shaderFloat, "texIndex"},
+        {k_shaderInt, "texIndex"},
         {k_shaderFloat, "texTilingFactor"},
         {k_shaderInt, "entityId"},
     };
@@ -99,7 +99,7 @@ class Renderer2D
         glm::vec4 position;
         glm::vec2 texCoord;
         glm::vec4 color;
-        float     texIndex;
+        int       texIndex;
         float     texTilingFactor;
         int       entityId;
     };
@@ -131,7 +131,7 @@ class Renderer2D
         {k_shaderVec4, "fgColor"},
         {k_shaderVec4, "bgColor"},
         {k_shaderVec2, "unitRange"},
-        {k_shaderFloat, "texIndex"},
+        {k_shaderInt, "texIndex"},
         {k_shaderInt, "entityId"},
     };
 
@@ -142,7 +142,7 @@ class Renderer2D
         glm::vec4 fgColor;
         glm::vec4 bgColor;
         glm::vec2 unitRange;
-        float     texIndex;
+        int       texIndex;
         int       entityId;
 
     };

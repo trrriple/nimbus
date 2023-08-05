@@ -148,7 +148,8 @@ void Scene::_render(Camera* p_camera)
         Renderer2D::s_drawQuad(transform.getTransform(),
                                sprite.texture,
                                sprite.color,
-                               sprite.tilingFactor);
+                               sprite.tilingFactor,
+                               static_cast<int>(entity));
     }
 
     ///////////////////////////
@@ -159,8 +160,10 @@ void Scene::_render(Camera* p_camera)
     {
         auto [transform, text] = textView.get<TransformCmp, TextCmp>(entity);
 
-        Renderer2D::s_drawText(
-            text.text, text.format, transform.getTransform());
+        Renderer2D::s_drawText(text.text,
+                               text.format,
+                               transform.getTransform(),
+                               static_cast<int>(entity));
     }
 
     Renderer2D::s_end();

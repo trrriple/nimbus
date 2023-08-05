@@ -5,7 +5,11 @@
 #include "nimbus/scene/scene.hpp"
 #include "nimbus/scene/entity.hpp"
 #include "nimbus/scene/component.hpp"
+#include "nimbus/core/resourceManager.hpp"
+#include "nimbus/renderer/texture.hpp"
 #include "IconsFontAwesome6.h"
+
+#include <filesystem>
 
 namespace nimbus
 {
@@ -97,12 +101,16 @@ class SceneHeirarchyPanel
     void _drawComponents(Entity entity)
     {
         
+         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
+                                   | ImGuiTreeNodeFlags_DefaultOpen
+                                   | ImGuiTreeNodeFlags_Framed;
+
         ///////////////////////////
         // Name  Component
         ///////////////////////////
         if(entity.hasComponent<NameCmp>())
         {
-            if (ImGui::TreeNodeEx("Name", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("Name", flags))
             {
                 auto& name = entity.getComponent<NameCmp>().name;
 
@@ -123,12 +131,40 @@ class SceneHeirarchyPanel
         {
             auto& spriteCmp = entity.getComponent<SpriteCmp>();
 
-            if (ImGui::TreeNodeEx("Color", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("Color", flags))
             {
                 ImGui::ColorEdit4("Color",
                                   glm::value_ptr(spriteCmp.color),
                                   ImGuiColorEditFlags_AlphaBar
                                       | ImGuiColorEditFlags_AlphaPreview);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNodeEx("Texture", flags))
+            {
+                ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload* payload
+                        = ImGui::AcceptDragDropPayload("DND_FILE"))
+                    {
+                        const char* path = (const char*)payload->Data;
+                        std::filesystem::path texturePath(path);
+                        ref<Texture>          texture
+                            = ResourceManager::s_get().loadTexture(
+                                Texture::Type::DIFFUSE,
+                                texturePath.string(),
+                                false);
+
+                        if (texture)
+                            spriteCmp.texture = texture;
+                        else
+                            Log::warn("Could not load texture {0}",
+                                      texturePath.filename().c_str());
+                     }
+                    ImGui::EndDragDropTarget();
+                }
 
                 ImGui::TreePop();
             }
@@ -141,7 +177,7 @@ class SceneHeirarchyPanel
         {
             auto& textCmp = entity.getComponent<TextCmp>();
 
-            if (ImGui::TreeNodeEx("Text", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("Text", flags))
             {
                 strncpy_s(
                     m_scratch, textCmp.text.c_str(), textCmp.text.length());
@@ -155,7 +191,7 @@ class SceneHeirarchyPanel
                 ImGui::TreePop();
             }
 
-            if (ImGui::TreeNodeEx("Format", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("Format", flags))
             {
                 ImGui::ColorEdit4("Fg Color",
                                   glm::value_ptr(textCmp.format.fgColor),
@@ -182,7 +218,7 @@ class SceneHeirarchyPanel
         {
             auto& cameraCmp = entity.getComponent<CameraCmp>();
 
-            if (ImGui::TreeNodeEx("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("Camera", flags))
             {
                 const char* cameraTypes[] = {"Orthographic", "Perspective"};
 
@@ -243,12 +279,11 @@ class SceneHeirarchyPanel
                 }
 
                 auto position = cameraCmp.p_camera->getPosition();
-                if (ImGui::DragFloat3(
-                        "Position", glm::value_ptr(position), 0.01f))
+
+                if (_drawVec3Control("Position", position, 0.0f, 0.01f))
                 {
                     cameraCmp.p_camera->setPosition(position);
                 }
-
 
                 if (currentType == 0)
                 {
@@ -291,7 +326,7 @@ class SceneHeirarchyPanel
         {
             auto& transformCmp = entity.getComponent<TransformCmp>();
 
-            if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx("Transform", flags))
             {
                 glm::vec3 translation = transformCmp.getTranslation();
 
@@ -324,21 +359,29 @@ class SceneHeirarchyPanel
                                  float              resetValue = 0.0f,
                                  float              speed      = 0.1f)
     {
+        // set the size of the dragfloats
+        static float itemWidth = ImGui::CalcTextSize("A").x * 6.0;
+
+        static float lineHeight
+            = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+
+        static ImVec2 buttonSize = {lineHeight - 3, lineHeight};
+        
+        // set the size of the buttons
         bool changedX = false;
         bool changedY = false;
         bool changedZ = false;
-        
+
         ImGui::BeginTable("table", 2, ImGuiTableFlags_SizingFixedFit);
+        ImGui::TableSetupColumn("Data",
+                                ImGuiTableColumnFlags_WidthFixed,
+                                (itemWidth * 3 + buttonSize.x * 3));
+        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
+
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
 
-        float itemWidth = ImGui::CalcItemWidth() + 20;
-        float lineHeight
-            = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-
-        ImVec2 buttonSize = {lineHeight - 3, lineHeight};
-        
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
+                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
                               ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
@@ -352,7 +395,7 @@ class SceneHeirarchyPanel
         ImGui::PopStyleColor(3);
 
         ImGui::SameLine();
-        ImGui::PushItemWidth(itemWidth / 3);
+        ImGui::PushItemWidth(itemWidth);
         bool changed
             = ImGui::DragFloat("##X", &values.x, speed, 0.0f, 0.0f, "%.2f");
         if (changed)
@@ -374,7 +417,7 @@ class SceneHeirarchyPanel
         ImGui::PopStyleColor(3);
 
         ImGui::SameLine();
-        ImGui::PushItemWidth(itemWidth / 3);
+        ImGui::PushItemWidth(itemWidth);
         changed = ImGui::DragFloat("##Y", &values.y, speed, 0.0f, 0.0f, "%.2f");
         if (changed)
             changedY = true;
@@ -395,7 +438,7 @@ class SceneHeirarchyPanel
         ImGui::PopStyleColor(3);
 
         ImGui::SameLine();
-        ImGui::PushItemWidth(itemWidth / 3);
+        ImGui::PushItemWidth(itemWidth);
         changed = ImGui::DragFloat("##Z", &values.z, speed, 0.0f, 0.0f, "%.2f");
         if (changed)
             changedZ = true;

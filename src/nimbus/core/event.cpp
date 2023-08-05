@@ -18,9 +18,6 @@ namespace nimbus
 Event::EventDetails& Event::getDetails()
 {
     return m_details;
-
-    sizeof(SDL_Event);
-    sizeof(EventDetails);
 }
 
 Event::Type Event::getEventType() const
@@ -41,7 +38,21 @@ void Event::markAsHandled()
 void Event::clear()
 {
     m_wasHandled = false;
+
+    // some events need to have memory freed
+    switch(m_details.type)
+    {
+        case(Type::DROPFILE):
+        {
+            SDL_free(m_details.drop.file);
+            break;
+        }
+        default:
+            break;  
+    }
+
 }
+
 
 const std::string Event::toString() const
 {

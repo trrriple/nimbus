@@ -136,7 +136,7 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
         s_quadData.needsResize = true;
     }
 
-    float texIdx = 0.0f;  // In GL, float is used for idx
+    int texIdx = 0;
     if (p_texture != nullptr)
     {
         for (size_t i = 1; i < s_quadData.textures.size(); i++)
@@ -144,12 +144,12 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
             if (*(s_quadData.textures[i]) == *p_texture)
             {
                 // this fellow is the same, so reuse it
-                texIdx = static_cast<float>(i);
+                texIdx = static_cast<int>(i);
                 break;
             }
         }
         // we didn't find it, so it's a new texture
-        if (texIdx == 0.0f)
+        if (texIdx == 0)
         {
             if (s_quadData.textures.size() == s_quadData.textures.capacity())
             {
@@ -164,7 +164,7 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
     }
     else
     {
-        texIdx = 0.0f;  // white texture
+        texIdx = 0;  // white texture
     }
 
     for (uint32_t i = 0; i < 4; i++)
@@ -232,18 +232,18 @@ void Renderer2D::s_drawText(const std::string&  text,
     float  texelWidth  = 1.0f / atlasWidth;
     float  texelHeight = 1.0f / atlasHeight;
 
-    float texIdx = -1.0f;  // In GL, float is used for idx
+    int texIdx = -1;
     for (size_t i = 0; i < s_textData.atlases.size(); i++)
     {
         if (*(s_textData.atlases[i]) == *p_atlas)
         {
             // this fellow is the same, so reuse it
-            texIdx = static_cast<float>(i);
+            texIdx = static_cast<int>(i);
             break;
         }
     }
     // we didn't find it, so it's a new texture
-    if (texIdx == -1.0f)
+    if (texIdx == -1)
     {
         if (s_textData.atlases.size() == s_textData.atlases.capacity())
         {

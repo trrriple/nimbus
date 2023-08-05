@@ -134,6 +134,18 @@ class FelixLayer : public Layer
     scope<EditCameraMenuPanel> mp_editCameraMenuPanel;
 
 
+    // TODO FOR TESTING, REMOVE
+    scope<Model> m_cubeModel;
+    ref<Shader>  m_cubeShader;
+
+
+
+    ///////////////////////////
+    // Flags for GUI events
+    ///////////////////////////
+    bool        m_fileDropHandled = true;
+    std::string m_fileDropPath;
+
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
     }
@@ -146,23 +158,28 @@ class FelixLayer : public Layer
         mp_appWinRef = &mp_appRef->getWindow();
         mp_appRef->setDrawPeriodLimit(0.00334f);
 
-        GraphicsApi::setDepthTest(false);
-
+        GraphicsApi::setDepthTest(true);
 
         mp_scene = makeRef<Scene>();
+
+        // for testing remove
+        m_cubeModel = makeScope<Model>(
+            "../../resources/objects/rubixCube/RubixCube.obj");
+        m_cubeShader = ResourceManager::s_get().loadShader(
+            std::filesystem::path("../../shaderSrc/model.vs").generic_string(),
+            std::filesystem::path("../../shaderSrc/model.fs").generic_string());
 
         ///////////////////////////
         // Cameras
         ///////////////////////////
         // edit camera
-        mp_editCamera       = makeRef<Camera>(Camera::Type::PERSPECTIVE);
+        mp_editCamera = makeRef<Camera>(Camera::Type::PERSPECTIVE);
         mp_editCamera->setAspectRatio(m_aspectRatio);
         mp_editCamera->setPosition({0.0f, 0.0f, 2.4125f});
         mp_editCamera->setYaw(-90.0f);
         mp_editCamera->setSpeed(5.0f);
 
-
-        //scene camera
+        // scene camera
         auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
         mp_sceneCamera2D       = makeRef<Camera>(Camera::Type::ORTHOGRAPHIC);
         mp_sceneCamera2D->setAspectRatio(m_aspectRatio);
@@ -228,11 +245,11 @@ class FelixLayer : public Layer
         FrameBuffer::Spec fbSpec;
         fbSpec.width   = m_viewportSize.x;
         fbSpec.height  = m_viewportSize.y;
-        fbSpec.samples = 8;
+        fbSpec.samples = 4;
         fbSpec.colorAttachments.push_back(
             Texture::Spec(fbSpec.width,
                           fbSpec.height,
-                          8,
+                          fbSpec.samples,
                           Texture::Format::RGBA,  // irrelevant
                           Texture::FormatInternal::RGBA8,
                           Texture::DataType::UNSIGNED_BYTE,  // irrelevant
@@ -254,7 +271,7 @@ class FelixLayer : public Layer
         screenSpec.colorAttachments.push_back(
             Texture::Spec(screenSpec.width,
                           screenSpec.height,
-                          1,
+                          screenSpec.samples,
                           Texture::Format::RGBA,  // irrelevant
                           Texture::FormatInternal::RGBA8,
                           Texture::DataType::UNSIGNED_BYTE,  // irrelevant
@@ -317,7 +334,10 @@ class FelixLayer : public Layer
 
         if (m_sceneState == State::PAUSE)
         {
+
             mp_scene->_onDrawEditor(mp_editCamera.get());
+
+            // m_cubeModel->draw(m_cubeShader, glm::mat4(1.0f));
         }
         else
         {
@@ -333,8 +353,6 @@ class FelixLayer : public Layer
         mp_frameBuffer->blit(*mp_screenBuffer.get());
 
         NM_UNUSED(deltaTime);
- 
-
     }
     virtual void onEvent(Event& event) override
     {
@@ -353,12 +371,23 @@ class FelixLayer : public Layer
                     static const float orbitScale = 4.0f;
                     mp_editCamera->processViewUpdate(delta * orbitScale, true);
                 }
+
+                event.markAsHandled();
             }
             else if (eventType == Event::Type::MOUSEWHEEL)
             {
                 float zoomAmount = event.getDetails().wheel.preciseY;
 
                 mp_editCamera->processZoom(zoomAmount);
+
+                event.markAsHandled();
+            }
+
+            else if (eventType == Event::Type::DROPFILE)
+            {
+                m_fileDropHandled = false;
+                m_fileDropPath = event.getDetails().drop.file;
+                event.markAsHandled();
             }
         }
     }
@@ -459,6 +488,24 @@ class FelixLayer : public Layer
 
     virtual void onGuiUpdate(float deltaTime) override
     {
+        
+        ///////////////////////////
+        // Allow external file drops
+        ///////////////////////////
+        if (!m_fileDropHandled)
+        {
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceExtern))
+            {
+                // For simplicity, handle only one file drop at a time.
+                ImGui::SetDragDropPayload("DND_FILE",
+                                          m_fileDropPath.c_str(),
+                                          m_fileDropPath.length() + 1);
+
+                ImGui::EndDragDropSource();
+            }
+            m_fileDropHandled = true;
+        }
+
         ///////////////////////////
         // Dockspace
         ///////////////////////////
