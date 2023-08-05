@@ -124,7 +124,7 @@ struct TransformCmp
         transformStale = true;
     }
 
-    void getRotation(const glm::vec3& irotation)
+    void setRotation(const glm::vec3& irotation)
     {
         rotation       = irotation;
         transformStale = true;
@@ -213,7 +213,7 @@ struct TextCmp
 struct CameraCmp
 {
     ref<Camera> p_camera;
-    bool        renderWith  = true;
+    bool        primary     = true;
     bool        fixedAspect = false;
 
     CameraCmp(const ref<Camera>& p_icamera) : p_camera(p_icamera)

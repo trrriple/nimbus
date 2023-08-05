@@ -21,7 +21,7 @@ class Scene
     
     void onStart();
     void onUpdate(float deltaTime);
-    void onDraw(float deltaTime);
+    void onDraw();
     void onStop();
 
     void onResize(uint32_t width, uint32_t height);
@@ -32,7 +32,12 @@ class Scene
     friend class Entity;
 
     // felix only
+    friend class FelixLayer;
     friend class SceneHeirarchyPanel;
+    friend class EditCameraMenuPanel;
+
+    void _render(Camera* p_camera);
+    void _onDrawEditor(Camera* p_editorCamera);
 };
 
 }  // namespace nimbus

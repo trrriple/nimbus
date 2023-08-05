@@ -15,8 +15,6 @@ class Entity
     {
     }
 
-    Entity(const Entity& other) = default;
-
     template <typename T>
     bool hasComponent()
     {
@@ -41,6 +39,28 @@ class Entity
         // m_scene->OnComponentAdded<T>(*this, component);
         return component;
     }
+
+    entt::entity getId()
+    {
+        return mh_entity;
+    }
+
+    operator bool() const
+    {
+        return mh_entity != entt::null;
+    }
+
+    bool operator==(const Entity& other) const
+    {
+        return (other.mh_entity == mh_entity && other.m_scene == m_scene);
+    }
+
+    
+    bool operator!=(const Entity& other) const
+    {
+        return !(*this == other);
+    }
+
 
    private:
     entt::entity mh_entity{entt::null};

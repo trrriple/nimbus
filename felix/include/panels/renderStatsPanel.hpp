@@ -70,6 +70,8 @@ class RenderStatsPanel
                          ImVec2(0, 0),
                          sizeof(float));
 
+        ImGui::Separator();
+
         if (ImGui::CollapsingHeader("Renderer2D Stats"))
         {
             Renderer2D::Stats stats = Renderer2D::s_getStats();

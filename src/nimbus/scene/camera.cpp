@@ -8,9 +8,17 @@
 namespace nimbus
 {
 
-Camera::Camera(bool is3d) : m_is3d(is3d)
+Camera::Camera(Type type) : m_type(type)
 {
     _updateCameraVectors();
+}
+
+void Camera::setType(Type type)
+{
+    m_type             = type;
+    m_staleView        = true;
+    m_staleProjection  = true;
+    m_staleWorldBounds = true;
 }
 
 void Camera::processPosiUpdate(Movement direction, float deltaTime)
@@ -81,7 +89,7 @@ void Camera::processZoom(float offset)
     NM_PROFILE_TRACE();
     const float zoomScale = 0.1;
 
-    if (m_is3d)
+    if (m_type == Type::PERSPECTIVE)
     {
         m_fov -= offset;
         if (m_fov < 1.0f)
@@ -107,7 +115,7 @@ glm::mat4& Camera::getView()
 
     if (m_staleView)
     {
-        if (m_is3d)
+        if (m_type == Type::PERSPECTIVE)
         {
             m_view = glm::lookAt(m_position, m_position + m_front, m_up);
         }
@@ -133,7 +141,7 @@ glm::mat4& Camera::getProjection()
 
     if (m_staleProjection)
     {
-        if (m_is3d)
+        if (m_type == Type::PERSPECTIVE)
         {
             m_projection = glm::perspective(
                 glm::radians(m_fov), m_aspectRatio, m_near, m_far);
@@ -145,7 +153,7 @@ glm::mat4& Camera::getProjection()
                                       -m_zoom,
                                       m_zoom,
                                       m_orthoNear,
-                                      m_orthFar);
+                                      m_orthoFar);
         }
 
         m_staleProjection = false;
@@ -226,17 +234,30 @@ void Camera::setAspectRatio(float aspectRatio)
     m_staleProjection = true;
 }
 
-void Camera::setClip(float near, float far)
+void Camera::setNearClip(float near)
 {
-    if (m_is3d)
+    if (m_type == Type::PERSPECTIVE)
     {
         m_near = near;
-        m_far  = far;
     }
     else
     {
         m_orthoNear = near;
-        m_orthFar   = far;
+    }
+
+    m_staleProjection = true;
+}
+
+
+void Camera::setFarClip(float far)
+{
+    if (m_type == Type::PERSPECTIVE)
+    {
+        m_far = far;
+    }
+    else
+    {
+        m_orthoFar = far;
     }
 
     m_staleProjection = true;

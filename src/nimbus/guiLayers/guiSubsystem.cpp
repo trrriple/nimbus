@@ -41,7 +41,7 @@ void GuiSubsystem::onInsert()
     ///////////////////////////
     // Change font
     ///////////////////////////
-    float   fontSize = 13.0f;
+    float   fontSize = 15.0f;
     ImFont* p_roboto
         = io.Fonts->AddFontFromFileTTF(k_defaultFontPath.c_str(), fontSize);
 
@@ -62,7 +62,7 @@ void GuiSubsystem::onInsert()
 
     // FontAwesome fonts need to have their sizes reduced
     // by 2.0f/3.0f in order to align correctly
-    float iconFontSize = baseFontSize * 2.0f / 3.0f;
+    float iconFontSize = baseFontSize;
 
     // merge in icons from Font Awesome
     static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};

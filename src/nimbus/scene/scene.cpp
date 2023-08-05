@@ -82,37 +82,59 @@ void Scene::onUpdate(float deltaTime)
         });
 }
 
-void Scene::onDraw(float deltaTime)
+void Scene::onDraw()
 {
-    NM_UNUSED(deltaTime);
     ///////////////////////////
     // Get Camera
     ///////////////////////////
     auto cameraView = m_registry.view<CameraCmp>();
 
-    Camera* mainCamera = nullptr;
+    Camera* p_mainCamera = nullptr;
     for (auto entity : cameraView)
     {
         auto& camera = cameraView.get<CameraCmp>(entity);
 
         // grab the first camera that's flagged to be used for rendering
-        if (camera.renderWith == true)
+        if (camera.primary == true)
         {
-            mainCamera = camera.p_camera.get();
+            p_mainCamera = camera.p_camera.get();
             break;
         }
     }
 
-    if (mainCamera == nullptr)
+    if (p_mainCamera == nullptr)
     {
         // need camera to render
         return;
     }
 
+    _render(p_mainCamera);
+}
+
+void Scene::onResize(uint32_t width, uint32_t height)
+{
+    auto cameraView = m_registry.view<CameraCmp>();
+
+    const float aspectRatio
+        = static_cast<float>(width) / static_cast<float>(height);
+
+    for (auto entity : cameraView)
+    {
+        auto& camera = cameraView.get<CameraCmp>(entity);
+
+        if (!camera.fixedAspect)
+        {
+            camera.p_camera->setAspectRatio(aspectRatio);
+        }
+    }
+}
+
+void Scene::_render(Camera* p_camera)
+{
     ////////////////////////////////////////////////////////////////////////////
     // Render
     ////////////////////////////////////////////////////////////////////////////
-    Renderer2D::s_begin(mainCamera->getViewProjection());
+    Renderer2D::s_begin(p_camera->getViewProjection());
 
     ///////////////////////////
     // Sprites
@@ -144,22 +166,9 @@ void Scene::onDraw(float deltaTime)
     Renderer2D::s_end();
 }
 
-void Scene::onResize(uint32_t width, uint32_t height)
+void Scene::_onDrawEditor(Camera* p_editorCamera)
 {
-    auto cameraView = m_registry.view<CameraCmp>();
-
-    const float aspectRatio
-        = static_cast<float>(width) / static_cast<float>(height);
-
-    for (auto entity : cameraView)
-    {
-        auto& camera = cameraView.get<CameraCmp>(entity);
-
-        if (!camera.fixedAspect)
-        {
-            camera.p_camera->setAspectRatio(aspectRatio);
-        }
-    }
+    _render(p_editorCamera);
 }
 
 }  // namespace nimbus

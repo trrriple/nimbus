@@ -41,8 +41,7 @@ class ViewportPanel
         }
     }
 
-    void onDraw(ref<FrameBuffer>&     p_screenBuffer,
-                const Camera::Bounds& bounds)
+    void onDraw(ref<FrameBuffer>& p_screenBuffer, Camera::Bounds* p_bounds)
     {
         ImGui::SetNextWindowSize({m_viewportSize.x, m_viewportSize.y},
                                  ImGuiCond_FirstUseEver);
@@ -86,15 +85,35 @@ class ViewportPanel
             = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2;
 
         ///////////////////////////
+        // Draw the Viewport Size
+        ///////////////////////////
+        // Get the top-left corner of
+        // the current ImGui window
+        ImVec2 windowPos = ImGui::GetWindowPos();
+
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+        char dimString[32];
+
+        snprintf(dimString,
+                 sizeof(dimString),
+                 "%i x %i (%.03f)",
+                 (int)m_viewportSize.x,
+                 (int)m_viewportSize.y,
+                 m_viewportSize.x / m_viewportSize.y);
+
+        ImVec2 dimLoc = {windowPos.x + m_viewportSize.x - 105.0f,
+                         windowPos.y + m_viewportSize.y - 17.0f};
+
+        // Draw the text on the draw list
+        drawList->AddText(dimLoc, IM_COL32(255, 255, 255, 255), dimString);
+
+        ///////////////////////////
         // Draw the cursor pos
         ///////////////////////////
-        if (m_viewportHovered)
+        if (m_viewportHovered && p_bounds != nullptr)
         {
             ImVec2 mousePos = ImGui::GetMousePos();
-
-            // Get the top-left corner of
-            // the current ImGui window
-            ImVec2 windowPos = ImGui::GetWindowPos();
 
             glm::vec2 mousePosInViewportPix
                 = {mousePos.x - windowPos.x,
@@ -102,10 +121,10 @@ class ViewportPanel
 
             glm::vec2 mousePosInViewport = util::mapPixToScreen(
                 {mousePosInViewportPix.x, mousePosInViewportPix.y},
-                bounds.topLeft.x,
-                bounds.topRight.x,
-                bounds.topLeft.y,
-                bounds.bottomLeft.y,
+                p_bounds->topLeft.x,
+                p_bounds->topRight.x,
+                p_bounds->topLeft.y,
+                p_bounds->bottomLeft.y,
                 m_viewportSize.x,
                 m_viewportSize.y);
 
@@ -116,21 +135,20 @@ class ViewportPanel
 
             snprintf(posString,
                      sizeof(posString),
-                     "X:%.04f, Y:%.04f",
+                     "X:%+.04f, Y:%+.04f",
                      mousePosInViewport.x,
                      mousePosInViewport.y);
 
-            ImVec2 texPos
-                = {windowPos.x + 5.0f, windowPos.y + m_viewportSize.y - 15.0f};
+            ImVec2 posLoc
+                = {windowPos.x + 5.0f, windowPos.y + m_viewportSize.y - 17.0f};
 
             // Draw the text on the draw list
-            drawList->AddText(texPos, IM_COL32(255, 255, 255, 255), posString);
+            drawList->AddText(posLoc, IM_COL32(255, 255, 255, 255), posString);
         }
 
         ImGui::PopStyleVar();
 
         ImGui::End();  // viewport
-
     }
 
    private:

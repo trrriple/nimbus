@@ -9,9 +9,12 @@ namespace nimbus
 class Camera
 {
    public:
-    // Defines several possible options for camera movement.
-    // Used as abstraction to stay away from window-system specific input
-    // methods
+    enum class Type
+    {
+        ORTHOGRAPHIC,
+        PERSPECTIVE
+    };
+
     enum class Movement
     {
         FORWARD,
@@ -21,6 +24,7 @@ class Camera
         UP,
         DOWN,
     };
+    
 
     struct Bounds
     {
@@ -30,11 +34,13 @@ class Camera
         glm::vec4 bottomRight;
     };
 
-    Camera(bool is3d = false);
+    Camera(Type type = Type::ORTHOGRAPHIC);
 
-    void setType(bool is3d)
+    void setType(Type type);
+
+    Type getType() const
     {
-        m_is3d = is3d;
+        return m_type;
     }
 
     // processes input received from any position movement input system.
@@ -62,7 +68,20 @@ class Camera
         return m_aspectRatio;
     }
 
-    void setClip(float near, float far);
+    void setNearClip(float near);
+
+    float getNearClip()
+    {
+        return m_type == Type::ORTHOGRAPHIC ? m_orthoNear : m_near; 
+    }
+
+    void setFarClip(float far);
+
+    float getFarClip()
+    {
+        return m_type == Type::ORTHOGRAPHIC ? m_orthoFar : m_far; 
+
+    }
 
     void setPosition(const glm::vec3& position);
 
@@ -145,9 +164,9 @@ class Camera
     float m_far  = 300.0f;
 
     float m_orthoNear = -1.0f;
-    float m_orthFar   = 1.0f;
+    float m_orthoFar  = 1.0f;
 
-    bool m_is3d = false;
+    Type  m_type;
 
     // calculates the front vector from the Camera's (updated) Euler Angles
     void  _updateCameraVectors();

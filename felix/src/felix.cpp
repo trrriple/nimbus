@@ -1,9 +1,10 @@
 #include "nimbus.hpp"
 #include "nimbus/core/entry.hpp"
 #include "panels/viewportPanel.hpp"
-#include "panels/renderStatsPanel.hpp"
-#include "panels/cameraMenuPanel.hpp"
+#include "panels/sceneControlPanel.hpp"
 #include "panels/sceneHierarchyPanel.hpp"
+#include "panels/renderStatsPanel.hpp"
+#include "panels/editCameraMenuPanel.hpp"
 
 
 namespace nimbus
@@ -17,6 +18,11 @@ class sceneCameraController : public EntityLogic
         mp_window = getComponent<WindowRefCmp>().p_window;
 
         m_lastWheelPos = mp_window->mouseWheelPos();
+
+        mp_cameraCmp->p_camera->setPosition({0.0f, 0.0f, 0.0f});
+        mp_cameraCmp->p_camera->setYaw(0.0f);
+        mp_cameraCmp->p_camera->setPitch(0.0f);
+        mp_cameraCmp->p_camera->setZoom(1.0f);
     }
 
     virtual void onDestroy()
@@ -26,7 +32,7 @@ class sceneCameraController : public EntityLogic
     virtual void onUpdate(float deltaTime)
     {
         // don't update this camera if we aren't using it
-        if (!mp_cameraCmp->renderWith)
+        if (!mp_cameraCmp->primary)
         {
             return;
         }
@@ -68,88 +74,17 @@ class sceneCameraController : public EntityLogic
     float      m_lastWheelPos;
 };
 
-class editCameraController : public EntityLogic
-{
-   public:
-    virtual void onCreate()
-    {
-        mp_cameraCmp = &getComponent<CameraCmp>();
-        mp_window    = getComponent<WindowRefCmp>().p_window;
-
-        m_lastMousePos = mp_window->mousePos();
-    }
-
-    virtual void onDestroy()
-    {
-    }
-
-    virtual void onUpdate(float deltaTime)
-    {
-        // don't update this camera if we aren't using it
-        if (!mp_cameraCmp->renderWith)
-        {
-            return;
-        }
-
-        if (mp_window->keyPressed(ScanCode::W))
-        {
-            mp_cameraCmp->p_camera->processPosiUpdate(Camera::Movement::FORWARD,
-                                                      deltaTime);
-        }
-        if (mp_window->keyPressed(ScanCode::S))
-        {
-            mp_cameraCmp->p_camera->processPosiUpdate(
-                Camera::Movement::BACKWARD, deltaTime);
-        }
-        if (mp_window->keyPressed(ScanCode::SPACE))
-        {
-            mp_cameraCmp->p_camera->processPosiUpdate(Camera::Movement::UP,
-                                                      deltaTime);
-        }
-        if (mp_window->keyPressed(ScanCode::C))
-        {
-            mp_cameraCmp->p_camera->processPosiUpdate(Camera::Movement::DOWN,
-                                                      deltaTime);
-        }
-        if (mp_window->keyPressed(ScanCode::A))
-        {
-            mp_cameraCmp->p_camera->processPosiUpdate(Camera::Movement::LEFT,
-                                                      deltaTime);
-        }
-        if (mp_window->keyPressed(ScanCode::D))
-        {
-            mp_cameraCmp->p_camera->processPosiUpdate(Camera::Movement::RIGHT,
-                                                      deltaTime);
-        }
-
-        glm::vec2 curMousePos = mp_window->mousePos();
-
-        if (curMousePos != m_lastMousePos)
-        {
-            glm::vec2 delta = curMousePos - m_lastMousePos;
-            m_lastMousePos  = curMousePos;
-
-            if (mp_window->mouseButtonPressed(MouseButton::MIDDLE))
-            {
-                static const float orbitScale = 4.0f;
-                mp_cameraCmp->p_camera->processViewUpdate(delta * orbitScale,
-                                                          true);
-            }
-        }
-    }
-
-   private:
-    CameraCmp* mp_cameraCmp;
-    Window*    mp_window;
-    glm::vec2  m_lastMousePos;
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // Main application implementation is in this layer
 ////////////////////////////////////////////////////////////////////////////////
 class FelixLayer : public Layer
-{   
+{
    public:
+    enum class State
+    {
+        PAUSE,
+        PLAY
+    };
 
     ///////////////////////////
     // References
@@ -161,6 +96,8 @@ class FelixLayer : public Layer
     // Scene
     ///////////////////////////
     ref<Scene>   mp_scene;
+    State        m_sceneState = State::PAUSE;
+
 
     ///////////////////////////
     // Viewport Info
@@ -181,19 +118,21 @@ class FelixLayer : public Layer
     ///////////////////////////
     // Cameras
     ///////////////////////////
+    ref<Camera> mp_editCamera;
+
+    // TODO temporary, this should be part of scene only
     CameraCmp*  mp_sceneCamera2DCmp;
     ref<Camera> mp_sceneCamera2D;
-    CameraCmp*  mp_editCamera3DCmp;
-    ref<Camera> mp_editCamera3D;
-    ref<Camera> mp_currCamera;
 
     ///////////////////////////
     // Panels
     ///////////////////////////
     scope<ViewportPanel>       mp_viewportPanel;
-    scope<RenderStatsPanel>    mp_renderStatsPanel;
+    scope<SceneControlPanel>   mp_sceneControlPanel;
     scope<SceneHeirarchyPanel> mp_sceneHierarchyPanel;
-    scope<CameraMenuPanel>     mp_cameraMenuPanel;
+    scope<RenderStatsPanel>    mp_renderStatsPanel;
+    scope<EditCameraMenuPanel> mp_editCameraMenuPanel;
+
 
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
@@ -205,57 +144,45 @@ class FelixLayer : public Layer
 
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
-        mp_appRef->setDrawPeriodLimit(0.0f);
+        mp_appRef->setDrawPeriodLimit(0.00334f);
 
         mp_scene = makeRef<Scene>();
 
         ///////////////////////////
         // Cameras
         ///////////////////////////
+        // edit camera
+        mp_editCamera       = makeRef<Camera>(Camera::Type::PERSPECTIVE);
+        mp_editCamera->setAspectRatio(m_aspectRatio);
+        mp_editCamera->setPosition({0.0f, 0.0f, 2.4125f});
+        mp_editCamera->setYaw(-90.0f);
+        mp_editCamera->setSpeed(5.0f);
+
+
         //scene camera
         auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
-        mp_sceneCamera2D       = makeRef<Camera>(false);
+        mp_sceneCamera2D       = makeRef<Camera>(Camera::Type::ORTHOGRAPHIC);
         mp_sceneCamera2D->setAspectRatio(m_aspectRatio);
         mp_sceneCamera2D->setSpeed(5.0f);
 
         mp_sceneCamera2DCmp
             = &(sceneCameraEntity.addComponent<CameraCmp>(mp_sceneCamera2D));
-        mp_sceneCamera2DCmp->renderWith = true;
+        mp_sceneCamera2DCmp->primary = true;
 
         sceneCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
 
         sceneCameraEntity.addComponent<nativeLogicCmp>()
             .bind<sceneCameraController>();
 
-        // edit camera
-        auto editCameraEntity = mp_scene->addEntity("Edit Camera");
-        mp_editCamera3D       = makeRef<Camera>(true);
-        mp_editCamera3D->setAspectRatio(m_aspectRatio);
-        mp_editCamera3D->setPosition({0.0f, 0.0f, 2.4125f});
-        mp_editCamera3D->setYaw(-90.0f);
-        mp_editCamera3D->setSpeed(5.0f);
-
-        mp_editCamera3DCmp
-            = &(editCameraEntity.addComponent<CameraCmp>(mp_editCamera3D));
-        mp_editCamera3DCmp->renderWith = false;
-
-        editCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
-
-        editCameraEntity.addComponent<nativeLogicCmp>()
-            .bind<editCameraController>();
-
-        mp_currCamera = mp_sceneCamera2D;
-
         ///////////////////////////
         // Panels
         ///////////////////////////
         mp_viewportPanel    = makeScope<ViewportPanel>();
-        mp_renderStatsPanel = makeScope<RenderStatsPanel>();
+        mp_sceneControlPanel  = makeScope<SceneControlPanel>();
         mp_sceneHierarchyPanel = makeScope<SceneHeirarchyPanel>(mp_scene);
-        mp_cameraMenuPanel  = makeScope<CameraMenuPanel>(mp_sceneCamera2D.get(),
-                                                        mp_editCamera3D.get());
-
-        
+        mp_renderStatsPanel = makeScope<RenderStatsPanel>();
+        mp_editCameraMenuPanel
+            = makeScope<EditCameraMenuPanel>(mp_editCamera.get());
 
         ///////////////////////////
         // Test Sprite
@@ -278,12 +205,12 @@ class FelixLayer : public Layer
         format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
         format.kerning = 0.0f;
 
-        auto  textEntity   = mp_scene->addEntity("Hello Text");
+        auto  textEntity   = mp_scene->addEntity("Test Text");
         auto& transformCmp2 = textEntity.addComponent<TransformCmp>();
         transformCmp2.setScale({0.25f, 0.25f, 1.0f});
-        transformCmp2.setTranslationX(-0.25f);
+        transformCmp2.setTranslationX(-0.4f);
         transformCmp2.setTranslationY(0.30f);
-        auto textCmp = textEntity.addComponent<TextCmp>("Hello", format);
+        auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
 
         ///////////////////////////
         // Setup Framebuffers
@@ -332,10 +259,6 @@ class FelixLayer : public Layer
 
         mp_screenBuffer = FrameBuffer::s_create(screenSpec);
 
-
-        // TODO: this is part of stop/start
-        mp_scene->onStart();
-
     }
 
     virtual void onRemove() override
@@ -344,9 +267,30 @@ class FelixLayer : public Layer
 
     virtual void onUpdate(float deltaTime) override
     {
-        if (m_viewportHovered)
+        if (mp_sceneControlPanel->getState() == SceneControlPanel::State::PLAY
+            && m_sceneState != State::PLAY)
+        {
+            m_sceneState = State::PLAY;
+            mp_scene->onStart();
+        }
+        else if (mp_sceneControlPanel->getState()
+                     == SceneControlPanel::State::PAUSE
+                 && m_sceneState != State::PAUSE)
+        {
+            m_sceneState = State::PAUSE;
+            mp_scene->onStop();
+        }
+
+        if (m_sceneState == State::PLAY)
         {
             mp_scene->onUpdate(deltaTime);
+        }
+        else if (m_sceneState == State::PAUSE)
+        {
+            if (m_viewportHovered)
+            {
+                _handleKeyboardInput(deltaTime);
+            }
         }
     }
 
@@ -361,7 +305,16 @@ class FelixLayer : public Layer
         }
 
         Renderer2D::s_resetStats();
-        mp_scene->onDraw(deltaTime);
+        // TODO -> seelct draw call depending on "play"
+
+        if (m_sceneState == State::PAUSE)
+        {
+            mp_scene->_onDrawEditor(mp_editCamera.get());
+        }
+        else
+        {
+            mp_scene->onDraw();
+        }
 
         // turn it off for the blit
         if (mp_renderStatsPanel->m_wireFrame)
@@ -373,10 +326,67 @@ class FelixLayer : public Layer
 
         NM_UNUSED(deltaTime);
  
+
     }
     virtual void onEvent(Event& event) override
     {
-        NM_UNUSED(event);
+        Event::Type eventType = event.getEventType();
+
+        // We only care about these events if we're paused
+        if (m_sceneState == State::PAUSE)
+        {
+            if (eventType == Event::Type::MOUSEMOTION)
+            {
+                if (mp_appWinRef->mouseButtonPressed(MouseButton::MIDDLE))
+                {
+                    glm::vec2 delta = {(float)event.getDetails().motion.xrel,
+                                       (float)event.getDetails().motion.yrel};
+
+                    static const float orbitScale = 4.0f;
+                    mp_editCamera->processViewUpdate(delta * orbitScale, true);
+                }
+            }
+            else if (eventType == Event::Type::MOUSEWHEEL)
+            {
+                float zoomAmount = event.getDetails().wheel.preciseY;
+
+                mp_editCamera->processZoom(zoomAmount);
+            }
+        }
+    }
+
+    void _handleKeyboardInput(float deltaTime)
+    {
+        ///////////////////////////
+        // Camera Controls
+        ///////////////////////////
+        if (mp_appWinRef->keyPressed(ScanCode::W))
+        {
+            mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD,
+                                             deltaTime);
+        }
+        if (mp_appWinRef->keyPressed(ScanCode::S))
+        {
+            mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD,
+                                             deltaTime);
+        }
+        if (mp_appWinRef->keyPressed(ScanCode::SPACE))
+        {
+            mp_editCamera->processPosiUpdate(Camera::Movement::UP, deltaTime);
+        }
+        if (mp_appWinRef->keyPressed(ScanCode::C))
+        {
+            mp_editCamera->processPosiUpdate(Camera::Movement::DOWN, deltaTime);
+        }
+        if (mp_appWinRef->keyPressed(ScanCode::A))
+        {
+            mp_editCamera->processPosiUpdate(Camera::Movement::LEFT, deltaTime);
+        }
+        if (mp_appWinRef->keyPressed(ScanCode::D))
+        {
+            mp_editCamera->processPosiUpdate(Camera::Movement::RIGHT,
+                                             deltaTime);
+        }
     }
 
     void _makeDockspace()
@@ -441,64 +451,116 @@ class FelixLayer : public Layer
 
     virtual void onGuiUpdate(float deltaTime) override
     {
-        // Bounds used for some calculations
-        Camera::Bounds worldBounds = mp_currCamera->getVisibleWorldBounds();
-
         ///////////////////////////
         // Dockspace
         ///////////////////////////
         _makeDockspace();
 
         ///////////////////////////
-        // Viewport
+        // Menu
         ///////////////////////////
-        mp_viewportPanel->onDraw(mp_screenBuffer, worldBounds);
-        m_viewportFocused = mp_viewportPanel->m_viewportFocused;
-        m_viewportHovered = mp_viewportPanel->m_viewportHovered;
-        if (mp_viewportPanel->wasResized())
+        if (ImGui::BeginMainMenuBar())
         {
-            // we need to resize some stuff
-            m_viewportSize = mp_viewportPanel->m_viewportSize;
-            m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
+            ImGui::TextUnformatted(ICON_FA_CAT " Felix");
+            ImGui::SameLine();
 
-            mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-            mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New"))
+                {
+                    // Handle when 'New' is clicked
+                }
 
-            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
+                if (ImGui::MenuItem("Open", "Ctrl+O"))
+                {
+                    // Handle when 'Open' is clicked
+                }
+
+                if (ImGui::MenuItem("Save", "Ctrl+S"))
+                {
+                    // Handle when 'Save' is clicked
+                }
+
+                if (ImGui::MenuItem("Exit"))
+                {
+                    // Handle when 'Exit' is clicked
+                }
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Edit"))
+            {
+                if (ImGui::MenuItem("Undo", "Ctrl+Z"))
+                {
+                    // Handle when 'Undo' is clicked
+                }
+
+                if (ImGui::MenuItem("Redo", "Ctrl+Y"))
+                {
+                    // Handle when 'Redo' is clicked
+                }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMainMenuBar();
         }
 
-        ///////////////////////////
-        // Camera Menu
-        ///////////////////////////
-        mp_cameraMenuPanel->onDraw(
-            mp_currCamera.get(), worldBounds, m_viewportSize);
+            // Bounds used for some calculations
+            Camera::Bounds worldBounds;
+            if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
+            {
+                worldBounds = mp_editCamera->getVisibleWorldBounds();
+            }
 
-        // TODO: remove
-        if (mp_cameraMenuPanel->m_useEditorCamera)
-        {
-            mp_currCamera                   = mp_editCamera3D;
-            mp_editCamera3DCmp->renderWith  = true;
-            mp_sceneCamera2DCmp->renderWith = false;
-        }
-        else
-        {
-            mp_currCamera                   = mp_sceneCamera2D;
-            mp_editCamera3DCmp->renderWith  = false;
-            mp_sceneCamera2DCmp->renderWith = true;
-        }
+            ///////////////////////////
+            // Viewport
+            ///////////////////////////
 
-        ///////////////////////////
-        // Render Stats
-        ///////////////////////////
-        mp_renderStatsPanel->onDraw(deltaTime);
+            mp_viewportPanel->onDraw(
+                mp_screenBuffer,
+                mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC
+                    ? &worldBounds
+                    : nullptr);
+            
+            m_viewportFocused = mp_viewportPanel->m_viewportFocused;
+            m_viewportHovered = mp_viewportPanel->m_viewportHovered;
+            if (mp_viewportPanel->wasResized())
+            {
+                // we need to resize some stuff
+                m_viewportSize = mp_viewportPanel->m_viewportSize;
+                m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
+                mp_editCamera->setAspectRatio(m_aspectRatio);
+
+                mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+                mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+
+                mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
+            }
+
+            ///////////////////////////
+            // Scene Control
+            ///////////////////////////
+            mp_sceneControlPanel->onDraw();
+
+            ///////////////////////////
+            // Scene Heirarchy
+            ///////////////////////////
+            mp_sceneHierarchyPanel->onDraw();
+
+            ///////////////////////////
+            // Camera Menu
+            ///////////////////////////
+            mp_editCameraMenuPanel->onDraw(worldBounds);
+
+            ///////////////////////////
+            // Render Stats
+            ///////////////////////////
+            mp_renderStatsPanel->onDraw(deltaTime);
 
 
-        ///////////////////////////
-        // Scene Heirarchy
-        ///////////////////////////
-        mp_sceneHierarchyPanel->onDraw();
-
-        ImGui::End();  // dockspace
+            ImGui::End();  // dockspace
     }
 };
 
