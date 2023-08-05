@@ -295,23 +295,21 @@ class SceneHeirarchyPanel
             {
                 glm::vec3 translation = transformCmp.getTranslation();
 
-                if (ImGui::DragFloat3(
-                        "Translation", glm::value_ptr(translation), 0.01f))
+                if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
                 {
                     transformCmp.setTranslation(translation);
                 }
 
-                glm::vec3 rotation = transformCmp.getRotation();
+                glm::vec3 rotation = glm::degrees(transformCmp.getRotation());
 
-                if (ImGui::DragFloat3(
-                        "Rotation", glm::value_ptr(rotation), 0.01f))
+                if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
                 {
-                    transformCmp.setRotation(rotation);
+                    transformCmp.setRotation(glm::radians(rotation));
                 }
 
                 glm::vec3 scale = transformCmp.getScale();
 
-                if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f))
+                if (_drawVec3Control("Scale", scale, 1.0f, 0.01f))
                 {
                     transformCmp.setScale(scale);
                 }
@@ -319,6 +317,99 @@ class SceneHeirarchyPanel
                 ImGui::TreePop();
             }
         }
+    }
+
+    static bool _drawVec3Control(const std::string& label,
+                                 glm::vec3&         values,
+                                 float              resetValue = 0.0f,
+                                 float              speed      = 0.1f)
+    {
+        bool changedX = false;
+        bool changedY = false;
+        bool changedZ = false;
+        
+        ImGui::BeginTable("table", 2, ImGuiTableFlags_SizingFixedFit);
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+
+        float itemWidth = ImGui::CalcItemWidth() + 20;
+        float lineHeight
+            = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+
+        ImVec2 buttonSize = {lineHeight - 3, lineHeight};
+        
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                              ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                              ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+        if (ImGui::Button(ICON_FA_X, buttonSize))
+        {
+            values.x = resetValue;
+            changedX = true;
+        }
+        ImGui::PopStyleColor(3);
+
+        ImGui::SameLine();
+        ImGui::PushItemWidth(itemWidth / 3);
+        bool changed
+            = ImGui::DragFloat("##X", &values.x, speed, 0.0f, 0.0f, "%.2f");
+        if (changed)
+            changedX = true;
+
+        ImGui::PopItemWidth();
+        ImGui::SameLine();
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                              ImVec4{0.3f, 0.8f, 0.3f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                              ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
+        if (ImGui::Button(ICON_FA_Y, buttonSize))
+        {
+            values.y = resetValue;
+            changedY = true;
+        }
+        ImGui::PopStyleColor(3);
+
+        ImGui::SameLine();
+        ImGui::PushItemWidth(itemWidth / 3);
+        changed = ImGui::DragFloat("##Y", &values.y, speed, 0.0f, 0.0f, "%.2f");
+        if (changed)
+            changedY = true;
+
+        ImGui::PopItemWidth();
+        ImGui::SameLine();
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                              ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                              ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
+        if (ImGui::Button(ICON_FA_Z, buttonSize))
+        {
+            values.z = resetValue;
+            changedZ = true;
+        }
+        ImGui::PopStyleColor(3);
+
+        ImGui::SameLine();
+        ImGui::PushItemWidth(itemWidth / 3);
+        changed = ImGui::DragFloat("##Z", &values.z, speed, 0.0f, 0.0f, "%.2f");
+        if (changed)
+            changedZ = true;
+
+        ImGui::PopItemWidth();
+
+        ImGui::PopStyleVar();
+
+        ImGui::TableNextColumn();
+        ImGui::Text("%s", label.c_str());
+
+        ImGui::EndTable();
+
+        return changedX || changedY || changedZ;
     }
 };
 
