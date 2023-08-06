@@ -153,7 +153,7 @@ void Scene::_render(Camera* p_camera)
             = spriteGroup.get<TransformCmp, SpriteCmp>(entity);
 
         Renderer2D::s_drawQuad(transform.getTransform(),
-                               sprite.texture,
+                               sprite.p_texture,
                                sprite.color,
                                sprite.tilingFactor,
                                static_cast<int>(entity));

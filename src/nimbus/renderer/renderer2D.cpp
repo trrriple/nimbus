@@ -297,7 +297,7 @@ void Renderer2D::s_drawText(const std::string&  text,
         {
             // newlines just reset us back to zero x, and move y down.
             incX = 0.0f;
-            incY -= scale * fontMetrics.lineHeight + fontFormat.lineSpacing;
+            incY -= scale * fontMetrics.lineHeight + fontFormat.leading;
             continue;
         }
         else if (character == '\t')

@@ -2,11 +2,6 @@
 #include "nimbus/core/common.hpp"
 #include "nimbus/scene/scene.hpp"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-W#pragma-messages"
-#include "yaml-cpp/yaml.h"
-#pragma GCC diagnostic pop
-
 namespace nimbus
 {
 
@@ -23,8 +18,7 @@ class SceneSerializer
 
    private:
     ref<Scene> mp_scene;
-    
-    void _serializeEntity(YAML::Emitter& out, Entity entity);
+
 };
 
 }  // namespace nimbus

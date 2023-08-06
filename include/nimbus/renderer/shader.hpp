@@ -21,13 +21,6 @@ class Shader
         FLOAT,
         BOOL
     };
-    static ref<Shader> create(const std::string& name,
-                              const std::string& vertexSource,
-                              const std::string& fragmentSource);
-
-    static ref<Shader> create(const std::string& vertexPath,
-                              const std::string& fragmentPath);
-
     /// Destructor for Shader.
     virtual ~Shader() = default;
 
@@ -220,6 +213,17 @@ class Shader
     /// already knows its location. Probably not a ton of room for optimzation
     /// here anyways.
     mutable std::unordered_map<std::string, std::int32_t> m_uniformLocCache;
+
+   private:
+    // ensure only Resouce manager can call this
+    static ref<Shader> s_create(const std::string& name,
+                                const std::string& vertexSource,
+                                const std::string& fragmentSource);
+
+    static ref<Shader> s_create(const std::string& vertexPath,
+                                const std::string& fragmentPath);
+
+    friend class ResourceManager;
 };
 
 }  // namespace nimbus

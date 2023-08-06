@@ -15,6 +15,17 @@ namespace nimbus
 
 class EntityLogic;  // forward decl
 
+struct NameCmp
+{
+    std::string name;
+
+    NameCmp()               = default;
+    NameCmp(const std::string& iname) : name(iname)
+    {
+    }
+};
+
+
 struct NativeLogicCmp
 {
     EntityLogic* p_logic = nullptr;
@@ -33,16 +44,6 @@ struct NativeLogicCmp
             delete nsc->p_logic;
             nsc->p_logic = nullptr;
         };
-    }
-};
-
-struct NameCmp
-{
-    std::string name;
-
-    NameCmp()               = default;
-    NameCmp(const std::string& iname) : name(iname)
-    {
     }
 };
 
@@ -182,17 +183,17 @@ struct TransformCmp
 struct SpriteCmp
 {
     glm::vec4    color{1.0f};
-    ref<Texture> texture;
+    ref<Texture> p_texture;
     float        tilingFactor = 1.0f;
 
-    SpriteCmp()                 = default;
+    SpriteCmp() = default;
     SpriteCmp(const glm::vec4& icolor) : color(icolor)
     {
     }
     SpriteCmp(const glm::vec4& icolor,
-              ref<Texture>&    itexture,
+              ref<Texture>&    p_itexture,
               float            itilingFactor = 1.0f)
-        : color(icolor), texture(itexture), tilingFactor(itilingFactor)
+        : color(icolor), p_texture(p_itexture), tilingFactor(itilingFactor)
     {
     }
 };

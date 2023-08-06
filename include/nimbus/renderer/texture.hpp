@@ -89,12 +89,7 @@ class Texture
         WrapType       wrapTypeR      = WrapType::CLAMP_TO_EDGE;
     };
 
-    static ref<Texture> s_create(const Type         type,
-                                 const std::string& path,
-                                 const bool         flipOnLoad);
-
-    static ref<Texture> s_create(const Type type,
-                                 Spec&      spec);
+    static ref<Texture> s_create(const Type type, Spec& spec);
 
     virtual ~Texture() = default;
 
@@ -151,7 +146,16 @@ class Texture
 
     inline static std::uint32_t s_currBoundId          = 0;
     inline static std::uint32_t s_currBoundTextureUnit = 0;
-};
+   
+   private:
 
+    // ensure only Resource manager can call this
+    static ref<Texture> s_create(const Type         type,
+                                 const std::string& path,
+                                 const bool         flipOnLoad);
+
+    friend class ResourceManager;
+    
+};
 
 }  // namespace nimbus

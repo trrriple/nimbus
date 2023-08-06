@@ -18,10 +18,9 @@ class Font
         glm::vec4 fgColor     = glm::vec4(1.0f);
         glm::vec4 bgColor     = glm::vec4(0.0f);
         float     kerning     = 0.0f;
-        float     lineSpacing = 0.0f;
+        float     leading     = 0.0f;
     };
-
-    Font(const std::string& fontPath);
+    
     ~Font();
 
     const std::string& getPath() const
@@ -69,8 +68,15 @@ class Font
 
     bool m_loaded = false;
 
+    // only resouce manager can generate the fonts
+    Font(const std::string& fontPath);
+
+    static ref<Font> s_create(const std::string& fontPath);
+
     void _loadFont();
     void _initializeTexture();
+
+    friend class ResourceManager;
 };
 
 }  // namespace nimbus

@@ -25,6 +25,22 @@ Font::Font(const std::string& fontPath)
     m_workerThread.detach();  // Detach the thread so it runs independently
 }
 
+ref<Font> Font::s_create(const std::string& fontPath)
+{
+    // This trick allows ref (make_shared) to get around the fact that
+    // it itself can't access the private constructor of Font.
+    // So we directly invoke the constructor itself here, where we can
+    // instead of in the shared_ptr implementation (Where it can't).
+    // Subsequently, we need to provide a custom deleter.
+    // Note this could also be done by making a wrapper class such as
+    // those used for the texture/shaders to support multiple platforms
+    // because the platform constructors are public just not exposed to 
+    // the nimbus API. In this case, font is not platform specific, so
+    // it has no platform wrapper, so we play this trick to ensure
+    // the only way to construct a font is through the resource manager
+    return ref<Font>(new Font(fontPath), [](Font* p) { delete p; });
+}
+
 Font::~Font()
 {
     if(m_data->pixels != nullptr)

@@ -5,19 +5,18 @@
 
 #include "platform/gl/glShader.hpp"
 
-
 namespace nimbus
 {
 
-ref<Shader> Shader::create(const std::string& name,
-                           const std::string& vertexSource,
-                           const std::string& fragmentSource)
+ref<Shader> Shader::s_create(const std::string& name,
+                             const std::string& vertexSource,
+                             const std::string& fragmentSource)
 {
     return makeRef<GlShader>(name, vertexSource, fragmentSource);
 }
 
-ref<Shader> Shader::create(const std::string& vertexPath,
-                           const std::string& fragmentPath)
+ref<Shader> Shader::s_create(const std::string& vertexPath,
+                             const std::string& fragmentPath)
 {
     return makeRef<GlShader>(vertexPath, fragmentPath);
 }

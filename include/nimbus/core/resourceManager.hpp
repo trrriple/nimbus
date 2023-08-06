@@ -47,5 +47,6 @@ class ResourceManager
 
     // Disable assignment operator
     ResourceManager& operator=(const ResourceManager&) = delete;
+
 };
 }  // namespace nimbus

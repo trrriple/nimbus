@@ -529,6 +529,8 @@ class FelixLayer : public Layer
                 if (ImGui::MenuItem("Open", "Ctrl+O"))
                 {
                     // Handle when 'Open' is clicked
+                    SceneSerializer ss = SceneSerializer(mp_scene);
+                    ss.deserialize("scene.nmscn");
                 }
 
                 if (ImGui::MenuItem("Save", "Ctrl+S"))

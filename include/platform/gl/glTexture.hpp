@@ -11,13 +11,13 @@ namespace nimbus
 class GlTexture : public Texture
 {
    public:
-    GlTexture(const Type         type,
-              const std::string& path,
-              const bool         flipOnLoad = false);
+    ~GlTexture();
 
     GlTexture(const Type type, Spec& spec);
 
-    virtual ~GlTexture();
+    GlTexture(const Type         type,
+              const std::string& path,
+              const bool         flipOnLoad = false);
 
     virtual void bind(const uint32_t glTextureUnit) const override;
 
@@ -74,6 +74,7 @@ class GlTexture : public Texture
     inline static std::mutex s_genLock = std::mutex();
 
     static void _s_gen(uint32_t& id, bool multisample = false);
+
 };
 
 }  // namespace nimbus

@@ -199,14 +199,15 @@ class SceneHeirarchyPanel
         {
             // Draw the loaded texture as a button image
             void* textureId = nullptr;
-            if (spriteCmp.texture == nullptr)
+            if (spriteCmp.p_texture == nullptr)
             {
                 textureId
                     = reinterpret_cast<void*>(mp_checkerboardTex->getId());
             }
             else
             {
-                textureId = reinterpret_cast<void*>(spriteCmp.texture->getId());
+                textureId
+                    = reinterpret_cast<void*>(spriteCmp.p_texture->getId());
             }
 
             ImGui::BeginTable("Textures",
@@ -248,7 +249,7 @@ class SceneHeirarchyPanel
 
                     if (texture)
                     {
-                        spriteCmp.texture = texture;
+                        spriteCmp.p_texture = texture;
                     }
                     else
                     {
@@ -280,7 +281,7 @@ class SceneHeirarchyPanel
 
                 if (texture)
                 {
-                    spriteCmp.texture = texture;
+                    spriteCmp.p_texture = texture;
                 }
                 else
                 {
@@ -382,7 +383,7 @@ class SceneHeirarchyPanel
                                   | ImGuiColorEditFlags_AlphaPreview);
 
             ImGui::DragFloat("Kerning", &textCmp.format.kerning, 0.01f);
-            ImGui::DragFloat("Leading", &textCmp.format.lineSpacing, 0.01f);
+            ImGui::DragFloat("Leading", &textCmp.format.leading, 0.01f);
 
             ImGui::TreePop();
         }
