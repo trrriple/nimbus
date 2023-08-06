@@ -15,6 +15,7 @@ vendor/tracy*
 vendor/msdf-atlas-gen*
 vendor/box2d*
 vendor/entt*
+vendor/yaml*
 
 # cmake stuff
 CMakeFiles/

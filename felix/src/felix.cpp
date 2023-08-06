@@ -6,6 +6,8 @@
 #include "panels/renderStatsPanel.hpp"
 #include "panels/editCameraMenuPanel.hpp"
 
+#include "yaml-cpp/yaml.h"
+
 namespace nimbus
 {
 class sceneCameraController : public EntityLogic

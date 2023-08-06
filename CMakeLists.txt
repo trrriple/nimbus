@@ -192,21 +192,36 @@ add_library(imgui STATIC ${IMGUI_LIB_SRC})
 target_include_directories(imgui PRIVATE "${imgui_SOURCE_DIR}")
 target_include_directories(imgui PRIVATE "${sdl2_SOURCE_DIR}/include")
 
-
-
 # #########################
 # Box2D
 # #########################
-
 FetchContent_Declare(box2d
-                     GIT_REPOSITORY      https://github.com/erincatto/Box2D.git
-                     GIT_TAG             v2.4.1)
+    GIT_REPOSITORY https://github.com/erincatto/Box2D.git
+    GIT_TAG v2.4.1
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE)
 
 
 set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
 set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(box2d)
+
+# #########################
+# yaml-cpp
+# #########################
+FetchContent_Declare(yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG 35b4498026b6293bfadc75f9ee325cb16d6975af
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE)
+
+
+set(DYAML_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
+
+FetchContent_MakeAvailable(yaml-cpp)
+
 
 # #########################
 # Tracy (profiling)
@@ -240,6 +255,7 @@ target_link_libraries(nimbus PRIVATE glad)
 target_link_libraries(nimbus PRIVATE stb_image)
 target_link_libraries(nimbus PRIVATE imgui)
 target_link_libraries(nimbus PRIVATE box2d)
+target_link_libraries(nimbus PRIVATE yaml-cpp)
 target_link_libraries(nimbus PUBLIC TracyClient)
 
 
@@ -274,6 +290,9 @@ target_include_directories(nimbus PUBLIC "${imgui_SOURCE_DIR}")
 
 #box2d
 target_include_directories(nimbus PUBLIC "${box2d_SOURCE_DIR}/include")
+
+#yamlcpp
+target_include_directories(nimbus PUBLIC "${yaml-cpp_SOURCE_DIR}/include")
 
 #tracy
 target_include_directories(nimbus PUBLIC "${tracy_SOURCE_DIR}/public/tracy")
@@ -339,6 +358,9 @@ if(NIMBUS_BUILD_FELIX)
     # #########################
     file(GLOB FELIX_SRC "felix/src/*.cpp")
     add_executable(felix WIN32 ${FELIX_SRC})
+    set_target_properties(felix PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin"
+    )
 
     target_link_libraries(felix PRIVATE nimbus)
 
