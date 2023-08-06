@@ -14,7 +14,7 @@ class Entity; // forward declare, can't include header for circular reason
 class Scene
 {
    public:
-    Scene();
+    Scene(const std::string& name = "Untitled");
     ~Scene();
 
     Entity addEntity(const std::string& name = std::string());
@@ -30,9 +30,12 @@ class Scene
    private:
     entt::registry m_registry;
     float          m_aspectRatio;
+    std::string    m_name;
 
 
     friend class Entity;
+    friend class SceneSerializer;
+
     // felix only
     friend class FelixLayer;
     friend class SceneHeirarchyPanel;

@@ -10,7 +10,7 @@
 namespace nimbus
 {
 
-Scene::Scene()
+Scene::Scene(const std::string& name) : m_name(name)
 {
 }
 

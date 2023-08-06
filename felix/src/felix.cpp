@@ -5,8 +5,8 @@
 #include "panels/sceneHierarchyPanel.hpp"
 #include "panels/renderStatsPanel.hpp"
 #include "panels/editCameraMenuPanel.hpp"
+#include "nimbus/scene/sceneSerializer.hpp"
 
-#include "yaml-cpp/yaml.h"
 
 namespace nimbus
 {
@@ -147,7 +147,7 @@ class FelixLayer : public Layer
         mp_appWinRef = &mp_appRef->getWindow();
         mp_appRef->setDrawPeriodLimit(0.00334f);
 
-        mp_scene = makeRef<Scene>();
+        mp_scene = makeRef<Scene>("Demo Scene");
 
         ///////////////////////////
         // Cameras
@@ -534,6 +534,8 @@ class FelixLayer : public Layer
                 if (ImGui::MenuItem("Save", "Ctrl+S"))
                 {
                     // Handle when 'Save' is clicked
+                    SceneSerializer ss = SceneSerializer(mp_scene);
+                    ss.serialize("scene.nmscn");
                 }
 
                 if (ImGui::MenuItem("Exit"))

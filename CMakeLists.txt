@@ -217,8 +217,7 @@ FetchContent_Declare(yaml-cpp
     GIT_PROGRESS TRUE)
 
 
-set(DYAML_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-
+set(YAML_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(yaml-cpp)
 
