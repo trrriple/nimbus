@@ -49,7 +49,7 @@ class SceneHeirarchyPanel
     {
         ImGui::Begin("Heirarchy");
 
-        if (ImGui::Button(ICON_FA_PLUS))
+        if (ImGui::Button(ICON_FA_SQUARE_PLUS))
         {
             mp_sceneContext->addEntity("New Entity");
         }
@@ -600,6 +600,7 @@ class SceneHeirarchyPanel
             {
                 entity.removeComponent<SpriteCmp>();
             }
+            
         }
 
         ///////////////////////////
@@ -677,6 +678,9 @@ class SceneHeirarchyPanel
 
         static ImVec2 buttonSize = {lineHeight - 3, lineHeight};
 
+        ImGuiIO& io = ImGui::GetIO();
+        auto boldfont = io.Fonts->Fonts[1];
+
         // set the size of the buttons
         bool changedX = false;
         bool changedY = false;
@@ -697,11 +701,14 @@ class SceneHeirarchyPanel
                               ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
                               ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
-        if (ImGui::Button(ICON_FA_X, buttonSize))
+
+        ImGui::PushFont(boldfont);
+        if (ImGui::Button("X", buttonSize))
         {
             values.x = resetValue;
             changedX = true;
         }
+        ImGui::PopFont();
         ImGui::PopStyleColor(3);
 
         ImGui::SameLine();
@@ -719,11 +726,14 @@ class SceneHeirarchyPanel
                               ImVec4{0.3f, 0.8f, 0.3f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
                               ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
-        if (ImGui::Button(ICON_FA_Y, buttonSize))
+        
+        ImGui::PushFont(boldfont);
+        if (ImGui::Button("Y", buttonSize))
         {
             values.y = resetValue;
             changedY = true;
         }
+        ImGui::PopFont();
         ImGui::PopStyleColor(3);
 
         ImGui::SameLine();
@@ -740,11 +750,14 @@ class SceneHeirarchyPanel
                               ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
                               ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
-        if (ImGui::Button(ICON_FA_Z, buttonSize))
+        
+        ImGui::PushFont(boldfont);
+        if (ImGui::Button("Z", buttonSize))
         {
             values.z = resetValue;
             changedZ = true;
         }
+        ImGui::PopFont();
         ImGui::PopStyleColor(3);
 
         ImGui::SameLine();

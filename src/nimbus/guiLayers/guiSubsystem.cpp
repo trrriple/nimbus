@@ -20,6 +20,9 @@ namespace nimbus
 static const std::string k_defaultFontPath
     = "../resources/fonts/Roboto/Roboto-Regular.ttf";
 
+static const std::string k_defaultBoldFontPath
+    = "../resources/fonts/Roboto/Roboto-Black.ttf";
+
 static const std::string k_defaultIconFontPath
     = "../resources/fonts/FontAwesome6/" FONT_ICON_FILE_NAME_FAS;
 
@@ -44,6 +47,8 @@ void GuiSubsystem::onInsert()
     float   fontSize = 15.0f;
     ImFont* p_roboto
         = io.Fonts->AddFontFromFileTTF(k_defaultFontPath.c_str(), fontSize);
+
+
 
     if (p_roboto != nullptr)
     {
@@ -82,8 +87,23 @@ void GuiSubsystem::onInsert()
                           k_defaultIconFontPath.c_str());
     }
 
+    ///////////////////////////
+    // Bold font
+    ///////////////////////////
+    ImFont* p_robotoBold
+        = io.Fonts->AddFontFromFileTTF(k_defaultBoldFontPath.c_str(), fontSize);
+
+    if (p_robotoBold == nullptr)
+    {
+        Log::coreCritical("Could not load GUI font: %s\n",
+                          k_defaultFontPath.c_str());
+    }
+
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
+
+    //override some values;
+    _setDarkThemeColors();
 
     // Setup Platform/Renderer bindings
     // window is the SDL_Window*
@@ -168,6 +188,47 @@ void GuiSubsystem::end()
         ImGui::RenderPlatformWindowsDefault();
         SDL_GL_MakeCurrent(backupCurrentWindow, backupCurrentContext);
     }
+}
+
+void GuiSubsystem::_setDarkThemeColors()
+{
+    auto& colors              = ImGui::GetStyle().Colors;
+    colors[ImGuiCol_WindowBg] = ImVec4{0.12f, 0.12f, 0.11f, 1.0f};
+
+    // Headers
+    colors[ImGuiCol_Header]        = ImVec4{0.2f, 0.21f, 0.19f, 1.0f};
+    colors[ImGuiCol_HeaderHovered] = ImVec4{0.24f, 0.24f, 0.2f, 1.0f};
+    colors[ImGuiCol_HeaderActive]  = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
+
+    // Buttons
+    colors[ImGuiCol_Button]        = ImVec4{0.2f, 0.21f, 0.19f, 1.0f};
+    colors[ImGuiCol_ButtonHovered] = ImVec4{0.24f, 0.24f, 0.2f, 1.0f};
+    colors[ImGuiCol_ButtonActive]  = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
+
+    // Frame BG
+    colors[ImGuiCol_FrameBg]        = ImVec4{0.2f, 0.21f, 0.19f, 1.0f};
+    colors[ImGuiCol_FrameBgHovered] = ImVec4{0.24f, 0.24f, 0.2f, 1.0f};
+    colors[ImGuiCol_FrameBgActive]  = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
+
+    // Tabs
+    colors[ImGuiCol_Tab]                = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
+    colors[ImGuiCol_TabHovered]         = ImVec4{0.25f, 0.26f, 0.22f, 1.0f};
+    colors[ImGuiCol_TabActive]          = ImVec4{0.25f, 0.26f, 0.22f, 1.0f};
+    colors[ImGuiCol_TabUnfocused]       = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4{0.2f, 0.21f, 0.19f, 1.0f};
+
+    // Title
+    colors[ImGuiCol_TitleBg]          = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
+    colors[ImGuiCol_TitleBgActive]    = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
+
+    // Table
+    colors[ImGuiCol_TableHeaderBg]     = ImVec4{0.2f, 0.21f, 0.19f, 1.0f};
+
+    // misc
+    colors[ImGuiCol_CheckMark]        = ImVec4{0.67f, 0.84f, 0.0f, 1.0f};
+    colors[ImGuiCol_SeparatorHovered] = ImVec4{0.454f, 0.567f, 0.0f, 1.0f};
+    colors[ImGuiCol_SeparatorActive]  = ImVec4{0.67f, 0.84f, 0.0f, 1.0f};
 }
 
 }  // namespace nimbus

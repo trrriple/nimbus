@@ -34,7 +34,7 @@ void GlGraphicsApi::init()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // set the gl clear color
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.15f, 0.16f, 0.13f, 1.0f);
 
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);

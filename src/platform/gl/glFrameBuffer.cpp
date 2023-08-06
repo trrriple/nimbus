@@ -269,7 +269,6 @@ void GlFrameBuffer::_construct()
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    GraphicsApi::clearColor({0.1f, 0.1f, 0.1f, 1.0f});
     // bind the default frame buffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

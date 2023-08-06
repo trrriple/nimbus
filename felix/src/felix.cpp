@@ -331,7 +331,8 @@ class FelixLayer : public Layer
         {
             if (eventType == Event::Type::MOUSEMOTION)
             {
-                if (mp_appWinRef->mouseButtonPressed(MouseButton::MIDDLE))
+                if (mp_appWinRef->mouseButtonPressed(MouseButton::MIDDLE)
+                    && mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
                 {
                     glm::vec2 delta = {(float)event.getDetails().motion.xrel,
                                        (float)event.getDetails().motion.yrel};
@@ -365,32 +366,62 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Camera Controls
         ///////////////////////////
-        if (mp_appWinRef->keyPressed(ScanCode::W))
+
+        if (mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
         {
-            mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD,
-                                             deltaTime);
+            if (mp_appWinRef->keyPressed(ScanCode::W))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::S))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::SPACE))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::UP,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::C))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::DOWN,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::A))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::LEFT,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::D))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::RIGHT,
+                                                 deltaTime);
+            }
         }
-        if (mp_appWinRef->keyPressed(ScanCode::S))
+        else
         {
-            mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD,
-                                             deltaTime);
-        }
-        if (mp_appWinRef->keyPressed(ScanCode::SPACE))
-        {
-            mp_editCamera->processPosiUpdate(Camera::Movement::UP, deltaTime);
-        }
-        if (mp_appWinRef->keyPressed(ScanCode::C))
-        {
-            mp_editCamera->processPosiUpdate(Camera::Movement::DOWN, deltaTime);
-        }
-        if (mp_appWinRef->keyPressed(ScanCode::A))
-        {
-            mp_editCamera->processPosiUpdate(Camera::Movement::LEFT, deltaTime);
-        }
-        if (mp_appWinRef->keyPressed(ScanCode::D))
-        {
-            mp_editCamera->processPosiUpdate(Camera::Movement::RIGHT,
-                                             deltaTime);
+            if (mp_appWinRef->keyPressed(ScanCode::W))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::UP,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::A))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::S))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::DOWN,
+                                                 deltaTime);
+            }
+            if (mp_appWinRef->keyPressed(ScanCode::D))
+            {
+                mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD,
+                                                 deltaTime);
+            }
         }
     }
 
