@@ -2,6 +2,9 @@
 #include "nimbus/core/common.hpp"
 #include "nimbus/renderer/texture.hpp"
 
+#include <thread>
+#include <atomic>
+
 namespace nimbus
 {
 struct FontData;
@@ -36,10 +39,38 @@ class Font
         return m_data;
     }
 
+    bool isLoaded()
+    {
+        // short circuit atomic check if we know it's been
+        // loaded already
+        if (m_loaded)
+        {
+            return true;
+        }
+        else if (m_isDone.load())
+        {
+            _initializeTexture();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
    private:
     std::string  m_path;
     FontData*    m_data;
-    ref<Texture> m_atlasTex;
+    ref<Texture> m_atlasTex = nullptr;
+
+    // Atomic variable to indicate if processing is done
+    std::atomic_bool m_isDone = false;
+    std::thread      m_workerThread;
+
+    bool m_loaded = false;
+
+    void _loadFont();
+    void _initializeTexture();
 };
 
 }  // namespace nimbus

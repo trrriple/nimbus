@@ -6,7 +6,6 @@
 #include "panels/renderStatsPanel.hpp"
 #include "panels/editCameraMenuPanel.hpp"
 
-
 namespace nimbus
 {
 class sceneCameraController : public EntityLogic
@@ -15,14 +14,14 @@ class sceneCameraController : public EntityLogic
     virtual void onCreate()
     {
         mp_cameraCmp = &getComponent<CameraCmp>();
-        mp_window = getComponent<WindowRefCmp>().p_window;
+        mp_window    = getComponent<WindowRefCmp>().p_window;
 
         m_lastWheelPos = mp_window->mouseWheelPos();
 
-        mp_cameraCmp->p_camera->setPosition({0.0f, 0.0f, 0.0f});
-        mp_cameraCmp->p_camera->setYaw(0.0f);
-        mp_cameraCmp->p_camera->setPitch(0.0f);
-        mp_cameraCmp->p_camera->setZoom(1.0f);
+        mp_cameraCmp->camera.setPosition({0.0f, 0.0f, 0.0f});
+        mp_cameraCmp->camera.setYaw(0.0f);
+        mp_cameraCmp->camera.setPitch(0.0f);
+        mp_cameraCmp->camera.setZoom(1.0f);
     }
 
     virtual void onDestroy()
@@ -39,31 +38,31 @@ class sceneCameraController : public EntityLogic
 
         if (mp_window->keyPressed(ScanCode::W))
         {
-            mp_cameraCmp->p_camera->processPosiUpdate(Camera::Movement::UP,
-                                                      deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::UP,
+                                                   deltaTime);
         }
         if (mp_window->keyPressed(ScanCode::A))
         {
-            mp_cameraCmp->p_camera->processPosiUpdate(
-                Camera::Movement::BACKWARD, deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::BACKWARD,
+                                                   deltaTime);
         }
         if (mp_window->keyPressed(ScanCode::S))
         {
-            mp_cameraCmp->p_camera->processPosiUpdate(Camera::Movement::DOWN,
-                                                      deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::DOWN,
+                                                   deltaTime);
         }
         if (mp_window->keyPressed(ScanCode::D))
         {
-            mp_cameraCmp->p_camera->processPosiUpdate(Camera::Movement::FORWARD,
-                                                      deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::FORWARD,
+                                                   deltaTime);
         }
 
         float curWheelPos = mp_window->mouseWheelPos();
 
         if (curWheelPos != m_lastWheelPos)
         {
-            mp_cameraCmp->p_camera->processZoom((curWheelPos - m_lastWheelPos)
-                                                * 0.5);
+            mp_cameraCmp->camera.processZoom((curWheelPos - m_lastWheelPos)
+                                             * 0.5);
             m_lastWheelPos = curWheelPos;
         }
     }
@@ -95,9 +94,8 @@ class FelixLayer : public Layer
     ///////////////////////////
     // Scene
     ///////////////////////////
-    ref<Scene>   mp_scene;
-    State        m_sceneState = State::PAUSE;
-
+    ref<Scene> mp_scene;
+    State      m_sceneState = State::PAUSE;
 
     ///////////////////////////
     // Viewport Info
@@ -120,10 +118,6 @@ class FelixLayer : public Layer
     ///////////////////////////
     ref<Camera> mp_editCamera;
 
-    // TODO temporary, this should be part of scene only
-    CameraCmp*  mp_sceneCamera2DCmp;
-    ref<Camera> mp_sceneCamera2D;
-
     ///////////////////////////
     // Panels
     ///////////////////////////
@@ -132,13 +126,6 @@ class FelixLayer : public Layer
     scope<SceneHeirarchyPanel> mp_sceneHierarchyPanel;
     scope<RenderStatsPanel>    mp_renderStatsPanel;
     scope<EditCameraMenuPanel> mp_editCameraMenuPanel;
-
-
-    // TODO FOR TESTING, REMOVE
-    scope<Model> m_cubeModel;
-    ref<Shader>  m_cubeShader;
-
-
 
     ///////////////////////////
     // Flags for GUI events
@@ -158,16 +145,7 @@ class FelixLayer : public Layer
         mp_appWinRef = &mp_appRef->getWindow();
         mp_appRef->setDrawPeriodLimit(0.00334f);
 
-        GraphicsApi::setDepthTest(true);
-
         mp_scene = makeRef<Scene>();
-
-        // for testing remove
-        m_cubeModel = makeScope<Model>(
-            "../../resources/objects/rubixCube/RubixCube.obj");
-        m_cubeShader = ResourceManager::s_get().loadShader(
-            std::filesystem::path("../../shaderSrc/model.vs").generic_string(),
-            std::filesystem::path("../../shaderSrc/model.fs").generic_string());
 
         ///////////////////////////
         // Cameras
@@ -181,48 +159,42 @@ class FelixLayer : public Layer
 
         // scene camera
         auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
-        mp_sceneCamera2D       = makeRef<Camera>(Camera::Type::ORTHOGRAPHIC);
-        mp_sceneCamera2D->setAspectRatio(m_aspectRatio);
-        mp_sceneCamera2D->setSpeed(5.0f);
-
-        mp_sceneCamera2DCmp
-            = &(sceneCameraEntity.addComponent<CameraCmp>(mp_sceneCamera2D));
-        mp_sceneCamera2DCmp->primary = true;
+        sceneCameraEntity.addComponent<CameraCmp>();
 
         sceneCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
 
-        sceneCameraEntity.addComponent<nativeLogicCmp>()
+        sceneCameraEntity.addComponent<NativeLogicCmp>()
             .bind<sceneCameraController>();
 
         ///////////////////////////
         // Panels
         ///////////////////////////
-        mp_viewportPanel    = makeScope<ViewportPanel>();
-        mp_sceneControlPanel  = makeScope<SceneControlPanel>();
+        mp_viewportPanel       = makeScope<ViewportPanel>();
+        mp_sceneControlPanel   = makeScope<SceneControlPanel>();
         mp_sceneHierarchyPanel = makeScope<SceneHeirarchyPanel>(mp_scene);
-        mp_renderStatsPanel = makeScope<RenderStatsPanel>();
+        mp_renderStatsPanel    = makeScope<RenderStatsPanel>();
         mp_editCameraMenuPanel
             = makeScope<EditCameraMenuPanel>(mp_editCamera.get());
 
         ///////////////////////////
         // Test Sprite
         ///////////////////////////
-        auto spriteEntity1 = mp_scene->addEntity("Test Sprite 1");
+        auto  spriteEntity1 = mp_scene->addEntity("Test Sprite 1");
         auto& transformCmp1 = spriteEntity1.addComponent<TransformCmp>();
         transformCmp1.setScale({0.5f, 0.5f, 1.0f});
         auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
         spriteCmp1.color = {0.0f, 1.0f, 0.0f, 1.0f};
 
-        auto spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
+        auto  spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
         auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
         transformCmp2.setScale({0.75f, 0.75f, 1.0f});
         auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
-        spriteCmp2.color = {1.9f, 0.0f, 0.0f, 1.0f};
+        spriteCmp2.color = {1.0f, 0.0f, 0.0f, 1.0f};
 
         ///////////////////////////
         // Text text
         ///////////////////////////
-        mp_generalFont = makeRef<Font>(
+        mp_generalFont = ResourceManager::s_get().loadFont(
             "../resources/fonts/Roboto/Roboto-Regular.ttf");
 
         Font::Format format;
@@ -284,7 +256,6 @@ class FelixLayer : public Layer
         screenSpec.depthType = Texture::FormatInternal::NONE;
 
         mp_screenBuffer = FrameBuffer::s_create(screenSpec);
-
     }
 
     virtual void onRemove() override
@@ -334,10 +305,7 @@ class FelixLayer : public Layer
 
         if (m_sceneState == State::PAUSE)
         {
-
             mp_scene->_onDrawEditor(mp_editCamera.get());
-
-            // m_cubeModel->draw(m_cubeShader, glm::mat4(1.0f));
         }
         else
         {
@@ -386,7 +354,7 @@ class FelixLayer : public Layer
             else if (eventType == Event::Type::DROPFILE)
             {
                 m_fileDropHandled = false;
-                m_fileDropPath = event.getDetails().drop.file;
+                m_fileDropPath    = event.getDetails().drop.file;
                 event.markAsHandled();
             }
         }
@@ -477,7 +445,7 @@ class FelixLayer : public Layer
         ImGuiIO&    io          = ImGui::GetIO();
         ImGuiStyle& style       = ImGui::GetStyle();
         float       minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x   = 250.0f;
+        style.WindowMinSize.x   = 335.0f;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
             ImGuiID dockspaceId = ImGui::GetID("FelixDockSpace");
@@ -488,7 +456,6 @@ class FelixLayer : public Layer
 
     virtual void onGuiUpdate(float deltaTime) override
     {
-        
         ///////////////////////////
         // Allow external file drops
         ///////////////////////////
@@ -562,60 +529,59 @@ class FelixLayer : public Layer
             ImGui::EndMainMenuBar();
         }
 
-            // Bounds used for some calculations
-            Camera::Bounds worldBounds;
-            if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
-            {
-                worldBounds = mp_editCamera->getVisibleWorldBounds();
-            }
+        // Bounds used for some calculations
+        Camera::Bounds worldBounds;
+        if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
+        {
+            worldBounds = mp_editCamera->getVisibleWorldBounds();
+        }
 
-            ///////////////////////////
-            // Viewport
-            ///////////////////////////
+        ///////////////////////////
+        // Viewport
+        ///////////////////////////
 
-            mp_viewportPanel->onDraw(
-                mp_screenBuffer,
-                mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC
-                    ? &worldBounds
-                    : nullptr);
-            
-            m_viewportFocused = mp_viewportPanel->m_viewportFocused;
-            m_viewportHovered = mp_viewportPanel->m_viewportHovered;
-            if (mp_viewportPanel->wasResized())
-            {
-                // we need to resize some stuff
-                m_viewportSize = mp_viewportPanel->m_viewportSize;
-                m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
-                mp_editCamera->setAspectRatio(m_aspectRatio);
+        mp_viewportPanel->onDraw(
+            mp_screenBuffer,
+            mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC
+                ? &worldBounds
+                : nullptr);
 
-                mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-                mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+        m_viewportFocused = mp_viewportPanel->m_viewportFocused;
+        m_viewportHovered = mp_viewportPanel->m_viewportHovered;
+        if (mp_viewportPanel->wasResized())
+        {
+            // we need to resize some stuff
+            m_viewportSize = mp_viewportPanel->m_viewportSize;
+            m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
+            mp_editCamera->setAspectRatio(m_aspectRatio);
 
-                mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
-            }
+            mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+            mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
 
-            ///////////////////////////
-            // Scene Control
-            ///////////////////////////
-            mp_sceneControlPanel->onDraw();
+            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
+        }
 
-            ///////////////////////////
-            // Scene Heirarchy
-            ///////////////////////////
-            mp_sceneHierarchyPanel->onDraw();
+        ///////////////////////////
+        // Scene Control
+        ///////////////////////////
+        mp_sceneControlPanel->onDraw();
 
-            ///////////////////////////
-            // Camera Menu
-            ///////////////////////////
-            mp_editCameraMenuPanel->onDraw(worldBounds);
+        ///////////////////////////
+        // Scene Heirarchy
+        ///////////////////////////
+        mp_sceneHierarchyPanel->onDraw();
 
-            ///////////////////////////
-            // Render Stats
-            ///////////////////////////
-            mp_renderStatsPanel->onDraw(deltaTime);
+        ///////////////////////////
+        // Camera Menu
+        ///////////////////////////
+        mp_editCameraMenuPanel->onDraw(worldBounds);
 
+        ///////////////////////////
+        // Render Stats
+        ///////////////////////////
+        mp_renderStatsPanel->onDraw(deltaTime);
 
-            ImGui::End();  // dockspace
+        ImGui::End();  // dockspace
     }
 };
 

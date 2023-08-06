@@ -6,6 +6,7 @@
 #include "nimbus/core/common.hpp"
 #include "nimbus/renderer/shader.hpp"
 #include "nimbus/renderer/texture.hpp"
+#include "nimbus/renderer/font.hpp"
 
 namespace nimbus
 {
@@ -28,9 +29,12 @@ class ResourceManager
     ref<Shader> loadShader(const std::string& vertexPath,
                            const std::string& fragmentPath);
 
+    ref<Font> loadFont(const std::string& path);
+   
    private:
     std::unordered_map<std::string, ref<Texture>> m_loadedTextures;
     std::unordered_map<std::string, ref<Shader>>  m_loadedShaders;
+    std::unordered_map<std::string, ref<Font>>    m_loadedFonts;
 
     // Private constructor to prevent direct instantiation
     ResourceManager();

@@ -29,12 +29,20 @@ Entity Scene::addEntity(const std::string& name)
     return entity;
 }
 
+void Scene::removeEntity(Entity entity)
+{
+    m_registry.destroy(entity.getId());
+
+
+}
+
+
 void Scene::onStart()
 {
     ///////////////////////////
     // Initialize Logic
     ///////////////////////////
-    m_registry.view<nativeLogicCmp>().each(
+    m_registry.view<NativeLogicCmp>().each(
         [=](auto entity, auto& nsc)
         {
             if (!nsc.p_logic)
@@ -51,7 +59,7 @@ void Scene::onStop()
     ///////////////////////////
     // Destruct Logic
     ///////////////////////////
-    m_registry.view<nativeLogicCmp>().each(
+    m_registry.view<NativeLogicCmp>().each(
         [=](auto entity, auto& nsc)
         {
             NM_UNUSED(entity);
@@ -71,7 +79,7 @@ void Scene::onUpdate(float deltaTime)
     ///////////////////////////
     // Update Logic
     ///////////////////////////
-    m_registry.view<nativeLogicCmp>().each(
+    m_registry.view<NativeLogicCmp>().each(
         [=](auto entity, auto& nsc)
         {
             NM_UNUSED(entity);
@@ -97,7 +105,7 @@ void Scene::onDraw()
         // grab the first camera that's flagged to be used for rendering
         if (camera.primary == true)
         {
-            p_mainCamera = camera.p_camera.get();
+            p_mainCamera = &camera.camera;
             break;
         }
     }
@@ -115,8 +123,7 @@ void Scene::onResize(uint32_t width, uint32_t height)
 {
     auto cameraView = m_registry.view<CameraCmp>();
 
-    const float aspectRatio
-        = static_cast<float>(width) / static_cast<float>(height);
+    m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
     for (auto entity : cameraView)
     {
@@ -124,7 +131,7 @@ void Scene::onResize(uint32_t width, uint32_t height)
 
         if (!camera.fixedAspect)
         {
-            camera.p_camera->setAspectRatio(aspectRatio);
+            camera.camera.setAspectRatio(m_aspectRatio);
         }
     }
 }

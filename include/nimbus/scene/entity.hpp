@@ -11,14 +11,14 @@ class Entity
    public:
     Entity() = default;
     Entity(entt::entity handle, Scene* scene)
-        : mh_entity(handle), m_scene(scene)
+        : mh_entity(handle), mp_sceneParent(scene)
     {
     }
 
     template <typename T>
     bool hasComponent()
     {
-        return m_scene->m_registry.all_of<T>(mh_entity);
+        return mp_sceneParent->m_registry.all_of<T>(mh_entity);
     }
 
     template <typename T>
@@ -26,7 +26,7 @@ class Entity
     {
         NM_ASSERT(hasComponent<T>(), "Entity does not have component!");
 
-        return m_scene->m_registry.get<T>(mh_entity);
+        return mp_sceneParent->m_registry.get<T>(mh_entity);
     }
 
     template <typename T, typename... Args>
@@ -34,10 +34,17 @@ class Entity
     {
         NM_ASSERT(!hasComponent<T>(), "Entity already has component!");
 
-        T& component = m_scene->m_registry.emplace<T>(
+        T& component = mp_sceneParent->m_registry.emplace<T>(
             mh_entity, std::forward<Args>(args)...);
-        // m_scene->OnComponentAdded<T>(*this, component);
+        // mp_sceneParent->OnComponentAdded<T>(*this, component);
         return component;
+    }
+
+    template <typename T, typename... Args>
+    void removeComponent()
+    {
+        NM_ASSERT(hasComponent<T>(), "Entity does not have component!");
+        mp_sceneParent->m_registry.remove<T>(mh_entity);
     }
 
     entt::entity getId()
@@ -52,18 +59,17 @@ class Entity
 
     bool operator==(const Entity& other) const
     {
-        return (other.mh_entity == mh_entity && other.m_scene == m_scene);
+        return (other.mh_entity == mh_entity
+                && other.mp_sceneParent == mp_sceneParent);
     }
 
-    
     bool operator!=(const Entity& other) const
     {
         return !(*this == other);
     }
 
-
    private:
     entt::entity mh_entity{entt::null};
-    Scene*       m_scene = nullptr;
+    Scene*       mp_sceneParent = nullptr;
 };
 }  // namespace nimbus

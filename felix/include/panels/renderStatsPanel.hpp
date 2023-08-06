@@ -44,6 +44,11 @@ class RenderStatsPanel
 
         ImGui::Checkbox("Wireframe Mode", &m_wireFrame);
 
+        if(ImGui::Checkbox("Depth Test", &m_depthTest))
+        {
+            GraphicsApi::setDepthTest(m_depthTest);
+        }
+
         // TODO Temporary
         static bool showDemoWindow = false;
         ImGui::Checkbox("Show ImGuiDemo Window", &showDemoWindow);
@@ -118,6 +123,7 @@ class RenderStatsPanel
    private:
     Application* mp_appRef;
     Window*      mp_appWinRef;
+    bool         m_depthTest = false;
 
     inline static const uint32_t k_frameHistoryLength = 60 * 2 + 1;
     std::vector<float>           m_frameTimes_ms;

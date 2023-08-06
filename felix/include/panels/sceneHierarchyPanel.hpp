@@ -49,11 +49,40 @@ class SceneHeirarchyPanel
     {
         ImGui::Begin("Heirarchy");
 
+        if (ImGui::Button(ICON_FA_PLUS))
+        {
+            mp_sceneContext->addEntity("New Entity");
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text("Add new entity");
+            ImGui::EndTooltip();
+        }
+        ImGui::SameLine();
+        ImGuiTextFilter filter;
+        filter.Draw("Filter");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text(
+                "'xxx' display lines containing 'xxx'\n 'xxx,yyy' display "
+                "lines containing 'xxx' or 'yyy'\n '-xxx' hide lines "
+                "containing 'xxx' ");
+            ImGui::EndTooltip();
+        }
+
         for (auto [entityHandle] :
              mp_sceneContext->m_registry.storage<entt::entity>().each())
         {
             Entity entity = {entityHandle, mp_sceneContext.get()};
-            _drawNode(entity);
+
+            auto name = entity.getComponent<NameCmp>().name;
+
+            if (filter.PassFilter(name.c_str()))
+            {
+                _drawEntity(entity);
+            }
         }
 
         // clear selection when clicked off of in window
@@ -63,12 +92,18 @@ class SceneHeirarchyPanel
             m_selectionContext = {};
         }
 
+        // reduce default indentation for component panel
+        float originalIndent            = ImGui::GetStyle().IndentSpacing;
+        ImGui::GetStyle().IndentSpacing = originalIndent * 0.5f;
+
         ImGui::Begin("Properties");
         if (m_selectionContext)
         {
             _drawComponents(m_selectionContext);
         }
         ImGui::End();
+
+        ImGui::GetStyle().IndentSpacing = originalIndent;
 
         ImGui::End();  // Heirarchy
     }
@@ -82,7 +117,10 @@ class SceneHeirarchyPanel
 
     char m_scratch[1024];
 
-    void _drawNode(Entity entity)
+    ////////////////////////////////////////////////////////////////////////////
+    // Private Functions
+    ////////////////////////////////////////////////////////////////////////////
+    void _drawEntity(Entity entity)
     {
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
                                    | ImGuiTreeNodeFlags_OpenOnDoubleClick
@@ -102,37 +140,44 @@ class SceneHeirarchyPanel
             ImGui::TreePop();
         }
 
-        if (ImGui::IsItemClicked())
+        // select item as context if it's clicked
+        if (ImGui::IsItemClicked(0))
         {
             m_selectionContext = entity;
+        }
+
+        // Check for right-click on the node
+        if (ImGui::BeginPopupContextItem())
+        {
+            if (ImGui::MenuItem("Remove Entity"))
+            {
+                mp_sceneContext->removeEntity(entity);
+                if (m_selectionContext == entity)
+                {
+                    m_selectionContext = {};
+                }
+            }
+
+            ImGui::EndPopup();
         }
     }
 
     void _drawNameCmp(Entity entity)
     {
-        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                          | ImGuiTreeNodeFlags_DefaultOpen
-                                          | ImGuiTreeNodeFlags_Framed;
+        auto& name = entity.getComponent<NameCmp>().name;
 
-        if (ImGui::TreeNodeEx("Name", flags))
+        strncpy_s(m_scratch, name.c_str(), name.length());
+
+        if (ImGui::InputText("##Name", m_scratch, sizeof(m_scratch)))
         {
-            auto& name = entity.getComponent<NameCmp>().name;
-
-            strncpy_s(m_scratch, name.c_str(), name.length());
-
-            if (ImGui::InputText("##Name", m_scratch, sizeof(m_scratch)))
-            {
-                name = std::string(m_scratch);
-            }
-            ImGui::TreePop();
+            name = std::string(m_scratch);
         }
     }
 
     void _drawSpriteCmp(Entity entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                          | ImGuiTreeNodeFlags_DefaultOpen
-                                          | ImGuiTreeNodeFlags_Framed;
+                                          | ImGuiTreeNodeFlags_DefaultOpen;
 
         static char* fileDialogBuffer = nullptr;
         static char  path[500]        = "";
@@ -143,7 +188,8 @@ class SceneHeirarchyPanel
         {
             ImGui::ColorEdit4("Color",
                               glm::value_ptr(spriteCmp.color),
-                              ImGuiColorEditFlags_AlphaBar
+                              ImGuiColorEditFlags_Float
+                                  | ImGuiColorEditFlags_AlphaBar
                                   | ImGuiColorEditFlags_AlphaPreview);
 
             ImGui::TreePop();
@@ -247,8 +293,11 @@ class SceneHeirarchyPanel
     void _drawTextCmp(Entity entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                          | ImGuiTreeNodeFlags_DefaultOpen
-                                          | ImGuiTreeNodeFlags_Framed;
+                                          | ImGuiTreeNodeFlags_DefaultOpen;
+
+        static char* fileDialogBuffer = nullptr;
+        static char  path[500]        = "";
+
         auto& textCmp = entity.getComponent<TextCmp>();
 
         if (ImGui::TreeNodeEx("Text", flags))
@@ -266,14 +315,70 @@ class SceneHeirarchyPanel
 
         if (ImGui::TreeNodeEx("Format", flags))
         {
+            // readonly flag prevents this from being dangerous
+            std::string fontName;
+            if (textCmp.format.p_font != nullptr)
+            {
+                fontName = textCmp.format.p_font->getPath().c_str();
+            }
+            else
+            {
+                fontName = "No font loaded";
+            }
+
+            // this const cast is safe because of the readonly flag
+            ImGui::InputText("Font",
+                             const_cast<char*>(fontName.c_str()),
+                             fontName.length(),
+                             ImGuiInputTextFlags_ReadOnly);
+
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::Text(
+                    "Drag and drop text files here, or double-click to browse");
+                ImGui::EndTooltip();
+            }
+            // support drag and drop files onto the image button
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload
+                    = ImGui::AcceptDragDropPayload("DND_FILE"))
+                {
+                    const char* path = (const char*)payload->Data;
+                    ref<Font>   font = ResourceManager::s_get().loadFont(path);
+
+                    if (font)
+                    {
+                        textCmp.format.p_font = font;
+                    }
+                    else
+                    {
+                        Log::warn("Could not load font %s", path);
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0))
+            {
+                // open the file dialog
+                fileDialogBuffer             = path;
+                FileDialog::file_dialog_open = true;
+                FileDialog::file_dialog_open_type
+                    = FileDialog::FileDialogType::OpenFile;
+            }
+
             ImGui::ColorEdit4("Fg Color",
                               glm::value_ptr(textCmp.format.fgColor),
-                              ImGuiColorEditFlags_AlphaBar
+                              ImGuiColorEditFlags_Float
+                                  | ImGuiColorEditFlags_AlphaBar
                                   | ImGuiColorEditFlags_AlphaPreview);
 
             ImGui::ColorEdit4("Bg Color",
                               glm::value_ptr(textCmp.format.bgColor),
-                              ImGuiColorEditFlags_AlphaBar
+                              ImGuiColorEditFlags_Float
+                                  | ImGuiColorEditFlags_AlphaBar
                                   | ImGuiColorEditFlags_AlphaPreview);
 
             ImGui::DragFloat("Kerning", &textCmp.format.kerning, 0.01f);
@@ -281,156 +386,199 @@ class SceneHeirarchyPanel
 
             ImGui::TreePop();
         }
+
+        if (FileDialog::file_dialog_open)
+        {
+            if (FileDialog::ShowFileDialog(&FileDialog::file_dialog_open,
+                                           fileDialogBuffer,
+                                           sizeof(fileDialogBuffer),
+                                           FileDialog::file_dialog_open_type))
+            {
+                ref<Font> font = ResourceManager::s_get().loadFont(path);
+
+                if (font)
+                {
+                    textCmp.format.p_font = font;
+                }
+                else
+                {
+                    Log::warn("Could not load font %s", path);
+                }
+            }
+        }
     }
 
     void _drawCameraCmp(Entity entity)
     {
-        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                          | ImGuiTreeNodeFlags_DefaultOpen
-                                          | ImGuiTreeNodeFlags_Framed;
-
         auto& cameraCmp = entity.getComponent<CameraCmp>();
 
-        if (ImGui::TreeNodeEx("Camera", flags))
+        const char* cameraTypes[] = {"Orthographic", "Perspective"};
+
+        int currentType = static_cast<int>(cameraCmp.camera.getType());
+        if (ImGui::Combo(
+                "Type", &currentType, cameraTypes, IM_ARRAYSIZE(cameraTypes)))
         {
-            const char* cameraTypes[] = {"Orthographic", "Perspective"};
-
-            int currentType = static_cast<int>(cameraCmp.p_camera->getType());
-            if (ImGui::Combo("Type",
-                             &currentType,
-                             cameraTypes,
-                             IM_ARRAYSIZE(cameraTypes)))
-            {
-                if (currentType == 0)
-                {
-                    cameraCmp.p_camera->setType(Camera::Type::ORTHOGRAPHIC);
-                }
-                else
-                {
-                    cameraCmp.p_camera->setType(Camera::Type::PERSPECTIVE);
-                }
-            }
-
-            bool primary = cameraCmp.primary;
-            if (ImGui::Checkbox("Primary", &primary))
-            {
-                // if this is the primary camera, disable primary
-                // for any other camera that has it
-                if (primary)
-                {
-                    auto cameraView
-                        = mp_sceneContext->m_registry.view<CameraCmp>();
-
-                    for (auto entity : cameraView)
-                    {
-                        auto& cameraCmp2 = cameraView.get<CameraCmp>(entity);
-
-                        cameraCmp2.primary = false;
-                    }
-                }
-            }
-
-            // now set this one to the select state
-            // important this happens after because we just cleared
-            // the primary state on all camera components
-            cameraCmp.primary = primary;
-
-            ImGui::Checkbox("Fixed Aspect", &cameraCmp.fixedAspect);
-
-            if (cameraCmp.fixedAspect)
-            {
-                float aspect = cameraCmp.p_camera->getAspectRatio();
-                ImGui::SameLine();
-                ImGui::SetNextItemWidth(100.0f);
-                if (ImGui::DragFloat("##Aspect", &aspect, .001f))
-                {
-                    cameraCmp.p_camera->setAspectRatio(aspect);
-                }
-            }
-
-            auto position = cameraCmp.p_camera->getPosition();
-
-            if (_drawVec3Control("Position", position, 0.0f, 0.01f))
-            {
-                cameraCmp.p_camera->setPosition(position);
-            }
-
             if (currentType == 0)
             {
-                float zoom = cameraCmp.p_camera->getZoom();
-                if (ImGui::DragFloat("Zoom", &zoom, 0.005f))
-                {
-                    cameraCmp.p_camera->setZoom(zoom);
-                }
+                cameraCmp.camera.setType(Camera::Type::ORTHOGRAPHIC);
             }
             else
             {
-                float fov = cameraCmp.p_camera->getFov();
-                if (ImGui::DragFloat("FOV", &fov, 0.1f))
+                cameraCmp.camera.setType(Camera::Type::PERSPECTIVE);
+            }
+        }
+
+        bool primary = cameraCmp.primary;
+        if (ImGui::Checkbox("Primary", &primary))
+        {
+            // if this is the primary camera, disable primary
+            // for any other camera that has it
+            if (primary)
+            {
+                auto cameraView = mp_sceneContext->m_registry.view<CameraCmp>();
+
+                for (auto entity : cameraView)
                 {
-                    cameraCmp.p_camera->setZoom(fov);
+                    auto& cameraCmp2 = cameraView.get<CameraCmp>(entity);
+
+                    cameraCmp2.primary = false;
                 }
             }
+        }
 
-            float farClip = cameraCmp.p_camera->getFarClip();
-            if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
+        // now set this one to the select state
+        // important this happens after because we just cleared
+        // the primary state on all camera components
+        cameraCmp.primary = primary;
+
+        if(ImGui::Checkbox("Fixed Aspect", &cameraCmp.fixedAspect))
+        {
+            if(!cameraCmp.fixedAspect)
             {
-                cameraCmp.p_camera->setFarClip(farClip);
+                cameraCmp.camera.setAspectRatio(mp_sceneContext->m_aspectRatio);
             }
+        }
 
-            float nearClip = cameraCmp.p_camera->getNearClip();
-            if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f))
+        if (cameraCmp.fixedAspect)
+        {
+            float aspect = cameraCmp.camera.getAspectRatio();
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(100.0f);
+            if (ImGui::DragFloat("##Aspect", &aspect, .001f))
             {
-                cameraCmp.p_camera->setNearClip(nearClip);
+                cameraCmp.camera.setAspectRatio(aspect);
             }
+        }
 
-            ImGui::TreePop();
+        auto position = cameraCmp.camera.getPosition();
+
+        if (_drawVec3Control("Position", position, 0.0f, 0.01f))
+        {
+            cameraCmp.camera.setPosition(position);
+        }
+
+        if (currentType == 0)
+        {
+            float zoom = cameraCmp.camera.getZoom();
+            if (ImGui::DragFloat("Zoom", &zoom, 0.005f))
+            {
+                cameraCmp.camera.setZoom(zoom);
+            }
+        }
+        else
+        {
+            float fov = cameraCmp.camera.getFov();
+            if (ImGui::DragFloat("FOV", &fov, 0.1f))
+            {
+                cameraCmp.camera.setZoom(fov);
+            }
+        }
+
+        float farClip = cameraCmp.camera.getFarClip();
+        if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
+        {
+            cameraCmp.camera.setFarClip(farClip);
+        }
+
+        float nearClip = cameraCmp.camera.getNearClip();
+        if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f))
+        {
+            cameraCmp.camera.setNearClip(nearClip);
         }
     }
 
     void _drawTransformCmp(Entity entity)
     {
-        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                          | ImGuiTreeNodeFlags_DefaultOpen
-                                          | ImGuiTreeNodeFlags_Framed;
-
         auto& transformCmp = entity.getComponent<TransformCmp>();
 
-        if (ImGui::TreeNodeEx("Transform", flags))
+        glm::vec3 translation = transformCmp.getTranslation();
+
+        if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
         {
-            glm::vec3 translation = transformCmp.getTranslation();
+            transformCmp.setTranslation(translation);
+        }
 
-            if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
-            {
-                transformCmp.setTranslation(translation);
-            }
+        glm::vec3 rotation = glm::degrees(transformCmp.getRotation());
 
-            glm::vec3 rotation = glm::degrees(transformCmp.getRotation());
+        if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
+        {
+            transformCmp.setRotation(glm::radians(rotation));
+        }
 
-            if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
-            {
-                transformCmp.setRotation(glm::radians(rotation));
-            }
+        glm::vec3 scale = transformCmp.getScale();
 
-            glm::vec3 scale = transformCmp.getScale();
-
-            if (_drawVec3Control("Scale", scale, 1.0f, 0.01f))
-            {
-                transformCmp.setScale(scale);
-            }
-
-            ImGui::TreePop();
+        if (_drawVec3Control("Scale", scale, 1.0f, 0.01f))
+        {
+            transformCmp.setScale(scale);
         }
     }
 
     void _drawComponents(Entity entity)
     {
+        static ImGuiTreeNodeFlags flags
+            = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen
+              | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap;
+
         ///////////////////////////
         // Name  Component
         ///////////////////////////
         if (entity.hasComponent<NameCmp>())
         {
+            // no tree node for the name
             _drawNameCmp(entity);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Add Component"))
+        {
+            ImGui::OpenPopup("addComponent");
+        }
+
+        if (ImGui::BeginPopup("addComponent"))
+        {
+            if (_drawAddComponentEntry<SpriteCmp>("Sprite"))
+            {
+                // add Transform component that will probably
+                // be desired
+                if (!entity.hasComponent<TransformCmp>())
+                {
+                    entity.addComponent<TransformCmp>();
+                }
+            }
+
+            if (_drawAddComponentEntry<TextCmp>("Text"))
+            {
+                if (!entity.hasComponent<TransformCmp>())
+                {
+                    entity.addComponent<TransformCmp>();
+                }
+            }
+
+            _drawAddComponentEntry<NativeLogicCmp>("Native Logic");
+            _drawAddComponentEntry<TransformCmp>("Transform");
+            _drawAddComponentEntry<CameraCmp>("Camera");
+
+            ImGui::EndPopup();
         }
 
         ///////////////////////////
@@ -438,7 +586,20 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<SpriteCmp>())
         {
-            _drawSpriteCmp(entity);
+            bool open = ImGui::TreeNodeEx("Sprite", flags);
+
+            bool removed = _drawComponentMenu();
+
+            if (open)
+            {
+                _drawSpriteCmp(entity);
+                ImGui::TreePop();
+            }
+
+            if (removed)
+            {
+                entity.removeComponent<SpriteCmp>();
+            }
         }
 
         ///////////////////////////
@@ -446,7 +607,19 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<TextCmp>())
         {
-            _drawTextCmp(entity);
+            bool open    = ImGui::TreeNodeEx("Text", flags);
+            bool removed = _drawComponentMenu();
+
+            if (open)
+            {
+                _drawTextCmp(entity);
+                ImGui::TreePop();
+            }
+
+            if (removed)
+            {
+                entity.removeComponent<TextCmp>();
+            }
         }
 
         ///////////////////////////
@@ -454,7 +627,19 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<CameraCmp>())
         {
-            _drawCameraCmp(entity);
+            bool open    = ImGui::TreeNodeEx("Camera", flags);
+            bool removed = _drawComponentMenu();
+
+            if (open)
+            {
+                _drawCameraCmp(entity);
+                ImGui::TreePop();
+            }
+
+            if (removed)
+            {
+                entity.removeComponent<CameraCmp>();
+            }
         }
 
         ///////////////////////////
@@ -462,7 +647,19 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<TransformCmp>())
         {
-            _drawTransformCmp(entity);
+            bool open    = ImGui::TreeNodeEx("Transform", flags);
+            bool removed = _drawComponentMenu();
+
+            if (open)
+            {
+                _drawTransformCmp(entity);
+                ImGui::TreePop();
+            }
+
+            if (removed)
+            {
+                entity.removeComponent<TransformCmp>();
+            }
         }
     }
 
@@ -566,6 +763,46 @@ class SceneHeirarchyPanel
         ImGui::EndTable();
 
         return changedX || changedY || changedZ;
+    }
+
+    template <typename T>
+    bool _drawAddComponentEntry(const std::string& entryName)
+    {
+        bool added = false;
+        if (!m_selectionContext.hasComponent<T>())
+        {
+            if (ImGui::MenuItem(entryName.c_str()))
+            {
+                m_selectionContext.addComponent<T>();
+                added = true;
+                ImGui::CloseCurrentPopup();
+
+            }
+        }
+        return added;
+    }
+
+    bool _drawComponentMenu()
+    {
+        bool removed = false;
+        ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
+
+        if (ImGui::Button(ICON_FA_BARS))
+        {
+            ImGui::OpenPopup("componentMenu");
+        }
+
+        if (ImGui::BeginPopup("componentMenu"))
+        {
+            if (ImGui::MenuItem("Remove Component"))
+            {
+                removed = true;
+            }
+
+            ImGui::EndPopup();
+        }
+
+        return removed;
     }
 };
 

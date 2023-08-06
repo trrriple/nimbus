@@ -18,7 +18,8 @@ class Scene
     ~Scene();
 
     Entity addEntity(const std::string& name = std::string());
-    
+    void   removeEntity(Entity entity);
+
     void onStart();
     void onUpdate(float deltaTime);
     void onDraw();
@@ -28,9 +29,10 @@ class Scene
 
    private:
     entt::registry m_registry;
+    float          m_aspectRatio;
+
 
     friend class Entity;
-
     // felix only
     friend class FelixLayer;
     friend class SceneHeirarchyPanel;

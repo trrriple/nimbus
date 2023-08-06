@@ -15,12 +15,12 @@ namespace nimbus
 
 class EntityLogic;  // forward decl
 
-struct nativeLogicCmp
+struct NativeLogicCmp
 {
     EntityLogic* p_logic = nullptr;
 
     EntityLogic* (*initLogic)();
-    void (*destroyLogic)(nativeLogicCmp*);
+    void (*destroyLogic)(NativeLogicCmp*);
 
     template <typename T>
     void bind()
@@ -28,7 +28,7 @@ struct nativeLogicCmp
         initLogic    = []() -> EntityLogic* { return new T(); };
         
         // TOOD figure out why this can't get called
-        destroyLogic = [](nativeLogicCmp* nsc)
+        destroyLogic = [](NativeLogicCmp* nsc)
         {
             delete nsc->p_logic;
             nsc->p_logic = nullptr;
@@ -212,13 +212,11 @@ struct TextCmp
 
 struct CameraCmp
 {
-    ref<Camera> p_camera;
-    bool        primary     = true;
-    bool        fixedAspect = false;
+    Camera camera;
+    bool   primary     = true;
+    bool   fixedAspect = true;
 
-    CameraCmp(const ref<Camera>& p_icamera) : p_camera(p_icamera)
-    {
-    }
+    CameraCmp() = default;
 };
 
 struct RefCmp
@@ -236,5 +234,19 @@ struct WindowRefCmp
     {
     }
 };
+
+template <typename... Component>
+struct ComponentGroup
+{
+};
+
+using AllComponents = ComponentGroup<NativeLogicCmp,
+                                     NameCmp,
+                                     TransformCmp,
+                                     SpriteCmp,
+                                     TextCmp,
+                                     CameraCmp,
+                                     RefCmp,
+                                     WindowRefCmp>;
 
 }  // namespace nimbus

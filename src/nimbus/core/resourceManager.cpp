@@ -5,7 +5,7 @@
 
 #include "nimbus/renderer/texture.hpp"
 #include "nimbus/renderer/shader.hpp"
-
+#include "nimbus/renderer/font.hpp"
 
 namespace nimbus
 {
@@ -109,6 +109,31 @@ ref<Shader> ResourceManager::loadShader(const std::string& vertexPath,
             shaderPair.first->second->getFragmentPath().c_str());
 
         return shaderPair.first->second;
+    }
+}
+
+ref<Font> ResourceManager::loadFont(const std::string& path)
+{
+    NM_PROFILE_DETAIL();
+
+    // check to see if it was already loaded
+    auto p_fontEntry = m_loadedFonts.find(path);
+    if (p_fontEntry != m_loadedFonts.end())
+    {
+        return p_fontEntry->second;
+    }
+    else
+    {
+        std::filesystem::path filePath(path);
+
+        ref<Font> font = makeRef<Font>(filePath.generic_string());
+
+        auto fontPair = m_loadedFonts.emplace(path, font);
+
+        Log::coreInfo("ResourceManager::Font loaded %s",
+                      fontPair.first->second->getPath().c_str());
+
+        return fontPair.first->second;
     }
 }
 

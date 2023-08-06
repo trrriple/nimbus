@@ -12,18 +12,37 @@
 #include "msdf-atlas-gen/msdf-atlas-gen.h"
 #pragma GCC diagnostic pop
 
+#include <thread>
+#include <atomic>
+
 namespace nimbus
 {
 
 Font::Font(const std::string& fontPath)
     : m_path(fontPath), m_data(new FontData())
 {
+    m_workerThread = std::thread(&Font::_loadFont, this);
+    m_workerThread.detach();  // Detach the thread so it runs independently
+}
+
+Font::~Font()
+{
+    if(m_data->pixels != nullptr)
+    {
+        free(m_data->pixels);
+    }
+
+    delete m_data;
+}
+
+void Font::_loadFont()
+{
     // Initialize instance of FreeType library
     if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype())
     {
         // Load font file
         if (msdfgen::FontHandle* font = msdfgen::loadFont(
-                ft, fontPath.c_str()))
+                ft, m_path.c_str()))
         {
             m_data->fontGeometry = msdf_atlas::FontGeometry(&m_data->glyphs);
             // FontGeometry is a helper class that loads a set of glyphs from a
@@ -58,7 +77,7 @@ Font::Font(const std::string& fontPath)
             // setScale for a fixed size or setMinimumScale to use the largest
             // that fits
             // TODO: determine parameters
-            // packer.setMinimumScale(24.0); 
+            // packer.setMinimumScale(24.0);
             packer.setScale(40.0f);
             // setPixelRange or setUnitRange
             m_data->pixelRange = 2.0;
@@ -88,8 +107,8 @@ Font::Font(const std::string& fontPath)
             // default settings.
             msdf_atlas::GeneratorAttributes attributes;
 
-    		attributes.config.overlapSupport = true;
-	    	attributes.scanlinePass = true;
+            attributes.config.overlapSupport = true;
+            attributes.scanlinePass          = true;
             generator.setAttributes(attributes);
             generator.setThreadCount(16);
             // Generate atlas bitmap
@@ -97,40 +116,47 @@ Font::Font(const std::string& fontPath)
             // The atlas bitmap can now be retrieved via atlasStorage as a
             // BitmapConstRef. The glyphs array (or fontGeometry) contains
             // positioning data for typesetting text.
-            // success = myProject::submitAtlasBitmapAndLayout(
-            //     generator.atlasStorage(), glyphs);
 
             msdfgen::BitmapConstRef<msdfgen::byte, 3> bitmap
                 = (msdfgen::BitmapConstRef<msdfgen::byte, 3>)
                       generator.atlasStorage();
 
-            // msdf_atlas::saveImage(bitmap,
-            //                       msdf_atlas::ImageFormat::PNG,
-            //                       "test.png",
-            //                       msdf_atlas::YDirection::TOP_DOWN);
+            m_data->width  = bitmap.width;
+            m_data->height = bitmap.height;
+            m_data->pixels = malloc(m_data->width * m_data->height * 3);
 
-            Texture::Spec texSpec;
+            memcpy(m_data->pixels,
+                   bitmap.pixels,
+                   m_data->width * m_data->height * 3);
 
-            texSpec.format         = Texture::Format::RGB;
-            texSpec.formatInternal = Texture::FormatInternal::RGB8;
-            texSpec.width          = bitmap.width;
-            texSpec.height         = bitmap.height;
-
-            m_atlasTex = Texture::s_create(Texture::Type::DIFFUSE, texSpec);
-
-            // todo configure size
-            m_atlasTex->setData((void*)bitmap.pixels,
-                               bitmap.width * bitmap.height * 3);
-
-            // Cleanup
             msdfgen::destroyFont(font);
         }
         msdfgen::deinitializeFreetype(ft);
     }
+
+    m_isDone.store(true);  // Set the flag when done
 }
 
-Font::~Font()
+void Font::_initializeTexture()
 {
-    delete m_data;
+    Texture::Spec texSpec;
+
+    texSpec.format         = Texture::Format::RGB;
+    texSpec.formatInternal = Texture::FormatInternal::RGB8;
+    texSpec.width          = m_data->width;
+    texSpec.height         = m_data->height;
+
+    m_atlasTex = Texture::s_create(Texture::Type::DIFFUSE, texSpec);
+
+    // todo configure size
+    m_atlasTex->setData((void*)m_data->pixels,
+                        m_data->width * m_data->height * 3);
+
+    // Cleanup
+    free(m_data->pixels);
+    m_data->pixels = nullptr;
+
+    m_loaded = true;
 }
+
 };  // namespace nimbus

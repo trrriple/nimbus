@@ -29,16 +29,16 @@ void Renderer2D::s_init()
         ///////////////////////////
         // bottom left
         s_genData.quadVertexPositions[0]= glm::vec4(-0.5f, -0.5f,  0.0f,  1.0f);
-        s_genData.quadTextureCoords[0]  = glm::vec2( 0.0f,  0.0f);
+        s_genData.quadTextureCoords[0]  = glm::vec2( 0.0f,  1.0f);
         // bottom right
         s_genData.quadVertexPositions[1]= glm::vec4( 0.5f, -0.5f,  0.0f,  1.0f);
-        s_genData.quadTextureCoords[1]  = glm::vec2( 1.0f,  0.0f);
+        s_genData.quadTextureCoords[1]  = glm::vec2( 1.0f,  1.0f);
         // top right
         s_genData.quadVertexPositions[2]= glm::vec4( 0.5f,  0.5f,  0.0f,  1.0f);
-        s_genData.quadTextureCoords[2]  = glm::vec2( 1.0f,  1.0f);
+        s_genData.quadTextureCoords[2]  = glm::vec2( 1.0f,  0.0f);
         // top left
         s_genData.quadVertexPositions[3]= glm::vec4(-0.5f,  0.5f,  0.0f,  1.0f);
-        s_genData.quadTextureCoords[3]  = glm::vec2( 0.0f,  1.0f);
+        s_genData.quadTextureCoords[3]  = glm::vec2( 0.0f,  0.0f);
 
         ///////////////////////////
         // Quad data init
@@ -212,6 +212,19 @@ void Renderer2D::s_drawText(const std::string&  text,
 
 {
     NM_PROFILE();
+
+    // can't render without a font
+    if(fontFormat.p_font == nullptr)
+    {
+        return;
+    }
+
+    // fonts are loaded in seperate threads, check if it's loaded yet
+    // before trying to draw with it
+    if(!fontFormat.p_font->isLoaded())
+    {
+        return;
+    }
 
     const auto& fontData     = fontFormat.p_font->getFontData();
     const auto& fontGeometry = fontData->fontGeometry;
