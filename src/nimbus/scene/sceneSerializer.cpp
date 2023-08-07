@@ -164,6 +164,7 @@ static void s_serializeEntity(YAML::Emitter& out, Entity entity)
         out KEYVAL("translation", transform.getTranslation());
         out KEYVAL("rotation", transform.getRotation());
         out KEYVAL("scale", transform.getScale());
+        out KEYVAL("scaleLocked", transform.isScaleLocked());
 
         out MAP_END;  // transform`
     }
@@ -278,6 +279,7 @@ static void s_deserializeEntity(YAML::Node entityNode, Scene* p_scene)
         tc.setTranslation(tcNode["translation"].as<glm::vec3>());
         tc.setRotation(tcNode["rotation"].as<glm::vec3>());
         tc.setScale(tcNode["scale"].as<glm::vec3>());
+        tc.setScaleLocked(tcNode["scaleLocked"].as<bool>());
     }
 
 

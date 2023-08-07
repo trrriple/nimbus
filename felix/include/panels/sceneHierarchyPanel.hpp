@@ -473,7 +473,8 @@ class SceneHeirarchyPanel
 
         auto position = cameraCmp.camera.getPosition();
 
-        if (_drawVec3Control("Position", position, 0.0f, 0.01f))
+        bool locked = false;
+        if (_drawVec3Control("Position", position, 0.0f, 0.01f, false, locked))
         {
             cameraCmp.camera.setPosition(position);
         }
@@ -488,7 +489,7 @@ class SceneHeirarchyPanel
         }
         else
         {
-            float fov = cameraCmp.camera.getFov();
+            float fov = cameraCmp.camera.getFov();  
             if (ImGui::DragFloat("FOV", &fov, 0.1f))
             {
                 cameraCmp.camera.setZoom(fov);
@@ -514,23 +515,47 @@ class SceneHeirarchyPanel
 
         glm::vec3 translation = transformCmp.getTranslation();
 
-        if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
+        bool locked = false;
+        if (_drawVec3Control(
+                "Translation", translation, 0.0f, 0.01f, false, locked))
         {
             transformCmp.setTranslation(translation);
         }
 
         glm::vec3 rotation = glm::degrees(transformCmp.getRotation());
 
-        if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
+        if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f, false, locked))
         {
             transformCmp.setRotation(glm::radians(rotation));
         }
 
         glm::vec3 scale = transformCmp.getScale();
 
-        if (_drawVec3Control("Scale", scale, 1.0f, 0.01f))
+        locked = transformCmp.isScaleLocked();
+        if (_drawVec3Control("Scale", scale, 1.0f, 0.01f, true, locked))
         {
-            transformCmp.setScale(scale);
+            transformCmp.setScaleLocked(locked);
+
+            if (transformCmp.isScaleLocked())
+            {
+                // check what changed
+                if (scale.x != transformCmp.getScale().x)
+                {
+                    transformCmp.setScaleX(scale.x);
+                }
+                else if (scale.y != transformCmp.getScale().y)
+                {
+                    transformCmp.setScaleY(scale.y);
+                }
+                else if (scale.z != transformCmp.getScale().z)
+                {
+                    transformCmp.setScaleZ(scale.z);
+                }
+            }
+            else
+            {
+                transformCmp.setScale(scale);
+            }
         }
     }
 
@@ -557,7 +582,7 @@ class SceneHeirarchyPanel
 
         if (ImGui::BeginPopup("addComponent"))
         {
-            if (_drawAddComponentEntry<SpriteCmp>("Sprite"))
+            if (_drawAddComponentEntry<SpriteCmp>(ICON_FA_METEOR " Sprite"))
             {
                 // add Transform component that will probably
                 // be desired
@@ -567,7 +592,7 @@ class SceneHeirarchyPanel
                 }
             }
 
-            if (_drawAddComponentEntry<TextCmp>("Text"))
+            if (_drawAddComponentEntry<TextCmp>(ICON_FA_FONT " Text"))
             {
                 if (!entity.hasComponent<TransformCmp>())
                 {
@@ -575,9 +600,10 @@ class SceneHeirarchyPanel
                 }
             }
 
-            _drawAddComponentEntry<NativeLogicCmp>("Native Logic");
-            _drawAddComponentEntry<TransformCmp>("Transform");
-            _drawAddComponentEntry<CameraCmp>("Camera");
+            _drawAddComponentEntry<NativeLogicCmp>(ICON_FA_COMPUTER
+                                                   " Native Logic");
+            _drawAddComponentEntry<TransformCmp>(ICON_FA_ATOM " Transform");
+            _drawAddComponentEntry<CameraCmp>(ICON_FA_VIDEO " Camera");
 
             ImGui::EndPopup();
         }
@@ -587,7 +613,7 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<SpriteCmp>())
         {
-            bool open = ImGui::TreeNodeEx("Sprite", flags);
+            bool open = ImGui::TreeNodeEx(ICON_FA_METEOR " Sprite", flags);
 
             bool removed = _drawComponentMenu();
 
@@ -609,7 +635,7 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<TextCmp>())
         {
-            bool open    = ImGui::TreeNodeEx("Text", flags);
+            bool open    = ImGui::TreeNodeEx(ICON_FA_FONT " Text", flags);
             bool removed = _drawComponentMenu();
 
             if (open)
@@ -629,7 +655,7 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<CameraCmp>())
         {
-            bool open    = ImGui::TreeNodeEx("Camera", flags);
+            bool open    = ImGui::TreeNodeEx(ICON_FA_VIDEO " Camera", flags);
             bool removed = _drawComponentMenu();
 
             if (open)
@@ -649,7 +675,7 @@ class SceneHeirarchyPanel
         ///////////////////////////
         if (entity.hasComponent<TransformCmp>())
         {
-            bool open    = ImGui::TreeNodeEx("Transform", flags);
+            bool open    = ImGui::TreeNodeEx(ICON_FA_ATOM " Transform", flags);
             bool removed = _drawComponentMenu();
 
             if (open)
@@ -668,8 +694,10 @@ class SceneHeirarchyPanel
     // custom stylized 3 input (X,Y,Z) control block
     static bool _drawVec3Control(const std::string& label,
                                  glm::vec3&         values,
-                                 float              resetValue = 0.0f,
-                                 float              speed      = 0.1f)
+                                 float              resetValue,
+                                 float              speed,
+                                 bool               lockable,
+                                 bool&              lockedStatus)
     {
         // set the size of the dragfloats
         static float itemWidth = ImGui::CalcTextSize("A").x * 6.0;
@@ -774,9 +802,21 @@ class SceneHeirarchyPanel
         ImGui::TableNextColumn();
         ImGui::Text("%s", label.c_str());
 
+        bool changedLock = false;
+        if (lockable)
+        {
+            ImGui::SameLine();
+
+            if (ImGui::Button(lockedStatus ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN))
+            {
+                lockedStatus = !lockedStatus;
+                changedLock  = true;
+            }
+        }
+
         ImGui::EndTable();
 
-        return changedX || changedY || changedZ;
+        return changedX || changedY || changedZ || changedLock;
     }
 
     template <typename T>

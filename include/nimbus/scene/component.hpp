@@ -153,28 +153,80 @@ struct TransformCmp
     {
         scale          = iscale;
         transformStale = true;
+        scaleLocked    = false;
     }
+
     void setScaleX(float scaleX)
     {
-        scale.x        = scaleX;
+        if (scaleLocked)
+        {
+            float factorYX = scale.y / scale.x;
+            float factorZX = scale.z / scale.x;
+
+            scale.x = scaleX;
+            scale.y = scaleX * factorYX;
+            scale.z = scaleX * factorZX;
+        }
+        else
+        {
+            scale.x = scaleX;
+        }
+
         transformStale = true;
     }
 
     void setScaleY(float scaleY)
     {
-        scale.y        = scaleY;
+        if (scaleLocked)
+        {
+            float factorXY = scale.x / scale.y;
+            float factorZY = scale.z / scale.y;
+
+            scale.y = scaleY;
+            scale.x = scaleY * factorXY;
+            scale.z = scaleY * factorZY;
+        }
+        else
+        {
+            scale.y = scaleY;
+        }
+
         transformStale = true;
     }
 
     void setScaleZ(float scaleZ)
     {
-        scale.z        = scaleZ;
+        if (scaleLocked)
+        {
+            float factorXZ = scale.x / scale.z;
+            float factorYZ = scale.y / scale.z;
+
+            scale.z = scaleZ;
+            scale.x = scaleZ * factorXZ;
+            scale.y = scaleZ * factorYZ;
+        }
+        else
+        {
+            scale.z = scaleZ;
+        }
+
         transformStale = true;
+    }
+
+    bool isScaleLocked() const
+    {
+        return scaleLocked;
+    }
+
+    void setScaleLocked(bool locked)
+    {
+        scaleLocked = locked;
     }
 
    private:
     mutable glm::mat4 transform;
     mutable bool      transformStale = true;
+            bool      scaleLocked    = false;
     glm::vec3         translation    = {0.0f, 0.0f, 0.0f};
     glm::vec3         rotation       = {0.0f, 0.0f, 0.0f};
     glm::vec3         scale          = {1.0f, 1.0f, 1.0f};
