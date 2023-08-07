@@ -6,6 +6,7 @@
 #include "nimbus/renderer/frameBuffer.hpp"
 
 #include "glm.hpp"
+#include "ImGuizmo.h"
 
 namespace nimbus
 {
@@ -14,15 +15,20 @@ class ViewportPanel
 {
    public:
     glm::vec2 m_viewportSize = {800, 600};
+    glm::vec2 m_viewportRegion[2];
+
     bool      m_viewportFocused;
     bool      m_viewportHovered;
 
     bool m_wireFrame = false;
 
-    ViewportPanel()
+    ViewportPanel(Camera* p_editCamera)
     {
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
+
+        mp_editCamera   = p_editCamera;
+
     }
     ~ViewportPanel()
     {
@@ -41,7 +47,10 @@ class ViewportPanel
         }
     }
 
-    void onDraw(ref<FrameBuffer>& p_screenBuffer, Camera::Bounds* p_bounds)
+    void onDraw(ref<FrameBuffer>& p_screenBuffer,
+                bool              orthographic,
+                Camera::Bounds&   bounds,
+                Entity            selectedEntity)
     {
         ImGui::SetNextWindowSize({m_viewportSize.x, m_viewportSize.y},
                                  ImGuiCond_FirstUseEver);
@@ -52,11 +61,9 @@ class ViewportPanel
         auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
         auto viewportOffset    = ImGui::GetWindowPos();
 
-        glm::vec2 m_viewPortRegion[2];
-
-        m_viewPortRegion[0] = {viewportMinRegion.x + viewportOffset.x,
+        m_viewportRegion[0] = {viewportMinRegion.x + viewportOffset.x,
                                viewportMinRegion.y + viewportOffset.y};
-        m_viewPortRegion[1] = {viewportMaxRegion.x + viewportOffset.x,
+        m_viewportRegion[1] = {viewportMaxRegion.x + viewportOffset.x,
                                viewportMaxRegion.y + viewportOffset.y};
 
         m_viewportFocused = ImGui::IsWindowFocused();
@@ -111,7 +118,7 @@ class ViewportPanel
         ///////////////////////////
         // Draw the cursor pos
         ///////////////////////////
-        if (m_viewportHovered && p_bounds != nullptr)
+        if (m_viewportHovered && orthographic)
         {
             ImVec2 mousePos = ImGui::GetMousePos();
 
@@ -121,10 +128,10 @@ class ViewportPanel
 
             glm::vec2 mousePosInViewport = util::mapPixToScreen(
                 {mousePosInViewportPix.x, mousePosInViewportPix.y},
-                p_bounds->topLeft.x,
-                p_bounds->topRight.x,
-                p_bounds->topLeft.y,
-                p_bounds->bottomLeft.y,
+                bounds.topLeft.x,
+                bounds.topRight.x,
+                bounds.topLeft.y,
+                bounds.bottomLeft.y,
                 m_viewportSize.x,
                 m_viewportSize.y);
 
@@ -146,6 +153,41 @@ class ViewportPanel
             drawList->AddText(posLoc, IM_COL32(255, 255, 255, 255), posString);
         }
 
+        if (selectedEntity)
+        {
+            if (selectedEntity.hasComponent<TransformCmp>())
+            {
+                ImGuizmo::SetOrthographic(orthographic);
+                ImGuizmo::SetDrawlist();
+
+                ImGuizmo::SetRect(
+                    m_viewportRegion[0].x,
+                    m_viewportRegion[0].y,
+                    m_viewportRegion[1].x - m_viewportRegion[0].x,
+                    m_viewportRegion[1].y - m_viewportRegion[0].y);
+
+                const glm::mat4& cameraView = mp_editCamera->getView();
+                const glm::mat4& cameraProjection
+                    = mp_editCamera->getProjection();
+
+                auto&     tc = selectedEntity.getComponent<TransformCmp>();
+                glm::mat4 transform = tc.getTransform();
+
+                ImGuizmo::Manipulate(glm::value_ptr(cameraView),
+                                     glm::value_ptr(cameraProjection),
+                                     ImGuizmo::OPERATION::SCALE,
+                                     ImGuizmo::LOCAL,
+                                     glm::value_ptr(transform),
+                                     nullptr,
+                                     nullptr);
+
+                if (ImGuizmo::IsUsing())
+                {
+                    tc.setTransform(transform);
+                }
+            }
+        }
+
         ImGui::PopStyleVar();
 
         ImGui::End();  // viewport
@@ -155,8 +197,9 @@ class ViewportPanel
     Application* mp_appRef;
     Window*      mp_appWinRef;
 
-    bool         m_wasResized;
+    bool m_wasResized;
 
+    Camera* mp_editCamera;
 };
 
 }  // namespace nimbus

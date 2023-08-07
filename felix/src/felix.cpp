@@ -101,11 +101,13 @@ class FelixLayer : public Layer
     ref<Scene>  mp_scene;
     State       m_sceneState      = State::PAUSE;
     std::string m_openedScenePath = "";
+    Entity      m_selectedEntity = {};
 
     ///////////////////////////
     // Viewport Info
     ///////////////////////////
-    glm::vec2 m_viewportSize    = {800, 600};
+    glm::vec2 m_viewportSize = {800, 600};
+
     float     m_aspectRatio     = 800 / 600;
     bool      m_viewportFocused = false;
     bool      m_viewportHovered = false;
@@ -161,17 +163,18 @@ class FelixLayer : public Layer
         mp_editCamera->setYaw(-90.0f);
         mp_editCamera->setSpeed(5.0f);
 
-
         ///////////////////////////
         // Panels
         ///////////////////////////
-        mp_viewportPanel       = makeScope<ViewportPanel>();
+        mp_viewportPanel       = makeScope<ViewportPanel>(mp_editCamera.get());
         mp_sceneControlPanel   = makeScope<SceneControlPanel>();
         mp_sceneHierarchyPanel = makeScope<SceneHeirarchyPanel>(mp_scene);
         mp_renderStatsPanel    = makeScope<RenderStatsPanel>();
         mp_editCameraMenuPanel
             = makeScope<EditCameraMenuPanel>(mp_editCamera.get());
 
+        mp_sceneHierarchyPanel->setEntitySelectedCallback(std::bind(
+            &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
 
         // ///////////////////////////
         // // Test Camera
@@ -555,7 +558,7 @@ class FelixLayer : public Layer
         ImGuiIO&    io          = ImGui::GetIO();
         ImGuiStyle& style       = ImGui::GetStyle();
         float       minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x   = 335.0f;
+        style.WindowMinSize.x   = 315.0f;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
             ImGuiID dockspaceId = ImGui::GetID("FelixDockSpace");
@@ -657,9 +660,9 @@ class FelixLayer : public Layer
 
         mp_viewportPanel->onDraw(
             mp_screenBuffer,
-            mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC
-                ? &worldBounds
-                : nullptr);
+            mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC,
+            worldBounds,
+            m_selectedEntity);
 
         m_viewportFocused = mp_viewportPanel->m_viewportFocused;
         m_viewportHovered = mp_viewportPanel->m_viewportHovered;
@@ -697,6 +700,11 @@ class FelixLayer : public Layer
         mp_renderStatsPanel->onDraw(deltaTime);
 
         ImGui::End();  // dockspace
+    }
+
+    void _onEntitySelected(Entity entity)
+    {
+        m_selectedEntity = entity;
     }
 };
 

@@ -12,7 +12,9 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "imgui.h"
+#include "ImGuizmo.h"
 #include "IconsFontAwesome6.h"
+
 
 namespace nimbus
 {
@@ -166,6 +168,7 @@ void GuiSubsystem::begin()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
 }
 
 void GuiSubsystem::end()

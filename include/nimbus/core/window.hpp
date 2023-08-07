@@ -15,7 +15,7 @@ namespace nimbus
 
 class Window
 {
-    typedef std::function<void(Event&)> nbWindowEvtCallback_t;
+    typedef std::function<void(Event&)> WindowEventCallback_t;
 
    public:
     float m_tFrame_s = 0.0;
@@ -26,9 +26,9 @@ class Window
 
     void graphicsContextInit();
 
-    void setEventCallback(const nbWindowEvtCallback_t& callback);
+    void setEventCallback(const WindowEventCallback_t& callback);
 
-    void setExitCallback(const nbWindowEvtCallback_t& callback);
+    void setExitCallback(const WindowEventCallback_t& callback);
 
     void onUpdate();
 
@@ -74,8 +74,8 @@ class Window
     void* mp_window  = nullptr;
     void* mp_context = nullptr;
 
-    nbWindowEvtCallback_t m_evtCallback;
-    nbWindowEvtCallback_t m_exitCallback;
+    WindowEventCallback_t m_evtCallback;
+    WindowEventCallback_t m_exitCallback;
 
     Event m_event;
 

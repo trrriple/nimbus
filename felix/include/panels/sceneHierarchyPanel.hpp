@@ -20,6 +20,9 @@ class SceneHeirarchyPanel
     ref<Texture>    mp_checkerboardTex = nullptr;
 
    public:
+    typedef std::function<void(Entity)> EntitySelectedCallback_t;
+
+
     SceneHeirarchyPanel(ref<Scene>& p_scene)
     {
         mp_appRef    = &Application::s_get();
@@ -32,6 +35,11 @@ class SceneHeirarchyPanel
     }
     ~SceneHeirarchyPanel()
     {
+    }
+
+    void setEntitySelectedCallback(const EntitySelectedCallback_t& callback)
+    {
+        m_entitySelectedCallback = callback;
     }
 
     void setSceneContext(ref<Scene>& p_scene)
@@ -55,7 +63,7 @@ class SceneHeirarchyPanel
         }
         ImGui::SameLine();
         ImGuiTextFilter filter;
-        filter.Draw("Filter");
+        filter.Draw(ICON_FA_FILTER);
         if (ImGui::IsItemHovered())
         {
             ImGui::BeginTooltip();
@@ -84,6 +92,11 @@ class SceneHeirarchyPanel
             && ImGui::IsWindowHovered())
         {
             m_selectionContext = {};
+
+            if(m_entitySelectedCallback)
+            {
+                m_entitySelectedCallback(m_selectionContext);
+            }
         }
 
         // reduce default indentation for component panel
@@ -108,6 +121,8 @@ class SceneHeirarchyPanel
 
     ref<Scene> mp_sceneContext;
     Entity     m_selectionContext;
+
+    EntitySelectedCallback_t m_entitySelectedCallback;
 
     char m_scratch[1024];
 
@@ -138,6 +153,7 @@ class SceneHeirarchyPanel
         if (ImGui::IsItemClicked(0))
         {
             m_selectionContext = entity;
+            m_entitySelectedCallback(m_selectionContext);
         }
 
         // Check for right-click on the node
@@ -149,6 +165,7 @@ class SceneHeirarchyPanel
                 if (m_selectionContext == entity)
                 {
                     m_selectionContext = {};
+                    m_entitySelectedCallback(m_selectionContext);
                 }
             }
 
@@ -575,7 +592,7 @@ class SceneHeirarchyPanel
         }
 
         ImGui::SameLine();
-        if (ImGui::Button("Add Component"))
+        if (ImGui::Button("Add " ICON_FA_SORT_DOWN))
         {
             ImGui::OpenPopup("addComponent");
         }

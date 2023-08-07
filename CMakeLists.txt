@@ -192,6 +192,27 @@ add_library(imgui STATIC ${IMGUI_LIB_SRC})
 target_include_directories(imgui PRIVATE "${imgui_SOURCE_DIR}")
 target_include_directories(imgui PRIVATE "${sdl2_SOURCE_DIR}/include")
 
+
+# #########################
+# ImGuizmo
+# #########################
+FetchContent_Declare(
+    imguizmo
+    GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+    GIT_TAG 822be7b44c37dbe98d328739ebe0d5a1ea87ecfc
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(imguizmo)
+
+file(GLOB IMGUIZMO_LIB_SRC "${imguizmo_SOURCE_DIR}/*.cpp")
+add_library(imguizmo STATIC ${IMGUIZMO_LIB_SRC})
+
+target_include_directories(imguizmo PRIVATE "${imgui_SOURCE_DIR}")
+
+
+
 # #########################
 # Box2D
 # #########################
@@ -253,6 +274,7 @@ target_link_libraries(nimbus PRIVATE msdf-atlas-gen)
 target_link_libraries(nimbus PRIVATE glad)
 target_link_libraries(nimbus PRIVATE stb_image)
 target_link_libraries(nimbus PRIVATE imgui)
+target_link_libraries(nimbus PRIVATE imguizmo)
 target_link_libraries(nimbus PRIVATE box2d)
 target_link_libraries(nimbus PRIVATE yaml-cpp)
 target_link_libraries(nimbus PUBLIC TracyClient)
@@ -286,6 +308,8 @@ target_include_directories(nimbus PUBLIC "${entt_SOURCE_DIR}/src/")
 
 #imgui
 target_include_directories(nimbus PUBLIC "${imgui_SOURCE_DIR}")
+target_include_directories(nimbus PUBLIC "${imguizmo_SOURCE_DIR}")
+
 
 #box2d
 target_include_directories(nimbus PUBLIC "${box2d_SOURCE_DIR}/include")

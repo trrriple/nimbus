@@ -7,6 +7,7 @@
 
 #include "glm.hpp"
 #include "gtx/quaternion.hpp"
+#include "gtx/matrix_decompose.hpp"
 
 
 
@@ -85,7 +86,21 @@ struct TransformCmp
         scale          = iscale;
         transformStale = true;
     }
-    
+
+    void setTransform(const glm::mat4& itransform)
+    {
+        glm::quat orientation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+
+        glm::decompose(
+            itransform, scale, orientation, translation, skew, perspective);
+
+        rotation = glm::eulerAngles(orientation);
+
+        transform = itransform;
+    }
+
     const glm::vec3& getTranslation() const
     {
         return translation;
@@ -160,12 +175,15 @@ struct TransformCmp
     {
         if (scaleLocked)
         {
-            float factorYX = scale.y / scale.x;
-            float factorZX = scale.z / scale.x;
+            if (scale.x != 0.0 && scaleX != 0.0)
+            {
+                float factorYX = abs(scale.y / scale.x);
+                float factorZX = abs(scale.z / scale.x);
 
-            scale.x = scaleX;
-            scale.y = scaleX * factorYX;
-            scale.z = scaleX * factorZX;
+                scale.x = scaleX;
+                scale.y = scaleX * factorYX;
+                scale.z = scaleX * factorZX;
+            }
         }
         else
         {
@@ -179,12 +197,15 @@ struct TransformCmp
     {
         if (scaleLocked)
         {
-            float factorXY = scale.x / scale.y;
-            float factorZY = scale.z / scale.y;
+            if (scale.y != 0.0 && scaleY != 0.0)
+            {
+                float factorXY = scale.x / scale.y;
+                float factorZY = scale.z / scale.y;
 
-            scale.y = scaleY;
-            scale.x = scaleY * factorXY;
-            scale.z = scaleY * factorZY;
+                scale.y = scaleY;
+                scale.x = scaleY * factorXY;
+                scale.z = scaleY * factorZY;
+            }
         }
         else
         {
@@ -198,12 +219,15 @@ struct TransformCmp
     {
         if (scaleLocked)
         {
-            float factorXZ = scale.x / scale.z;
-            float factorYZ = scale.y / scale.z;
+            if (scale.z != 0.0 && scaleZ != 0.0)
+            {
+                float factorXZ = scale.x / scale.z;
+                float factorYZ = scale.y / scale.z;
 
-            scale.z = scaleZ;
-            scale.x = scaleZ * factorXZ;
-            scale.y = scaleZ * factorYZ;
+                scale.z = scaleZ;
+                scale.x = scaleZ * factorXZ;
+                scale.y = scaleZ * factorYZ;
+            }
         }
         else
         {

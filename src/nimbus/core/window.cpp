@@ -89,14 +89,14 @@ void Window::graphicsContextInit()
 
 }
 
-void Window::setEventCallback(const nbWindowEvtCallback_t& callback)
+void Window::setEventCallback(const WindowEventCallback_t& callback)
 {
     NM_PROFILE_TRACE();
 
     m_evtCallback = callback;
 }
 
-void Window::setExitCallback(const nbWindowEvtCallback_t& callback)
+void Window::setExitCallback(const WindowEventCallback_t& callback)
 {
     NM_PROFILE_TRACE();
 
@@ -246,6 +246,7 @@ void Window::_pollEvents()
 
         // call the event callback for each event
         m_evtCallback(m_event);
+        
 
         m_event.clear();
     }
