@@ -4,6 +4,9 @@
 #include "glm.hpp"
 #include "gtx/quaternion.hpp"
 
+#include <string>
+#include <vector>
+
 namespace nimbus::util
 {
 
@@ -26,6 +29,17 @@ glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                          float     screenMaxY,
                          int       imgWidth,
                          int       imgHeight);
+
+std::vector<std::string> openFile(const std::string& prompt    = "",
+                                  const std::string& startPath = ".",
+                                  const std::vector<std::string>& filters
+                                  = {"All Files", "*"},
+                                  bool multiSelect = false);
+
+std::string saveFile(const std::string&              prompt    = "",
+                     const std::string&              startPath = ".",
+                     const std::vector<std::string>& filters
+                     = {"All Files", "*"});
 
 // TODO remove
 struct Transform

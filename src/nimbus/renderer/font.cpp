@@ -93,8 +93,8 @@ void Font::_loadFont()
             // setScale for a fixed size or setMinimumScale to use the largest
             // that fits
             // TODO: determine parameters
-            // packer.setMinimumScale(24.0);
-            packer.setScale(40.0f);
+            packer.setMinimumScale(50.0); //thin fonts require this to be large
+            // packer.setScale(80.0f);
             // setPixelRange or setUnitRange
             m_data->pixelRange = 2.0;
             packer.setPixelRange(m_data->pixelRange);

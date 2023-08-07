@@ -81,7 +81,7 @@ class Application
         return m_drawLag;
     }
 
-    float getGameTime() const
+    double getGameTime() const
     {
         return m_gameTime;
     }

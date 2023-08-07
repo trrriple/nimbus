@@ -26,6 +26,9 @@ class Log
     static void error(const char* format, ...);
 
     static void critical(const char* format, ...);
+    
+    static void trace(const char* format, ...);
+
 
     ////////////////////////////////////////////////////////////////////////////
     // Log a Core message. Ideally don't use these in application
@@ -37,6 +40,8 @@ class Log
     static void coreError(const char* format, ...);
 
     static void coreCritical(const char* format, ...);
+
+    static void coreTrace(const char* format, ...);
 
 
 };

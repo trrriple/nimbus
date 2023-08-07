@@ -9,12 +9,6 @@
 #include "nimbus/renderer/texture.hpp"
 #include "IconsFontAwesome6.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wformat-security"
-#include "L2DFileDialog.h"
-#pragma GCC diagnostic pop
-
 #include <filesystem>
 
 namespace nimbus
@@ -23,7 +17,7 @@ namespace nimbus
 class SceneHeirarchyPanel
 {
    private:
-    ref<Texture> mp_checkerboardTex = nullptr;
+    ref<Texture>    mp_checkerboardTex = nullptr;
 
    public:
     SceneHeirarchyPanel(ref<Scene>& p_scene)
@@ -179,9 +173,6 @@ class SceneHeirarchyPanel
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
                                           | ImGuiTreeNodeFlags_DefaultOpen;
 
-        static char* fileDialogBuffer = nullptr;
-        static char  path[500]        = "";
-
         auto& spriteCmp = entity.getComponent<SpriteCmp>();
 
         if (ImGui::TreeNodeEx("Color", flags))
@@ -223,10 +214,32 @@ class SceneHeirarchyPanel
             if (ImGui::ImageButton(textureId, {50, 50}))
             {
                 // open the file dialog
-                fileDialogBuffer             = path;
-                FileDialog::file_dialog_open = true;
-                FileDialog::file_dialog_open_type
-                    = FileDialog::FileDialogType::OpenFile;
+                auto selection
+                    = util::openFile("Select Texture to open",
+                                     ".",
+                                     {"Image Files",
+                                      "*.png *.jpg *.jpeg *.bmp *.tga "
+                                      "*.psd *.gif *.hdr *.pic *.pnm"},
+                                     false);
+
+                if (selection.size() != 0)
+                {
+                    // single file is selected
+                    auto filePath = selection[0];
+
+                    ref<Texture> texture = ResourceManager::s_get().loadTexture(
+                        Texture::Type::DIFFUSE, filePath, false);
+
+                    if (texture)
+                    {
+                        spriteCmp.p_texture = texture;
+                    }
+                    else
+                    {
+                        Log::warn("Could not load texture %s",
+                                  filePath.c_str());
+                    }
+                }
             }
             // tooltip for button
             if (ImGui::IsItemHovered())
@@ -268,36 +281,12 @@ class SceneHeirarchyPanel
 
             ImGui::TreePop();
         }
-
-        if (FileDialog::file_dialog_open)
-        {
-            if (FileDialog::ShowFileDialog(&FileDialog::file_dialog_open,
-                                           fileDialogBuffer,
-                                           sizeof(fileDialogBuffer),
-                                           FileDialog::file_dialog_open_type))
-            {
-                ref<Texture> texture = ResourceManager::s_get().loadTexture(
-                    Texture::Type::DIFFUSE, fileDialogBuffer, false);
-
-                if (texture)
-                {
-                    spriteCmp.p_texture = texture;
-                }
-                else
-                {
-                    Log::warn("Could not load texture %s", path);
-                }
-            }
-        }
     }
 
     void _drawTextCmp(Entity entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
                                           | ImGuiTreeNodeFlags_DefaultOpen;
-
-        static char* fileDialogBuffer = nullptr;
-        static char  path[500]        = "";
 
         auto& textCmp = entity.getComponent<TextCmp>();
 
@@ -346,8 +335,9 @@ class SceneHeirarchyPanel
                 if (const ImGuiPayload* payload
                     = ImGui::AcceptDragDropPayload("DND_FILE"))
                 {
-                    const char* path = (const char*)payload->Data;
-                    ref<Font>   font = ResourceManager::s_get().loadFont(path);
+                    const char* filePath = (const char*)payload->Data;
+                    ref<Font>   font
+                        = ResourceManager::s_get().loadFont(filePath);
 
                     if (font)
                     {
@@ -355,7 +345,7 @@ class SceneHeirarchyPanel
                     }
                     else
                     {
-                        Log::warn("Could not load font %s", path);
+                        Log::warn("Could not load font %s", filePath);
                     }
                 }
                 ImGui::EndDragDropTarget();
@@ -363,11 +353,40 @@ class SceneHeirarchyPanel
 
             if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0))
             {
-                // open the file dialog
-                fileDialogBuffer             = path;
-                FileDialog::file_dialog_open = true;
-                FileDialog::file_dialog_open_type
-                    = FileDialog::FileDialogType::OpenFile;
+                auto selection = util::openFile("Select Font to open",
+                                                ".",
+                                                {"Font Files", "*.ttf *.otf"},
+                                                false);
+                if (selection.size() != 0)
+                {
+                    // single file is selected
+                    auto filePath = selection[0];
+
+                    ref<Font> font
+                        = ResourceManager::s_get().loadFont(filePath);
+
+                    if (font)
+                    {
+                        textCmp.format.p_font = font;
+                    }
+                    else
+                    {
+                        Log::warn("Could not load font %s", filePath.c_str());
+                    }
+                }
+            }
+
+            //show when the font is loading
+            if (textCmp.format.p_font != nullptr)
+            {
+                if (!textCmp.format.p_font->isLoaded())
+                {
+                    static const std::vector<std::string> anim
+                        = {"", ".", "..", "...", "...."};
+                    ImGui::Text(
+                        "Generating Font Atlas%s",
+                        anim[(int)(ImGui::GetTime() / 0.25f) & 4].c_str());
+                }
             }
 
             ImGui::ColorEdit4("Fg Color",
@@ -388,25 +407,6 @@ class SceneHeirarchyPanel
             ImGui::TreePop();
         }
 
-        if (FileDialog::file_dialog_open)
-        {
-            if (FileDialog::ShowFileDialog(&FileDialog::file_dialog_open,
-                                           fileDialogBuffer,
-                                           sizeof(fileDialogBuffer),
-                                           FileDialog::file_dialog_open_type))
-            {
-                ref<Font> font = ResourceManager::s_get().loadFont(path);
-
-                if (font)
-                {
-                    textCmp.format.p_font = font;
-                }
-                else
-                {
-                    Log::warn("Could not load font %s", path);
-                }
-            }
-        }
     }
 
     void _drawCameraCmp(Entity entity)

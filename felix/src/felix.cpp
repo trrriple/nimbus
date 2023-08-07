@@ -7,6 +7,8 @@
 #include "panels/editCameraMenuPanel.hpp"
 #include "nimbus/scene/sceneSerializer.hpp"
 
+#include <filesystem>
+
 
 namespace nimbus
 {
@@ -96,8 +98,9 @@ class FelixLayer : public Layer
     ///////////////////////////
     // Scene
     ///////////////////////////
-    ref<Scene> mp_scene;
-    State      m_sceneState = State::PAUSE;
+    ref<Scene>  mp_scene;
+    State       m_sceneState      = State::PAUSE;
+    std::string m_openedScenePath = "";
 
     ///////////////////////////
     // Viewport Info
@@ -150,23 +153,14 @@ class FelixLayer : public Layer
         mp_scene = makeRef<Scene>("Demo Scene");
 
         ///////////////////////////
-        // Cameras
+        // Edit Camera
         ///////////////////////////
-        // edit camera
         mp_editCamera = makeRef<Camera>(Camera::Type::PERSPECTIVE);
         mp_editCamera->setAspectRatio(m_aspectRatio);
         mp_editCamera->setPosition({0.0f, 0.0f, 2.4125f});
         mp_editCamera->setYaw(-90.0f);
         mp_editCamera->setSpeed(5.0f);
 
-        // scene camera
-        auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
-        sceneCameraEntity.addComponent<CameraCmp>();
-
-        sceneCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
-
-        sceneCameraEntity.addComponent<NativeLogicCmp>()
-            .bind<sceneCameraController>();
 
         ///////////////////////////
         // Panels
@@ -178,39 +172,51 @@ class FelixLayer : public Layer
         mp_editCameraMenuPanel
             = makeScope<EditCameraMenuPanel>(mp_editCamera.get());
 
-        ///////////////////////////
-        // Test Sprite
-        ///////////////////////////
-        auto  spriteEntity1 = mp_scene->addEntity("Test Sprite 1");
-        auto& transformCmp1 = spriteEntity1.addComponent<TransformCmp>();
-        transformCmp1.setScale({0.5f, 0.5f, 1.0f});
-        auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
-        spriteCmp1.color = {0.0f, 1.0f, 0.0f, 1.0f};
 
-        auto  spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
-        auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
-        transformCmp2.setScale({0.75f, 0.75f, 1.0f});
-        auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
-        spriteCmp2.color = {1.0f, 0.0f, 0.0f, 1.0f};
+        // ///////////////////////////
+        // // Test Camera
+        // ///////////////////////////
+        // auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
+        // sceneCameraEntity.addComponent<CameraCmp>();
 
-        ///////////////////////////
-        // Text text
-        ///////////////////////////
-        mp_generalFont = ResourceManager::s_get().loadFont(
-            "../resources/fonts/Roboto/Roboto-Regular.ttf");
+        // sceneCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
 
-        Font::Format format;
-        format.p_font  = mp_generalFont;
-        format.fgColor = {0.0f, 0.5f, 0.7f, 1.0f};
-        format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
-        format.kerning = 0.0f;
+        // sceneCameraEntity.addComponent<NativeLogicCmp>()
+        //     .bind<sceneCameraController>();
 
-        auto  textEntity    = mp_scene->addEntity("Test Text");
-        auto& transformCmp3 = textEntity.addComponent<TransformCmp>();
-        transformCmp3.setScale({0.25f, 0.25f, 1.0f});
-        transformCmp3.setTranslationX(-0.4f);
-        transformCmp3.setTranslationY(0.30f);
-        auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
+        // ///////////////////////////
+        // // Test Sprite
+        // ///////////////////////////
+        // auto  spriteEntity1 = mp_scene->addEntity("Test Sprite 1");
+        // auto& transformCmp1 = spriteEntity1.addComponent<TransformCmp>();
+        // transformCmp1.setScale({0.5f, 0.5f, 1.0f});
+        // auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
+        // spriteCmp1.color = {0.0f, 1.0f, 0.0f, 1.0f};
+
+        // auto  spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
+        // auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
+        // transformCmp2.setScale({0.75f, 0.75f, 1.0f});
+        // auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
+        // spriteCmp2.color = {1.0f, 0.0f, 0.0f, 1.0f};
+
+        // ///////////////////////////
+        // // Text text
+        // ///////////////////////////
+        // mp_generalFont = ResourceManager::s_get().loadFont(
+        //     "../resources/fonts/Roboto/Roboto-Regular.ttf");
+
+        // Font::Format format;
+        // format.p_font  = mp_generalFont;
+        // format.fgColor = {0.0f, 0.5f, 0.7f, 1.0f};
+        // format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
+        // format.kerning = 0.0f;
+
+        // auto  textEntity    = mp_scene->addEntity("Test Text");
+        // auto& transformCmp3 = textEntity.addComponent<TransformCmp>();
+        // transformCmp3.setScale({0.25f, 0.25f, 1.0f});
+        // transformCmp3.setTranslationX(-0.4f);
+        // transformCmp3.setTranslationY(0.30f);
+        // auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
 
         ///////////////////////////
         // Setup Framebuffers
@@ -528,16 +534,45 @@ class FelixLayer : public Layer
 
                 if (ImGui::MenuItem("Open", "Ctrl+O"))
                 {
-                    // Handle when 'Open' is clicked
-                    SceneSerializer ss = SceneSerializer(mp_scene);
-                    ss.deserialize("scene.nmscn");
+                    auto selection = util::openFile("Select Scene to open",
+                                                    ".",
+                                                    {"Scene Files", "*.nmscn"},
+                                                    false);
+
+                    if (selection.size() != 0)
+                    {
+                        auto filePath = selection[0];
+
+                        SceneSerializer ss = SceneSerializer(mp_scene);
+                        ss.deserialize(filePath);
+
+                        m_openedScenePath = filePath;
+                    }
                 }
 
                 if (ImGui::MenuItem("Save", "Ctrl+S"))
                 {
-                    // Handle when 'Save' is clicked
-                    SceneSerializer ss = SceneSerializer(mp_scene);
-                    ss.serialize("scene.nmscn");
+                    if (!m_openedScenePath.empty())
+                    {
+                        SceneSerializer ss = SceneSerializer(mp_scene);
+                        ss.serialize(m_openedScenePath);
+                    }
+                }
+
+                if (ImGui::MenuItem("Save-as", "Ctrl+Shift+S"))
+                {
+                    auto selection = util::saveFile(
+                        "Save scene as", ".", {"Scene Files", "*.nmscn"});
+
+                    if (!selection.empty())
+                    {
+                        std::filesystem::path path(selection);
+
+                        path.replace_extension(".nmscn");
+
+                        SceneSerializer ss = SceneSerializer(mp_scene);
+                        ss.serialize(path.generic_string());
+                    }
                 }
 
                 if (ImGui::MenuItem("Exit"))

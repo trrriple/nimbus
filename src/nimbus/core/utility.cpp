@@ -5,6 +5,9 @@
 
 #include "glm.hpp"
 
+#include "portable-file-dialogs.h"
+
+
 namespace nimbus::util
 {
 
@@ -65,6 +68,25 @@ glm::vec2 mapPixToScreen(glm::vec2 pixPos,
     screen.y = screenMinY + normY * (screenMaxY - screenMinY);
 
     return screen;
+}
+
+std::vector<std::string> openFile(const std::string&              prompt,
+                                  const std::string&              startPath,
+                                  const std::vector<std::string>& filters,
+                                  bool                            multiSelect)
+{
+    return pfd::open_file(prompt,
+                          startPath,
+                          filters,
+                          multiSelect ? pfd::opt::multiselect : pfd::opt::none)
+        .result();
+}
+
+std::string saveFile(const std::string&              prompt,
+                     const std::string&              startPath,
+                     const std::vector<std::string>& filters)
+{
+    return pfd::save_file(prompt, startPath, filters, pfd::opt::none).result();
 }
 
 }  // namespace nimbus::util
