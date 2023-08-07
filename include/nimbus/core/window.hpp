@@ -32,7 +32,9 @@ class Window
 
     void onUpdate();
 
-    bool keyPressed(ScanCode ScanCode) const;
+    bool keyPressed(ScanCode scanCode) const;
+
+    bool modKeyPressed(KeyMod keyMod) const;
 
     bool mouseButtonPressed(MouseButton button) const;
 

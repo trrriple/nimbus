@@ -114,7 +114,7 @@ void Window::onUpdate()
 
 bool Window::keyPressed(ScanCode scanCode) const
 {
-    NM_PROFILE_DETAIL();
+    NM_PROFILE_TRACE();
 
     const uint8_t* keyboardState = SDL_GetKeyboardState(nullptr);
 
@@ -122,9 +122,19 @@ bool Window::keyPressed(ScanCode scanCode) const
     return keyboardState[static_cast<uint32_t>(scanCode)];
 }
 
+bool Window::modKeyPressed(KeyMod keyMod) const
+{
+    NM_PROFILE_TRACE();
+
+    // Will break if SDL changes their keymap
+    return SDL_GetModState() & static_cast<uint32_t>(keyMod);
+
+}
+
+
 bool Window::mouseButtonPressed(MouseButton button) const
 {
-    NM_PROFILE_DETAIL();
+    NM_PROFILE_TRACE();
 
     const uint32_t mouseState = SDL_GetMouseState(nullptr, nullptr);
 
@@ -134,7 +144,7 @@ bool Window::mouseButtonPressed(MouseButton button) const
 
 glm::vec2 Window::mousePos() const
 {
-    NM_PROFILE_DETAIL();
+    NM_PROFILE_TRACE();
 
     int xPos;
     int yPos;

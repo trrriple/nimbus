@@ -330,6 +330,52 @@ class FelixLayer : public Layer
 
         NM_UNUSED(deltaTime);
     }
+
+    void _open()
+    {
+        auto selection = util::openFile(
+            "Select Scene to open", ".", {"Scene Files", "*.nmscn"}, false);
+
+        if (selection.size() != 0)
+        {
+            auto filePath = selection[0];
+
+            SceneSerializer ss = SceneSerializer(mp_scene);
+            ss.deserialize(filePath);
+
+            m_openedScenePath = filePath;
+        }
+    }
+
+    void _save(bool as)
+    {
+        std::string path;
+
+        if (as || m_openedScenePath.empty())
+        {
+            auto selection = util::saveFile(
+                "Save scene as", ".", {"Scene Files", "*.nmscn"});
+
+            if (!selection.empty())
+            {
+                std::filesystem::path fPath(selection);
+
+                fPath.replace_extension(".nmscn");
+
+                path = fPath.generic_string();
+
+                m_openedScenePath = path;
+            }
+        }
+        else
+        {
+            path = m_openedScenePath;
+        }
+
+        SceneSerializer ss = SceneSerializer(mp_scene);
+        ss.serialize(path);
+    }
+
     virtual void onEvent(Event& event) override
     {
         Event::Type eventType = event.getEventType();
@@ -365,6 +411,31 @@ class FelixLayer : public Layer
                 m_fileDropHandled = false;
                 m_fileDropPath    = event.getDetails().drop.file;
                 event.markAsHandled();
+            }
+
+            // shortcuts
+            else if (eventType == Event::Type::KEYDOWN)
+            {
+                if (mp_appWinRef->modKeyPressed(KeyMod::CTRL))
+                {
+                    // open
+                    if (mp_appWinRef->keyPressed(ScanCode::O))
+                    {
+                        _open();
+                    }
+                    //save, saveas
+                    else if (mp_appWinRef->keyPressed(ScanCode::S))
+                    {
+                        if (mp_appWinRef->modKeyPressed(KeyMod::SHIFT))
+                        {
+                            _save(true);
+                        }
+                        else
+                        {
+                            _save(false);
+                        }
+                    }
+                }
             }
         }
     }
@@ -534,45 +605,17 @@ class FelixLayer : public Layer
 
                 if (ImGui::MenuItem("Open", "Ctrl+O"))
                 {
-                    auto selection = util::openFile("Select Scene to open",
-                                                    ".",
-                                                    {"Scene Files", "*.nmscn"},
-                                                    false);
-
-                    if (selection.size() != 0)
-                    {
-                        auto filePath = selection[0];
-
-                        SceneSerializer ss = SceneSerializer(mp_scene);
-                        ss.deserialize(filePath);
-
-                        m_openedScenePath = filePath;
-                    }
+                    _open();
                 }
 
                 if (ImGui::MenuItem("Save", "Ctrl+S"))
                 {
-                    if (!m_openedScenePath.empty())
-                    {
-                        SceneSerializer ss = SceneSerializer(mp_scene);
-                        ss.serialize(m_openedScenePath);
-                    }
+                   _save(false);
                 }
 
                 if (ImGui::MenuItem("Save-as", "Ctrl+Shift+S"))
                 {
-                    auto selection = util::saveFile(
-                        "Save scene as", ".", {"Scene Files", "*.nmscn"});
-
-                    if (!selection.empty())
-                    {
-                        std::filesystem::path path(selection);
-
-                        path.replace_extension(".nmscn");
-
-                        SceneSerializer ss = SceneSerializer(mp_scene);
-                        ss.serialize(path.generic_string());
-                    }
+                    _save(true);
                 }
 
                 if (ImGui::MenuItem("Exit"))
