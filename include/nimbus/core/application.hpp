@@ -46,6 +46,8 @@ class Application
 
     void removeLayer(const ref<Layer>& p_layer);
 
+    void guiRender();
+
     void guiSubsystemCaptureEvents(bool capture);
 
     const uint8_t* getKeyboardState() const;

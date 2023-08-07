@@ -8,6 +8,10 @@
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/renderer/font.hpp"
 
+#include "backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_sdl2.h"
+#include "imgui.h"
+
 namespace nimbus
 {
 
@@ -38,6 +42,11 @@ Application::Application(const std::string& name,
  
     mp_guiSubsystemLayer = makeRef<GuiSubsystem>();
     insertLayer(mp_guiSubsystemLayer);
+
+    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(mp_window->getOsWindow()),
+                       nullptr);
+
+    Renderer::s_init(mp_window->getOsWindow(), mp_window->getContext());
 }
 
 void Application::shouldQuit(Event& event)
@@ -113,23 +122,36 @@ void Application::execute()
         ////////////////////////////////////////////////////////////////////////
         if (doDraw)
         {   
-            GraphicsApi::clear();
+
+            // GraphicsApi::clear();
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
                 // call each draw with how long it's been since last draw
                 (*it)->onDraw(m_drawLag);
             }
 
-
             ///////////////////////////
             // Call all gui updates
             ///////////////////////////
-            mp_guiSubsystemLayer->begin();
-            for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
-            {
-                (*it)->onGuiUpdate(m_drawLag);
-            }
-            mp_guiSubsystemLayer->end();
+            bool mouseButtonsDown
+                = mp_window->mouseButtonPressed(MouseButton::LEFT)
+                  || mp_window->mouseButtonPressed(MouseButton::RIGHT);
+
+            SDL_CaptureMouse((mouseButtonsDown != 0) ? SDL_TRUE : SDL_FALSE);
+ 
+
+            Application* app = this;
+            Renderer::s_submit([app]() { app->guiRender(); });
+            Renderer::s_submit([=]() { mp_guiSubsystemLayer->end(); });
+
+            
+
+            Renderer::s_submit(
+                [=]() {
+                    SDL_GL_SwapWindow(
+                        static_cast<SDL_Window*>(mp_window->getOsWindow()));
+                });
+
 
             ////////////////////////////////////////////////////////////////////
             // Call window update function (events polled and buffers swapped)
@@ -192,6 +214,23 @@ void Application::removeLayer(const ref<Layer>& p_layer)
 void Application::guiSubsystemCaptureEvents(bool capture)
 {
     mp_guiSubsystemLayer->captureEvents(capture);
+}
+
+void Application::guiRender()
+{
+    mp_guiSubsystemLayer->begin();
+
+    ImGui::Begin("Test");
+
+    ImGui::Text("Testing!");
+
+    ImGui::End();
+
+
+    for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
+    {
+        (*it)->onGuiUpdate(m_drawLag);
+    }
 }
 
 const uint8_t* Application::getKeyboardState() const

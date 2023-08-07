@@ -5,6 +5,7 @@
 
 #include "nimbus/core/application.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
+#include "nimbus/renderer/renderer.hpp"
 
 ///////////////////////
 /// Dear Imgui stuff
@@ -110,12 +111,17 @@ void GuiSubsystem::onInsert()
     // Setup Platform/Renderer bindings
     // window is the SDL_Window*
     // context is the SDL_GLContext
-    ImGui_ImplSDL2_InitForOpenGL(
-        static_cast<SDL_Window*>(
-            Application::s_get().getWindow().getOsWindow()),
-        Application::s_get().getWindow().getContext());
 
-    ImGui_ImplOpenGL3_Init();
+    auto p_window = static_cast<SDL_Window*>(
+        Application::s_get().getWindow().getOsWindow());
+
+    auto context = Application::s_get().getWindow().getContext();
+
+    ImGui_ImplSDL2_InitForOpenGL(p_window, context);
+
+    bool imguiInit = ImGui_ImplOpenGL3_Init();
+
+    NM_CORE_ASSERT(imguiInit, "Failed to initialize Imgui!");
 }
 
 void GuiSubsystem::onRemove()

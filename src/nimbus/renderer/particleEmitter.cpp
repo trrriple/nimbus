@@ -320,7 +320,7 @@ void ParticleEmitter::draw()
     GraphicsApi::BlendingMode currBlendMode = GraphicsApi::getBlendingMode();
     GraphicsApi::setBlendingMode(m_parameters.blendingMode);
 
-    Renderer::s_submitInstanced(mp_shader, mp_vao, m_numLiveParticles);
+    // Renderer::s_submitInstanced(mp_shader, mp_vao, m_numLiveParticles);
 
     GraphicsApi::setBlendingMode(currBlendMode);
 }

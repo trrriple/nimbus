@@ -225,48 +225,48 @@ class FelixLayer : public Layer
         // Setup Framebuffers
         ///////////////////////////
         // multisampled buffer we render to
-        FrameBuffer::Spec fbSpec;
-        fbSpec.width   = m_viewportSize.x;
-        fbSpec.height  = m_viewportSize.y;
-        fbSpec.samples = 4;
-        fbSpec.colorAttachments.push_back(
-            Texture::Spec(fbSpec.width,
-                          fbSpec.height,
-                          fbSpec.samples,
-                          Texture::Format::RGBA,  // irrelevant
-                          Texture::FormatInternal::RGBA8,
-                          Texture::DataType::UNSIGNED_BYTE,  // irrelevant
-                          Texture::FilterType::LINEAR,
-                          Texture::FilterType::LINEAR,
-                          Texture::WrapType::CLAMP_TO_EDGE,
-                          Texture::WrapType::CLAMP_TO_EDGE,
-                          Texture::WrapType::CLAMP_TO_EDGE));
+        // FrameBuffer::Spec fbSpec;
+        // fbSpec.width   = m_viewportSize.x;
+        // fbSpec.height  = m_viewportSize.y;
+        // fbSpec.samples = 4;
+        // fbSpec.colorAttachments.push_back(
+        //     Texture::Spec(fbSpec.width,
+        //                   fbSpec.height,
+        //                   fbSpec.samples,
+        //                   Texture::Format::RGBA,  // irrelevant
+        //                   Texture::FormatInternal::RGBA8,
+        //                   Texture::DataType::UNSIGNED_BYTE,  // irrelevant
+        //                   Texture::FilterType::LINEAR,
+        //                   Texture::FilterType::LINEAR,
+        //                   Texture::WrapType::CLAMP_TO_EDGE,
+        //                   Texture::WrapType::CLAMP_TO_EDGE,
+        //                   Texture::WrapType::CLAMP_TO_EDGE));
 
-        fbSpec.depthType = Texture::FormatInternal::DEPTH24_STENCIL8;
+        // fbSpec.depthType = Texture::FormatInternal::DEPTH24_STENCIL8;
 
-        mp_frameBuffer = FrameBuffer::s_create(fbSpec);
+        // mp_frameBuffer = FrameBuffer::s_create(fbSpec);
 
-        // buffer we blit multisampled buffer to for output to screen
-        FrameBuffer::Spec screenSpec;
-        screenSpec.width   = m_viewportSize.x;
-        screenSpec.height  = m_viewportSize.y;
-        screenSpec.samples = 1;
-        screenSpec.colorAttachments.push_back(
-            Texture::Spec(screenSpec.width,
-                          screenSpec.height,
-                          screenSpec.samples,
-                          Texture::Format::RGBA,  // irrelevant
-                          Texture::FormatInternal::RGBA8,
-                          Texture::DataType::UNSIGNED_BYTE,  // irrelevant
-                          Texture::FilterType::LINEAR,
-                          Texture::FilterType::LINEAR,
-                          Texture::WrapType::REPEAT,
-                          Texture::WrapType::REPEAT,
-                          Texture::WrapType::REPEAT));
+        // // buffer we blit multisampled buffer to for output to screen
+        // FrameBuffer::Spec screenSpec;
+        // screenSpec.width   = m_viewportSize.x;
+        // screenSpec.height  = m_viewportSize.y;
+        // screenSpec.samples = 1;
+        // screenSpec.colorAttachments.push_back(
+        //     Texture::Spec(screenSpec.width,
+        //                   screenSpec.height,
+        //                   screenSpec.samples,
+        //                   Texture::Format::RGBA,  // irrelevant
+        //                   Texture::FormatInternal::RGBA8,
+        //                   Texture::DataType::UNSIGNED_BYTE,  // irrelevant
+        //                   Texture::FilterType::LINEAR,
+        //                   Texture::FilterType::LINEAR,
+        //                   Texture::WrapType::REPEAT,
+        //                   Texture::WrapType::REPEAT,
+        //                   Texture::WrapType::REPEAT));
 
-        screenSpec.depthType = Texture::FormatInternal::NONE;
+        // screenSpec.depthType = Texture::FormatInternal::NONE;
 
-        mp_screenBuffer = FrameBuffer::s_create(screenSpec);
+        // mp_screenBuffer = FrameBuffer::s_create(screenSpec);
     }
 
     virtual void onRemove() override
@@ -304,32 +304,32 @@ class FelixLayer : public Layer
 
     virtual void onDraw(float deltaTime) override
     {
-        mp_frameBuffer->bind();
-        GraphicsApi::clear();
+        // mp_frameBuffer->bind();
+        // GraphicsApi::clear();
 
-        if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
-        {
-            GraphicsApi::setWireframe(mp_renderStatsPanel->m_wireFrame);
-        }
+        // if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
+        // {
+        //     GraphicsApi::setWireframe(mp_renderStatsPanel->m_wireFrame);
+        // }
 
-        Renderer2D::s_resetStats();
+        // Renderer2D::s_resetStats();
 
-        if (m_sceneState == State::PAUSE)
-        {
-            mp_scene->_onDrawEditor(mp_editCamera.get());
-        }
-        else
-        {
-            mp_scene->onDraw();
-        }
+        // if (m_sceneState == State::PAUSE)
+        // {
+        //     mp_scene->_onDrawEditor(mp_editCamera.get());
+        // }
+        // else
+        // {
+        //     mp_scene->onDraw();
+        // }
 
-        // turn it off for the blit
-        if (mp_renderStatsPanel->m_wireFrame)
-        {
-            GraphicsApi::setWireframe(false);
-        }
+        // // turn it off for the blit
+        // if (mp_renderStatsPanel->m_wireFrame)
+        // {
+        //     GraphicsApi::setWireframe(false);
+        // }
 
-        mp_frameBuffer->blit(*mp_screenBuffer.get());
+        // mp_frameBuffer->blit(*mp_screenBuffer.get());
 
         NM_UNUSED(deltaTime);
     }
@@ -673,8 +673,8 @@ class FelixLayer : public Layer
             m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
             mp_editCamera->setAspectRatio(m_aspectRatio);
 
-            mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-            mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+            // mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+            // mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
 
             mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
         }

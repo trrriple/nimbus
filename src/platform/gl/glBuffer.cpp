@@ -2,8 +2,10 @@
 #include "nimbus/core/core.hpp"
 
 #include "platform/gl/glBuffer.hpp"
+#include "nimbus/renderer/renderer.hpp"
 
 #include "glad.h"
+
 
 namespace nimbus
 {
@@ -17,30 +19,62 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
     m_size = size;
     m_type = type;
 
-    glCreateBuffers(1, &m_id);
+    std::promise<void> renderDonePromise;
+    std::future<void> renderDoneFuture = renderDonePromise.get_future();
+    ref<GlVertexBuffer> p_instance = makeRef<GlVertexBuffer>(*this);
 
     switch (m_type)
     {
         case (VertexBuffer::Type::STATIC_DRAW):
         {
-            glNamedBufferData(m_id, size, vertices, GL_STATIC_DRAW);
-            break;
+
+            Renderer::s_submit(
+                [p_instance, vertices, &renderDonePromise]()
+                {
+                    glCreateBuffers(1, &p_instance->m_id);
+
+                    glNamedBufferStorage(
+                        p_instance->m_id, p_instance->m_size, vertices, 0);
+                    p_instance->mp_memory = glMapNamedBufferRange(
+                        p_instance->m_id, 0, p_instance->m_size, 0);
+
+                    renderDonePromise.set_value();
+                });
+
+                break;
+
         }
         case (VertexBuffer::Type::DYNAMIC_DRAW):
-        {
-            glNamedBufferData(m_id, size, vertices, GL_DYNAMIC_DRAW);
-            break;
-        }
         case (VertexBuffer::Type::STREAM_DRAW):
         {
-            glNamedBufferData(m_id, size, vertices, GL_STREAM_DRAW);
+
+            Renderer::s_submit(
+                [p_instance, vertices, &renderDonePromise]()
+                {   
+                    glCreateBuffers(1, &p_instance->m_id);
+
+                    GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT
+                                       | GL_MAP_COHERENT_BIT;
+                    glNamedBufferStorage(
+                        p_instance->m_id, p_instance->m_size, vertices, flags);
+                    p_instance->mp_memory = glMapNamedBufferRange(
+                        p_instance->m_id, 0, p_instance->m_size, flags);
+
+                    renderDonePromise.set_value();
+                });
+
             break;
         }
     }
+
+    renderDoneFuture.wait();
+
 }
 
 GlVertexBuffer::~GlVertexBuffer()
 {
+    bind();
+    glUnmapBuffer(GL_ARRAY_BUFFER);
     unbind();
     glDeleteBuffers(1, &m_id);
 }
@@ -63,7 +97,15 @@ void GlVertexBuffer::unbind() const
 
 void GlVertexBuffer::setData(const void* data, uint32_t size)
 {
-    glNamedBufferSubData(m_id, 0, size, data);
+    NM_CORE_ASSERT(size <= m_size,
+                   "Size (%i) must be <= preallocated size (%i)",
+                   size,
+                   m_size);
+
+    NM_CORE_ASSERT(m_type != VertexBuffer::Type::STATIC_DRAW,
+                   "Cannot set data in a static buffer!");
+
+    memcpy(mp_memory, data, size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,8 +116,7 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
     m_count = count;
 
     glCreateBuffers(1, &m_id);
-
-    glNamedBufferData(m_id, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+    glNamedBufferStorage(m_id, count * sizeof(uint32_t), indices, 0);
 
     m_type = GL_UNSIGNED_INT;
 }
@@ -85,8 +126,7 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
     m_count = count;
 
     glCreateBuffers(1, &m_id);
-
-    glNamedBufferData(m_id, count * sizeof(uint16_t), indices, GL_STATIC_DRAW);
+    glNamedBufferStorage(m_id, count * sizeof(uint16_t), indices, 0);
 
     m_type = GL_UNSIGNED_SHORT;
 }
@@ -96,8 +136,7 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
     m_count = count;
 
     glCreateBuffers(1, &m_id);
-
-    glNamedBufferData(m_id, count * sizeof(uint8_t), indices, GL_STATIC_DRAW);
+    glNamedBufferStorage(m_id, count * sizeof(uint8_t), indices, 0);
 
     m_type = GL_UNSIGNED_BYTE;
 }

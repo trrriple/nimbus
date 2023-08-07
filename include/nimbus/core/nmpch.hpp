@@ -17,6 +17,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <future>
+
 
 ///////////////////////
 /// SDL Stuff

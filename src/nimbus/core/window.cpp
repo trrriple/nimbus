@@ -48,7 +48,10 @@ Window::Window(const std::string& windowCaption,
 Window::~Window()
 {
     NM_PROFILE_DETAIL();
-    
+
+    Renderer2D::s_destroy();
+    Renderer::s_destroy();
+
     SDL_DestroyWindow(static_cast<SDL_Window*>(mp_window));
     mp_window = nullptr;
 
@@ -62,30 +65,47 @@ void Window::graphicsContextInit()
 {
     NM_PROFILE_DETAIL();
 
-    int contextFlags = 0;
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
-    contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
-    // openGL context
+    // std::promise<void> renderDonePromise;
+    // std::future<void> renderDoneFuture = renderDonePromise.get_future();
 
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-   
-    // depth buffer
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    mp_context = static_cast<void*>(
-        SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
-    NM_CORE_ASSERT(
-        mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
+    // Renderer::s_submit(
+    //     [this, &renderDonePromise]()
+    // {
+        int contextFlags = 0;
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
+        contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
+        // openGL context
 
-    // Set V-sync
-    SDL_GL_SetSwapInterval(m_VSyncOn);
+        SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
-    Renderer::s_init();
-    Renderer2D::s_init();
+        // depth buffer
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+        mp_context = static_cast<void*>(
+            SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
+        NM_CORE_ASSERT(
+            mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
+
+        // Set V-sync
+        SDL_GL_SetSwapInterval(m_VSyncOn);
+
+        GraphicsApi::init();
+
+        // renderDonePromise.set_value();
+    // });
+    
+    // renderDoneFuture.wait();
+    
+    // SDL_GL_MakeCurrent(static_cast<SDL_Window*>(mp_window), nullptr);
+    // Renderer::s_init(mp_window, mp_context);
+
+    // Renderer2D::s_init();
+    
 
 }
 
@@ -108,7 +128,7 @@ void Window::onUpdate()
     NM_PROFILE();
 
     _pollEvents();
-    SDL_GL_SwapWindow(static_cast<SDL_Window*>(mp_window));
+    // SDL_GL_SwapWindow(static_cast<SDL_Window*>(mp_window));
     _calcFramerate();
 }
 

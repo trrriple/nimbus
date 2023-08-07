@@ -4,17 +4,46 @@
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 
-#include <sstream>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <future>
+
 
 namespace nimbus
 {
 
-void Renderer::s_init()
+std::thread                       Renderer::s_renderThread;
+std::mutex                        Renderer::s_queueMutex;
+std::condition_variable           Renderer::s_cmdCondition;
+std::queue<std::function<void()>> Renderer::s_cmdQueue;
+bool                              Renderer::s_terminate   = false;
+bool                              Renderer::s_initialized = false;
+
+void Renderer::s_init(void* p_window, void* p_context)
 {
-    GraphicsApi::init();
+    // clang-format off
+    static std::once_flag initFlag;
+    std::call_once(initFlag,
+    [p_window, p_context]()
+    {
+        s_initialized = true;
+
+        s_renderThread = std::thread(&Renderer::_s_serviceQueue, p_window, p_context);
+    });
+    // clang-format on
+
 }
+
 void Renderer::s_destroy()
 {
+    {
+        std::lock_guard<std::mutex> lock(s_queueMutex);
+        s_terminate = true;
+    }
+    s_cmdCondition.notify_one();
+    s_renderThread.join();
 }
 
 void Renderer::s_setScene(const glm::mat4& vpMatrix)
@@ -22,16 +51,151 @@ void Renderer::s_setScene(const glm::mat4& vpMatrix)
     mp_vpMatrix = vpMatrix;
 }
 
-void Renderer::s_submit(const ref<Shader>&      p_shader,
+void Renderer::s_submit(std::function<void()> fn)
+{
+    std::lock_guard<std::mutex> lock(s_queueMutex);
+    s_cmdQueue.push(fn);
+    s_cmdCondition.notify_one();
+
+    // _s_processCmd(cmd);
+}
+
+// Renderer::VertexBufferInfo Renderer::s_createVbo(const void* verticies,
+//                                                  uint32_t    size,
+//                                                  uint32_t    flags)
+// {
+//     std::promise<VertexBufferInfo> bufferPromise;
+//     auto                           bufferFuture = bufferPromise.get_future();
+
+//     {
+//         std::lock_guard<std::mutex> lock(s_queueMutex);
+//         s_cmdQueue.push(
+//             [&]()
+//             {
+//                 // GLuint buffer;
+//                 // glCreateBuffers(1, &buffer);
+//                 // glNamedBufferStorage(buffer,
+//                 //                      size,
+//                 //                      data,
+//                 //                      GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT
+//                 //                          | GL_MAP_PERSISTENT_BIT
+//                 //                          | GL_MAP_COHERENT_BIT);
+
+//                 // void* mappedPtr = glMapNamedBufferRange(
+//                 //     buffer,
+//                 //     0,
+//                 //     size,
+//                 //     GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT
+//                 //         | GL_MAP_COHERENT_BIT);
+
+//                 // bufferPromise.set_value({buffer, mappedPtr});
+//             });
+//     }
+
+//     s_cmdCondition.notify_one();  // Signal the render thread
+//     return
+// }
+
+////////////////////////////////////////////////////////////////////////////////
+// Private Functions
+////////////////////////////////////////////////////////////////////////////////
+void Renderer::_s_serviceQueue(void* p_window, void* p_context)
+{
+    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(p_window), p_context);
+
+    while (!s_terminate)
+    {
+        std::unique_lock<std::mutex> lock(s_queueMutex);
+        s_cmdCondition.wait(
+            lock, []() { return !s_cmdQueue.empty() || s_terminate; });
+
+        while (!s_cmdQueue.empty())
+        {
+            auto& command = s_cmdQueue.front();
+            command();  // Execute the command
+            s_cmdQueue.pop();
+        }
+    }
+}
+
+// void Renderer::_s_processCmd(const Command& cmd)
+// {
+//    switch(cmd.type)
+//    {
+//     case(CommandType::STANDARD):
+//     {
+//             _s_submit(cmd.p_shader,
+//                       cmd.p_vertexArray,
+//                       cmd.model,
+//                       cmd.vertexCount,
+//                       cmd.setViewProjection);
+
+//             break;
+//     }
+//     case(CommandType::INSTANCED):
+//     {
+//         break;
+//     }
+//     default:
+//     {
+//         NM_CORE_ASSERT_STATIC(
+//             false, "Unknown Render command type %i", cmd.type);
+//         break;
+//     }
+//    }
+// }
+
+void Renderer::_s_submit(const ref<Shader>&      p_shader,
+                         const ref<VertexArray>& p_vertexArray,
+                         const glm::mat4&        model,
+                         int32_t                 vertexCount,
+                         bool                    setViewProjection)
+{
+   NM_PROFILE();
+
+   p_shader->bind();
+   p_shader->setMat4("u_model", model);
+
+   if (setViewProjection)
+   {
+    p_shader->setMat4("u_viewProjection", mp_vpMatrix);
+   }
+
+   // do we have an index buffer?
+   if (p_vertexArray->getIndexBuffer())
+   {
+    // we do, so drawElements
+    if (vertexCount == k_detectCountIfPossible)
+    {
+        GraphicsApi::drawElements(p_vertexArray);
+    }
+    else
+    {
+        GraphicsApi::drawElements(p_vertexArray, vertexCount);
+    }
+   }
+   else
+   {
+    // we don't so drawArrays
+    if (vertexCount == k_detectCountIfPossible)
+    {
+        GraphicsApi::drawArrays(p_vertexArray);
+    }
+    else
+    {
+        GraphicsApi::drawArrays(p_vertexArray, vertexCount);
+    }
+   }
+}
+
+void Renderer::_s_submit(const ref<Shader>&      p_shader,
                         const ref<VertexArray>& p_vertexArray,
-                        const glm::mat4&        p_model,
                         int32_t                 vertexCount,
                         bool                    setViewProjection)
 {
     NM_PROFILE();
 
     p_shader->bind();
-    p_shader->setMat4("u_model", p_model);
 
     if (setViewProjection)
     {
@@ -65,58 +229,17 @@ void Renderer::s_submit(const ref<Shader>&      p_shader,
     }
 }
 
-void Renderer::s_submit(const ref<Shader>&      p_shader,
-                        const ref<VertexArray>& p_vertexArray,
-                        int32_t                 vertexCount,
-                        bool                    setViewProjection)
-{
-    NM_PROFILE();
-
-    p_shader->bind();
-
-    if (setViewProjection)
-    {
-        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
-    }
-
-    // do we have an index buffer?
-    if (p_vertexArray->getIndexBuffer())
-    {
-        // we do, so drawElements
-        if (vertexCount == k_detectCountIfPossible)
-        {
-            GraphicsApi::drawElements(p_vertexArray);
-        }
-        else
-        {
-            GraphicsApi::drawElements(p_vertexArray, vertexCount);
-        }
-    }
-    else
-    {
-        // we don't so drawArrays
-        if (vertexCount == k_detectCountIfPossible)
-        {
-            GraphicsApi::drawArrays(p_vertexArray);
-        }
-        else
-        {
-            GraphicsApi::drawArrays(p_vertexArray, vertexCount);
-        }
-    }
-}
-
-void Renderer::s_submitInstanced(const ref<Shader>&      p_shader,
+void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
                                  const ref<VertexArray>& p_vertexArray,
                                  int32_t                 instanceCount,
-                                 const glm::mat4&        p_model,
+                                 const glm::mat4&        model,
                                  int32_t                 vertexCount,
                                  bool                    setViewProjection)
 {
     NM_PROFILE();
 
     p_shader->bind();
-    p_shader->setMat4("u_model", p_model);
+    p_shader->setMat4("u_model", model);
 
     if (setViewProjection)
     {
@@ -152,7 +275,7 @@ void Renderer::s_submitInstanced(const ref<Shader>&      p_shader,
     }
 }
 
-void Renderer::s_submitInstanced(const ref<Shader>&      p_shader,
+void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
                                  const ref<VertexArray>& p_vertexArray,
                                  int32_t                 instanceCount,
                                  int32_t                 vertexCount,
@@ -195,5 +318,6 @@ void Renderer::s_submitInstanced(const ref<Shader>&      p_shader,
         }
     }
 }
+
 
 }  // namespace nimbus

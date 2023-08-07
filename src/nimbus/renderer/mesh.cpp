@@ -134,7 +134,7 @@ void Mesh::draw(const glm::mat4& model) const
     // draw mesh
     mp_vao->bind();
 
-    Renderer::s_submit(mp_shader, mp_vao, model);
+    // Renderer::s_submit(mp_shader, mp_vao, model);
 }
 
 void Mesh::_setupMesh()

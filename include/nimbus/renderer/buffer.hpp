@@ -183,6 +183,7 @@ class VertexBuffer
 
    protected:
     uint32_t           m_id;
+    void*              mp_memory;
     uint32_t           m_size;  // in bytes
     VertexBuffer::Type m_type;
     BufferFormat       m_format;
