@@ -77,15 +77,14 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
 GlVertexBuffer::~GlVertexBuffer()
 {
     // ref<GlVertexBuffer> p_instance = makeRef<GlVertexBuffer>(*this);
-    GlVertexBuffer* p_instance = this;
 
-
+    uint32_t id = m_id;
     Renderer::s_submit(
-        [p_instance]()
+        [id]()
         {
-            glBindBuffer(GL_ARRAY_BUFFER, p_instance->m_id);
+            glBindBuffer(GL_ARRAY_BUFFER, id);
             glUnmapBuffer(GL_ARRAY_BUFFER);
-            glDeleteBuffers(1, &p_instance->m_id);
+            glDeleteBuffers(1, &id);
         });
 }
 

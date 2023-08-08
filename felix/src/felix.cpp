@@ -191,19 +191,20 @@ class FelixLayer : public Layer
         // Test Sprite
         ///////////////////////////
 
-        for (int i = 0; i < 20; i++)
+        uint32_t sz = 40;
+        for (uint32_t i = 0; i < sz; i++)
         {
-            for (int j = 0; j < 20; j++)
+            for (uint32_t j = 0; j < sz; j++)
             {
-                auto spriteEntity1
-                    = mp_scene->addEntity("Test Sprite " + std::to_string(i * j));
+                auto spriteEntity1 = mp_scene->addEntity(
+                    "Test Sprite " + std::to_string((i * sz) + j));
                 auto& transformCmp1
                     = spriteEntity1.addComponent<TransformCmp>();
                 transformCmp1.setScale({0.1f, 0.1f, 1.0f});
                 transformCmp1.setTranslationX(0.12 * i);
                 transformCmp1.setTranslationY(0.12 * j);
                 auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
-                spriteCmp1.color = {0.0f, 0.02f * i, 0.02f *j, 1.0f};
+                spriteCmp1.color = {0.0f, 0.02f * i, 0.02f * j, 1.0f};
             }
         }
 
