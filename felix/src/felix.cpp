@@ -275,6 +275,19 @@ class FelixLayer : public Layer
 
     virtual void onUpdate(float deltaTime) override
     {
+        if (mp_viewportPanel->wasResized())
+        {
+            // we need to resize some stuff
+            m_viewportSize = mp_viewportPanel->m_viewportSize;
+            m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
+            mp_editCamera->setAspectRatio(m_aspectRatio);
+
+            mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+            mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+
+            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
+        }
+
         if (mp_sceneControlPanel->getState() == SceneControlPanel::State::PLAY
             && m_sceneState != State::PLAY)
         {
@@ -306,6 +319,7 @@ class FelixLayer : public Layer
     {
         mp_frameBuffer->bind();
         GraphicsApi::clear();
+        // mp_frameBuffer->clear();
 
         if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
         {
@@ -666,18 +680,6 @@ class FelixLayer : public Layer
 
         m_viewportFocused = mp_viewportPanel->m_viewportFocused;
         m_viewportHovered = mp_viewportPanel->m_viewportHovered;
-        if (mp_viewportPanel->wasResized())
-        {
-            // we need to resize some stuff
-            m_viewportSize = mp_viewportPanel->m_viewportSize;
-            m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
-            mp_editCamera->setAspectRatio(m_aspectRatio);
-
-            mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-            mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-
-            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
-        }
 
         ///////////////////////////
         // Scene Control
