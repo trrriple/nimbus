@@ -306,7 +306,6 @@ static void APIENTRY _glDebugOutput(GLenum       source,
     switch (severity)
     {
         case GL_DEBUG_SEVERITY_HIGH:
-            NM_CORE_ASSERT_STATIC(false, "Sevetity: High");
             Log::coreError("Severity: high");
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
