@@ -105,7 +105,6 @@ void Window::onUpdate()
     NM_PROFILE();
 
     _pollEvents();
-    // SDL_GL_SwapWindow(static_cast<SDL_Window*>(mp_window));
     _calcFramerate();
 }
 

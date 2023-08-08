@@ -2,6 +2,8 @@
 #include "nimbus/core/core.hpp"
 
 #include "platform/gl/glGraphicsApi.hpp"
+#include "nimbus/renderer/renderer.hpp"
+
 
 #include "nimbus/renderer/texture.hpp"
 
@@ -65,11 +67,10 @@ void GlGraphicsApi::drawElements(const ref<VertexArray>& p_vertexArray,
                                  : p_vertexArray->getIndexBuffer()->getCount();
 
     p_vertexArray->bind();
+    uint32_t type = p_vertexArray->getIndexBuffer()->getType();
 
-    glDrawElements(GL_TRIANGLES,
-                   count,
-                   p_vertexArray->getIndexBuffer()->getType(),
-                   nullptr);
+    Renderer::s_submit([count, type]()
+                       { glDrawElements(GL_TRIANGLES, count, type, nullptr); });
 }
 
 void GlGraphicsApi::drawArrays(const ref<VertexArray>& p_vertexArray,
@@ -121,15 +122,16 @@ void GlGraphicsApi::clear()
 
 void GlGraphicsApi::clearColor(glm::vec4 color)
 {
-    glClearColor(color.r, color.g, color.b, color.a);
+    Renderer::s_submit(
+        [color]()
+        {
+            glClearColor(color.r, color.g, color.b, color.a);
+        });
 }
-
 
 void GlGraphicsApi::setViewportSize(int x, int y, int w, int h)
 {
-    NM_PROFILE_TRACE();
-
-    glViewport(x, y, w, h);
+    Renderer::s_submit([x, y, w, h]() { glViewport(x, y, w, h); });
 }
 
 void GlGraphicsApi::setWireframe(bool on)
@@ -138,15 +140,14 @@ void GlGraphicsApi::setWireframe(bool on)
 
     if (on != s_wireframeOn)
     {
-        if (!on)
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-        else
-        {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
-        s_wireframeOn = on;
+        uint32_t mode = on ? GL_LINE : GL_FILL;
+
+        Renderer::s_submit(
+            [mode]()
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, mode);
+                s_wireframeOn = mode == GL_LINE ? true : false;
+            });
     }
 }
 
@@ -156,13 +157,22 @@ void GlGraphicsApi::setDepthTest(bool on)
 
     if (!on)
     {
-        glDisable(GL_DEPTH_TEST);
+        Renderer::s_submit(
+            []()
+            {
+                glDisable(GL_DEPTH_TEST);
+                s_depthTest = false;
+            });
     }
     else
     {
-        glEnable(GL_DEPTH_TEST);
+        Renderer::s_submit(
+            []()
+            {
+                glEnable(GL_DEPTH_TEST);
+                s_depthTest = true;
+            });
     }
-    s_depthTest = on;
 }
 
 void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
@@ -173,37 +183,52 @@ void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
         return;
     }
 
+    uint32_t sFactor = GL_NONE;
+    uint32_t dFactor = GL_NONE;
     switch (mode)
     {
         case BlendingMode::ADDITIVE:
-            glBlendFunc(GL_ONE, GL_ONE);
+            sFactor = GL_ONE;
+            dFactor = GL_ONE;
             break;
         case BlendingMode::SUBTRACT:
-            glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+            sFactor = GL_ZERO;
+            dFactor = GL_ONE_MINUS_SRC_COLOR;
             break;
         case BlendingMode::MULTIPLY:
-            glBlendFunc(GL_DST_COLOR, GL_ZERO);
+            sFactor = GL_DST_COLOR;
+            dFactor = GL_ZERO;
             break;
         case BlendingMode::SCREEN:
-            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+            sFactor = GL_ONE;
+            dFactor = GL_ONE_MINUS_SRC_COLOR;
             break;
         case BlendingMode::REPLACE:
-            glBlendFunc(GL_ONE, GL_ZERO);
+            sFactor = GL_ONE;
+            dFactor = GL_ZERO;
             break;
         case BlendingMode::ALPHA_BLEND:
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            sFactor = GL_SRC_ALPHA;
+            dFactor = GL_ONE_MINUS_SRC_ALPHA;
             break;
         case BlendingMode::ALPHA_PREMULTIPLIED:
-            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            sFactor = GL_ONE;
+            dFactor = GL_ONE_MINUS_SRC_ALPHA;
             break;
         case BlendingMode::SOURCE_ALPHA_ADDITIVE:
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            sFactor = GL_SRC_ALPHA;
+            dFactor = GL_ONE;
             break;
         default:
             NM_CORE_ASSERT_STATIC(0, "Invalid blending mode %i", mode);
     }
 
-    s_currBlendingMode = mode;
+    Renderer::s_submit(
+        [sFactor, dFactor, mode]()
+        {
+            glBlendFunc(sFactor, dFactor);
+            s_currBlendingMode = mode;
+        });
 }
 
 static void APIENTRY _glDebugOutput(GLenum       source,
@@ -278,6 +303,7 @@ static void APIENTRY _glDebugOutput(GLenum       source,
     switch (severity)
     {
         case GL_DEBUG_SEVERITY_HIGH:
+            NM_CORE_ASSERT_STATIC(false, "Sevetity: High");
             Log::coreError("Severity: high");
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:

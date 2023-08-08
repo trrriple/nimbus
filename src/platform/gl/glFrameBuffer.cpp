@@ -35,6 +35,7 @@ GlFrameBuffer::GlFrameBuffer(FrameBuffer::Spec& spec)
 
     NM_CORE_ASSERT(m_spec.samples, "Must have at least 1 sample ");
 
+    // TODO get from renderer(probably need to do the same for texturss)
     // if (spec.samples > 1)
     // {
     //     int32_t maxSamples;

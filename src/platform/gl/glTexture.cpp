@@ -114,14 +114,15 @@ GlTexture::GlTexture(const Type         type,
                                 GL_TEXTURE_WRAP_R,
                                 s_wrapType(p_instance->m_spec.wrapTypeR));
 
-                renderDonePromise.set_value();
+                // renderDonePromise.set_value();
+                
+                stbi_image_free(data);
+
+                p_instance->m_loaded = true;
             });
 
-        renderDoneFuture.wait();
+        // renderDoneFuture.wait();
 
-        stbi_image_free(data);
-
-        m_loaded = true;
     }
     else
     {
@@ -148,13 +149,12 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
     {
         _storage();
     }
-
-    m_loaded = true;
 }
 
 GlTexture::~GlTexture()
 {
-    glDeleteTextures(1, &m_id);
+    uint32_t id = m_id;
+    Renderer::s_submit([id]() { glDeleteTextures(1, &id); });
 }
 
 void GlTexture::bind(const uint32_t glTextureUnit) const
@@ -162,6 +162,11 @@ void GlTexture::bind(const uint32_t glTextureUnit) const
     NM_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
                           "glTextureUnit > s_setMaxTextures. Did you call "
                           "Texture::s_setMaxTextures?");
+
+    if(!m_loaded)
+    {
+        return;
+    }
 
     uint32_t id      = m_id;
     uint32_t samples = m_spec.samples;
@@ -264,15 +269,15 @@ void GlTexture::setData(void* data, uint32_t size)
                    bytesPerPixel,
                    m_spec.width * m_spec.height * bytesPerPixel);
 
-    // TODO, save this buffer locally to not block?
-    // this function shouldn't be called often anyways...
-    std::promise<void> renderDonePromise;
-    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+
+    void* localCpy = malloc(size);
+    memcpy(localCpy, data, size);
+
     // ref<GlTexture>     p_instance       = makeRef<GlTexture>(this);
     GlTexture*            p_instance       = this;
 
     Renderer::s_submit(
-        [p_instance, data, &renderDonePromise]()
+        [p_instance, localCpy]()
         {
             glTextureSubImage2D(p_instance->m_id,
                                 0,
@@ -282,11 +287,10 @@ void GlTexture::setData(void* data, uint32_t size)
                                 p_instance->m_spec.height,
                                 s_format(p_instance->m_spec.format),
                                 s_dataType(p_instance->m_spec.dataType),
-                                data);
-            renderDonePromise.set_value();
+                                localCpy);
+            
+            free(localCpy);
         });
-
-    renderDoneFuture.wait();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -461,6 +465,9 @@ void GlTexture::_storage()
             m_id, GL_TEXTURE_WRAP_S, Texture::s_wrapType(m_spec.wrapTypeS));
         glTextureParameteri(
             m_id, GL_TEXTURE_WRAP_T, Texture::s_wrapType(m_spec.wrapTypeT));
+
+        m_loaded = true;
+
     }
     else
     {
@@ -472,6 +479,9 @@ void GlTexture::_storage()
             m_spec.width,
             m_spec.height,
             GL_TRUE);
+
+        m_loaded = true;
+
     }
 }
 

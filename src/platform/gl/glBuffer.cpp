@@ -39,7 +39,8 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
                     p_instance->mp_memory = glMapNamedBufferRange(
                         p_instance->m_id, 0, p_instance->m_size, 0);
 
-                    renderDonePromise.set_value();
+                    p_instance->m_mapped = true;
+                    // renderDonePromise.set_value();
                 });
 
                 break;
@@ -61,14 +62,15 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
                     p_instance->mp_memory = glMapNamedBufferRange(
                         p_instance->m_id, 0, p_instance->m_size, flags);
 
-                    renderDonePromise.set_value();
+                    p_instance->m_mapped = true;
+                    // renderDonePromise.set_value();
                 });
 
             break;
         }
     }
 
-    renderDoneFuture.wait();
+    // renderDoneFuture.wait();
 
 }
 
@@ -123,7 +125,10 @@ void GlVertexBuffer::setData(const void* data, uint32_t size)
     NM_CORE_ASSERT(m_type != VertexBuffer::Type::STATIC_DRAW,
                    "Cannot set data in a static buffer!");
 
-    memcpy(mp_memory, data, size);
+    if (m_mapped)
+    {
+        memcpy(mp_memory, data, size);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,19 +145,24 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
     // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
     GlIndexBuffer* p_instance = this;
 
+    void* localCpy = malloc(p_instance->m_count * sizeof(uint32_t));
+    memcpy(localCpy, indices, p_instance->m_count * sizeof(uint32_t));
+
     Renderer::s_submit(
-        [p_instance, indices, &renderDonePromise]()
+        [p_instance, localCpy, &renderDonePromise]()
         {
             glCreateBuffers(1, &p_instance->m_id);
             glNamedBufferStorage(p_instance->m_id,
                                  p_instance->m_count * sizeof(uint32_t),
-                                 indices,
+                                 localCpy,
                                  0);
 
-            renderDonePromise.set_value();
+            free(localCpy);
+
+            // renderDonePromise.set_value();
         });
 
-    renderDoneFuture.wait();
+    // renderDoneFuture.wait();
 }
 
 GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
@@ -165,20 +175,24 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
     // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
     GlIndexBuffer* p_instance = this;
 
+    void* localCpy = malloc(p_instance->m_count * sizeof(uint16_t));
+    memcpy(localCpy, indices, p_instance->m_count * sizeof(uint16_t));
 
     Renderer::s_submit(
-        [p_instance, indices, &renderDonePromise]()
+        [p_instance, localCpy, &renderDonePromise]()
         {
             glCreateBuffers(1, &p_instance->m_id);
             glNamedBufferStorage(p_instance->m_id,
                                  p_instance->m_count * sizeof(uint16_t),
-                                 indices,
+                                 localCpy,
                                  0);
 
-            renderDonePromise.set_value();
+            free(localCpy);
+
+            // renderDonePromise.set_value();
         });
 
-    renderDoneFuture.wait();
+    // renderDoneFuture.wait();
 }
 
 GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
@@ -191,20 +205,23 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
     // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
     GlIndexBuffer* p_instance = this;
 
+    void* localCpy = malloc(p_instance->m_count * sizeof(uint8_t));
+    memcpy(localCpy, indices, p_instance->m_count * sizeof(uint8_t));
 
     Renderer::s_submit(
-        [p_instance, indices, &renderDonePromise]()
+        [p_instance, localCpy, &renderDonePromise]()
         {
             glCreateBuffers(1, &p_instance->m_id);
             glNamedBufferStorage(p_instance->m_id,
                                  p_instance->m_count * sizeof(uint8_t),
-                                 indices,
+                                 localCpy,
                                  0);
 
-            renderDonePromise.set_value();
+            free(localCpy);
+            // renderDonePromise.set_value();
         });
 
-    renderDoneFuture.wait();
+    // renderDoneFuture.wait();
 }
 
 GlIndexBuffer::~GlIndexBuffer()
@@ -240,10 +257,10 @@ GlVertexArray::GlVertexArray()
         {
             glCreateVertexArrays(1, &p_instance->m_id);
 
-            renderDonePromise.set_value();
+            // renderDonePromise.set_value();
         });
 
-    renderDoneFuture.wait();
+    // renderDoneFuture.wait();
 }
 
 GlVertexArray::~GlVertexArray()
@@ -365,10 +382,10 @@ void GlVertexArray::addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer)
                 }
             }
 
-            renderDonePromise.set_value();
+            // renderDonePromise.set_value();
         });
 
-    renderDoneFuture.wait();
+    // renderDoneFuture.wait();
 
     const auto& format = p_vertexBuffer->getFormat();
 
@@ -403,10 +420,10 @@ void GlVertexArray::setIndexBuffer(const ref<IndexBuffer>& p_indexBuffer)
             glBindVertexArray(p_instance->m_id);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_indexBuffer->getId());
 
-            renderDonePromise.set_value();
+            // renderDonePromise.set_value();
         });
 
-    renderDoneFuture.wait();
+    // renderDoneFuture.wait();
 
     m_indexBuffer = p_indexBuffer;
 }

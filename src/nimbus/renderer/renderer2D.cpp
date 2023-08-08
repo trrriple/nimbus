@@ -455,20 +455,12 @@ void Renderer2D::_s_submit()
             s_quadData.textures[i]->bind(i);
         }
 
-        // Renderer::s_submit(
-        //     []()
-        //     {
-                
-        //     }
-        // );
 
-        // Renderer::s_submit({Renderer::CommandType::STANDARD,
-        //                     s_quadData.p_shader,
-        //                     s_quadData.p_vao,
-        //                     glm::mat4(1.0f),
-        //                     static_cast<int32_t>(s_quadData.quadCount * 6),
-        //                     -1,
-        //                     true});
+        Renderer::s_render(  // 6 vertex per quad
+            s_quadData.p_shader,
+            s_quadData.p_vao,
+            s_quadData.quadCount * 6,
+            true);
 
         // collect stats
         s_stats.drawCalls++;

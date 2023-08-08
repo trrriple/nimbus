@@ -45,11 +45,16 @@ Application::Application(const std::string& name,
     mp_guiSubsystemLayer = makeRef<GuiSubsystem>();
     insertLayer(mp_guiSubsystemLayer);
 
-    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(mp_window->getOsWindow()),
-                       nullptr);
+    // TODO put back
+    // SDL_GL_MakeCurrent(static_cast<SDL_Window*>(mp_window->getOsWindow()),
+    //                    nullptr);
 
     Renderer::s_init(mp_window->getOsWindow(), mp_window->getContext());
     Renderer2D::s_init();
+
+    // todo remove
+    Renderer::s_processHook();
+
 }
 
 Application::~Application()
@@ -132,7 +137,7 @@ void Application::execute()
         if (doDraw)
         {   
 
-            // GraphicsApi::clear();
+            GraphicsApi::clear();
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
                 // call each draw with how long it's been since last draw
@@ -155,6 +160,9 @@ void Application::execute()
             std::promise<void> renderDonePromise;
             std::future<void> renderDoneFuture = renderDonePromise.get_future();
 
+            
+            // todo remove
+            
             SDL_Window* p_window
                 = static_cast<SDL_Window*>(mp_window->getOsWindow());
             Renderer::s_submit(
@@ -164,7 +172,9 @@ void Application::execute()
                     renderDonePromise.set_value();
                 });
 
-            renderDoneFuture.wait();
+            // renderDoneFuture.wait();
+
+            Renderer::s_processHook();
 
             ////////////////////////////////////////////////////////////////////
             // Call window update function (events polled and buffers swapped)

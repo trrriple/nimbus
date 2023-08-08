@@ -57,6 +57,8 @@ class GlVertexBuffer : public VertexBuffer
         return m_id;
     }
 
+   private:
+    bool m_mapped = false;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +86,6 @@ class GlIndexBuffer : public IndexBuffer
     {
         return m_type;
     }
-
 
 };
 

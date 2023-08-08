@@ -318,7 +318,7 @@ class FelixLayer : public Layer
     virtual void onDraw(float deltaTime) override
     {
         mp_frameBuffer->bind();
-        // GraphicsApi::clear();
+        GraphicsApi::clear();
 
         if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
         {
