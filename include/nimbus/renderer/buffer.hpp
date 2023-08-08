@@ -188,7 +188,7 @@ class VertexBuffer
     VertexBuffer::Type m_type;
     BufferFormat       m_format;
 
-    inline static uint32_t m_currBoundId = 0;
+    inline static uint32_t s_currBoundId = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,6 +210,11 @@ class IndexBuffer
     virtual uint32_t getCount() const = 0;
 
     virtual uint32_t getType() const = 0;
+
+    virtual uint32_t getId()
+    {
+        return m_id;
+    }
 
    protected:
     uint32_t m_id;

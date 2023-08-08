@@ -56,45 +56,8 @@ void Renderer::s_submit(std::function<void()> fn)
     std::lock_guard<std::mutex> lock(s_queueMutex);
     s_cmdQueue.push(fn);
     s_cmdCondition.notify_one();
-
-    // _s_processCmd(cmd);
 }
 
-// Renderer::VertexBufferInfo Renderer::s_createVbo(const void* verticies,
-//                                                  uint32_t    size,
-//                                                  uint32_t    flags)
-// {
-//     std::promise<VertexBufferInfo> bufferPromise;
-//     auto                           bufferFuture = bufferPromise.get_future();
-
-//     {
-//         std::lock_guard<std::mutex> lock(s_queueMutex);
-//         s_cmdQueue.push(
-//             [&]()
-//             {
-//                 // GLuint buffer;
-//                 // glCreateBuffers(1, &buffer);
-//                 // glNamedBufferStorage(buffer,
-//                 //                      size,
-//                 //                      data,
-//                 //                      GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT
-//                 //                          | GL_MAP_PERSISTENT_BIT
-//                 //                          | GL_MAP_COHERENT_BIT);
-
-//                 // void* mappedPtr = glMapNamedBufferRange(
-//                 //     buffer,
-//                 //     0,
-//                 //     size,
-//                 //     GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT
-//                 //         | GL_MAP_COHERENT_BIT);
-
-//                 // bufferPromise.set_value({buffer, mappedPtr});
-//             });
-//     }
-
-//     s_cmdCondition.notify_one();  // Signal the render thread
-//     return
-// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private Functions

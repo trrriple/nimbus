@@ -13,7 +13,7 @@ class GlTexture : public Texture
    public:
     ~GlTexture();
 
-    GlTexture(const Type type, Spec& spec);
+    GlTexture(const Type type, Spec& spec, bool submitForMe = true);
 
     GlTexture(const Type         type,
               const std::string& path,
@@ -71,8 +71,8 @@ class GlTexture : public Texture
     static uint32_t s_wrapType(WrapType wrapType);
 
    private:
-    inline static std::mutex s_genLock = std::mutex();
-
+    void    _storage();
+    
     static void _s_gen(uint32_t& id, bool multisample = false);
 
 };

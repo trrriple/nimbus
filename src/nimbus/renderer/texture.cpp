@@ -23,9 +23,9 @@ ref<Texture> Texture::s_create(const Type         type,
     }
 }
 
-ref<Texture> Texture::s_create(const Type type, Spec& spec)
+ref<Texture> Texture::s_create(const Type type, Spec& spec, bool submitForMe)
 {
-    return makeRef<GlTexture>(type, spec);
+    return makeRef<GlTexture>(type, spec, submitForMe);
 }
 
 void Texture::s_setMaxTextures(uint32_t maxTextures)

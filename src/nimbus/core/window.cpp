@@ -5,8 +5,6 @@
 
 #include "nimbus/core/keyCode.hpp"
 #include "nimbus/core/mouseButton.hpp"
-#include "nimbus/renderer/renderer.hpp"
-#include "nimbus/renderer/renderer2D.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 
 namespace nimbus
@@ -49,9 +47,6 @@ Window::~Window()
 {
     NM_PROFILE_DETAIL();
 
-    Renderer2D::s_destroy();
-    Renderer::s_destroy();
-
     SDL_DestroyWindow(static_cast<SDL_Window*>(mp_window));
     mp_window = nullptr;
 
@@ -65,48 +60,30 @@ void Window::graphicsContextInit()
 {
     NM_PROFILE_DETAIL();
 
-    // std::promise<void> renderDonePromise;
-    // std::future<void> renderDoneFuture = renderDonePromise.get_future();
+    int contextFlags = 0;
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
+    contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
+    // openGL context
 
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
-    // Renderer::s_submit(
-    //     [this, &renderDonePromise]()
-    // {
-        int contextFlags = 0;
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
-        contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
-        // openGL context
+    // depth buffer
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-        SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    mp_context = static_cast<void*>(
+        SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
+    NM_CORE_ASSERT(
+        mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
 
-        // depth buffer
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    // Set V-sync
+    SDL_GL_SetSwapInterval(m_VSyncOn);
 
-        mp_context = static_cast<void*>(
-            SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
-        NM_CORE_ASSERT(
-            mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
-
-        // Set V-sync
-        SDL_GL_SetSwapInterval(m_VSyncOn);
-
-        GraphicsApi::init();
-
-        // renderDonePromise.set_value();
-    // });
+    GraphicsApi::init();
     
-    // renderDoneFuture.wait();
-    
-    // SDL_GL_MakeCurrent(static_cast<SDL_Window*>(mp_window), nullptr);
-    // Renderer::s_init(mp_window, mp_context);
-
-    // Renderer2D::s_init();
-    
-
 }
 
 void Window::setEventCallback(const WindowEventCallback_t& callback)

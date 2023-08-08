@@ -81,12 +81,12 @@ class ViewportPanel
             m_wasResized = true;
         }
 
-        // uint64_t textureID = p_screenBuffer->getTextureId();
+        uint64_t textureID = p_screenBuffer->getTextureId();
 
-        // ImGui::Image(reinterpret_cast<void*>(textureID),
-        //              ImVec2{m_viewportSize.x, m_viewportSize.y},
-        //              ImVec2{0, 1},
-        //              ImVec2{1, 0});
+        ImGui::Image(reinterpret_cast<void*>(textureID),
+                     ImVec2{m_viewportSize.x, m_viewportSize.y},
+                     ImVec2{0, 1},
+                     ImVec2{1, 0});
 
         float titleBarHeight
             = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2;

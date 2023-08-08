@@ -89,7 +89,9 @@ class Texture
         WrapType       wrapTypeR      = WrapType::CLAMP_TO_EDGE;
     };
 
-    static ref<Texture> s_create(const Type type, Spec& spec);
+    static ref<Texture> s_create(const Type type,
+                                 Spec&      spec,
+                                 bool       submitForMe = true);
 
     virtual ~Texture() = default;
 

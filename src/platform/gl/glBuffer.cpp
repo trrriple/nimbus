@@ -21,7 +21,8 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
 
     std::promise<void> renderDonePromise;
     std::future<void> renderDoneFuture = renderDonePromise.get_future();
-    ref<GlVertexBuffer> p_instance = makeRef<GlVertexBuffer>(*this);
+    // ref<GlVertexBuffer> p_instance = makeRef<GlVertexBuffer>(*this);
+    GlVertexBuffer* p_instance = this;
 
     switch (m_type)
     {
@@ -73,26 +74,43 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
 
 GlVertexBuffer::~GlVertexBuffer()
 {
-    bind();
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    unbind();
-    glDeleteBuffers(1, &m_id);
+    // ref<GlVertexBuffer> p_instance = makeRef<GlVertexBuffer>(*this);
+    GlVertexBuffer* p_instance = this;
+
+
+    Renderer::s_submit(
+        [p_instance]()
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, p_instance->m_id);
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+            glDeleteBuffers(1, &p_instance->m_id);
+        });
 }
 
 void GlVertexBuffer::bind() const
 {
-    if (m_id != m_currBoundId)
+    if (m_id != s_currBoundId)
     {
         // only bind if this is a different buffer
-        glBindBuffer(GL_ARRAY_BUFFER, m_id);
-        m_currBoundId = m_id;
+
+        uint32_t id = m_id;
+        Renderer::s_submit(
+            [id]()
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, id);
+                s_currBoundId = id;
+            });
     }
 }
 
 void GlVertexBuffer::unbind() const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    m_currBoundId = 0;
+    Renderer::s_submit(
+        []()
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        });
+    s_currBoundId = 0;
 }
 
 void GlVertexBuffer::setData(const void* data, uint32_t size)
@@ -114,47 +132,96 @@ void GlVertexBuffer::setData(const void* data, uint32_t size)
 GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
 {
     m_count = count;
+    m_type  = GL_UNSIGNED_INT;
 
-    glCreateBuffers(1, &m_id);
-    glNamedBufferStorage(m_id, count * sizeof(uint32_t), indices, 0);
+    std::promise<void> renderDonePromise;
+    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+    
+    // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
+    GlIndexBuffer* p_instance = this;
 
-    m_type = GL_UNSIGNED_INT;
+    Renderer::s_submit(
+        [p_instance, indices, &renderDonePromise]()
+        {
+            glCreateBuffers(1, &p_instance->m_id);
+            glNamedBufferStorage(p_instance->m_id,
+                                 p_instance->m_count * sizeof(uint32_t),
+                                 indices,
+                                 0);
+
+            renderDonePromise.set_value();
+        });
+
+    renderDoneFuture.wait();
 }
 
 GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
 {
     m_count = count;
-
-    glCreateBuffers(1, &m_id);
-    glNamedBufferStorage(m_id, count * sizeof(uint16_t), indices, 0);
-
     m_type = GL_UNSIGNED_SHORT;
+
+    std::promise<void> renderDonePromise;
+    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+    // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
+    GlIndexBuffer* p_instance = this;
+
+
+    Renderer::s_submit(
+        [p_instance, indices, &renderDonePromise]()
+        {
+            glCreateBuffers(1, &p_instance->m_id);
+            glNamedBufferStorage(p_instance->m_id,
+                                 p_instance->m_count * sizeof(uint16_t),
+                                 indices,
+                                 0);
+
+            renderDonePromise.set_value();
+        });
+
+    renderDoneFuture.wait();
 }
 
 GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
 {
     m_count = count;
+    m_type  = GL_UNSIGNED_BYTE;
 
-    glCreateBuffers(1, &m_id);
-    glNamedBufferStorage(m_id, count * sizeof(uint8_t), indices, 0);
+    std::promise<void> renderDonePromise;
+    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+    // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
+    GlIndexBuffer* p_instance = this;
 
-    m_type = GL_UNSIGNED_BYTE;
+
+    Renderer::s_submit(
+        [p_instance, indices, &renderDonePromise]()
+        {
+            glCreateBuffers(1, &p_instance->m_id);
+            glNamedBufferStorage(p_instance->m_id,
+                                 p_instance->m_count * sizeof(uint8_t),
+                                 indices,
+                                 0);
+
+            renderDonePromise.set_value();
+        });
+
+    renderDoneFuture.wait();
 }
 
 GlIndexBuffer::~GlIndexBuffer()
 {
-    unbind();
-    glDeleteBuffers(1, &m_id);
+    uint32_t id = m_id;
+    Renderer::s_submit([id]() { glDeleteBuffers(1, &id); });
 }
 
 void GlIndexBuffer::bind() const
 {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_id);
+    uint32_t id = m_id;
+    Renderer::s_submit([id]() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id); });
 }
 
 void GlIndexBuffer::unbind() const
 {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    Renderer::s_submit([]() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,28 +229,48 @@ void GlIndexBuffer::unbind() const
 ////////////////////////////////////////////////////////////////////////////////
 GlVertexArray::GlVertexArray()
 {
-    glCreateVertexArrays(1, &m_id);
+    std::promise<void> renderDonePromise;
+    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+    // ref<GlVertexArray> p_instance       = makeRef<GlVertexArray>(*this);
+    GlVertexArray* p_instance = this;
+
+
+    Renderer::s_submit(
+        [p_instance, &renderDonePromise]()
+        {
+            glCreateVertexArrays(1, &p_instance->m_id);
+
+            renderDonePromise.set_value();
+        });
+
+    renderDoneFuture.wait();
 }
 
 GlVertexArray::~GlVertexArray()
 {
-    unbind();
-    glDeleteVertexArrays(1, &m_id);
+    uint32_t id = m_id;
+    Renderer::s_submit([id]() { glDeleteVertexArrays(1, &id); });
+
 }
 
 void GlVertexArray::bind() const
 {
     if (m_id != s_currBoundId)
     {
-        // only bind if this is a different array
-        glBindVertexArray(m_id);
-        s_currBoundId = m_id;
+        uint32_t id = m_id;
+        Renderer::s_submit(
+            [id]()
+            {
+                glBindVertexArray(id);
+
+                s_currBoundId = id;
+            });
     }
 }
 
 void GlVertexArray::unbind() const
 {
-    glBindVertexArray(0);
+    Renderer::s_submit([]() { glBindVertexArray(0); });
     s_currBoundId = 0;
 }
 
@@ -192,76 +279,98 @@ void GlVertexArray::addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer)
     NM_CORE_ASSERT(p_vertexBuffer->getFormat().getComponents().size(),
                    "VBO format is required to create VBA");
 
-    bind();
-    p_vertexBuffer->bind();
+    std::promise<void> renderDonePromise;
+    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+    // ref<GlVertexArray> p_instance       = makeRef<GlVertexArray>(*this);
+    GlVertexArray* p_instance = this;
+
+
+    Renderer::s_submit(
+        [p_instance, p_vertexBuffer, &renderDonePromise]()
+        {
+            glBindVertexArray(p_instance->m_id);
+            glBindBuffer(GL_ARRAY_BUFFER, p_vertexBuffer->getId());
+
+
+            const auto& format = p_vertexBuffer->getFormat();
+            for (const auto& component : format)
+            {
+                uint32_t glType
+                    = Shader::s_getShaderType(std::get<0>(component.dataType));
+
+                if (glType == GL_INT || glType == GL_BOOL)
+                {
+                    glEnableVertexAttribArray(p_instance->m_vertexBufferIndex);
+
+                    uint32_t numOfComponent = std::get<2>(component.dataType);
+
+                    glVertexAttribIPointer(p_instance->m_vertexBufferIndex,
+                                           numOfComponent,
+                                           glType,
+                                           format.getStride(),
+                                           (const void*)component.offset);
+
+                    if (component.type == BufferComponent::Type::PER_INSTANCE)
+                    {
+                        glVertexAttribDivisor(p_instance->m_vertexBufferIndex,
+                                              component.perInstance);
+                    }
+                    p_instance->m_vertexBufferIndex++;
+                }
+                else if (glType == GL_FLOAT)
+                {
+                    uint32_t numOfComponent = std::get<2>(component.dataType);
+                    uint32_t columns        = 1;
+
+                    uint32_t numOfComponentsPerColumn = numOfComponent;
+                    if (numOfComponent > 4)
+                    {
+                        // This is a matrix we must add a pointer for each
+                        // column of the matrix
+                        columns
+                            = static_cast<uint32_t>(std::sqrt(numOfComponent));
+                        numOfComponentsPerColumn
+                            = columns;  // matrix will always be square
+                    }
+
+                    for (uint32_t i = 0; i < columns; i++)
+                    {
+                        uint64_t offset
+                            = component.offset
+                              + (sizeof(float) * numOfComponentsPerColumn * i);
+
+                        glEnableVertexAttribArray(
+                            p_instance->m_vertexBufferIndex);
+                        glVertexAttribPointer(
+                            p_instance->m_vertexBufferIndex,
+                            numOfComponentsPerColumn,
+                            glType,
+                            component.normalized ? GL_TRUE : GL_FALSE,
+                            format.getStride(),
+                            (const void*)offset);
+
+                         if (component.type
+                            == BufferComponent::Type::PER_INSTANCE)
+                        {
+                            glVertexAttribDivisor(
+                                p_instance->m_vertexBufferIndex,
+                                component.perInstance);
+                        }
+                        p_instance->m_vertexBufferIndex++;
+                    }
+                }
+                else
+                {
+                    NM_CORE_ASSERT_STATIC(0, "Unknown ShaderDataType!");
+                }
+            }
+
+            renderDonePromise.set_value();
+        });
+
+    renderDoneFuture.wait();
 
     const auto& format = p_vertexBuffer->getFormat();
-    for (const auto& component : format)
-    {
-        uint32_t glType
-            = Shader::s_getShaderType(std::get<0>(component.dataType));
-
-        if (glType == GL_INT || glType == GL_BOOL)
-        {
-            glEnableVertexAttribArray(m_vertexBufferIndex);
-
-            uint32_t numOfComponent = std::get<2>(component.dataType);
-
-            glVertexAttribIPointer(m_vertexBufferIndex,
-                                   numOfComponent,
-                                   glType,
-                                   format.getStride(),
-                                   (const void*)component.offset);
-
-            if (component.type == BufferComponent::Type::PER_INSTANCE)
-            {
-                glVertexAttribDivisor(m_vertexBufferIndex,
-                                      component.perInstance);
-            }
-            m_vertexBufferIndex++;
-        }
-        else if (glType == GL_FLOAT)
-        {
-            uint32_t numOfComponent = std::get<2>(component.dataType);
-            uint32_t columns        = 1;
-
-            uint32_t numOfComponentsPerColumn = numOfComponent;
-            if (numOfComponent > 4)
-            {
-                // This is a matrix we must add a pointer for each
-                // column of the matrix
-                columns = static_cast<uint32_t>(std::sqrt(numOfComponent));
-                numOfComponentsPerColumn
-                    = columns;  // matrix will always be square
-            }
-
-            for (uint32_t i = 0; i < columns; i++)
-            {
-                uint64_t offset
-                    = component.offset
-                      + (sizeof(float) * numOfComponentsPerColumn * i);
-
-                glEnableVertexAttribArray(m_vertexBufferIndex);
-                glVertexAttribPointer(m_vertexBufferIndex,
-                                      numOfComponentsPerColumn,
-                                      glType,
-                                      component.normalized ? GL_TRUE : GL_FALSE,
-                                      format.getStride(),
-                                      (const void*)offset);
-
-                if (component.type == BufferComponent::Type::PER_INSTANCE)
-                {
-                    glVertexAttribDivisor(m_vertexBufferIndex,
-                                          component.perInstance);
-                }
-                m_vertexBufferIndex++;
-            }
-        }
-        else
-        {
-            NM_CORE_ASSERT(0, "Unknown ShaderDataType!");
-        }
-    }
 
     uint32_t thisVboVertexCount
         = p_vertexBuffer->getSize() / format.getStride();
@@ -282,8 +391,22 @@ void GlVertexArray::addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer)
 
 void GlVertexArray::setIndexBuffer(const ref<IndexBuffer>& p_indexBuffer)
 {
-    bind();
-    p_indexBuffer->bind();
+    std::promise<void> renderDonePromise;
+    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+    // ref<GlVertexArray> p_instance       = makeRef<GlVertexArray>(*this);
+    GlVertexArray* p_instance = this;
+
+
+    Renderer::s_submit(
+        [p_instance, p_indexBuffer, &renderDonePromise]()
+        {
+            glBindVertexArray(p_instance->m_id);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_indexBuffer->getId());
+
+            renderDonePromise.set_value();
+        });
+
+    renderDoneFuture.wait();
 
     m_indexBuffer = p_indexBuffer;
 }

@@ -455,6 +455,13 @@ void Renderer2D::_s_submit()
             s_quadData.textures[i]->bind(i);
         }
 
+        // Renderer::s_submit(
+        //     []()
+        //     {
+                
+        //     }
+        // );
+
         // Renderer::s_submit({Renderer::CommandType::STANDARD,
         //                     s_quadData.p_shader,
         //                     s_quadData.p_vao,

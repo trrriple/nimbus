@@ -2,6 +2,7 @@
 #include "nimbus/core/core.hpp"
 
 #include "platform/gl/glTexture.hpp"
+#include "nimbus/renderer/renderer.hpp"
 
 #include "stb_image.h"
 #include "glad.h"
@@ -27,7 +28,6 @@ GlTexture::GlTexture(const Type         type,
                    "Texture::s_setMaxTextures?");
 
 
-    _s_gen(m_id);
     stbi_set_flip_vertically_on_load(m_flipOnLoad);
 
     int32_t numComponents;
@@ -61,45 +61,63 @@ GlTexture::GlTexture(const Type         type,
                 0, "Unknown image format has %i components", numComponents);
         }
 
-        glBindTexture(GL_TEXTURE_2D, m_id);
+        std::promise<void> renderDonePromise;
+        std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+        // ref<GlTexture>     p_instance       = makeRef<GlTexture>(*this);
+        GlTexture*            p_instance       = this;
+    
+        Renderer::s_submit(
+            [p_instance, data, &renderDonePromise]()
+            {
+                _s_gen(p_instance->m_id);
+                glBindTexture(GL_TEXTURE_2D, p_instance->m_id);
 
-        // TODO, determine how to set this
-        m_spec.dataType      = DataType::UNSIGNED_BYTE;
-        m_spec.filterTypeMin = FilterType::MIPMAP_LINEAR;
-        m_spec.filterTypeMag = FilterType::LINEAR;
-        m_spec.wrapTypeS     = WrapType::REPEAT;
-        m_spec.wrapTypeT     = WrapType::REPEAT;
-        m_spec.wrapTypeR     = WrapType::REPEAT;
+                // TODO, determine how to set this
+                p_instance->m_spec.dataType      = DataType::UNSIGNED_BYTE;
+                p_instance->m_spec.filterTypeMin = FilterType::MIPMAP_LINEAR;
+                p_instance->m_spec.filterTypeMag = FilterType::LINEAR;
+                p_instance->m_spec.wrapTypeS     = WrapType::REPEAT;
+                p_instance->m_spec.wrapTypeT     = WrapType::REPEAT;
+                p_instance->m_spec.wrapTypeR     = WrapType::REPEAT;
 
-        // safety check for:
-        // If a non-zero named buffer object is bound to the
-        // GL_PIXEL_UNPACK_BUFFER target (see glBindBuffer) while a texture
-        // image is specified, data is treated as a byte offset into the buffer
-        // object's data store.
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     s_formatInternal(m_spec.formatInternal),
-                     m_spec.width,
-                     m_spec.height,
-                     0,
-                     s_format(m_spec.format),
-                     s_dataType(m_spec.dataType),
-                     data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+                // safety check for:
+                // If a non-zero named buffer object is bound to the
+                // GL_PIXEL_UNPACK_BUFFER target (see glBindBuffer) while a
+                // texture image is specified, data is treated as a byte offset
+                // into the buffer object's data store.
+                glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    s_formatInternal(p_instance->m_spec.formatInternal),
+                    p_instance->m_spec.width,
+                    p_instance->m_spec.height,
+                    0,
+                    s_format(p_instance->m_spec.format),
+                    s_dataType(p_instance->m_spec.dataType),
+                    data);
+                glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D,
-                        GL_TEXTURE_MIN_FILTER,
-                        s_filterType(m_spec.filterTypeMin));
-        glTexParameteri(GL_TEXTURE_2D,
-                        GL_TEXTURE_MAG_FILTER,
-                        s_filterType(m_spec.filterTypeMag));
-        glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, s_wrapType(m_spec.wrapTypeS));
-        glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, s_wrapType(m_spec.wrapTypeT));
-        glTexParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, s_wrapType(m_spec.wrapTypeR));
+                glTexParameteri(GL_TEXTURE_2D,
+                                GL_TEXTURE_MIN_FILTER,
+                                s_filterType(p_instance->m_spec.filterTypeMin));
+                glTexParameteri(GL_TEXTURE_2D,
+                                GL_TEXTURE_MAG_FILTER,
+                                s_filterType(p_instance->m_spec.filterTypeMag));
+                glTexParameteri(GL_TEXTURE_2D,
+                                GL_TEXTURE_WRAP_S,
+                                s_wrapType(p_instance->m_spec.wrapTypeS));
+                glTexParameteri(GL_TEXTURE_2D,
+                                GL_TEXTURE_WRAP_T,
+                                s_wrapType(p_instance->m_spec.wrapTypeT));
+                glTexParameteri(GL_TEXTURE_2D,
+                                GL_TEXTURE_WRAP_R,
+                                s_wrapType(p_instance->m_spec.wrapTypeR));
+
+                renderDonePromise.set_value();
+            });
+
+        renderDoneFuture.wait();
 
         stbi_image_free(data);
 
@@ -113,50 +131,25 @@ GlTexture::GlTexture(const Type         type,
     }
 }
 
-GlTexture::GlTexture(const Type type,
-                     Spec&      spec)
+GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
 {
-    m_type   = type;
-    m_spec   = spec;
+    m_type = type;
+    m_spec = spec;
 
     NM_CORE_ASSERT(m_spec.samples, "Textures samples must be >= 1!");
 
-    if(spec.samples == 1)
+    if (submitForMe)
     {
-        _s_gen(m_id);
-
-        glTextureStorage2D(m_id,
-                           1,
-                           Texture::s_formatInternal(m_spec.formatInternal),
-                           m_spec.width,
-                           m_spec.height);
-
-        glTextureParameteri(m_id,
-                            GL_TEXTURE_MAG_FILTER,
-                            Texture::s_filterType(m_spec.filterTypeMag));
-
-        glTextureParameteri(m_id,
-                            GL_TEXTURE_MIN_FILTER,
-                            Texture::s_filterType(m_spec.filterTypeMin));
-
-        glTextureParameteri(
-            m_id, GL_TEXTURE_WRAP_R, Texture::s_wrapType(m_spec.wrapTypeR));
-        glTextureParameteri(
-            m_id, GL_TEXTURE_WRAP_S, Texture::s_wrapType(m_spec.wrapTypeS));
-        glTextureParameteri(
-            m_id, GL_TEXTURE_WRAP_T, Texture::s_wrapType(m_spec.wrapTypeT));
+        // ref<GlTexture> p_instance = makeRef<GlTexture>(*this);
+        GlTexture* p_instance = this;
+        Renderer::s_submit([p_instance]() { p_instance->_storage(); });
     }
     else
     {
-        _s_gen(m_id, true);
-        glTextureStorage2DMultisample(
-            m_id,
-            m_spec.samples,
-            Texture::s_formatInternal(m_spec.formatInternal),
-            m_spec.width,
-            m_spec.height,
-            GL_TRUE);
+        _storage();
     }
+
+    m_loaded = true;
 }
 
 GlTexture::~GlTexture()
@@ -170,26 +163,37 @@ void GlTexture::bind(const uint32_t glTextureUnit) const
                           "glTextureUnit > s_setMaxTextures. Did you call "
                           "Texture::s_setMaxTextures?");
 
-    if (glTextureUnit != s_currBoundTextureUnit)
-    {
-        glActiveTexture(GL_TEXTURE0 + glTextureUnit);
-        s_currBoundTextureUnit = glTextureUnit;
-    }
+    uint32_t id      = m_id;
+    uint32_t samples = m_spec.samples;
+    Renderer::s_submit(
+        [id, samples, glTextureUnit]()
+        {
+            if (glTextureUnit != s_currBoundTextureUnit)
+            {
+                glActiveTexture(GL_TEXTURE0 + glTextureUnit);
+                s_currBoundTextureUnit = glTextureUnit;
+            }
 
-    if (m_id != s_currBoundId)
-    {
-        glBindTexture(
-            m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
-            m_id);
-        s_currBoundId = m_id;
-    }
+            if (id != s_currBoundId)
+            {
+                glBindTexture(
+                    samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
+                    id);
+                s_currBoundId = id;
+            }
+        });
 }
 
 void GlTexture::unbind() const
 {
-    glBindTexture(
-        m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 0);
-    s_currBoundId = 0;
+    uint32_t samples = m_spec.samples;
+    Renderer::s_submit(
+        [samples]()
+        {
+            glBindTexture(
+                samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 0);
+            s_currBoundId = 0;
+        });
 }
 
 void GlTexture::setData(void* data, uint32_t size)
@@ -260,15 +264,29 @@ void GlTexture::setData(void* data, uint32_t size)
                    bytesPerPixel,
                    m_spec.width * m_spec.height * bytesPerPixel);
 
-    glTextureSubImage2D(m_id,
-                        0,
-                        0,
-                        0,
-                        m_spec.width,
-                        m_spec.height,
-                        s_format(m_spec.format),
-                        s_dataType(m_spec.dataType),
-                        data);
+    // TODO, save this buffer locally to not block?
+    // this function shouldn't be called often anyways...
+    std::promise<void> renderDonePromise;
+    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+    // ref<GlTexture>     p_instance       = makeRef<GlTexture>(this);
+    GlTexture*            p_instance       = this;
+
+    Renderer::s_submit(
+        [p_instance, data, &renderDonePromise]()
+        {
+            glTextureSubImage2D(p_instance->m_id,
+                                0,
+                                0,
+                                0,
+                                p_instance->m_spec.width,
+                                p_instance->m_spec.height,
+                                s_format(p_instance->m_spec.format),
+                                s_dataType(p_instance->m_spec.dataType),
+                                data);
+            renderDonePromise.set_value();
+        });
+
+    renderDoneFuture.wait();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -413,9 +431,48 @@ uint32_t GlTexture::s_wrapType(WrapType wrapType)
 ////////////////////////////////////////////////////////////////////////////////
 void GlTexture::_s_gen(uint32_t& id, bool multisample)
 {
-    std::lock_guard<std::mutex> lock(s_genLock);
     glCreateTextures(
         multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &id);
+}
+
+void GlTexture::_storage()
+{
+    if (m_spec.samples == 1)
+    {
+        _s_gen(m_id);
+
+        glTextureStorage2D(m_id,
+                           1,
+                           Texture::s_formatInternal(m_spec.formatInternal),
+                           m_spec.width,
+                           m_spec.height);
+
+        glTextureParameteri(m_id,
+                            GL_TEXTURE_MAG_FILTER,
+                            Texture::s_filterType(m_spec.filterTypeMag));
+
+        glTextureParameteri(m_id,
+                            GL_TEXTURE_MIN_FILTER,
+                            Texture::s_filterType(m_spec.filterTypeMin));
+
+        glTextureParameteri(
+            m_id, GL_TEXTURE_WRAP_R, Texture::s_wrapType(m_spec.wrapTypeR));
+        glTextureParameteri(
+            m_id, GL_TEXTURE_WRAP_S, Texture::s_wrapType(m_spec.wrapTypeS));
+        glTextureParameteri(
+            m_id, GL_TEXTURE_WRAP_T, Texture::s_wrapType(m_spec.wrapTypeT));
+    }
+    else
+    {
+        _s_gen(m_id, true);
+        glTextureStorage2DMultisample(
+            m_id,
+            m_spec.samples,
+            Texture::s_formatInternal(m_spec.formatInternal),
+            m_spec.width,
+            m_spec.height,
+            GL_TRUE);
+    }
 }
 
 }  // namespace nimbus

@@ -176,97 +176,97 @@ class FelixLayer : public Layer
         mp_sceneHierarchyPanel->setEntitySelectedCallback(std::bind(
             &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
 
-        // ///////////////////////////
-        // // Test Camera
-        // ///////////////////////////
-        // auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
-        // sceneCameraEntity.addComponent<CameraCmp>();
+        ///////////////////////////
+        // Test Camera
+        ///////////////////////////
+        auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
+        sceneCameraEntity.addComponent<CameraCmp>();
 
-        // sceneCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
+        sceneCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
 
-        // sceneCameraEntity.addComponent<NativeLogicCmp>()
-        //     .bind<sceneCameraController>();
+        sceneCameraEntity.addComponent<NativeLogicCmp>()
+            .bind<sceneCameraController>();
 
-        // ///////////////////////////
-        // // Test Sprite
-        // ///////////////////////////
-        // auto  spriteEntity1 = mp_scene->addEntity("Test Sprite 1");
-        // auto& transformCmp1 = spriteEntity1.addComponent<TransformCmp>();
-        // transformCmp1.setScale({0.5f, 0.5f, 1.0f});
-        // auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
-        // spriteCmp1.color = {0.0f, 1.0f, 0.0f, 1.0f};
+        ///////////////////////////
+        // Test Sprite
+        ///////////////////////////
+        auto  spriteEntity1 = mp_scene->addEntity("Test Sprite 1");
+        auto& transformCmp1 = spriteEntity1.addComponent<TransformCmp>();
+        transformCmp1.setScale({0.5f, 0.5f, 1.0f});
+        auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
+        spriteCmp1.color = {0.0f, 1.0f, 0.0f, 1.0f};
 
-        // auto  spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
-        // auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
-        // transformCmp2.setScale({0.75f, 0.75f, 1.0f});
-        // auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
-        // spriteCmp2.color = {1.0f, 0.0f, 0.0f, 1.0f};
+        auto  spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
+        auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
+        transformCmp2.setScale({0.75f, 0.75f, 1.0f});
+        auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
+        spriteCmp2.color = {1.0f, 0.0f, 0.0f, 1.0f};
 
-        // ///////////////////////////
-        // // Text text
-        // ///////////////////////////
-        // mp_generalFont = ResourceManager::s_get().loadFont(
-        //     "../resources/fonts/Roboto/Roboto-Regular.ttf");
+        ///////////////////////////
+        // Text text
+        ///////////////////////////
+        mp_generalFont = ResourceManager::s_get().loadFont(
+            "../resources/fonts/Roboto/Roboto-Regular.ttf");
 
-        // Font::Format format;
-        // format.p_font  = mp_generalFont;
-        // format.fgColor = {0.0f, 0.5f, 0.7f, 1.0f};
-        // format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
-        // format.kerning = 0.0f;
+        Font::Format format;
+        format.p_font  = mp_generalFont;
+        format.fgColor = {0.0f, 0.5f, 0.7f, 1.0f};
+        format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
+        format.kerning = 0.0f;
 
-        // auto  textEntity    = mp_scene->addEntity("Test Text");
-        // auto& transformCmp3 = textEntity.addComponent<TransformCmp>();
-        // transformCmp3.setScale({0.25f, 0.25f, 1.0f});
-        // transformCmp3.setTranslationX(-0.4f);
-        // transformCmp3.setTranslationY(0.30f);
-        // auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
+        auto  textEntity    = mp_scene->addEntity("Test Text");
+        auto& transformCmp3 = textEntity.addComponent<TransformCmp>();
+        transformCmp3.setScale({0.25f, 0.25f, 1.0f});
+        transformCmp3.setTranslationX(-0.4f);
+        transformCmp3.setTranslationY(0.30f);
+        auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
 
         ///////////////////////////
         // Setup Framebuffers
         ///////////////////////////
         // multisampled buffer we render to
-        // FrameBuffer::Spec fbSpec;
-        // fbSpec.width   = m_viewportSize.x;
-        // fbSpec.height  = m_viewportSize.y;
-        // fbSpec.samples = 4;
-        // fbSpec.colorAttachments.push_back(
-        //     Texture::Spec(fbSpec.width,
-        //                   fbSpec.height,
-        //                   fbSpec.samples,
-        //                   Texture::Format::RGBA,  // irrelevant
-        //                   Texture::FormatInternal::RGBA8,
-        //                   Texture::DataType::UNSIGNED_BYTE,  // irrelevant
-        //                   Texture::FilterType::LINEAR,
-        //                   Texture::FilterType::LINEAR,
-        //                   Texture::WrapType::CLAMP_TO_EDGE,
-        //                   Texture::WrapType::CLAMP_TO_EDGE,
-        //                   Texture::WrapType::CLAMP_TO_EDGE));
+        FrameBuffer::Spec fbSpec;
+        fbSpec.width   = m_viewportSize.x;
+        fbSpec.height  = m_viewportSize.y;
+        fbSpec.samples = 4;
+        fbSpec.colorAttachments.push_back(
+            Texture::Spec(fbSpec.width,
+                          fbSpec.height,
+                          fbSpec.samples,
+                          Texture::Format::RGBA,  // irrelevant
+                          Texture::FormatInternal::RGBA8,
+                          Texture::DataType::UNSIGNED_BYTE,  // irrelevant
+                          Texture::FilterType::LINEAR,
+                          Texture::FilterType::LINEAR,
+                          Texture::WrapType::CLAMP_TO_EDGE,
+                          Texture::WrapType::CLAMP_TO_EDGE,
+                          Texture::WrapType::CLAMP_TO_EDGE));
 
-        // fbSpec.depthType = Texture::FormatInternal::DEPTH24_STENCIL8;
+        fbSpec.depthType = Texture::FormatInternal::DEPTH24_STENCIL8;
 
-        // mp_frameBuffer = FrameBuffer::s_create(fbSpec);
+        mp_frameBuffer = FrameBuffer::s_create(fbSpec);
 
-        // // buffer we blit multisampled buffer to for output to screen
-        // FrameBuffer::Spec screenSpec;
-        // screenSpec.width   = m_viewportSize.x;
-        // screenSpec.height  = m_viewportSize.y;
-        // screenSpec.samples = 1;
-        // screenSpec.colorAttachments.push_back(
-        //     Texture::Spec(screenSpec.width,
-        //                   screenSpec.height,
-        //                   screenSpec.samples,
-        //                   Texture::Format::RGBA,  // irrelevant
-        //                   Texture::FormatInternal::RGBA8,
-        //                   Texture::DataType::UNSIGNED_BYTE,  // irrelevant
-        //                   Texture::FilterType::LINEAR,
-        //                   Texture::FilterType::LINEAR,
-        //                   Texture::WrapType::REPEAT,
-        //                   Texture::WrapType::REPEAT,
-        //                   Texture::WrapType::REPEAT));
+        // buffer we blit multisampled buffer to for output to screen
+        FrameBuffer::Spec screenSpec;
+        screenSpec.width   = m_viewportSize.x;
+        screenSpec.height  = m_viewportSize.y;
+        screenSpec.samples = 1;
+        screenSpec.colorAttachments.push_back(
+            Texture::Spec(screenSpec.width,
+                          screenSpec.height,
+                          screenSpec.samples,
+                          Texture::Format::RGBA,  // irrelevant
+                          Texture::FormatInternal::RGBA8,
+                          Texture::DataType::UNSIGNED_BYTE,  // irrelevant
+                          Texture::FilterType::LINEAR,
+                          Texture::FilterType::LINEAR,
+                          Texture::WrapType::REPEAT,
+                          Texture::WrapType::REPEAT,
+                          Texture::WrapType::REPEAT));
 
-        // screenSpec.depthType = Texture::FormatInternal::NONE;
+        screenSpec.depthType = Texture::FormatInternal::NONE;
 
-        // mp_screenBuffer = FrameBuffer::s_create(screenSpec);
+        mp_screenBuffer = FrameBuffer::s_create(screenSpec);
     }
 
     virtual void onRemove() override
@@ -275,6 +275,19 @@ class FelixLayer : public Layer
 
     virtual void onUpdate(float deltaTime) override
     {
+        if (mp_viewportPanel->wasResized())
+        {
+            // we need to resize some stuff
+            m_viewportSize = mp_viewportPanel->m_viewportSize;
+            m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
+            mp_editCamera->setAspectRatio(m_aspectRatio);
+
+            mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+            mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+
+            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
+        }
+
         if (mp_sceneControlPanel->getState() == SceneControlPanel::State::PLAY
             && m_sceneState != State::PLAY)
         {
@@ -304,32 +317,32 @@ class FelixLayer : public Layer
 
     virtual void onDraw(float deltaTime) override
     {
-        // mp_frameBuffer->bind();
+        mp_frameBuffer->bind();
         // GraphicsApi::clear();
 
-        // if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
-        // {
-        //     GraphicsApi::setWireframe(mp_renderStatsPanel->m_wireFrame);
-        // }
+        if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
+        {
+            GraphicsApi::setWireframe(mp_renderStatsPanel->m_wireFrame);
+        }
 
-        // Renderer2D::s_resetStats();
+        Renderer2D::s_resetStats();
 
-        // if (m_sceneState == State::PAUSE)
-        // {
-        //     mp_scene->_onDrawEditor(mp_editCamera.get());
-        // }
-        // else
-        // {
-        //     mp_scene->onDraw();
-        // }
+        if (m_sceneState == State::PAUSE)
+        {
+            mp_scene->_onDrawEditor(mp_editCamera.get());
+        }
+        else
+        {
+            mp_scene->onDraw();
+        }
 
-        // // turn it off for the blit
-        // if (mp_renderStatsPanel->m_wireFrame)
-        // {
-        //     GraphicsApi::setWireframe(false);
-        // }
+        // turn it off for the blit
+        if (mp_renderStatsPanel->m_wireFrame)
+        {
+            GraphicsApi::setWireframe(false);
+        }
 
-        // mp_frameBuffer->blit(*mp_screenBuffer.get());
+        mp_frameBuffer->blit(*mp_screenBuffer.get());
 
         NM_UNUSED(deltaTime);
     }
@@ -666,18 +679,6 @@ class FelixLayer : public Layer
 
         m_viewportFocused = mp_viewportPanel->m_viewportFocused;
         m_viewportHovered = mp_viewportPanel->m_viewportHovered;
-        if (mp_viewportPanel->wasResized())
-        {
-            // we need to resize some stuff
-            m_viewportSize = mp_viewportPanel->m_viewportSize;
-            m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
-            mp_editCamera->setAspectRatio(m_aspectRatio);
-
-            // mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-            // mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-
-            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
-        }
 
         ///////////////////////////
         // Scene Control

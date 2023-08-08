@@ -6,6 +6,8 @@
 #include "nimbus/guiLayers/guiSubsystem.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 #include "nimbus/renderer/renderer.hpp"
+#include "nimbus/renderer/renderer2D.hpp"
+
 #include "nimbus/renderer/font.hpp"
 
 #include "backends/imgui_impl_opengl3.h"
@@ -47,6 +49,13 @@ Application::Application(const std::string& name,
                        nullptr);
 
     Renderer::s_init(mp_window->getOsWindow(), mp_window->getContext());
+    Renderer2D::s_init();
+}
+
+Application::~Application()
+{
+    Renderer2D::s_destroy();
+    Renderer::s_destroy();
 }
 
 void Application::shouldQuit(Event& event)
@@ -138,20 +147,24 @@ void Application::execute()
                   || mp_window->mouseButtonPressed(MouseButton::RIGHT);
 
             SDL_CaptureMouse((mouseButtonsDown != 0) ? SDL_TRUE : SDL_FALSE);
- 
 
             Application* app = this;
             Renderer::s_submit([app]() { app->guiRender(); });
             Renderer::s_submit([=]() { mp_guiSubsystemLayer->end(); });
 
-            
+            std::promise<void> renderDonePromise;
+            std::future<void> renderDoneFuture = renderDonePromise.get_future();
 
+            SDL_Window* p_window
+                = static_cast<SDL_Window*>(mp_window->getOsWindow());
             Renderer::s_submit(
-                [=]() {
-                    SDL_GL_SwapWindow(
-                        static_cast<SDL_Window*>(mp_window->getOsWindow()));
+                [p_window, &renderDonePromise]()
+                {
+                    SDL_GL_SwapWindow(p_window);
+                    renderDonePromise.set_value();
                 });
 
+            renderDoneFuture.wait();
 
             ////////////////////////////////////////////////////////////////////
             // Call window update function (events polled and buffers swapped)
@@ -219,13 +232,6 @@ void Application::guiSubsystemCaptureEvents(bool capture)
 void Application::guiRender()
 {
     mp_guiSubsystemLayer->begin();
-
-    ImGui::Begin("Test");
-
-    ImGui::Text("Testing!");
-
-    ImGui::End();
-
 
     for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
     {
