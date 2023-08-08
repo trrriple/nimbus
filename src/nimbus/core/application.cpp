@@ -46,15 +46,28 @@ Application::Application(const std::string& name,
     insertLayer(mp_guiSubsystemLayer);
 
     // TODO put back
-    // SDL_GL_MakeCurrent(static_cast<SDL_Window*>(mp_window->getOsWindow()),
-    //                    nullptr);
+    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(mp_window->getOsWindow()),
+                       nullptr);
 
     Renderer::s_init(mp_window->getOsWindow(), mp_window->getContext());
     Renderer2D::s_init();
 
-    // todo remove
-    Renderer::s_processHook();
+    // TODO remove hack
+    std::promise<void> renderDonePromise;
+    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
 
+    // TODO better solution
+    SDL_Window* p_window = static_cast<SDL_Window*>(mp_window->getOsWindow());
+    Renderer::s_submit(
+        [p_window, &renderDonePromise]()
+        {
+            SDL_GL_SwapWindow(p_window);
+            renderDonePromise.set_value();
+        });
+    
+    // Renderer::s_processHook();
+
+    renderDoneFuture.wait();
 }
 
 Application::~Application()
@@ -160,9 +173,7 @@ void Application::execute()
             std::promise<void> renderDonePromise;
             std::future<void> renderDoneFuture = renderDonePromise.get_future();
 
-            
-            // todo remove
-            
+            // TODO better solution            
             SDL_Window* p_window
                 = static_cast<SDL_Window*>(mp_window->getOsWindow());
             Renderer::s_submit(
@@ -172,9 +183,9 @@ void Application::execute()
                     renderDonePromise.set_value();
                 });
 
-            // renderDoneFuture.wait();
+            // Renderer::s_processHook();
+            renderDoneFuture.wait();
 
-            Renderer::s_processHook();
 
             ////////////////////////////////////////////////////////////////////
             // Call window update function (events polled and buffers swapped)

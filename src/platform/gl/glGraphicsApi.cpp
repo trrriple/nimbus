@@ -116,9 +116,12 @@ void GlGraphicsApi::clear()
 {
     NM_PROFILE_TRACE();
 
-    glClear(getDepthTest() ? (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-                           : GL_COLOR_BUFFER_BIT);
+    uint32_t bits = getDepthTest() ? (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+                                   : GL_COLOR_BUFFER_BIT;
+
+    Renderer::s_submit([bits]() { glClear(bits); });
 }
+
 
 void GlGraphicsApi::clearColor(glm::vec4 color)
 {

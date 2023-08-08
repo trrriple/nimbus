@@ -192,11 +192,21 @@ void GlFrameBuffer::unbind(Mode mode) const
 void GlFrameBuffer::bindTexture(const uint32_t textureUnit,
                                 const uint32_t attachmentIdx) const
 {
+    if (attachmentIdx >= m_textures.size())
+    {
+        return;
+    }
+
     m_textures[attachmentIdx]->bind(textureUnit);
 }
 
 void GlFrameBuffer::unbindTexture(const uint32_t attachmentIdx) const
 {
+    if (attachmentIdx >= m_textures.size())
+    {
+        return;
+    }
+
     m_textures[attachmentIdx]->unbind();
 }
 
@@ -204,12 +214,16 @@ void GlFrameBuffer::clear(const uint32_t attachmentIdx) const
 {
     NM_PROFILE_DETAIL();
 
+    if (attachmentIdx >= m_textures.size())
+    {
+        return;
+    }
+
     uint32_t id = m_textures[attachmentIdx]->getId();
     Renderer::s_submit(
         [id]()
         {
-            int val = -1;
-            glClearTexImage(id, 0, GL_RGBA, GL_INT, &val);
+            glClearTexImage(id, 0, GL_RGBA, GL_INT, nullptr);
         });
 }
 
@@ -224,6 +238,16 @@ void GlFrameBuffer::_construct()
     GlFrameBuffer* p_instance = this;
 
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Remove these outside lamba otherwise these would not be delete
+    // until new buffer textures are created because deleting these
+    // is a render call
+    ///////////////////////////////////////////////////////////////////////////
+    if (p_instance->m_fbo)
+    {
+        p_instance->m_textures.clear();
+    }
+
     Renderer::s_submit(
         [p_instance]()
         {
@@ -234,7 +258,6 @@ void GlFrameBuffer::_construct()
             if (p_instance->m_fbo)
             {
                 glDeleteFramebuffers(1, &p_instance->m_fbo);
-                p_instance->m_textures.clear();
                 glDeleteRenderbuffers(1, &p_instance->m_rbo);
             }
 

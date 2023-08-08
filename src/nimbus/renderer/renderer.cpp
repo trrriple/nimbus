@@ -29,7 +29,7 @@ void Renderer::s_init(void* p_window, void* p_context)
     {
         s_initialized = true;
 
-        // s_renderThread = std::thread(&Renderer::_s_serviceQueue, p_window, p_context);
+        s_renderThread = std::thread(&Renderer::_s_serviceQueue, p_window, p_context);
     });
     // clang-format on
 }
@@ -41,7 +41,7 @@ void Renderer::s_destroy()
         s_terminate = true;
     }
     s_cmdCondition.notify_one();
-    // s_renderThread.join();
+    s_renderThread.join();
 }
 
 void Renderer::s_setScene(const glm::mat4& vpMatrix)
@@ -51,23 +51,34 @@ void Renderer::s_setScene(const glm::mat4& vpMatrix)
 
 void Renderer::s_submit(std::function<void()> fn)
 {
-    // std::lock_guard<std::mutex> lock(s_queueMutex);
+    std::lock_guard<std::mutex> lock(s_queueMutex);
     s_cmdQueue.push(fn);
     s_cmdCondition.notify_one();
 }
 
 void Renderer::s_processHook()
 {
-    std::unique_lock<std::mutex> lock(s_queueMutex);
+    static std::queue<std::function<void()>> localQueue;
 
-    s_cmdCondition.wait(lock,
-                        []() { return !s_cmdQueue.empty() || s_terminate; });
-
-    while (!s_cmdQueue.empty())
     {
-        auto& command = s_cmdQueue.front();
-        command();  // Execute the command
-        s_cmdQueue.pop();
+        std::unique_lock<std::mutex> lock(s_queueMutex);
+        s_cmdCondition.wait(
+            lock, []() { return !s_cmdQueue.empty() || s_terminate; });
+
+        // Transfer commands to the local queue
+        while (!s_cmdQueue.empty())
+        {
+            localQueue.push(std::move(s_cmdQueue.front()));
+            s_cmdQueue.pop();
+        }
+    }  // Mutex is released here
+
+    // Process the commands outside of the locked section
+    while (!localQueue.empty())
+    {
+        auto& command = localQueue.front();
+        command();
+        localQueue.pop();
     }
 }
 
@@ -78,18 +89,31 @@ void Renderer::_s_serviceQueue(void* p_window, void* p_context)
 {
     
     SDL_GL_MakeCurrent(static_cast<SDL_Window*>(p_window), p_context);
+
+    std::queue<std::function<void()>> localQueue;
     
     while (!s_terminate)
     {
-        std::unique_lock<std::mutex> lock(s_queueMutex);
-        s_cmdCondition.wait(
-            lock, []() { return !s_cmdQueue.empty() || s_terminate; });
 
-        while (!s_cmdQueue.empty())
         {
-            auto& command = s_cmdQueue.front();
-            command();  // Execute the command
-            s_cmdQueue.pop();
+            std::unique_lock<std::mutex> lock(s_queueMutex);
+            s_cmdCondition.wait(
+                lock, []() { return !s_cmdQueue.empty() || s_terminate; });
+
+            // Transfer commands to the local queue
+            while (!s_cmdQueue.empty())
+            {
+                localQueue.push(std::move(s_cmdQueue.front()));
+                s_cmdQueue.pop();
+            }
+        }  // Mutex is released here
+
+        // Process the commands outside of the locked section
+        while (!localQueue.empty())
+        {
+            auto& command = localQueue.front();
+            command();
+            localQueue.pop();
         }
     }
 }

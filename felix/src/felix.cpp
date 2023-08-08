@@ -150,7 +150,7 @@ class FelixLayer : public Layer
 
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
-        mp_appRef->setDrawPeriodLimit(0.00334f);
+        mp_appRef->setDrawPeriodLimit(0.00000f);
 
         mp_scene = makeRef<Scene>("Demo Scene");
 
@@ -319,6 +319,7 @@ class FelixLayer : public Layer
     {
         mp_frameBuffer->bind();
         GraphicsApi::clear();
+        // mp_frameBuffer->clear();
 
         if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
         {
