@@ -19,8 +19,6 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
     m_size = size;
     m_type = type;
 
-    std::promise<void> renderDonePromise;
-    std::future<void> renderDoneFuture = renderDonePromise.get_future();
     // ref<GlVertexBuffer> p_instance = makeRef<GlVertexBuffer>(*this);
     GlVertexBuffer* p_instance = this;
 
@@ -30,7 +28,7 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
         {
 
             Renderer::s_submit(
-                [p_instance, vertices, &renderDonePromise]()
+                [p_instance, vertices]()
                 {
                     glCreateBuffers(1, &p_instance->m_id);
 
@@ -40,7 +38,6 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
                         p_instance->m_id, 0, p_instance->m_size, 0);
 
                     p_instance->m_mapped = true;
-                    // renderDonePromise.set_value();
                 });
 
                 break;
@@ -51,7 +48,7 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
         {
 
             Renderer::s_submit(
-                [p_instance, vertices, &renderDonePromise]()
+                [p_instance, vertices]()
                 {   
                     glCreateBuffers(1, &p_instance->m_id);
 
@@ -63,14 +60,11 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
                         p_instance->m_id, 0, p_instance->m_size, flags);
 
                     p_instance->m_mapped = true;
-                    // renderDonePromise.set_value();
                 });
 
             break;
         }
     }
-
-    // renderDoneFuture.wait();
 
 }
 
@@ -90,18 +84,16 @@ GlVertexBuffer::~GlVertexBuffer()
 
 void GlVertexBuffer::bind() const
 {
-    if (m_id != s_currBoundId)
-    {
-        // only bind if this is a different buffer
-
-        uint32_t id = m_id;
-        Renderer::s_submit(
-            [id]()
+    uint32_t id = m_id;
+    Renderer::s_submit(
+        [id]()
+        {
+            if (id != s_currBoundId)
             {
                 glBindBuffer(GL_ARRAY_BUFFER, id);
                 s_currBoundId = id;
-            });
-    }
+            }
+        });
 }
 
 void GlVertexBuffer::unbind() const
@@ -137,9 +129,6 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
 {
     m_count = count;
     m_type  = GL_UNSIGNED_INT;
-
-    std::promise<void> renderDonePromise;
-    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
     
     // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
     GlIndexBuffer* p_instance = this;
@@ -148,7 +137,7 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
     memcpy(localCpy, indices, p_instance->m_count * sizeof(uint32_t));
 
     Renderer::s_submit(
-        [p_instance, localCpy, &renderDonePromise]()
+        [p_instance, localCpy]()
         {
             glCreateBuffers(1, &p_instance->m_id);
             glNamedBufferStorage(p_instance->m_id,
@@ -157,11 +146,7 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
                                  0);
 
             free(localCpy);
-
-            // renderDonePromise.set_value();
         });
-
-    // renderDoneFuture.wait();
 }
 
 GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
@@ -169,8 +154,6 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
     m_count = count;
     m_type = GL_UNSIGNED_SHORT;
 
-    std::promise<void> renderDonePromise;
-    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
     // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
     GlIndexBuffer* p_instance = this;
 
@@ -178,7 +161,7 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
     memcpy(localCpy, indices, p_instance->m_count * sizeof(uint16_t));
 
     Renderer::s_submit(
-        [p_instance, localCpy, &renderDonePromise]()
+        [p_instance, localCpy]()
         {
             glCreateBuffers(1, &p_instance->m_id);
             glNamedBufferStorage(p_instance->m_id,
@@ -188,10 +171,7 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
 
             free(localCpy);
 
-            // renderDonePromise.set_value();
         });
-
-    // renderDoneFuture.wait();
 }
 
 GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
@@ -199,8 +179,6 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
     m_count = count;
     m_type  = GL_UNSIGNED_BYTE;
 
-    std::promise<void> renderDonePromise;
-    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
     // ref<GlIndexBuffer> p_instance       = makeRef<GlIndexBuffer>(*this);
     GlIndexBuffer* p_instance = this;
 
@@ -208,7 +186,7 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
     memcpy(localCpy, indices, p_instance->m_count * sizeof(uint8_t));
 
     Renderer::s_submit(
-        [p_instance, localCpy, &renderDonePromise]()
+        [p_instance, localCpy]()
         {
             glCreateBuffers(1, &p_instance->m_id);
             glNamedBufferStorage(p_instance->m_id,
@@ -217,10 +195,7 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
                                  0);
 
             free(localCpy);
-            // renderDonePromise.set_value();
         });
-
-    // renderDoneFuture.wait();
 }
 
 GlIndexBuffer::~GlIndexBuffer()
@@ -245,21 +220,16 @@ void GlIndexBuffer::unbind() const
 ////////////////////////////////////////////////////////////////////////////////
 GlVertexArray::GlVertexArray()
 {
-    std::promise<void> renderDonePromise;
-    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
     // ref<GlVertexArray> p_instance       = makeRef<GlVertexArray>(*this);
     GlVertexArray* p_instance = this;
 
 
     Renderer::s_submit(
-        [p_instance, &renderDonePromise]()
+        [p_instance]()
         {
             glCreateVertexArrays(1, &p_instance->m_id);
 
-            // renderDonePromise.set_value();
         });
-
-    // renderDoneFuture.wait();
 }
 
 GlVertexArray::~GlVertexArray()
@@ -271,17 +241,17 @@ GlVertexArray::~GlVertexArray()
 
 void GlVertexArray::bind() const
 {
-    if (m_id != s_currBoundId)
-    {
-        uint32_t id = m_id;
-        Renderer::s_submit(
-            [id]()
+    uint32_t id = m_id;
+    Renderer::s_submit(
+        [id]()
+        {
+            if (id != s_currBoundId)
             {
                 glBindVertexArray(id);
 
                 s_currBoundId = id;
-            });
-    }
+            }
+        });
 }
 
 void GlVertexArray::unbind() const
@@ -295,14 +265,12 @@ void GlVertexArray::addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer)
     NM_CORE_ASSERT(p_vertexBuffer->getFormat().getComponents().size(),
                    "VBO format is required to create VBA");
 
-    std::promise<void> renderDonePromise;
-    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
     // ref<GlVertexArray> p_instance       = makeRef<GlVertexArray>(*this);
     GlVertexArray* p_instance = this;
 
 
     Renderer::s_submit(
-        [p_instance, p_vertexBuffer, &renderDonePromise]()
+        [p_instance, p_vertexBuffer]()
         {
             glBindVertexArray(p_instance->m_id);
             glBindBuffer(GL_ARRAY_BUFFER, p_vertexBuffer->getId());
@@ -380,11 +348,7 @@ void GlVertexArray::addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer)
                     NM_CORE_ASSERT_STATIC(0, "Unknown ShaderDataType!");
                 }
             }
-
-            // renderDonePromise.set_value();
         });
-
-    // renderDoneFuture.wait();
 
     const auto& format = p_vertexBuffer->getFormat();
 
@@ -407,22 +371,16 @@ void GlVertexArray::addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer)
 
 void GlVertexArray::setIndexBuffer(const ref<IndexBuffer>& p_indexBuffer)
 {
-    std::promise<void> renderDonePromise;
-    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
     // ref<GlVertexArray> p_instance       = makeRef<GlVertexArray>(*this);
     GlVertexArray* p_instance = this;
 
 
     Renderer::s_submit(
-        [p_instance, p_indexBuffer, &renderDonePromise]()
+        [p_instance, p_indexBuffer]()
         {
             glBindVertexArray(p_instance->m_id);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_indexBuffer->getId());
-
-            // renderDonePromise.set_value();
         });
-
-    // renderDoneFuture.wait();
 
     m_indexBuffer = p_indexBuffer;
 }

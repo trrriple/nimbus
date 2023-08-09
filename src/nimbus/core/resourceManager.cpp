@@ -24,8 +24,17 @@ ref<Texture> ResourceManager::loadTexture(const Texture::Type type,
 
     std::filesystem::path filePath(path);
 
-    std::string relativePath
-        = std::filesystem::relative(filePath).generic_string();
+    std::string relativePath;
+
+    if (filePath.root_name() != std::filesystem::current_path().root_name())
+    {
+        // Paths are on different drives
+        relativePath = filePath.generic_string();
+    }
+    else
+    {
+        relativePath = std::filesystem::relative(filePath).generic_string();
+    }
 
     // check to see if it was already loaded
     auto p_textureEntry = m_loadedTextures.find(relativePath);
@@ -91,11 +100,29 @@ ref<Shader> ResourceManager::loadShader(const std::string& vertexPath,
     std::filesystem::path vFilePath(vertexPath);
     std::filesystem::path fFilePath(fragmentPath);
 
-    std::string vRelativePath
-        = std::filesystem::relative(vFilePath).generic_string();
+    std::string vRelativePath;
 
-    std::string fRelativePath
-        = std::filesystem::relative(fFilePath).generic_string();
+    std::string fRelativePath;
+
+    if (vFilePath.root_name() != std::filesystem::current_path().root_name())
+    {
+        // Paths are on different drives
+        vRelativePath = vFilePath.generic_string();
+    }
+    else
+    {
+        vRelativePath = std::filesystem::relative(vFilePath).generic_string();
+    }
+
+    if (fFilePath.root_name() != std::filesystem::current_path().root_name())
+    {
+        // Paths are on different drives
+        fRelativePath = fFilePath.generic_string();
+    }
+    else
+    {
+        fRelativePath = std::filesystem::relative(fFilePath).generic_string();
+    }
 
     std::string name          = vRelativePath + fRelativePath;
     auto        p_shaderEntry = m_loadedShaders.find(name);

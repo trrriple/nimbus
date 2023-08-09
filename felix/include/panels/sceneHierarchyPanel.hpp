@@ -399,10 +399,10 @@ class SceneHeirarchyPanel
                 if (!textCmp.format.p_font->isLoaded())
                 {
                     static const std::vector<std::string> anim
-                        = {"", ".", "..", "...", "...."};
+                        = {"", ".", "..", "...",};
                     ImGui::Text(
                         "Generating Font Atlas%s",
-                        anim[(int)(ImGui::GetTime() / 0.25f) & 4].c_str());
+                        anim[(int)(ImGui::GetTime() / 0.25f) & 3].c_str());
                 }
             }
 

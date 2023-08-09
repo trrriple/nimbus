@@ -91,17 +91,6 @@ void Renderer2D::s_begin(const glm::mat4& vpMatrix)
         return;
     }
 
-    // resize buffers before the scene starts if required
-    if (s_quadData.needsResize)
-    {
-        _s_createQuadBuffers();
-    }
-
-    if (s_textData.needsResize)
-    {
-        _s_createTextBuffers();
-    }
-
     Renderer::s_setScene(vpMatrix);
     s_genData.inScene = true;
 }
@@ -118,6 +107,17 @@ void Renderer2D::s_end()
     _s_submit();
 
     s_genData.inScene = false;
+
+    // resize buffers if required 
+    if (s_quadData.needsResize)
+    {
+        _s_createQuadBuffers();
+    }
+
+    if (s_textData.needsResize)
+    {
+        _s_createTextBuffers();
+    }
 }
 
 void Renderer2D::s_drawQuad(const glm::mat4&    transform,
@@ -492,13 +492,11 @@ void Renderer2D::_s_submit()
             s_textData.atlases[i]->bind(i);
         }
 
-        // Renderer::s_submit({Renderer::CommandType::STANDARD,
-        //                     s_textData.p_shader,
-        //                     s_textData.p_vao,
-        //                     glm::mat4(1.0f),
-        //                     static_cast<int32_t>(s_textData.charCount * 6),
-        //                     -1,
-        //                     true});
+        Renderer::s_render(  // 6 vertex per quad
+            s_textData.p_shader,
+            s_textData.p_vao,
+            s_textData.charCount * 6,
+            true);
 
         // collect stats
         s_stats.drawCalls++;
@@ -514,6 +512,29 @@ void Renderer2D::_s_submit()
 
         s_textData.atlases.clear();
     }
+}
+
+template <typename IndexType>
+static void s_generateIndicesAndSetBuffer(uint32_t          newSize,
+                                          ref<VertexArray>& p_vao)
+{
+    std::vector<IndexType> quadVertexIndices;
+    quadVertexIndices.reserve(6 * newSize);
+
+    IndexType offset = 0;
+    for (uint32_t i = 0; i < newSize; i++)
+    {
+        quadVertexIndices.push_back(0 + offset);
+        quadVertexIndices.push_back(1 + offset);
+        quadVertexIndices.push_back(2 + offset);
+        quadVertexIndices.push_back(2 + offset);
+        quadVertexIndices.push_back(3 + offset);
+        quadVertexIndices.push_back(0 + offset);
+        offset += 4;
+    }
+
+    p_vao->setIndexBuffer(
+        IndexBuffer::s_create(&quadVertexIndices[0], quadVertexIndices.size()));
 }
 
 void Renderer2D::_s_createQuadBuffers()
@@ -564,23 +585,16 @@ void Renderer2D::_s_createQuadBuffers()
     ///////////////////////////
     // (Re)make IBO
     ///////////////////////////
-    std::vector<uint16_t> quadVertexIndices;
-    quadVertexIndices.reserve(6 * newSize);
+    uint32_t maxIndexVal = 6 * newSize - 1;
 
-    uint16_t offset = 0;
-    for (uint32_t i = 0; i < newSize; i++)
+    if (maxIndexVal < 65536)
     {
-        quadVertexIndices.push_back(0 + offset);
-        quadVertexIndices.push_back(1 + offset);
-        quadVertexIndices.push_back(2 + offset);
-        quadVertexIndices.push_back(2 + offset);
-        quadVertexIndices.push_back(3 + offset);
-        quadVertexIndices.push_back(0 + offset);
-        offset += 4;
+        s_generateIndicesAndSetBuffer<uint16_t>(newSize, s_quadData.p_vao);
     }
-
-    s_quadData.p_vao->setIndexBuffer(
-        IndexBuffer::s_create(&quadVertexIndices[0], quadVertexIndices.size()));
+    else
+    {
+        s_generateIndicesAndSetBuffer<uint32_t>(newSize, s_quadData.p_vao);
+    }
 
     s_quadData.quadCount   = 0;
     s_quadData.vertexIdx   = 0;
@@ -637,23 +651,16 @@ void Renderer2D::_s_createTextBuffers()
     ///////////////////////////
     // (Re)make IBO
     ///////////////////////////
-    std::vector<uint16_t> quadVertexIndices;
-    quadVertexIndices.reserve(6 * newSize);
+    uint32_t maxIndexVal = 6 * newSize - 1;
 
-    uint16_t offset = 0;
-    for (uint32_t i = 0; i < newSize; i++)
+    if (maxIndexVal < 65536)
     {
-        quadVertexIndices.push_back(0 + offset);
-        quadVertexIndices.push_back(1 + offset);
-        quadVertexIndices.push_back(2 + offset);
-        quadVertexIndices.push_back(2 + offset);
-        quadVertexIndices.push_back(3 + offset);
-        quadVertexIndices.push_back(0 + offset);
-        offset += 4;
+        s_generateIndicesAndSetBuffer<uint16_t>(newSize, s_textData.p_vao);
     }
-
-    s_textData.p_vao->setIndexBuffer(
-        IndexBuffer::s_create(&quadVertexIndices[0], quadVertexIndices.size()));
+    else
+    {
+        s_generateIndicesAndSetBuffer<uint32_t>(newSize, s_textData.p_vao);
+    }
 
     s_textData.charCount   = 0;
     s_textData.vertexIdx   = 0;

@@ -61,13 +61,11 @@ GlTexture::GlTexture(const Type         type,
                 0, "Unknown image format has %i components", numComponents);
         }
 
-        std::promise<void> renderDonePromise;
-        std::future<void>  renderDoneFuture = renderDonePromise.get_future();
         // ref<GlTexture>     p_instance       = makeRef<GlTexture>(*this);
         GlTexture*            p_instance       = this;
     
         Renderer::s_submit(
-            [p_instance, data, &renderDonePromise]()
+            [p_instance, data]()
             {
                 _s_gen(p_instance->m_id);
                 glBindTexture(GL_TEXTURE_2D, p_instance->m_id);
@@ -113,8 +111,6 @@ GlTexture::GlTexture(const Type         type,
                 glTexParameteri(GL_TEXTURE_2D,
                                 GL_TEXTURE_WRAP_R,
                                 s_wrapType(p_instance->m_spec.wrapTypeR));
-
-                // renderDonePromise.set_value();
                 
                 stbi_image_free(data);
 

@@ -93,17 +93,17 @@ void GlShader::bind() const
 {
     NM_PROFILE_TRACE();
 
-    // don't rebind the same shader
-    if (m_id != s_currBoundId)
-    {
-        uint32_t id = m_id;
-        Renderer::s_submit(
-            [id]()
+    uint32_t id = m_id;
+    Renderer::s_submit(
+        [id]()
+        {
+            // don't rebind the same shader
+            if (id != s_currBoundId)
             {
                 glUseProgram(id);
                 s_currBoundId = id;
-            });
-    }
+            }
+        });
 }
 // utility uniform functions
 void GlShader::setBool(const std::string& name, bool value) const
