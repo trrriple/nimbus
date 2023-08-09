@@ -75,7 +75,7 @@ class Renderer2D : public refCounted
     ///////////////////////////
     inline static const uint32_t k_quadInitCount = 1000;
     inline static const uint32_t k_quadGrowCount = 1000;
-    inline static const uint32_t k_quadMaxCount  = 20000;
+    inline static const uint32_t k_quadMaxCount  = 50000;
 
     inline static const BufferFormat k_quadVertexFormat = {
         {k_shaderVec4, "position"},
