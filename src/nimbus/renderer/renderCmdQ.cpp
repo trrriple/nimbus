@@ -61,20 +61,22 @@ void RenderCmdQ::prepTmpQ()
 
 void RenderCmdQ::processTmpQ()
 {
+    uint8_t* ptr = mp_cmdBufTmp;
+
     for (uint32_t i = 0; i < m_cmdCountTmp; i++)
     {
         // grab the function out
-        renderCmdFn fn = *(renderCmdFn*)mp_cmdBufTmp;
-        mp_cmdBufTmp += sizeof(renderCmdFn);
+        renderCmdFn fn = *(renderCmdFn*)ptr;
+        ptr += sizeof(renderCmdFn);
 
         // grab the size of the data
-        uint32_t size = *(uint32_t*)mp_cmdBufTmp;
-        mp_cmdBufTmp += sizeof(uint32_t);
+        uint32_t size = *(uint32_t*)ptr;
+        ptr += sizeof(uint32_t);
 
         // execute the function with the data
-        fn(mp_cmdBufTmp);
+        fn(ptr);
 
-        mp_cmdBufTmp += size;
+        ptr += size;
     }
 }
 

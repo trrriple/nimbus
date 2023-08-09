@@ -190,7 +190,7 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Test Sprite
         ///////////////////////////
-        uint32_t sz = 150;
+        uint32_t sz = 1;
         for (uint32_t i = 0; i < sz; i++)
         {
             for (uint32_t j = 0; j < sz; j++)
