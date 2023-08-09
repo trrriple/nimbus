@@ -241,6 +241,7 @@ FetchContent_Declare(yaml-cpp
 set(YAML_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(yaml-cpp)
+target_compile_options(yaml-cpp PRIVATE -fexceptions)
 
 
 # #########################
@@ -372,7 +373,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     # Add release-specific flags
-    target_compile_options(nimbus PRIVATE -O3 -march=native -DGLM_FORCE_INTRINSICS)
+
+    target_compile_options(nimbus PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
+    target_link_options(nimbus PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
 endif()
 
 if(NIMBUS_BUILD_FELIX)
@@ -417,6 +420,8 @@ if(NIMBUS_BUILD_FELIX)
 
     elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
         # Add release-specific flags
-        target_compile_options(felix PRIVATE -O3 -march=native -DGLM_FORCE_INTRINSICS)
+        target_compile_options(felix PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
+        target_link_options(felix PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
+
     endif()
 endif()

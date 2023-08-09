@@ -306,6 +306,7 @@ void ParticleEmitter::draw()
     if (m_numLiveParticles == 0)
     {
         // if this guy is done emitting don't do anything
+        
         return;
     }
 
@@ -320,7 +321,7 @@ void ParticleEmitter::draw()
     GraphicsApi::BlendingMode currBlendMode = GraphicsApi::getBlendingMode();
     GraphicsApi::setBlendingMode(m_parameters.blendingMode);
 
-    // Renderer::s_submitInstanced(mp_shader, mp_vao, m_numLiveParticles);
+    Renderer::s_renderInstanced(mp_shader, mp_vao, m_numLiveParticles);
 
     GraphicsApi::setBlendingMode(currBlendMode);
 }

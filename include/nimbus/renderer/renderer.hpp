@@ -35,6 +35,12 @@ class Renderer : public refCounted
                          int32_t vertexCount       = k_detectCountIfPossible,
                          bool    setViewProjection = true);
 
+    static void s_renderInstanced(const ref<Shader>&      p_shader,
+                                  const ref<VertexArray>& p_vertexArray,
+                                  int32_t                 instanceCount,
+                                  int32_t vertexCount = k_detectCountIfPossible,
+                                  bool    setViewProjection = true);
+
    private:
     inline static glm::mat4 mp_vpMatrix = glm::mat4(1.0f);
 
@@ -63,11 +69,5 @@ class Renderer : public refCounted
                                    = k_detectCountIfPossible,
                                    bool setViewProjection = true);
 
-    static void _s_submitInstanced(const ref<Shader>&      p_shader,
-                                   const ref<VertexArray>& p_vertexArray,
-                                   int32_t                 instanceCount,
-                                   int32_t                 vertexCount
-                                   = k_detectCountIfPossible,
-                                   bool setViewProjection = true);
 };
 }  // namespace nimbus

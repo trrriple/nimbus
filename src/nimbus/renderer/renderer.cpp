@@ -87,14 +87,12 @@ void Renderer::s_processHook()
 ////////////////////////////////////////////////////////////////////////////////
 void Renderer::_s_serviceQueue(void* p_window, void* p_context)
 {
-    
     SDL_GL_MakeCurrent(static_cast<SDL_Window*>(p_window), p_context);
 
     std::queue<std::function<void()>> localQueue;
-    
+
     while (!s_terminate)
     {
-
         {
             std::unique_lock<std::mutex> lock(s_queueMutex);
             s_cmdCondition.wait(
@@ -161,10 +159,10 @@ void Renderer::_s_submit(const ref<Shader>&      p_shader,
     }
 }
 
-void Renderer::s_render(ref<Shader>             p_shader,
-                        ref<VertexArray>        p_vertexArray,
-                        int32_t                 vertexCount,
-                        bool                    setViewProjection)
+void Renderer::s_render(ref<Shader>      p_shader,
+                        ref<VertexArray> p_vertexArray,
+                        int32_t          vertexCount,
+                        bool             setViewProjection)
 {
     NM_PROFILE();
 
@@ -248,11 +246,11 @@ void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
     }
 }
 
-void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
-                                  const ref<VertexArray>& p_vertexArray,
-                                  int32_t                 instanceCount,
-                                  int32_t                 vertexCount,
-                                  bool                    setViewProjection)
+void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
+                                 const ref<VertexArray>& p_vertexArray,
+                                 int32_t                 instanceCount,
+                                 int32_t                 vertexCount,
+                                 bool                    setViewProjection)
 {
     NM_PROFILE();
 

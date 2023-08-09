@@ -68,36 +68,41 @@ class Renderer2D : public refCounted
     ///////////////////////////
     // Generic Data
     ///////////////////////////
-    struct GeneralData
-    {
-        bool      inScene = false;
-        glm::vec4 quadVertexPositions[4];
-        glm::vec2 quadTextureCoords[4];
-    };
-   
-    static GeneralData s_genData;
-
+    static bool s_inScene;
 
     ///////////////////////////
     //  Quad layout and data
     ///////////////////////////
-    inline static const uint32_t k_quadVerticesInitCount = 5000;
-    inline static const uint32_t k_quadVerticesGrowCount = 5000;
-    inline static const uint32_t k_quadVerticesMaxCount  = 200000;
+    inline static const uint32_t k_quadInitCount = 1000;
+    inline static const uint32_t k_quadGrowCount = 1000;
+    inline static const uint32_t k_quadMaxCount  = 20000;
 
     inline static const BufferFormat k_quadVertexFormat = {
         {k_shaderVec4, "position"},
         {k_shaderVec2, "texCoords"},
-        {k_shaderVec4, "color"},
-        {k_shaderInt, "texIndex"},
-        {k_shaderFloat, "texTilingFactor"},
-        {k_shaderInt, "entityId"},
     };
 
     struct QuadVertex
     {
         glm::vec4 position;
         glm::vec2 texCoord;
+
+    };
+
+    inline static const BufferFormat k_quadInstVertexFormat = {
+        {k_shaderMat4, "transform", BufferComponent::Type::PER_INSTANCE, 1},
+        {k_shaderVec4, "color", BufferComponent::Type::PER_INSTANCE, 1},
+        {k_shaderInt, "texIndex", BufferComponent::Type::PER_INSTANCE, 1},
+        {k_shaderFloat,
+         "texTilingFactor",
+         BufferComponent::Type::PER_INSTANCE,
+         1},
+        {k_shaderInt, "entityId", BufferComponent::Type::PER_INSTANCE, 1},
+    };
+
+    struct QuadInstVertex
+    {
+        glm::mat4 transform;
         glm::vec4 color;
         int       texIndex;
         float     texTilingFactor;
@@ -106,14 +111,14 @@ class Renderer2D : public refCounted
 
     struct QuadData
     {
-        std::vector<QuadVertex>   vertices;
-        uint32_t                  vertexIdx = 0;
-        ref<VertexBuffer>         p_vbo     = nullptr;
-        ref<VertexArray>          p_vao     = nullptr;
-        ref<Shader>               p_shader  = nullptr;
-        uint32_t                  quadCount = 0;
-        std::vector<ref<Texture>> textures;
-        bool                      needsResize = false;
+        std::vector<QuadVertex>     vertices;
+        std::vector<QuadInstVertex> instVertices;
+        ref<VertexBuffer>           p_vbo     = nullptr;
+        ref<VertexArray>            p_vao     = nullptr;
+        ref<Shader>                 p_shader  = nullptr;
+        uint32_t                    quadCount = 0;
+        std::vector<ref<Texture>>   textures;
+        bool                        needsResize = false;
     };
 
     static QuadData s_quadData;

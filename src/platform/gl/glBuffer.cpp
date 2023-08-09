@@ -326,6 +326,9 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
                     NM_CORE_ASSERT_STATIC(0, "Unknown ShaderDataType!");
                 }
             }
+
+            glBindVertexArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
         });
 
     const auto& format = p_vertexBuffer->getFormat();
@@ -356,6 +359,7 @@ void GlVertexArray::setIndexBuffer(ref<IndexBuffer> p_indexBuffer)
         {
             glBindVertexArray(p_instance->m_id);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_indexBuffer->getId());
+            glBindVertexArray(0);
         });
 
     m_indexBuffer = p_indexBuffer;

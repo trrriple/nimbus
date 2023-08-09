@@ -36,37 +36,33 @@ GlShader::GlShader(const std::string& vertexPath,
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
 
-    // ensure ifstream objects can throw exceptions;
-    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    NM_CORE_ASSERT(std::filesystem::exists(vertexPath),
+                   "Vertex Shader file %s doesn't exist!",
+                   vertexPath.c_str());
+    NM_CORE_ASSERT(std::filesystem::exists(fragmentPath),
+                   "Fragment Shader file %s doesn't exist!",
+                   fragmentPath.c_str());
 
-    try
-    {
-        // open files
-        vShaderFile.open(vertexPath);
+    // open files
+    vShaderFile.open(vertexPath);
 
-        fShaderFile.open(fragmentPath);
+    fShaderFile.open(fragmentPath);
 
-        std::stringstream vShaderStream;
-        std::stringstream fShaderStream;
+    std::stringstream vShaderStream;
+    std::stringstream fShaderStream;
 
-        // read file buffer contents into the streams;
+    // read file buffer contents into the streams;
 
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();
+    vShaderStream << vShaderFile.rdbuf();
+    fShaderStream << fShaderFile.rdbuf();
 
-        // close file handles
-        vShaderFile.close();
-        fShaderFile.close();
+    // close file handles
+    vShaderFile.close();
+    fShaderFile.close();
 
-        // convert stream to string
-        vertexSource   = vShaderStream.str();
-        fragmentSource = fShaderStream.str();
-    }
-    catch (std::ifstream::failure& e)
-    {
-        NM_CORE_ASSERT(0, "SHADER::FILE_NO_SUCCESFULLY_READ");
-    }
+    // convert stream to string
+    vertexSource   = vShaderStream.str();
+    fragmentSource = fShaderStream.str();
 
     _compileShader(vertexSource, fragmentSource);
 }
