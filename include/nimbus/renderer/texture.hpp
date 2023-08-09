@@ -1,5 +1,6 @@
 #pragma once
 #include "nimbus/core/common.hpp"
+#include "nimbus/core/ref.hpp"
 
 #include <cstdint>
 #include <string>
@@ -8,7 +9,7 @@
 namespace nimbus
 {
 
-class Texture
+class Texture : public refCounted
 {
    public:
     enum class Type
@@ -150,14 +151,12 @@ class Texture
     inline static std::uint32_t s_currBoundTextureUnit = 0;
    
    private:
-
     // ensure only Resource manager can call this
     static ref<Texture> s_create(const Type         type,
                                  const std::string& path,
                                  const bool         flipOnLoad);
 
     friend class ResourceManager;
-    
 };
 
 }  // namespace nimbus

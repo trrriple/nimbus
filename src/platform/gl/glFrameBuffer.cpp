@@ -35,18 +35,6 @@ GlFrameBuffer::GlFrameBuffer(FrameBuffer::Spec& spec)
 
     NM_CORE_ASSERT(m_spec.samples, "Must have at least 1 sample ");
 
-    // TODO get from renderer(probably need to do the same for texturss)
-    // if (spec.samples > 1)
-    // {
-    //     int32_t maxSamples;
-    //     glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
-
-    //     NM_CORE_ASSERT(((int32_t)spec.samples <= maxSamples),
-    //                    "Sample count %i exceeds max supported samples %i",
-    //                    spec.samples,
-    //                    maxSamples);
-    // }
-
     _construct();
 }
 
@@ -234,8 +222,6 @@ void GlFrameBuffer::_construct()
 {
     NM_PROFILE();
 
-    // ref<GlFrameBuffer> p_instance = makeRef<GlFrameBuffer>(*this);
-    GlFrameBuffer* p_instance = this;
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -243,13 +229,14 @@ void GlFrameBuffer::_construct()
     // until new buffer textures are created because deleting these
     // is a render call
     ///////////////////////////////////////////////////////////////////////////
-    if (p_instance->m_fbo)
+    if (m_fbo)
     {
-        p_instance->m_textures.clear();
+        m_textures.clear();
     }
 
+    ref<GlFrameBuffer> p_instance = this;
     Renderer::s_submit(
-        [p_instance]()
+        [p_instance]() mutable
         {
             ////////////////////////////////////////////////////////////////////
             // blow away existing frame buffer if we've already made it and
@@ -347,9 +334,7 @@ void GlFrameBuffer::_construct()
             glBindFramebuffer(GL_FRAMEBUFFER, p_instance->m_fbo);
             // bind the default frame buffer
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
         });
-
 }
 
 uint32_t GlFrameBuffer::_textureTarget() const

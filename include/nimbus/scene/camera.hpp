@@ -6,7 +6,7 @@ namespace nimbus
 {
 
 
-class Camera
+class Camera : public refCounted
 {
    public:
     enum class Type

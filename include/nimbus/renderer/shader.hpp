@@ -11,8 +11,7 @@
 namespace nimbus
 {
 
-/// This class is used for handling shaders.
-class Shader
+class Shader : public refCounted
 {
    public:
     enum class ShaderType

@@ -47,15 +47,6 @@ class GlVertexBuffer : public VertexBuffer
         m_format = format;
     }
 
-    virtual uint32_t getSize() override
-    {
-        return m_size;
-    }
-
-    virtual uint32_t getId() override
-    {
-        return m_id;
-    }
 
    private:
     bool m_mapped = false;
@@ -102,10 +93,9 @@ class GlVertexArray : public VertexArray
 
     virtual void unbind() const override;
 
-    virtual void addVertexBuffer(
-        const ref<VertexBuffer>& p_vertexBuffer) override;
+    virtual void addVertexBuffer(ref<VertexBuffer> p_vertexBuffer) override;
 
-    virtual void setIndexBuffer(const ref<IndexBuffer>& p_indexBuffer) override;
+    virtual void setIndexBuffer(ref<IndexBuffer> p_indexBuffer) override;
 
     virtual const std::vector<ref<VertexBuffer>>& getVertexBuffers()
         const override
@@ -122,7 +112,6 @@ class GlVertexArray : public VertexArray
     {
         return m_expectedVboVertexCount;
     }
-
 };
 
 }  // namespace nimbus

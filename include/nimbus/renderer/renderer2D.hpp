@@ -11,7 +11,7 @@
 
 namespace nimbus
 {
-class Renderer2D
+class Renderer2D : public refCounted
 {
    public:
 

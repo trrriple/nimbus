@@ -9,7 +9,7 @@ namespace nimbus
 {
 struct FontData;
 
-class Font
+class Font : public refCounted
 {
    public:
     struct Format
@@ -38,7 +38,7 @@ class Font
         return m_data;
     }
 
-    bool isLoaded()
+    bool isLoaded() const
     {
         // short circuit atomic check if we know it's been
         // loaded already
@@ -48,7 +48,7 @@ class Font
         }
         else if (m_isDone.load())
         {
-            _initializeTexture();
+            const_cast<Font*>(this)->_initializeTexture();
             return true;
         }
         else
@@ -66,7 +66,7 @@ class Font
     std::atomic_bool m_isDone = false;
     std::thread      m_workerThread;
 
-    bool m_loaded = false;
+    mutable bool m_loaded = false;
 
     // only resouce manager can generate the fonts
     Font(const std::string& fontPath);

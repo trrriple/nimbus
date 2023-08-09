@@ -14,7 +14,7 @@ LayerDeck::~LayerDeck()
     }
 }
 
-void LayerDeck::insertLayer(const ref<Layer>& p_layer, int32_t location)
+void LayerDeck::insertLayer(ref<Layer> p_layer, int32_t location)
 {
     NM_PROFILE();
 
@@ -41,7 +41,7 @@ void LayerDeck::insertLayer(const ref<Layer>& p_layer, int32_t location)
     p_layer->onInsert();
 }
 
-void LayerDeck::removeLayer(const ref<Layer>& p_layer)
+void LayerDeck::removeLayer(ref<Layer> p_layer)
 {
     NM_PROFILE();
 
@@ -53,16 +53,16 @@ void LayerDeck::removeLayer(const ref<Layer>& p_layer)
     }
 }
 
-const std::vector<std::string*> LayerDeck::getLayerNames() const
+const std::vector<std::string> LayerDeck::getLayerNames() const
 {
     NM_PROFILE_TRACE();
 
 
-    std::vector<std::string*> layerNames;
+    std::vector<std::string> layerNames;
 
-    for (auto& p_layer : m_deck)
+    for (auto p_layer : m_deck)
     {
-        layerNames.push_back(&p_layer->m_name);
+        layerNames.push_back(p_layer->m_name);
     }
 
     return layerNames;

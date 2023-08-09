@@ -137,9 +137,8 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
 
     if (submitForMe)
     {
-        // ref<GlTexture> p_instance = makeRef<GlTexture>(*this);
-        GlTexture* p_instance = this;
-        Renderer::s_submit([p_instance]() { p_instance->_storage(); });
+        ref<GlTexture> p_instance = this;
+        Renderer::s_submit([p_instance]() mutable { p_instance->_storage(); });
     }
     else
     {

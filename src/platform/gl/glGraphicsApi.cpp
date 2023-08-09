@@ -4,7 +4,6 @@
 #include "platform/gl/glGraphicsApi.hpp"
 #include "nimbus/renderer/renderer.hpp"
 
-
 #include "nimbus/renderer/texture.hpp"
 
 #include "glad.h"
@@ -59,8 +58,8 @@ void GlGraphicsApi::init()
                   Texture::s_getMaxTextures());
 }
 
-void GlGraphicsApi::drawElements(const ref<VertexArray>& p_vertexArray,
-                                 uint32_t                vertexCount)
+void GlGraphicsApi::drawElements(ref<VertexArray> p_vertexArray,
+                                 uint32_t         vertexCount)
 {
     NM_PROFILE_DETAIL();
     uint32_t count = vertexCount ? vertexCount
@@ -73,43 +72,49 @@ void GlGraphicsApi::drawElements(const ref<VertexArray>& p_vertexArray,
                        { glDrawElements(GL_TRIANGLES, count, type, nullptr); });
 }
 
-void GlGraphicsApi::drawArrays(const ref<VertexArray>& p_vertexArray,
-                               uint32_t                vertexCount)
+void GlGraphicsApi::drawArrays(ref<VertexArray> p_vertexArray,
+                               uint32_t         vertexCount)
 {
     NM_PROFILE_DETAIL();
     uint32_t count
         = vertexCount ? vertexCount : p_vertexArray->getExpectedVertexCount();
 
     p_vertexArray->bind();
-    glDrawArrays(GL_TRIANGLES, 0, count);
+    Renderer::s_submit([count]() { glDrawArrays(GL_TRIANGLES, 0, count); });
 }
 
-void GlGraphicsApi::drawElementsInstanced(const ref<VertexArray>& p_vertexArray,
-                                          uint32_t                instanceCount,
-                                          uint32_t                vertexCount)
+void GlGraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray,
+                                          uint32_t         instanceCount,
+                                          uint32_t         vertexCount)
 {
     NM_PROFILE_DETAIL();
     uint32_t count = vertexCount ? vertexCount
                                  : p_vertexArray->getIndexBuffer()->getCount();
 
     p_vertexArray->bind();
-    glDrawElementsInstanced(GL_TRIANGLES,
-                            count,
-                            p_vertexArray->getIndexBuffer()->getType(),
-                            nullptr,
-                            instanceCount);
+    uint32_t type = p_vertexArray->getIndexBuffer()->getType();
+
+    Renderer::s_submit(
+        [count, instanceCount, type]()
+        {
+            glDrawElementsInstanced(
+                GL_TRIANGLES, count, type, nullptr, instanceCount);
+        });
 }
 
-void GlGraphicsApi::drawArraysInstanced(const ref<VertexArray>& p_vertexArray,
-                                        uint32_t                instanceCount,
-                                        uint32_t                vertexCount)
+void GlGraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray,
+                                        uint32_t         instanceCount,
+                                        uint32_t         vertexCount)
 {
     NM_PROFILE_DETAIL();
     uint32_t count
         = vertexCount ? vertexCount : p_vertexArray->getExpectedVertexCount();
 
     p_vertexArray->bind();
-    glDrawArraysInstanced(GL_TRIANGLES, 0, count, instanceCount);
+
+    Renderer::s_submit(
+        [count, instanceCount]()
+        { glDrawArraysInstanced(GL_TRIANGLES, 0, count, instanceCount); });
 }
 
 void GlGraphicsApi::clear()
@@ -122,14 +127,10 @@ void GlGraphicsApi::clear()
     Renderer::s_submit([bits]() { glClear(bits); });
 }
 
-
 void GlGraphicsApi::clearColor(glm::vec4 color)
 {
-    Renderer::s_submit(
-        [color]()
-        {
-            glClearColor(color.r, color.g, color.b, color.a);
-        });
+    Renderer::s_submit([color]()
+                       { glClearColor(color.r, color.g, color.b, color.a); });
 }
 
 void GlGraphicsApi::setViewportSize(int x, int y, int w, int h)

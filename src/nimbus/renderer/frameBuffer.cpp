@@ -11,7 +11,7 @@ namespace nimbus
 
 ref<FrameBuffer> FrameBuffer::s_create(FrameBuffer::Spec& spec)
 {
-    return makeRef<GlFrameBuffer>(spec);
+    return ref<GlFrameBuffer>::gen(spec);
 }
 
 }  // namespace nimbus

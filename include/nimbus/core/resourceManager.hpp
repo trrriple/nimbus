@@ -1,12 +1,11 @@
 #pragma once
-
-#include <string>
-#include <unordered_map>
-
 #include "nimbus/core/common.hpp"
 #include "nimbus/renderer/shader.hpp"
 #include "nimbus/renderer/texture.hpp"
 #include "nimbus/renderer/font.hpp"
+
+#include <string>
+#include <unordered_map>
 
 namespace nimbus
 {

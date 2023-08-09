@@ -13,7 +13,7 @@
 namespace nimbus
 {
 
-class Window
+class Window : public refCounted
 {
     typedef std::function<void(Event&)> WindowEventCallback_t;
 

@@ -78,8 +78,9 @@ class Physics2D
         bool   isSensor             = false;
     };
 
-    struct RigidBody : std::enable_shared_from_this<RigidBody>
+    class RigidBody : public refCounted
     {
+       public:
         struct RigidBodyData;
 
         RigidBodyData*  p_data;

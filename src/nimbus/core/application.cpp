@@ -26,7 +26,7 @@ Application::Application(const std::string& name,
 
     sp_instance = this;
 
-    mp_window = makeScope<Window>(m_name, windowWidth, windowHeight);
+    mp_window = genScope<Window>(m_name, windowWidth, windowHeight);
     Log::init();
 
     Log::coreInfo("------------------------------------------");
@@ -42,7 +42,7 @@ Application::Application(const std::string& name,
         std::bind(&Application::shouldQuit, this, std::placeholders::_1));
 
  
-    mp_guiSubsystemLayer = makeRef<GuiSubsystem>();
+    mp_guiSubsystemLayer = ref<GuiSubsystem>::gen();
     insertLayer(mp_guiSubsystemLayer);
 
     // TODO put back

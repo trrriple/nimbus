@@ -110,7 +110,7 @@ class RenderStatsPanel
                     ImGui::TableNextColumn();
                     ImGui::Text("%d", i);
                     ImGui::TableNextColumn();
-                    ImGui::Text("%s", layerNames[i]->c_str());
+                    ImGui::Text("%s", layerNames[i].c_str());
                 }
 
                 ImGui::EndTable();

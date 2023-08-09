@@ -175,8 +175,8 @@ add_library(stb_image STATIC ${STB_IMAGE_LIB_SRC})
 # #########################
 FetchContent_Declare(
     imgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui
-    GIT_TAG v1.89.7-docking
+    GIT_REPOSITORY https://github.com/trrriple/imgui.git
+    GIT_TAG trrriple-mods
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
 )

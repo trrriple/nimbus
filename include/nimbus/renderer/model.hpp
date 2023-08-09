@@ -9,7 +9,7 @@
 namespace nimbus
 {
 
-class Model
+class Model : public refCounted
 {
    public:
     bool m_flipOnLoad;

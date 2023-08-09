@@ -11,7 +11,7 @@ namespace nimbus
 class Entity; // forward declare, can't include header for circular reason
 
 
-class Scene
+class Scene : public refCounted
 {
    public:
     Scene(const std::string& name = "Untitled");

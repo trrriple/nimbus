@@ -1,5 +1,6 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
+#include "nimbus/core/ref.hpp"
 
 #include "nimbus/renderer/texture.hpp"
 
@@ -11,12 +12,12 @@ ref<Texture> Texture::s_create(const Type         type,
                                const std::string& path,
                                const bool         flipOnLoad)
 {
-    return makeRef<GlTexture>(type, path, flipOnLoad);
+    return ref<GlTexture>::gen(type, path, flipOnLoad);
 }
 
 ref<Texture> Texture::s_create(const Type type, Spec& spec, bool submitForMe)
 {
-    return makeRef<GlTexture>(type, spec, submitForMe);
+    return ref<GlTexture>::gen(type, spec, submitForMe);
 }
 
 void Texture::s_setMaxTextures(uint32_t maxTextures)

@@ -161,8 +161,8 @@ void Renderer::_s_submit(const ref<Shader>&      p_shader,
     }
 }
 
-void Renderer::s_render(const ref<Shader>&      p_shader,
-                        const ref<VertexArray>& p_vertexArray,
+void Renderer::s_render(ref<Shader>             p_shader,
+                        ref<VertexArray>        p_vertexArray,
                         int32_t                 vertexCount,
                         bool                    setViewProjection)
 {

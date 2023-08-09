@@ -13,7 +13,7 @@
 
 namespace nimbus
 {
-class Renderer
+class Renderer : public refCounted
 {
    public:
     typedef void(*renderCmdFn)(void*);
@@ -30,8 +30,8 @@ class Renderer
 
     static void s_processHook();
 
-    static void s_render(const ref<Shader>&      p_shader,
-                         const ref<VertexArray>& p_vertexArray,
+    static void s_render(ref<Shader>                p_shader,
+                         ref<VertexArray>           p_vertexArray,
                          int32_t vertexCount       = k_detectCountIfPossible,
                          bool    setViewProjection = true);
 

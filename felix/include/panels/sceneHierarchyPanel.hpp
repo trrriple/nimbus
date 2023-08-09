@@ -77,7 +77,7 @@ class SceneHeirarchyPanel
         for (auto [entityHandle] :
              mp_sceneContext->m_registry.storage<entt::entity>().each())
         {
-            Entity entity = {entityHandle, mp_sceneContext.get()};
+            Entity entity = {entityHandle, mp_sceneContext.raw()};
 
             auto name = entity.getComponent<NameCmp>().name;
 

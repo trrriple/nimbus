@@ -6,7 +6,7 @@
 
 namespace nimbus
 {
-class Layer
+class Layer : public refCounted
 {
    public:
     enum class Type

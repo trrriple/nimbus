@@ -176,7 +176,7 @@ scope<Mesh> Model::processMesh(void* mesh, const void* scene)
             = loadMaterialTextures(material, Texture::Type::HEIGHT);
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     }
-    return makeScope<Mesh>(vertices, indices, textures, m_normalize);
+    return genScope<Mesh>(vertices, indices, textures, m_normalize);
 }
 
 std::vector<ref<Texture>> Model::loadMaterialTextures(void*         mat,

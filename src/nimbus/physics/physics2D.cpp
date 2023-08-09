@@ -28,8 +28,8 @@ class ContactListener : public b2ContactListener
         Physics2D::RigidBody* p_bodyB = reinterpret_cast<Physics2D::RigidBody*>(
             contact->GetFixtureB()->GetUserData().pointer);
 
-        p_bodyA->p_collidedWith = p_bodyB->shared_from_this();
-        p_bodyB->p_collidedWith = p_bodyA->shared_from_this();
+        p_bodyA->p_collidedWith = p_bodyB;
+        p_bodyB->p_collidedWith = p_bodyA;
     }
 
     void EndContact(b2Contact* contact) override
@@ -61,8 +61,8 @@ class ContactListener : public b2ContactListener
 
 struct Physics2D::WorldData
 {
-    ref<b2World>           p_world = nullptr;
-    scope<ContactListener> p_cl    = nullptr;
+    std::shared_ptr<b2World> p_world = nullptr;
+    scope<ContactListener>   p_cl    = nullptr;
 };
 
 struct Physics2D::RigidBody::RigidBodyData
@@ -78,9 +78,9 @@ Physics2D::Physics2D() : mp_worldData(new Physics2D::WorldData())
 {
     NM_PROFILE_DETAIL();
     
-    mp_worldData->p_world = makeRef<b2World>(b2Vec2(0.0f, -9.81f));
+    mp_worldData->p_world = std::make_shared<b2World>(b2Vec2(0.0f, -9.81f));
 
-    mp_worldData->p_cl = makeScope<ContactListener>(this);
+    mp_worldData->p_cl = genScope<ContactListener>(this);
 
     mp_worldData->p_world->SetContactListener(mp_worldData->p_cl.get());
 }
@@ -105,7 +105,7 @@ ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
 {
     NM_PROFILE_DETAIL();
     
-    ref<Physics2D::RigidBody> p_rbody = makeRef<Physics2D::RigidBody>();
+    ref<Physics2D::RigidBody> p_rbody = ref<Physics2D::RigidBody>::gen();
 
     b2BodyDef bodyDef;
 

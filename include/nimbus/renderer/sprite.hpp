@@ -12,7 +12,7 @@
 
 namespace nimbus
 {
-class Sprite
+class Sprite : public refCounted
 {
    public:
     Sprite(ref<Texture>&  p_texture);

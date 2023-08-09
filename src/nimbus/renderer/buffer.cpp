@@ -15,7 +15,7 @@ ref<VertexBuffer> VertexBuffer::s_create(const void*        vertices,
                                          VertexBuffer::Type type)
 
 {
-    return makeRef<GlVertexBuffer>(vertices, size, type);
+    return ref<GlVertexBuffer>::gen(vertices, size, type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,17 +23,17 @@ ref<VertexBuffer> VertexBuffer::s_create(const void*        vertices,
 ////////////////////////////////////////////////////////////////////////////////
 ref<IndexBuffer> IndexBuffer::s_create(uint32_t* indices, uint32_t count)
 {
-    return makeRef<GlIndexBuffer>(indices, count);
+    return ref<GlIndexBuffer>::gen(indices, count);
 }
 
 ref<IndexBuffer> IndexBuffer::s_create(uint16_t* indices, uint32_t count)
 {
-    return makeRef<GlIndexBuffer>(indices, count);
+    return ref<GlIndexBuffer>::gen(indices, count);
 }
 
 ref<IndexBuffer> IndexBuffer::s_create(uint8_t* indices, uint32_t count)
 {
-    return makeRef<GlIndexBuffer>(indices, count);
+    return ref<GlIndexBuffer>::gen(indices, count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ ref<IndexBuffer> IndexBuffer::s_create(uint8_t* indices, uint32_t count)
 ////////////////////////////////////////////////////////////////////////////////
 ref<VertexArray> VertexArray::s_create()
 {
-    return makeRef<GlVertexArray>();
+    return ref<GlVertexArray>::gen();
 }
 
 };  // namespace nimbus

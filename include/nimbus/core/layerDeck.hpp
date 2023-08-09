@@ -18,12 +18,12 @@ class LayerDeck
 
     ~LayerDeck();
 
-    void insertLayer(const ref<Layer>& p_layer,
-                     int32_t           location = k_insertLocationHead);
+    void insertLayer(ref<Layer> p_layer,
+                     int32_t    location = k_insertLocationHead);
 
-    void removeLayer(const ref<Layer>& p_layer);
+    void removeLayer(ref<Layer> p_layer);
 
-    const std::vector<std::string*> getLayerNames() const;
+    const std::vector<std::string> getLayerNames() const;
 
     ////////////////////////////////////////////////////////////////////
     // Foward Interator Helpers

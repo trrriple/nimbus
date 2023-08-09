@@ -152,12 +152,12 @@ class FelixLayer : public Layer
         mp_appWinRef = &mp_appRef->getWindow();
         mp_appRef->setDrawPeriodLimit(0.00000f);
 
-        mp_scene = makeRef<Scene>("Demo Scene");
+        mp_scene = ref<Scene>::gen("Demo Scene");
 
         ///////////////////////////
         // Edit Camera
         ///////////////////////////
-        mp_editCamera = makeRef<Camera>(Camera::Type::PERSPECTIVE);
+        mp_editCamera = ref<Camera>::gen(Camera::Type::PERSPECTIVE);
         mp_editCamera->setAspectRatio(m_aspectRatio);
         mp_editCamera->setPosition({0.0f, 0.0f, 2.4125f});
         mp_editCamera->setYaw(-90.0f);
@@ -166,12 +166,12 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Panels
         ///////////////////////////
-        mp_viewportPanel       = makeScope<ViewportPanel>(mp_editCamera.get());
-        mp_sceneControlPanel   = makeScope<SceneControlPanel>();
-        mp_sceneHierarchyPanel = makeScope<SceneHeirarchyPanel>(mp_scene);
-        mp_renderStatsPanel    = makeScope<RenderStatsPanel>();
+        mp_viewportPanel       = genScope<ViewportPanel>(mp_editCamera.raw());
+        mp_sceneControlPanel   = genScope<SceneControlPanel>();
+        mp_sceneHierarchyPanel = genScope<SceneHeirarchyPanel>(mp_scene);
+        mp_renderStatsPanel    = genScope<RenderStatsPanel>();
         mp_editCameraMenuPanel
-            = makeScope<EditCameraMenuPanel>(mp_editCamera.get());
+            = genScope<EditCameraMenuPanel>(mp_editCamera.raw());
 
         mp_sceneHierarchyPanel->setEntitySelectedCallback(std::bind(
             &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
@@ -342,7 +342,7 @@ class FelixLayer : public Layer
 
         if (m_sceneState == State::PAUSE)
         {
-            mp_scene->_onDrawEditor(mp_editCamera.get());
+            mp_scene->_onDrawEditor(mp_editCamera.raw());
         }
         else
         {
@@ -355,7 +355,7 @@ class FelixLayer : public Layer
             GraphicsApi::setWireframe(false);
         }
 
-        mp_frameBuffer->blit(*mp_screenBuffer.get());
+        mp_frameBuffer->blit(*mp_screenBuffer);
 
         NM_UNUSED(deltaTime);
     }
@@ -730,7 +730,7 @@ class Felix : public Application
    public:
     Felix() : Application("Felix", 1920, 1080)
     {
-        Application::insertLayer(makeRef<FelixLayer>());
+        Application::insertLayer(ref<FelixLayer>::gen());
     }
 };
 

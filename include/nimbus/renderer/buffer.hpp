@@ -150,7 +150,7 @@ class BufferFormat
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Buffer
 ////////////////////////////////////////////////////////////////////////////////
-class VertexBuffer
+class VertexBuffer : public refCounted
 {
    public:
     enum class Type
@@ -177,9 +177,15 @@ class VertexBuffer
 
     virtual void setFormat(const BufferFormat& format) = 0;
 
-    virtual uint32_t getSize() = 0;
+    virtual uint32_t getSize() const
+    {
+        return m_size;
+    }
 
-    virtual uint32_t getId() = 0;
+    virtual uint32_t getId() const
+    {
+        return m_id;
+    }
 
    protected:
     uint32_t           m_id;
@@ -194,7 +200,7 @@ class VertexBuffer
 ////////////////////////////////////////////////////////////////////////////////
 // Index Buffer
 ////////////////////////////////////////////////////////////////////////////////
-class IndexBuffer
+class IndexBuffer : public refCounted
 {
    public:
     static ref<IndexBuffer> s_create(uint32_t* indices, uint32_t count);
@@ -211,7 +217,7 @@ class IndexBuffer
 
     virtual uint32_t getType() const = 0;
 
-    virtual uint32_t getId()
+    virtual uint32_t getId() const
     {
         return m_id;
     }
@@ -225,7 +231,7 @@ class IndexBuffer
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Array
 ////////////////////////////////////////////////////////////////////////////////
-class VertexArray
+class VertexArray : public refCounted
 {
    public:
     static ref<VertexArray> s_create();
@@ -236,9 +242,9 @@ class VertexArray
 
     virtual void unbind() const = 0;
 
-    virtual void addVertexBuffer(const ref<VertexBuffer>& p_vertexBuffer) = 0;
+    virtual void addVertexBuffer(ref<VertexBuffer> p_vertexBuffer) = 0;
 
-    virtual void setIndexBuffer(const ref<IndexBuffer>& p_indexBuffer) = 0;
+    virtual void setIndexBuffer(ref<IndexBuffer> p_indexBuffer) = 0;
 
     virtual const std::vector<ref<VertexBuffer>>& getVertexBuffers() const = 0;
 

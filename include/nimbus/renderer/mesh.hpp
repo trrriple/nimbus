@@ -9,10 +9,10 @@
 
 #include "glm.hpp"
 
-namespace nimbus
+namespace nimbus 
 {
 
-class Mesh
+class Mesh : public refCounted
 {
     inline static const std::string k_texDiffNm = "texDiff";
     inline static const std::string k_texSpecNm = "texSpec";

@@ -5,7 +5,7 @@
 namespace nimbus
 {
 
-class FrameBuffer
+class FrameBuffer : public refCounted
 {
    public:
     // does anyone even have 8k res?

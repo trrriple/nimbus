@@ -376,7 +376,7 @@ void SceneSerializer::serialize(const std::string& filepath)
     for (auto [entityHandle] :
          mp_scene->m_registry.storage<entt::entity>().each())
     {
-        Entity entity = {entityHandle, mp_scene.get()};
+        Entity entity = {entityHandle, mp_scene.raw()};
         if (!entity)  // ?
         {
             return;
@@ -427,7 +427,7 @@ bool SceneSerializer::deserialize(const std::string& filepath)
 
     for (auto it = entitiesRev.rbegin(); it != entitiesRev.rend(); ++it)
     {
-        s_deserializeEntity(*it, mp_scene.get());
+        s_deserializeEntity(*it, mp_scene.raw());
     }
 
     return true;
