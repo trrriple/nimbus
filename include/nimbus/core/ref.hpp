@@ -29,12 +29,12 @@ class refCounted
     mutable std::atomic<uint32_t> m_refCount = 0;
 };
 
-namespace RefUtils
+namespace refUtils
 {
 void addToLiveReferences(void* instance);
 void removeFromLiveReferences(void* instance);
 bool isLive(void* instance);
-}  // namespace RefUtils
+}  // namespace refUtils
 
 template <typename T>
 class ref
@@ -202,7 +202,7 @@ class ref
         if (m_inst)
         {
             m_inst->incRefCount();
-            RefUtils::addToLiveReferences((void*)m_inst);
+            refUtils::addToLiveReferences((void*)m_inst);
         }
     }
 
@@ -214,7 +214,7 @@ class ref
             if (m_inst->getRefCount() == 0)
             {
                 delete m_inst;
-                RefUtils::removeFromLiveReferences((void*)m_inst);
+                refUtils::removeFromLiveReferences((void*)m_inst);
                 m_inst = nullptr;
             }
         }
@@ -261,7 +261,7 @@ class weakRef
 
     bool isValid() const
     {
-        return m_inst ? RefUtils::isLive(m_inst) : false;
+        return m_inst ? refUtils::isLive(m_inst) : false;
     }
     operator bool() const
     {

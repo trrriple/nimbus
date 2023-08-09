@@ -9,7 +9,7 @@ namespace nimbus
 static std::unordered_set<void*> s_LiveReferences;
 static std::mutex                s_LiveReferenceMutex;
 
-namespace RefUtils
+namespace refUtils
 {
 
 void addToLiveReferences(void* instance)
@@ -34,6 +34,6 @@ bool isLive(void* instance)
     NM_CORE_ASSERT_STATIC(instance, "Null Instance");
     return s_LiveReferences.find(instance) != s_LiveReferences.end();
 }
-}  // namespace RefUtils
+}  // namespace refUtils
 
 }  // namespace Hazel
