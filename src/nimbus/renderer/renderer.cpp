@@ -2,6 +2,7 @@
 #include "nimbus/core/core.hpp"
 
 #include "nimbus/renderer/renderer.hpp"
+#include "nimbus/renderer/renderCmdQ.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 
 #include <thread>
@@ -13,10 +14,10 @@
 namespace nimbus
 {
 
+RenderCmdQ                        Renderer::s_cmdQ;
 std::thread                       Renderer::s_renderThread;
-std::mutex                        Renderer::s_queueMutex;
-std::condition_variable           Renderer::s_cmdCondition;
-std::queue<std::function<void()>> Renderer::s_cmdQueue;
+std::mutex                        Renderer::s_cmdQMutex;
+std::condition_variable           Renderer::s_cmdQCondition;
 bool                              Renderer::s_terminate   = false;
 bool                              Renderer::s_initialized = false;
 
@@ -37,10 +38,10 @@ void Renderer::s_init(void* p_window, void* p_context)
 void Renderer::s_destroy()
 {
     {
-        std::lock_guard<std::mutex> lock(s_queueMutex);
+        std::lock_guard<std::mutex> lock(s_cmdQMutex);
         s_terminate = true;
     }
-    s_cmdCondition.notify_one();
+    s_cmdQCondition.notify_one();
     s_renderThread.join();
 }
 
@@ -49,38 +50,38 @@ void Renderer::s_setScene(const glm::mat4& vpMatrix)
     mp_vpMatrix = vpMatrix;
 }
 
-void Renderer::s_submit(std::function<void()> fn)
-{
-    std::lock_guard<std::mutex> lock(s_queueMutex);
-    s_cmdQueue.push(fn);
-    s_cmdCondition.notify_one();
-}
+// void Renderer::s_submit(std::function<void()> fn)
+// {
+//     std::lock_guard<std::mutex> lock(s_queueMutex);
+//     s_cmdQueue.push(fn);
+//     s_cmdCondition.notify_one();
+// }
 
-void Renderer::s_processHook()
-{
-    static std::queue<std::function<void()>> localQueue;
+// void Renderer::s_processHook()
+// {
+//     static std::queue<std::function<void()>> localQueue;
 
-    {
-        std::unique_lock<std::mutex> lock(s_queueMutex);
-        s_cmdCondition.wait(
-            lock, []() { return !s_cmdQueue.empty() || s_terminate; });
+//     {
+//         std::unique_lock<std::mutex> lock(s_cmdQMutex);
+//         s_cmdQCondition.wait(
+//             lock, []() { return !s_cmdQueue.empty() || s_terminate; });
 
-        // Transfer commands to the local queue
-        while (!s_cmdQueue.empty())
-        {
-            localQueue.push(std::move(s_cmdQueue.front()));
-            s_cmdQueue.pop();
-        }
-    }  // Mutex is released here
+//         // Transfer commands to the local queue
+//         while (!s_cmdQueue.empty())
+//         {
+//             localQueue.push(std::move(s_cmdQueue.front()));
+//             s_cmdQueue.pop();
+//         }
+//     }  // Mutex is released here
 
-    // Process the commands outside of the locked section
-    while (!localQueue.empty())
-    {
-        auto& command = localQueue.front();
-        command();
-        localQueue.pop();
-    }
-}
+//     // Process the commands outside of the locked section
+//     while (!localQueue.empty())
+//     {
+//         auto& command = localQueue.front();
+//         command();
+//         localQueue.pop();
+//     }
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private Functions
@@ -89,30 +90,19 @@ void Renderer::_s_serviceQueue(void* p_window, void* p_context)
 {
     SDL_GL_MakeCurrent(static_cast<SDL_Window*>(p_window), p_context);
 
-    std::queue<std::function<void()>> localQueue;
-
     while (!s_terminate)
     {
-        {
-            std::unique_lock<std::mutex> lock(s_queueMutex);
-            s_cmdCondition.wait(
-                lock, []() { return !s_cmdQueue.empty() || s_terminate; });
+        std::unique_lock<std::mutex> lock(s_cmdQMutex);
 
-            // Transfer commands to the local queue
-            while (!s_cmdQueue.empty())
-            {
-                localQueue.push(std::move(s_cmdQueue.front()));
-                s_cmdQueue.pop();
-            }
-        }  // Mutex is released here
+        // don't wait if there's data on the queue
+        s_cmdQCondition.wait(lock, []() { return s_cmdQ.getCmdCount(); });
 
-        // Process the commands outside of the locked section
-        while (!localQueue.empty())
-        {
-            auto& command = localQueue.front();
-            command();
-            localQueue.pop();
-        }
+        // Prep the temporary cmd Q
+        s_cmdQ.prepTmpQ();
+        lock.unlock();
+
+        // process all the commands in the temp queue
+        s_cmdQ.processTmpQ();
     }
 }
 
