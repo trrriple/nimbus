@@ -168,7 +168,7 @@ void Application::execute()
 
             Application* app = this;
             Renderer::s_submit([app]() { app->guiRender(); });
-            Renderer::s_submit([=]() { mp_guiSubsystemLayer->end(); });
+            Renderer::s_submit([app]() { app->mp_guiSubsystemLayer->end(); });
 
             std::promise<void> renderDonePromise;
             std::future<void> renderDoneFuture = renderDonePromise.get_future();

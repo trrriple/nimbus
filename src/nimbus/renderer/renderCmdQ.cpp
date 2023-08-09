@@ -40,6 +40,11 @@ void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size)
     mp_cmdBufPtr += size;
     m_cmdBufUsedSz += size;
 
+    if(size > 32)
+    {
+        Log::coreWarn("Big Yoshi %i", size);
+    }
+
     NM_CORE_ASSERT(m_cmdBufUsedSz < k_cmdBufSize, "Command Queue Overflow!");
 
     m_cmdCount++;

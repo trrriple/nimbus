@@ -104,130 +104,114 @@ void GlShader::bind() const
 // utility uniform functions
 void GlShader::setBool(const std::string& name, bool value) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit(
-        [=]() { glUniform1i(_getUniformLocation(name), (GLuint)value); });
+    uint32_t id = _getUniformLocation(name);
+
+    Renderer::s_submit([id, value]() { glUniform1i(id, (GLuint)value); });
 }
 
 void GlShader::setInt(const std::string&          name,
                       const std::vector<int32_t>& value,
                       uint32_t                    count) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
-        {
-            glUniform1iv(_getUniformLocation(name),
-                         count,
-                         reinterpret_cast<const GLint*>(value.data()));
+        [id, value, count]() {
+            glUniform1iv(
+                id, count, reinterpret_cast<const GLint*>(value.data()));
         });
 }
 
 void GlShader::setInt(const std::string& name, int32_t value) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit([=]()
-                       { glUniform1i(_getUniformLocation(name), value); });
+    uint32_t id = _getUniformLocation(name);
+    Renderer::s_submit([id, value]() { glUniform1i(id, value); });
 }
 
 void GlShader::setFloat(const std::string&        name,
                         const std::vector<float>& value,
                         uint32_t                  count) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
-        {
-            glUniform1fv(_getUniformLocation(name),
-                         count,
-                         reinterpret_cast<const GLfloat*>(value.data()));
+        [id, value, count]() {
+            glUniform1fv(
+                id, count, reinterpret_cast<const GLfloat*>(value.data()));
         });
 }
 
 void GlShader::setFloat(const std::string& name, float value) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit([=]()
-                       { glUniform1f(_getUniformLocation(name), value); });
+    uint32_t id = _getUniformLocation(name);
+    Renderer::s_submit([id, value]() { glUniform1f(id, value); });
 }
 
 void GlShader::setVec2(const std::string&            name,
                        const std::vector<glm::vec2>& value,
                        uint32_t                      count) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
-        {
-            glUniform2fv(_getUniformLocation(name),
-                         count,
-                         reinterpret_cast<const GLfloat*>(value.data()));
+        [id, value, count]() {
+            glUniform2fv(
+                id, count, reinterpret_cast<const GLfloat*>(value.data()));
         });
 }
 
 void GlShader::setVec2(const std::string& name, const glm::vec2& value) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit(
-        [=]()
-        { glUniform2fv(_getUniformLocation(name), 1, glm::value_ptr(value)); });
+    uint32_t id = _getUniformLocation(name);
+    Renderer::s_submit([id, value]()
+                       { glUniform2fv(id, 1, glm::value_ptr(value)); });
 }
 
 void GlShader::setVec2(const std::string& name, float x, float y) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit([=]() { glUniform2f(_getUniformLocation(name), x, y); });
+    uint32_t id = _getUniformLocation(name);
+    Renderer::s_submit([id, x, y]() { glUniform2f(id, x, y); });
 }
 
 void GlShader::setVec3(const std::string&            name,
                        const std::vector<glm::vec3>& value,
                        uint32_t                      count) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
-        {
-            glUniform3fv(_getUniformLocation(name),
-                         count,
-                         reinterpret_cast<const GLfloat*>(value.data()));
+        [id, value, count]() {
+            glUniform3fv(
+                id, count, reinterpret_cast<const GLfloat*>(value.data()));
         });
 }
 
 void GlShader::setVec3(const std::string& name, const glm::vec3& value) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit(
-        [=]()
-        { glUniform3fv(_getUniformLocation(name), 1, glm::value_ptr(value)); });
+    uint32_t id = _getUniformLocation(name);
+    Renderer::s_submit([id, value]()
+                       { glUniform3fv(id, 1, glm::value_ptr(value)); });
 }
 
 void GlShader::setVec3(const std::string& name, float x, float y, float z) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit([=]()
-                       { glUniform3f(_getUniformLocation(name), x, y, z); });
+    uint32_t id = _getUniformLocation(name);
+    Renderer::s_submit([id, x, y, z]() { glUniform3f(id, x, y, z); });
 }
 
 void GlShader::setVec4(const std::string&            name,
                        const std::vector<glm::vec4>& value,
                        uint32_t                      count) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
-        {
-            glUniform4fv(_getUniformLocation(name),
-                         count,
-                         reinterpret_cast<const GLfloat*>(value.data()));
+        [id, value, count]() {
+            glUniform4fv(
+                id, count, reinterpret_cast<const GLfloat*>(value.data()));
         });
 }
 
 void GlShader::setVec4(const std::string& name, const glm::vec4& value) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit(
-        [=]()
-        { glUniform4fv(_getUniformLocation(name), 1, glm::value_ptr(value)); });
+    uint32_t id = _getUniformLocation(name);
+    Renderer::s_submit([id, value]()
+                       { glUniform4fv(id, 1, glm::value_ptr(value)); });
 }
 
 void GlShader::setVec4(const std::string& name,
@@ -236,20 +220,19 @@ void GlShader::setVec4(const std::string& name,
                        float              z,
                        float              w) const
 {
-    NM_PROFILE_TRACE();
-    Renderer::s_submit([=]()
-                       { glUniform4f(_getUniformLocation(name), x, y, z, w); });
+    uint32_t id = _getUniformLocation(name);
+    Renderer::s_submit([id, x, y, z, w]() { glUniform4f(id, x, y, z, w); });
 }
 
 void GlShader::setMat2(const std::string&            name,
                        const std::vector<glm::mat2>& value,
                        uint32_t                      count) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
+        [id, value, count]()
         {
-            glUniformMatrix2fv(_getUniformLocation(name),
+            glUniformMatrix2fv(id,
                                count,
                                GL_FALSE,
                                reinterpret_cast<const GLfloat*>(value.data()));
@@ -258,24 +241,21 @@ void GlShader::setMat2(const std::string&            name,
 
 void GlShader::setMat2(const std::string& name, const glm::mat2& mat) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
-        {
-            glUniformMatrix2fv(
-                _getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
-        });
+        [id, mat]()
+        { glUniformMatrix2fv(id, 1, GL_FALSE, glm::value_ptr(mat)); });
 }
 
 void GlShader::setMat3(const std::string&            name,
                        const std::vector<glm::mat3>& value,
                        uint32_t                      count) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
+        [id, value, count]()
         {
-            glUniformMatrix3fv(_getUniformLocation(name),
+            glUniformMatrix3fv(id,
                                count,
                                GL_FALSE,
                                reinterpret_cast<const GLfloat*>(value.data()));
@@ -284,24 +264,21 @@ void GlShader::setMat3(const std::string&            name,
 
 void GlShader::setMat3(const std::string& name, const glm::mat3& mat) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
-        {
-            glUniformMatrix3fv(
-                _getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
-        });
+        [id, mat]()
+        { glUniformMatrix3fv(id, 1, GL_FALSE, glm::value_ptr(mat)); });
 }
 
 void GlShader::setMat4(const std::string&            name,
                        const std::vector<glm::mat4>& value,
                        uint32_t                      count) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
-        [=]()
+        [id, value, count]()
         {
-            glUniformMatrix4fv(_getUniformLocation(name),
+            glUniformMatrix4fv(id,
                                count,
                                GL_FALSE,
                                reinterpret_cast<const GLfloat*>(value.data()));
@@ -310,14 +287,11 @@ void GlShader::setMat4(const std::string&            name,
 
 void GlShader::setMat4(const std::string& name, const glm::mat4& mat) const
 {
-    NM_PROFILE_TRACE();
+    uint32_t id = _getUniformLocation(name);
 
     Renderer::s_submit(
-        [=]()
-        {
-            glUniformMatrix4fv(
-                _getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
-        });
+        [id, mat]()
+        { glUniformMatrix4fv(id, 1, GL_FALSE, glm::value_ptr(mat)); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -423,18 +397,31 @@ std::int32_t GlShader::_getUniformLocation(const std::string& name) const
     }
     else
     {
-        location                = glGetUniformLocation(m_id, name.c_str());
-        m_uniformLocCache[name] = location;
+        // bad boys, what you gonna do?
+        ref<GlShader> p_instance = const_cast<GlShader*>(this);
 
-        if (location == -1)
-        {
-            Log::coreWarn(
-                "Uniform %s not found in shader program (vertex: "
-                "%s, fragment: %s",
-                name.c_str(),
-                m_vertexPath.c_str(),
-                m_fragmentPath.c_str());
-        }
+        std::promise<void> renderDonePromise;
+        std::future<void>  renderDoneFuture = renderDonePromise.get_future();
+
+        Renderer::s_submit(
+            [p_instance, name, &location, &renderDonePromise]()
+            {
+                location = glGetUniformLocation(p_instance->m_id, name.c_str());
+                p_instance->m_uniformLocCache[name] = location;
+
+                if (location == -1)
+                {
+                    Log::coreWarn(
+                        "Uniform %s not found in shader program (vertex: "
+                        "%s, fragment: %s",
+                        name.c_str(),
+                        p_instance->m_vertexPath.c_str(),
+                        p_instance->m_fragmentPath.c_str());
+                }
+                renderDonePromise.set_value();
+            });
+
+        renderDoneFuture.wait();
     }
 
     return location;
