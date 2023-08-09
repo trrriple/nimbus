@@ -559,10 +559,10 @@ void Renderer2D::_s_createQuadBuffers()
     ///////////////////////////
     // (Re)make IBO
     ///////////////////////////
-    std::vector<uint16_t> quadVertexIndices;
+    std::vector<uint32_t> quadVertexIndices;
     quadVertexIndices.reserve(6 * newSize);
 
-    uint16_t offset = 0;
+    uint32_t offset = 0;
     for (uint32_t i = 0; i < newSize; i++)
     {
         quadVertexIndices.push_back(0 + offset);

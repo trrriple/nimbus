@@ -190,9 +190,9 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Test Sprite
         ///////////////////////////
-         for (int i = 0; i < 20; i++)
+         for (int i = 0; i < 150; i++)
         {
-            for (int j = 0; j < 20; j++)
+            for (int j = 0; j < 150; j++)
             {
                 auto spriteEntity1
                     = mp_scene->addEntity("Test Sprite " + std::to_string(i * j));
