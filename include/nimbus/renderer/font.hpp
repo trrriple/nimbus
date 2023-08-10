@@ -14,31 +14,31 @@ class Font : public refCounted
    public:
     struct Format
     {
-        ref<Font> p_font      = nullptr;
-        glm::vec4 fgColor     = glm::vec4(1.0f);
-        glm::vec4 bgColor     = glm::vec4(0.0f);
-        float     kerning     = 0.0f;
-        float     leading     = 0.0f;
+        ref<Font> p_font  = nullptr;
+        glm::vec4 fgColor = glm::vec4(1.0f);
+        glm::vec4 bgColor = glm::vec4(0.0f);
+        float     kerning = 0.0f;
+        float     leading = 0.0f;
     };
-    
+
     ~Font();
 
-    const std::string& getPath() const
+    inline const std::string& getPath() const
     {
         return m_path;
     }
 
-    ref<Texture> getAtlasTex() const
+    inline ref<Texture> getAtlasTex() const
     {
         return m_atlasTex;
     }
 
-    const FontData* getFontData() const
+    inline const FontData* getFontData() const
     {
         return m_data;
     }
 
-    bool isLoaded() const
+    inline bool isLoaded() const
     {
         // short circuit atomic check if we know it's been
         // loaded already

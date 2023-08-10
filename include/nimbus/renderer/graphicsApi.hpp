@@ -19,51 +19,51 @@ class GraphicsApi
         SOURCE_ALPHA_ADDITIVE,  // GL_SRC_ALPHA, GL_ONE
     };
 
-    static void init();
- 
-    static void clear();
+    static void init() noexcept;
 
-    static void clearColor(glm::vec4 color);
+    static void clear() noexcept;
+
+    static void clearColor(glm::vec4 color) noexcept;
 
     static void drawElements(ref<VertexArray> p_vertexArray,
-                             uint32_t         vertexCount = 0);
+                             uint32_t         vertexCount = 0) noexcept;
 
     static void drawArrays(ref<VertexArray> p_vertexArray,
-                           uint32_t         vertexCount = 0);
+                           uint32_t         vertexCount = 0) noexcept;
 
     static void drawElementsInstanced(ref<VertexArray> p_vertexArray,
                                       uint32_t         instanceCount,
-                                      uint32_t         vertexCount = 0);
+                                      uint32_t vertexCount = 0) noexcept;
 
     static void drawArraysInstanced(ref<VertexArray> p_vertexArray,
                                     uint32_t         instanceCount,
-                                    uint32_t         vertexCount = 0);
+                                    uint32_t         vertexCount = 0) noexcept;
 
-    static void setViewportSize(int x, int y, int w, int h);
+    static void setViewportSize(int x, int y, int w, int h) noexcept;
 
-    static void setWireframe(bool on);
+    static void setWireframe(bool on) noexcept;
 
-    static bool getWireframe()
+    inline static bool getWireframe() noexcept
     {
         return s_wireframe;
     }
 
-    static void setDepthTest(bool on);
+    static void setDepthTest(bool on) noexcept;
 
-    static bool getDepthTest()
+    inline static bool getDepthTest() noexcept
     {
         return s_depthTest;
     }
 
-    static void setBlendingMode(GraphicsApi::BlendingMode);
+    static void setBlendingMode(GraphicsApi::BlendingMode) noexcept;
 
-    static GraphicsApi::BlendingMode getBlendingMode()
+    inline static GraphicsApi::BlendingMode getBlendingMode() noexcept
     {
         return s_currBlendingMode;
     }
 
    protected:
-    inline static bool         s_wireframe      = false;
+    inline static bool         s_wireframe        = false;
     inline static bool         s_depthTest        = false;
     inline static BlendingMode s_currBlendingMode = BlendingMode::ALPHA_BLEND;
 };

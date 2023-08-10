@@ -12,15 +12,15 @@ namespace nimbus::util
 
 glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos,
                               float     screenWidth,
-                              float     screenHeight);
+                              float     screenHeight) noexcept;
 
 glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize,
                                 float     screenWidth,
-                                float     screenHeight);
+                                float     screenHeight) noexcept;
 
 glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity,
                                         float     screenWidth,
-                                        float     screenHeight);
+                                        float     screenHeight) noexcept;
 
 glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                          float     screenMinX,
@@ -28,18 +28,18 @@ glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                          float     screenMinY,
                          float     screenMaxY,
                          int       imgWidth,
-                         int       imgHeight);
+                         int       imgHeight) noexcept;
 
 std::vector<std::string> openFile(const std::string& prompt    = "",
                                   const std::string& startPath = ".",
                                   const std::vector<std::string>& filters
                                   = {"All Files", "*"},
-                                  bool multiSelect = false);
+                                  bool multiSelect = false) noexcept;
 
 std::string saveFile(const std::string&              prompt    = "",
                      const std::string&              startPath = ".",
                      const std::vector<std::string>& filters
-                     = {"All Files", "*"});
+                     = {"All Files", "*"}) noexcept;
 
 // TODO remove
 struct Transform

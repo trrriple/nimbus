@@ -29,7 +29,7 @@ class FrameBuffer : public refCounted
         WRITE,
     };
 
-    static ref<FrameBuffer> s_create(FrameBuffer::Spec& spec);
+    static ref<FrameBuffer> s_create(FrameBuffer::Spec& spec) noexcept;
 
     virtual ~FrameBuffer() = default;
 

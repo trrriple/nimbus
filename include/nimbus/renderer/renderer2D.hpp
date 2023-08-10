@@ -32,34 +32,34 @@ class Renderer2D : public refCounted
 
     static void s_destroy();
 
-    static void s_begin(const glm::mat4& vpMatrix);
+    static void s_begin(const glm::mat4& vpMatrix) noexcept;
 
-    static void s_end();
+    static void s_end() noexcept;
 
     static void s_drawQuad(const glm::mat4&    transform,
                            const ref<Texture>& p_texture,
                            const glm::vec4&    color,
                            float               texTilingFactor = 1.0f,
-                           int                 entityId        = -1);
+                           int                 entityId        = -1) noexcept;
 
     static void s_drawQuad(const glm::mat4& transform,
                            const glm::vec4& color,
-                           int              entityId = -1);
+                           int              entityId = -1) noexcept;
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::vec3&    position,
                            const glm::vec2&    size,
-                           int                 entityId = -1);
+                           int                 entityId = -1) noexcept;
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::mat4&    transform,
-                           int                 entityId = -1);
+                           int                 entityId = -1) noexcept;
 
-    static void s_resetStats();
+    static void s_resetStats() noexcept;
 
-    static Stats s_getStats()
+    inline static Stats s_getStats() noexcept
     {
         return s_stats;
     }
@@ -171,8 +171,8 @@ class Renderer2D : public refCounted
     ///////////////////////////
     // Private functions
     ///////////////////////////
-    static void _s_submit();
-    static void _s_createTextBuffers();
-    static void _s_createQuadBuffers();
+    static void _s_submit() noexcept;
+    static void _s_createTextBuffers() noexcept;
+    static void _s_createQuadBuffers() noexcept;
 };
 }  // namespace nimbus

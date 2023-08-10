@@ -13,7 +13,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 GlVertexBuffer::GlVertexBuffer(const void*        vertices,
                                uint32_t           size,
-                               VertexBuffer::Type type)
+                               VertexBuffer::Type type) noexcept
 {
     m_size = size;
     m_type = type;
@@ -67,7 +67,7 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
     }
 }
 
-GlVertexBuffer::~GlVertexBuffer()
+GlVertexBuffer::~GlVertexBuffer() noexcept
 {
     uint32_t id     = m_id;
     bool     mapped = m_mapped;
@@ -84,7 +84,7 @@ GlVertexBuffer::~GlVertexBuffer()
         });
 }
 
-void GlVertexBuffer::bind() const
+void GlVertexBuffer::bind() const noexcept
 {
     ref<GlVertexBuffer> p_this = const_cast<GlVertexBuffer*>(this);
 
@@ -92,12 +92,12 @@ void GlVertexBuffer::bind() const
                        { glBindBuffer(GL_ARRAY_BUFFER, p_this->m_id); });
 }
 
-void GlVertexBuffer::unbind() const
+void GlVertexBuffer::unbind() const noexcept
 {
     Renderer::s_submit([]() { glBindBuffer(GL_ARRAY_BUFFER, 0); });
 }
 
-void GlVertexBuffer::setData(const void* data, uint32_t size)
+void GlVertexBuffer::setData(const void* data, uint32_t size) noexcept
 {
     NM_CORE_ASSERT(size <= m_size,
                    "Size (%i) must be <= preallocated size (%i)",
@@ -116,7 +116,7 @@ void GlVertexBuffer::setData(const void* data, uint32_t size)
 ////////////////////////////////////////////////////////////////////////////////
 // Index Buffer
 ////////////////////////////////////////////////////////////////////////////////
-GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
+GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count) noexcept
 {
     m_count = count;
     m_type  = GL_UNSIGNED_INT;
@@ -139,7 +139,7 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
         });
 }
 
-GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
+GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count) noexcept
 {
     m_count = count;
     m_type  = GL_UNSIGNED_SHORT;
@@ -162,7 +162,7 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
         });
 }
 
-GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
+GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count) noexcept
 {
     m_count = count;
     m_type  = GL_UNSIGNED_BYTE;
@@ -185,13 +185,13 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
         });
 }
 
-GlIndexBuffer::~GlIndexBuffer()
+GlIndexBuffer::~GlIndexBuffer() noexcept
 {
     uint32_t id = m_id;
     Renderer::s_submitObject([id]() { glDeleteBuffers(1, &id); });
 }
 
-void GlIndexBuffer::bind() const
+void GlIndexBuffer::bind() const noexcept
 {
     ref<GlIndexBuffer> p_this = const_cast<GlIndexBuffer*>(this);
 
@@ -200,7 +200,7 @@ void GlIndexBuffer::bind() const
         { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_this->m_id); });
 }
 
-void GlIndexBuffer::unbind() const
+void GlIndexBuffer::unbind() const noexcept
 {
     Renderer::s_submit([]() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); });
 }
@@ -208,7 +208,7 @@ void GlIndexBuffer::unbind() const
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Array
 ////////////////////////////////////////////////////////////////////////////////
-GlVertexArray::GlVertexArray()
+GlVertexArray::GlVertexArray() noexcept
 {
     ref<GlVertexArray> p_this = this;
 
@@ -219,7 +219,7 @@ GlVertexArray::GlVertexArray()
             });
 }
 
-GlVertexArray::~GlVertexArray()
+GlVertexArray::~GlVertexArray() noexcept
 {
     uint32_t id = m_id;
     Renderer::s_submitObject([id]() { 
@@ -227,7 +227,7 @@ GlVertexArray::~GlVertexArray()
     });
 }
 
-void GlVertexArray::bind() const
+void GlVertexArray::bind() const noexcept
 {
     ref<GlVertexArray> p_this = const_cast<GlVertexArray*>(this);
 
@@ -238,12 +238,12 @@ void GlVertexArray::bind() const
         });
 }
 
-void GlVertexArray::unbind() const
+void GlVertexArray::unbind() const noexcept
 {
     Renderer::s_submit([]() { glBindVertexArray(0); });
 }
 
-void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
+void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer) noexcept
 {
     NM_CORE_ASSERT(p_vertexBuffer->getFormat().getComponents().size(),
                    "VBO format is required to create VBA");
@@ -351,7 +351,7 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
         });
 }
 
-void GlVertexArray::setIndexBuffer(ref<IndexBuffer> p_indexBuffer)
+void GlVertexArray::setIndexBuffer(ref<IndexBuffer> p_indexBuffer) noexcept
 {
     ref<GlVertexArray> p_this = this;
 

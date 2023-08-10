@@ -19,7 +19,7 @@ namespace nimbus
 
 Application::Application(const std::string& name,
                          uint32_t           windowWidth,
-                         uint32_t           windowHeight)
+                         uint32_t           windowHeight) noexcept
     : m_name(name)
 {
     NM_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
@@ -52,15 +52,11 @@ Application::Application(const std::string& name,
 
 }
 
-Application::~Application()
+Application::~Application() noexcept
 {
+    // pump out all of the commands
+    Renderer::s_pumpCmds();
 
-    // pump out all of the render commands from both queues
-    Renderer::s_swapAndStart();
-    Renderer::s_waitForRenderThread();
-    Renderer::s_swapAndStart();
-    Renderer::s_waitForRenderThread();
-    
     m_layerDeck.clear();
     mp_resourceManager.reset();
 
@@ -76,30 +72,21 @@ Application::~Application()
     mp_window.reset();
 }
 
-void Application::shouldQuit(Event& event)
+void Application::shouldQuit(Event& event) noexcept
 {
     NM_UNUSED(event);
     m_active = false;
 }
 
-void Application::execute()
+void Application::execute() noexcept
 {
+    ////////////////////////////////////////////////////////////////////////////
+    // Pump all commands out that were generated from application startup
+    // and layer additions
+    ////////////////////////////////////////////////////////////////////////////
+    Renderer::s_pumpCmds();
+
     double currentTime = core::getTime_s();
-
-    Stopwatch sw;
-
-    // TODO better solution
-    SDL_Window* p_window = static_cast<SDL_Window*>(mp_window->getOsWindow());
-    Renderer::s_submit(
-        [p_window]()
-        {
-            SDL_GL_SwapWindow(p_window);
-        });
-
-    Renderer::s_swapAndStart();
-
-    Renderer::s_waitForRenderThread();
-
     while (m_active)
     {
         NM_PROFILE();
@@ -156,7 +143,6 @@ void Application::execute()
         ///////////////////////////
         mp_window->pumpEvents();
 
-
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions
         ////////////////////////////////////////////////////////////////////////
@@ -202,11 +188,6 @@ void Application::execute()
 
             Renderer::s_endFrame();
 
-
-            ////////////////////////////////////////////////////////////////////
-            // Call window update function (events polled and buffers swapped)
-            ////////////////////////////////////////////////////////////////////
-            // TODO rework this func
             mp_window->onUpdate();
             m_drawLag = 0.0f;
         }
@@ -215,12 +196,12 @@ void Application::execute()
     Log::coreInfo("Quitting");
 }
 
-void Application::terminate()
+void Application::terminate() noexcept
 {
     m_active = false;
 }
 
-void Application::onEvent(Event& event)
+void Application::onEvent(Event& event) noexcept
 {
     // interate over the layer deck backwards because we want layers at
     // the top of the deck to handle events first if they so choose
@@ -252,22 +233,22 @@ void Application::onEvent(Event& event)
     }
 }
 
-void Application::insertLayer(const ref<Layer>& p_layer, int32_t location)
+void Application::insertLayer(const ref<Layer>& p_layer, int32_t location) noexcept
 {
     m_layerDeck.insertLayer(p_layer, location);
 }
 
-void Application::removeLayer(const ref<Layer>& p_layer)
+void Application::removeLayer(const ref<Layer>& p_layer) noexcept
 {
     m_layerDeck.removeLayer(p_layer);
 }
 
-void Application::guiSubsystemCaptureEvents(bool capture)
+void Application::guiSubsystemCaptureEvents(bool capture) noexcept
 {
     mp_guiSubsystemLayer->captureEvents(capture);
 }
 
-void Application::guiRender()
+void Application::guiRender() noexcept
 {
     mp_guiSubsystemLayer->begin();
 
@@ -277,12 +258,12 @@ void Application::guiRender()
     }
 }
 
-const uint8_t* Application::getKeyboardState() const
+const uint8_t* Application::getKeyboardState() const noexcept
 {
     return SDL_GetKeyboardState(nullptr);
 }
 
-void Application::setMenuMode(bool mode)
+void Application::setMenuMode(bool mode) noexcept
 {
     // if mode doesn't change, don't do anything
     if (m_menuMode == mode)
@@ -303,7 +284,7 @@ void Application::setMenuMode(bool mode)
     m_menuMode = mode;
 }
 
-void Application::setUpdatePeriodLimit(float limit)
+void Application::setUpdatePeriodLimit(float limit) noexcept
 {
     if (limit < 0.0f)
     {
@@ -314,7 +295,7 @@ void Application::setUpdatePeriodLimit(float limit)
     m_updatePeriodLimit = limit;
 }
 
-void Application::setDrawPeriodLimit(float limit)
+void Application::setDrawPeriodLimit(float limit) noexcept
 {
     if (limit < 0.0f)
     {

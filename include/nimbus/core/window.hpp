@@ -21,56 +21,62 @@ class Window : public refCounted
     float m_tFrame_s = 0.0;
     float m_fps      = 0.0;
 
-    Window(const std::string& windowCaption, uint32_t width, uint32_t height);
-    ~Window();
+    Window(const std::string& windowCaption,
+           uint32_t           width,
+           uint32_t           height) noexcept;
+    
+    ~Window() noexcept;
 
-    void graphicsContextInit();
+    void graphicsContextInit() noexcept;
 
-    void setEventCallback(const WindowEventCallback_t& callback);
+    void setEventCallback(const WindowEventCallback_t& callback) noexcept;
 
-    void setExitCallback(const WindowEventCallback_t& callback);
+    void setExitCallback(const WindowEventCallback_t& callback) noexcept;
 
-    void onUpdate();
+    void onUpdate() noexcept;
 
-    void pumpEvents();
+    void pumpEvents() noexcept;
 
-    bool keyPressed(ScanCode scanCode) const;
+    bool keyPressed(ScanCode scanCode) const noexcept;
 
-    bool modKeyPressed(KeyMod keyMod) const;
+    bool modKeyPressed(KeyMod keyMod) const noexcept;
 
-    bool mouseButtonPressed(MouseButton button) const;
+    bool mouseButtonPressed(MouseButton button) const noexcept;
 
-    glm::vec2 mousePos() const;
+    glm::vec2 mousePos() const noexcept;
 
-    float  mouseWheelPos() const;
+    float  mouseWheelPos() const noexcept;
 
-    uint32_t getHeight() const
+    inline uint32_t getHeight() const noexcept
     {
         return m_height;
     }
-    uint32_t getWidth() const
+    inline uint32_t getWidth() const noexcept
     {
         return m_width;
     }
 
-    float getAspectRatio() const
+    inline float getAspectRatio() const noexcept
     {
         return m_aspectRatio;
     }
 
-    void* getOsWindow() const
+    inline void* getOsWindow() const noexcept
     {
         return mp_window;
     }
 
-    void* getContext() const
+    inline void* getContext() const noexcept
     {
         return mp_context;
     } 
 
-    void setVSync(bool on);
+    void setVSync(bool on) noexcept;
 
-    bool getVSync();
+    inline bool getVSync() noexcept
+    {
+        return m_VSyncOn;
+    }
 
    private:
     void* mp_window  = nullptr;
@@ -88,11 +94,11 @@ class Window : public refCounted
     bool     m_VSyncOn       = true;
     float    m_mouseWheelPos = 0.0f;
 
-    void _handleWindowEvents();
+    void _handleWindowEvents() noexcept;
 
-    void _pollEvents();
+    void _pollEvents() noexcept;
 
-    void _calcFramerate();
+    void _calcFramerate() noexcept;
 };
 
 }  // namespace nimbus

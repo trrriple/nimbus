@@ -11,16 +11,16 @@ namespace nimbus
 class refCounted
 {
    public:
-    void incRefCount() const
+    inline void incRefCount() const noexcept
     {
         ++m_refCount;
     }
-    void decRefCount() const
+    inline void decRefCount() const noexcept
     {
         --m_refCount;
     }
 
-    uint32_t getRefCount() const
+    inline uint32_t getRefCount() const noexcept
     {
         return m_refCount.load();
     }
@@ -40,16 +40,16 @@ template <typename T>
 class ref
 {
    public:
-    ref() : m_inst(nullptr)
+    ref() noexcept : m_inst(nullptr)
     {
     }
 
-    ref(std::nullptr_t n) : m_inst(nullptr)
+    ref(std::nullptr_t n) noexcept : m_inst(nullptr) 
     {
         (void)(n);
     }
 
-    ref(T* instance) : m_inst(instance)
+    ref(T* instance) noexcept : m_inst(instance)
     {
         static_assert(std::is_base_of<refCounted, T>::value,
                       "Class is not refCounted!");
@@ -58,44 +58,44 @@ class ref
     }
 
     template <typename T2>
-    ref(const ref<T2>& other)
+    ref(const ref<T2>& other) noexcept
     {
         m_inst = (T*)other.m_inst;
         incRef();
     }
 
     template <typename T2>
-    ref(ref<T2>&& other)
+    ref(ref<T2>&& other) noexcept
     {
         m_inst       = (T*)other.m_inst;
         other.m_inst = nullptr;
     }
 
-    static ref<T> CopyWithoutIncrement(const ref<T>& other)
+    static ref<T> CopyWithoutIncrement(const ref<T>& other) noexcept
     {
         ref<T> result  = nullptr;
         result->m_inst = other.m_inst;
         return result;
     }
 
-    ~ref()
+    ~ref() noexcept
     {
         decRef();
     }
 
-    ref(const ref<T>& other) : m_inst(other.m_inst)
+    ref(const ref<T>& other) noexcept : m_inst(other.m_inst) 
     {
         incRef();
     }
 
-    ref& operator=(std::nullptr_t)
+    inline ref& operator=(std::nullptr_t) noexcept
     {
         decRef();
         m_inst = nullptr;
         return *this;
     }
 
-    ref& operator=(const ref<T>& other)
+    inline ref& operator=(const ref<T>& other) noexcept
     {
         other.incRef();
         decRef();
@@ -105,7 +105,7 @@ class ref
     }
 
     template <typename T2>
-    ref& operator=(const ref<T2>& other)
+    inline ref& operator=(const ref<T2>& other) noexcept
     {
         other.incRef();
         decRef();
@@ -115,7 +115,7 @@ class ref
     }
 
     template <typename T2>
-    ref& operator=(ref<T2>&& other)
+    inline ref& operator=(ref<T2>&& other) noexcept
     {
         decRef();
 
@@ -124,71 +124,75 @@ class ref
         return *this;
     }
 
-    operator bool()
-    {
-        return m_inst != nullptr;
-    }
-    operator bool() const
+    inline operator bool() noexcept
     {
         return m_inst != nullptr;
     }
 
-    T* operator->()
+    inline operator bool() const noexcept
     {
-        return m_inst;
+        return m_inst != nullptr;
     }
-    const T* operator->() const
+
+    inline T* operator->() noexcept
     {
         return m_inst;
     }
 
-    T& operator*()
+    inline const T* operator->() const noexcept
+    {
+        return m_inst;
+    }
+
+    inline T& operator*() noexcept
     {
         return *m_inst;
     }
-    const T& operator*() const
+
+    inline const T& operator*() const noexcept
     {
         return *m_inst;
     }
 
-    T* raw()
-    {
-        return m_inst;
-    }
-    const T* raw() const
+    inline T* raw() noexcept
     {
         return m_inst;
     }
 
-    void reset(T* instance = nullptr)
+    inline const T* raw() const noexcept
+    {
+        return m_inst;
+    }
+
+    inline void reset(T* instance = nullptr) noexcept
     {
         decRef();
         m_inst = instance;
     }
 
     template <typename T2>
-    ref<T2> As() const
+    inline ref<T2> As() const noexcept
     {
         return ref<T2>(*this);
     }
 
     template <typename... Args>
-    static ref<T> gen(Args&&... args)
+    inline static ref<T> gen(Args&&... args) noexcept
     {
         return ref<T>(new T(std::forward<Args>(args)...));
     }
 
-    bool operator==(const ref<T>& other) const
+    inline bool operator==(const ref<T>& other) const noexcept
     {
         return m_inst == other.m_inst;
     }
 
-    bool operator!=(const ref<T>& other) const
+    inline bool operator!=(const ref<T>& other) const noexcept
     {
         return !(*this == other);
     }
 
-    bool equalsObject(const ref<T>& other)
+    inline bool equalsObject(const ref<T>& other) noexcept
     {
         if (!m_inst || !other.m_inst)
             return false;
@@ -197,16 +201,16 @@ class ref
     }
 
    private:
-    void incRef() const
+    inline void incRef() const noexcept
     {
-        if (m_inst)
+        if (m_inst) 
         {
             m_inst->incRefCount();
             refUtils::addToLiveReferences((void*)m_inst);
         }
     }
 
-    void decRef() const
+    inline void decRef() const noexcept
     {
         if (m_inst)
         {
@@ -231,39 +235,41 @@ class weakRef
    public:
     weakRef() = default;
 
-    weakRef(ref<T> ref)
+    inline weakRef(ref<T> ref) noexcept
     {
         m_inst = ref.raw();
     }
 
-    weakRef(T* instance)
+    inline weakRef(T* instance) noexcept
     {
         m_inst = instance;
     }
 
-    T* operator->()
+    inline T* operator->() noexcept
     {
         return m_inst;
     }
-    const T* operator->() const
+    inline const T* operator->() const noexcept
     {
         return m_inst;
     }
 
-    T& operator*()
-    {
-        return *m_inst;
-    }
-    const T& operator*() const
+    inline T& operator*() noexcept
     {
         return *m_inst;
     }
 
-    bool isValid() const
+    inline const T& operator*() const noexcept
+    {
+        return *m_inst;
+    }
+
+    inline bool isValid() const noexcept
     {
         return m_inst ? refUtils::isLive(m_inst) : false;
     }
-    operator bool() const
+
+    inline operator bool() const noexcept
     {
         return isValid();
     }

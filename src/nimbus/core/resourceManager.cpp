@@ -10,12 +10,11 @@
 namespace nimbus
 {
 
-ResourceManager::ResourceManager()
+ResourceManager::ResourceManager() noexcept
 {
-
 }
 
-ResourceManager::~ResourceManager()
+ResourceManager::~ResourceManager() noexcept
 {
     m_loadedFonts.clear();
     m_loadedShaders.clear();
@@ -24,7 +23,7 @@ ResourceManager::~ResourceManager()
 
 ref<Texture> ResourceManager::loadTexture(const Texture::Type type,
                                           const std::string&  path,
-                                          const bool          flipOnLoad)
+                                          const bool flipOnLoad) noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -70,9 +69,10 @@ ref<Texture> ResourceManager::loadTexture(const Texture::Type type,
     }
 }
 
-ref<Shader> ResourceManager::loadShader(const std::string& name,
-                                        const std::string& vertexSource,
-                                        const std::string& fragmentSource)
+ref<Shader> ResourceManager::loadShader(
+    const std::string& name,
+    const std::string& vertexSource,
+    const std::string& fragmentSource) noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -97,8 +97,9 @@ ref<Shader> ResourceManager::loadShader(const std::string& name,
     }
 }
 
-ref<Shader> ResourceManager::loadShader(const std::string& vertexPath,
-                                        const std::string& fragmentPath)
+ref<Shader> ResourceManager::loadShader(
+    const std::string& vertexPath,
+    const std::string& fragmentPath) noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -152,7 +153,7 @@ ref<Shader> ResourceManager::loadShader(const std::string& vertexPath,
     }
 }
 
-ref<Font> ResourceManager::loadFont(const std::string& path)
+ref<Font> ResourceManager::loadFont(const std::string& path) noexcept
 {
     NM_PROFILE_DETAIL();
 

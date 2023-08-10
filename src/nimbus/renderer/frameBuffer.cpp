@@ -5,11 +5,10 @@
 
 #include "platform/gl/glFrameBuffer.hpp"
 
-
 namespace nimbus
 {
 
-ref<FrameBuffer> FrameBuffer::s_create(FrameBuffer::Spec& spec)
+ref<FrameBuffer> FrameBuffer::s_create(FrameBuffer::Spec& spec) noexcept
 {
     return ref<GlFrameBuffer>::gen(spec);
 }

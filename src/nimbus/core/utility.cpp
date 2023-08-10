@@ -7,13 +7,12 @@
 
 #include "portable-file-dialogs.h"
 
-
 namespace nimbus::util
 {
 
 glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos,
                               float     screenWidth,
-                              float     screenHeight)
+                              float     screenHeight) noexcept
 {
     glm::vec2 screenPos;
     float     aspectRatio = screenWidth / screenHeight;
@@ -26,7 +25,7 @@ glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos,
 
 glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize,
                                 float     screenWidth,
-                                float     screenHeight)
+                                float     screenHeight) noexcept
 {
     glm::vec2 screenSize;
     float     aspectRatio = screenWidth / screenHeight;
@@ -39,7 +38,7 @@ glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize,
 
 glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity,
                                         float     screenWidth,
-                                        float     screenHeight)
+                                        float     screenHeight) noexcept
 {
     glm::vec2 screenVelocity;
     float     aspectRatio = screenWidth / screenHeight;
@@ -56,7 +55,7 @@ glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                          float     screenMinY,
                          float     screenMaxY,
                          int       imgWidth,
-                         int       imgHeight)
+                         int       imgHeight) noexcept
 {
     // Normalize pixel values to the range [0, 1]
     float normX = pixPos.x / imgWidth;
@@ -73,7 +72,7 @@ glm::vec2 mapPixToScreen(glm::vec2 pixPos,
 std::vector<std::string> openFile(const std::string&              prompt,
                                   const std::string&              startPath,
                                   const std::vector<std::string>& filters,
-                                  bool                            multiSelect)
+                                  bool multiSelect) noexcept
 {
     return pfd::open_file(prompt,
                           startPath,
@@ -84,7 +83,7 @@ std::vector<std::string> openFile(const std::string&              prompt,
 
 std::string saveFile(const std::string&              prompt,
                      const std::string&              startPath,
-                     const std::vector<std::string>& filters)
+                     const std::vector<std::string>& filters) noexcept
 {
     return pfd::save_file(prompt, startPath, filters, pfd::opt::none).result();
 }

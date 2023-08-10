@@ -9,8 +9,6 @@
 #include "gtx/quaternion.hpp"
 #include "gtx/matrix_decompose.hpp"
 
-
-
 namespace nimbus
 {
 
@@ -20,12 +18,11 @@ struct NameCmp
 {
     std::string name;
 
-    NameCmp()               = default;
-    NameCmp(const std::string& iname) : name(iname)
+    NameCmp() = default;
+    NameCmp(const std::string& iname) noexcept : name(iname)
     {
     }
 };
-
 
 struct NativeLogicCmp
 {
@@ -37,8 +34,8 @@ struct NativeLogicCmp
     template <typename T>
     void bind()
     {
-        initLogic    = []() -> EntityLogic* { return new T(); };
-        
+        initLogic = []() -> EntityLogic* { return new T(); };
+
         // TOOD figure out why this can't get called
         destroyLogic = [](NativeLogicCmp* nsc)
         {
@@ -50,18 +47,19 @@ struct NativeLogicCmp
 
 struct TransformCmp
 {
-    TransformCmp()                    = default;
-    TransformCmp(const glm::vec3& itranslation) : translation(itranslation)
+    TransformCmp() = default;
+    TransformCmp(const glm::vec3& itranslation) noexcept
+        : translation(itranslation)
     {
     }
     TransformCmp(const glm::vec3& itranslation,
                  const glm::vec3& irotation,
-                 const glm::vec3& iscale)
+                 const glm::vec3& iscale) noexcept
         : translation(itranslation), rotation(irotation), scale(iscale)
     {
     }
 
-    const glm::mat4& getTransform() const
+    const glm::mat4& getTransform() const noexcept
     {
         if (transformStale)
         {
@@ -79,7 +77,7 @@ struct TransformCmp
 
     void setTransform(const glm::vec3& itranslation,
                       const glm::vec3& irotation,
-                      const glm::vec3& iscale)
+                      const glm::vec3& iscale) noexcept
     {
         translation    = itranslation;
         rotation       = irotation;
@@ -87,7 +85,7 @@ struct TransformCmp
         transformStale = true;
     }
 
-    void setTransform(const glm::mat4& itransform)
+    void setTransform(const glm::mat4& itransform) noexcept
     {
         glm::quat orientation;
         glm::vec3 skew;
@@ -101,77 +99,77 @@ struct TransformCmp
         transform = itransform;
     }
 
-    const glm::vec3& getTranslation() const
+    const glm::vec3& getTranslation() const noexcept
     {
         return translation;
     }
 
-    const glm::vec3& getRotation() const
+    const glm::vec3& getRotation() const noexcept
     {
         return rotation;
     }
 
-    const glm::vec3& getScale() const
+    const glm::vec3& getScale() const noexcept
     {
         return scale;
     }
 
-    void setTranslation(const glm::vec3& itranslation)
+    void setTranslation(const glm::vec3& itranslation) noexcept
     {
         translation    = itranslation;
         transformStale = true;
     }
 
-    void setTranslationX(float transX)
+    void setTranslationX(float transX) noexcept
     {
         translation.x  = transX;
         transformStale = true;
     }
 
-    void setTranslationY(float transY)
+    void setTranslationY(float transY) noexcept
     {
         translation.y  = transY;
         transformStale = true;
     }
 
-    void setTranslationZ(float transZ)
+    void setTranslationZ(float transZ) noexcept
     {
         translation.z  = transZ;
         transformStale = true;
     }
 
-    void setRotation(const glm::vec3& irotation)
+    void setRotation(const glm::vec3& irotation) noexcept
     {
         rotation       = irotation;
         transformStale = true;
     }
 
-    void setRotationX(float rotX)
+    void setRotationX(float rotX) noexcept
     {
         rotation.x     = rotX;
         transformStale = true;
     }
 
-    void setRotationY(float rotY)
+    void setRotationY(float rotY) noexcept
     {
         rotation.y     = rotY;
         transformStale = true;
     }
 
-    void setRotationZ(float rotZ)
+    void setRotationZ(float rotZ) noexcept
     {
         rotation.z     = rotZ;
         transformStale = true;
     }
 
-    void setScale(const glm::vec3& iscale)
+    void setScale(const glm::vec3& iscale) noexcept
     {
         scale          = iscale;
         transformStale = true;
         scaleLocked    = false;
     }
 
-    void setScaleX(float scaleX)
+    void setScaleX(float scaleX) noexcept
     {
         if (scaleLocked)
         {
@@ -193,7 +191,7 @@ struct TransformCmp
         transformStale = true;
     }
 
-    void setScaleY(float scaleY)
+    void setScaleY(float scaleY) noexcept
     {
         if (scaleLocked)
         {
@@ -215,7 +213,7 @@ struct TransformCmp
         transformStale = true;
     }
 
-    void setScaleZ(float scaleZ)
+    void setScaleZ(float scaleZ) noexcept
     {
         if (scaleLocked)
         {
@@ -237,12 +235,12 @@ struct TransformCmp
         transformStale = true;
     }
 
-    bool isScaleLocked() const
+    bool isScaleLocked() const noexcept
     {
         return scaleLocked;
     }
 
-    void setScaleLocked(bool locked)
+    void setScaleLocked(bool locked) noexcept
     {
         scaleLocked = locked;
     }
@@ -250,7 +248,7 @@ struct TransformCmp
    private:
     mutable glm::mat4 transform;
     mutable bool      transformStale = true;
-            bool      scaleLocked    = false;
+    bool              scaleLocked    = false;
     glm::vec3         translation    = {0.0f, 0.0f, 0.0f};
     glm::vec3         rotation       = {0.0f, 0.0f, 0.0f};
     glm::vec3         scale          = {1.0f, 1.0f, 1.0f};
@@ -263,12 +261,12 @@ struct SpriteCmp
     float        tilingFactor = 1.0f;
 
     SpriteCmp() = default;
-    SpriteCmp(const glm::vec4& icolor) : color(icolor)
+    SpriteCmp(const glm::vec4& icolor) noexcept : color(icolor)
     {
     }
     SpriteCmp(const glm::vec4& icolor,
               ref<Texture>&    p_itexture,
-              float            itilingFactor = 1.0f)
+              float            itilingFactor = 1.0f) noexcept
         : color(icolor), p_texture(p_itexture), tilingFactor(itilingFactor)
     {
     }
@@ -280,11 +278,10 @@ struct TextCmp
     Font::Format format;
 
     TextCmp() = default;
-    TextCmp(const std::string& itext, const Font::Format& iformat)
+    TextCmp(const std::string& itext, const Font::Format& iformat) noexcept
         : text(itext), format(iformat)
     {
     }
-
 };
 
 struct CameraCmp
@@ -299,7 +296,7 @@ struct CameraCmp
 struct RefCmp
 {
     void* p_ref;
-    RefCmp(void* p_iref) : p_ref(p_iref)
+    RefCmp(void* p_iref) noexcept : p_ref(p_iref)
     {
     }
 };
@@ -307,7 +304,7 @@ struct RefCmp
 struct WindowRefCmp
 {
     Window* p_window;
-    WindowRefCmp(Window* p_iwindow) : p_window(p_iwindow)
+    WindowRefCmp(Window* p_iwindow) noexcept : p_window(p_iwindow)
     {
     }
 };

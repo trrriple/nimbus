@@ -14,47 +14,24 @@ NM_CORE_COMPILETIME_ASSERT((sizeof(SDL_Event)
 namespace nimbus
 {
 
-
-Event::EventDetails& Event::getDetails()
-{
-    return m_details;
-}
-
-Event::Type Event::getEventType() const
-{
-    return m_details.type;
-}
-
-bool Event::wasHandled() const
-{
-    return m_wasHandled;
-}
-
-void Event::markAsHandled()
-{
-    m_wasHandled = true;
-}
-
-void Event::clear()
+void Event::clear() noexcept
 {
     m_wasHandled = false;
 
     // some events need to have memory freed
-    switch(m_details.type)
+    switch (m_details.type)
     {
-        case(Type::DROPFILE):
+        case (Type::DROPFILE):
         {
             SDL_free(m_details.drop.file);
             break;
         }
         default:
-            break;  
+            break;
     }
-
 }
 
-
-const std::string Event::toString() const
+const std::string Event::toString() const noexcept
 {
     switch (m_details.type)
     {

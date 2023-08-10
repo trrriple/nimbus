@@ -16,7 +16,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 // Public Functions
 ////////////////////////////////////////////////////////////////////////////////
-GlFrameBuffer::GlFrameBuffer(FrameBuffer::Spec& spec)
+GlFrameBuffer::GlFrameBuffer(FrameBuffer::Spec& spec) noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -38,7 +38,7 @@ GlFrameBuffer::GlFrameBuffer(FrameBuffer::Spec& spec)
     _construct();
 }
 
-GlFrameBuffer::~GlFrameBuffer()
+GlFrameBuffer::~GlFrameBuffer() noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -55,7 +55,7 @@ GlFrameBuffer::~GlFrameBuffer()
     m_textures.clear();
 }
 
-void GlFrameBuffer::resize(uint32_t width, uint32_t height)
+void GlFrameBuffer::resize(uint32_t width, uint32_t height) noexcept
 {
     NM_PROFILE();
 
@@ -82,7 +82,7 @@ void GlFrameBuffer::resize(uint32_t width, uint32_t height)
     _construct();
 }
 
-void GlFrameBuffer::blit(const FrameBuffer& destination) const
+void GlFrameBuffer::blit(const FrameBuffer& destination) const noexcept
 {
     NM_PROFILE();
 
@@ -115,7 +115,7 @@ void GlFrameBuffer::blit(const FrameBuffer& destination) const
         });
 }
 
-void GlFrameBuffer::bind(Mode mode) const
+void GlFrameBuffer::bind(Mode mode) const noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -149,7 +149,7 @@ void GlFrameBuffer::bind(Mode mode) const
         });
 }
 
-void GlFrameBuffer::unbind(Mode mode) const
+void GlFrameBuffer::unbind(Mode mode) const noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -178,7 +178,7 @@ void GlFrameBuffer::unbind(Mode mode) const
 }
 
 void GlFrameBuffer::bindTexture(const uint32_t textureUnit,
-                                const uint32_t attachmentIdx) const
+                                const uint32_t attachmentIdx) const noexcept
 {
     if (attachmentIdx >= m_textures.size())
     {
@@ -188,7 +188,7 @@ void GlFrameBuffer::bindTexture(const uint32_t textureUnit,
     m_textures[attachmentIdx]->bind(textureUnit);
 }
 
-void GlFrameBuffer::unbindTexture(const uint32_t attachmentIdx) const
+void GlFrameBuffer::unbindTexture(const uint32_t attachmentIdx) const noexcept
 {
     if (attachmentIdx >= m_textures.size())
     {
@@ -198,7 +198,7 @@ void GlFrameBuffer::unbindTexture(const uint32_t attachmentIdx) const
     m_textures[attachmentIdx]->unbind();
 }
 
-void GlFrameBuffer::clear(const uint32_t attachmentIdx) const
+void GlFrameBuffer::clear(const uint32_t attachmentIdx) const noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -209,20 +209,15 @@ void GlFrameBuffer::clear(const uint32_t attachmentIdx) const
 
     uint32_t id = m_textures[attachmentIdx]->getId();
     Renderer::s_submitObject(
-        [id]()
-        {
-            glClearTexImage(id, 0, GL_RGBA, GL_INT, nullptr);
-        });
+        [id]() { glClearTexImage(id, 0, GL_RGBA, GL_INT, nullptr); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private Functions
 ////////////////////////////////////////////////////////////////////////////////
-void GlFrameBuffer::_construct()
+void GlFrameBuffer::_construct() noexcept
 {
     NM_PROFILE();
-
-
 
     ////////////////////////////////////////////////////////////////////////////
     // Remove these outside lamba otherwise these would not be delete
@@ -279,10 +274,8 @@ void GlFrameBuffer::_construct()
 
                 p_this->m_textures.push_back(texture);
 
-                glNamedFramebufferTexture(p_this->m_fbo,
-                                          GL_COLOR_ATTACHMENT0,
-                                          texture->getId(),
-                                          0);
+                glNamedFramebufferTexture(
+                    p_this->m_fbo, GL_COLOR_ATTACHMENT0, texture->getId(), 0);
             }
 
             ////////////////////////////////////////////////////////////////////
@@ -324,8 +317,8 @@ void GlFrameBuffer::_construct()
                 != GL_FRAMEBUFFER_COMPLETE)
             {
                 NM_CORE_ASSERT_STATIC(false,
-                               "Incomplete framebuffer! Error 0x%X",
-                               glCheckFramebufferStatus(GL_FRAMEBUFFER));
+                                      "Incomplete framebuffer! Error 0x%X",
+                                      glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
                 Log::coreCritical("Incomplete framebuffer! Error 0x%X",
                                   glCheckFramebufferStatus(GL_FRAMEBUFFER));
@@ -337,7 +330,7 @@ void GlFrameBuffer::_construct()
         });
 }
 
-uint32_t GlFrameBuffer::_textureTarget() const
+uint32_t GlFrameBuffer::_textureTarget() const noexcept
 {
     return m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 }

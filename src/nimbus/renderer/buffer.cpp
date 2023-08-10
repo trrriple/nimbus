@@ -12,7 +12,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 ref<VertexBuffer> VertexBuffer::s_create(const void*        vertices,
                                          uint32_t           size,
-                                         VertexBuffer::Type type)
+                                         VertexBuffer::Type type) noexcept
 
 {
     return ref<GlVertexBuffer>::gen(vertices, size, type);
@@ -21,17 +21,20 @@ ref<VertexBuffer> VertexBuffer::s_create(const void*        vertices,
 ////////////////////////////////////////////////////////////////////////////////
 // Index Buffer
 ////////////////////////////////////////////////////////////////////////////////
-ref<IndexBuffer> IndexBuffer::s_create(uint32_t* indices, uint32_t count)
+ref<IndexBuffer> IndexBuffer::s_create(uint32_t* indices,
+                                       uint32_t  count) noexcept
 {
     return ref<GlIndexBuffer>::gen(indices, count);
 }
 
-ref<IndexBuffer> IndexBuffer::s_create(uint16_t* indices, uint32_t count)
+ref<IndexBuffer> IndexBuffer::s_create(uint16_t* indices,
+                                       uint32_t  count) noexcept
 {
     return ref<GlIndexBuffer>::gen(indices, count);
 }
 
-ref<IndexBuffer> IndexBuffer::s_create(uint8_t* indices, uint32_t count)
+ref<IndexBuffer> IndexBuffer::s_create(uint8_t* indices,
+                                       uint32_t count) noexcept
 {
     return ref<GlIndexBuffer>::gen(indices, count);
 }
@@ -39,7 +42,7 @@ ref<IndexBuffer> IndexBuffer::s_create(uint8_t* indices, uint32_t count)
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Array
 ////////////////////////////////////////////////////////////////////////////////
-ref<VertexArray> VertexArray::s_create()
+ref<VertexArray> VertexArray::s_create() noexcept
 {
     return ref<GlVertexArray>::gen();
 }

@@ -10,18 +10,18 @@ namespace nimbus
 
 ref<Shader> Shader::s_create(const std::string& name,
                              const std::string& vertexSource,
-                             const std::string& fragmentSource)
+                             const std::string& fragmentSource) noexcept
 {
     return ref<GlShader>::gen(name, vertexSource, fragmentSource);
 }
 
 ref<Shader> Shader::s_create(const std::string& vertexPath,
-                             const std::string& fragmentPath)
+                             const std::string& fragmentPath) noexcept
 {
     return ref<GlShader>::gen(vertexPath, fragmentPath);
 }
 
-uint32_t Shader::s_getShaderType(Shader::ShaderType type)
+uint32_t Shader::s_getShaderType(Shader::ShaderType type) noexcept
 {
     return GlShader::s_getShaderType(type);
 }

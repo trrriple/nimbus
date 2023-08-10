@@ -52,9 +52,11 @@ class Renderer : public refCounted
         {
             auto pFunc = (T*)ptr;
             (*pFunc)();
-            ;
+
+            // destruct any captured variables
             pFunc->~T();
         };
+
         auto slot = _s_getSubmitRenderCmdQ()->slot(renderCmd, sizeof(func));
         new (slot) T(std::forward<T>(func));
     }
@@ -66,24 +68,26 @@ class Renderer : public refCounted
         {
             auto pFunc = (T*)ptr;
             (*pFunc)();
-            ;
+
+            // destruct any captured variables
             pFunc->~T();
         };
-        auto slot
-            = _s_getSubmitObjectCmdQ()->slot(objectCmd, sizeof(func));
+        auto slot = _s_getSubmitObjectCmdQ()->slot(objectCmd, sizeof(func));
         new (slot) T(std::forward<T>(func));
     }
 
     // TODO consider this
-    static void s_setScene(const glm::mat4& vpMatrix);
+    static void s_setScene(const glm::mat4& vpMatrix) noexcept;
 
-    static void s_startFrame();
+    static void s_startFrame()noexcept;
 
-    static void s_endFrame();
+    static void s_endFrame()noexcept;
 
-    static void s_swapAndStart();
+    static void s_swapAndStart()noexcept;
 
-    static void s_waitForRenderThread();
+    static void s_waitForRenderThread() noexcept;
+
+    static void s_pumpCmds() noexcept;
 
     static void s_render(ref<Shader>      p_shader,
                          ref<VertexArray> p_vertexArray,

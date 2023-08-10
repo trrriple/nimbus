@@ -11,7 +11,7 @@
 namespace nimbus
 {
 
-void GlGraphicsApi::init()
+void GlGraphicsApi::init() noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -59,7 +59,7 @@ void GlGraphicsApi::init()
 }
 
 void GlGraphicsApi::drawElements(ref<VertexArray> p_vertexArray,
-                                 uint32_t         vertexCount)
+                                 uint32_t         vertexCount) noexcept
 {
     NM_PROFILE_DETAIL();
     uint32_t count = vertexCount ? vertexCount
@@ -73,7 +73,7 @@ void GlGraphicsApi::drawElements(ref<VertexArray> p_vertexArray,
 }
 
 void GlGraphicsApi::drawArrays(ref<VertexArray> p_vertexArray,
-                               uint32_t         vertexCount)
+                               uint32_t         vertexCount) noexcept
 {
     NM_PROFILE_DETAIL();
     uint32_t count
@@ -85,7 +85,7 @@ void GlGraphicsApi::drawArrays(ref<VertexArray> p_vertexArray,
 
 void GlGraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray,
                                           uint32_t         instanceCount,
-                                          uint32_t         vertexCount)
+                                          uint32_t         vertexCount) noexcept
 {
     NM_PROFILE_DETAIL();
     uint32_t count = vertexCount ? vertexCount
@@ -104,7 +104,7 @@ void GlGraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray,
 
 void GlGraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray,
                                         uint32_t         instanceCount,
-                                        uint32_t         vertexCount)
+                                        uint32_t         vertexCount) noexcept
 {
     NM_PROFILE_DETAIL();
     uint32_t count
@@ -117,7 +117,7 @@ void GlGraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray,
         { glDrawArraysInstanced(GL_TRIANGLES, 0, count, instanceCount); });
 }
 
-void GlGraphicsApi::clear()
+void GlGraphicsApi::clear() noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -127,18 +127,18 @@ void GlGraphicsApi::clear()
     Renderer::s_submit([bits]() { glClear(bits); });
 }
 
-void GlGraphicsApi::clearColor(glm::vec4 color)
+void GlGraphicsApi::clearColor(glm::vec4 color) noexcept
 {
     Renderer::s_submit([color]()
                        { glClearColor(color.r, color.g, color.b, color.a); });
 }
 
-void GlGraphicsApi::setViewportSize(int x, int y, int w, int h)
+void GlGraphicsApi::setViewportSize(int x, int y, int w, int h) noexcept
 {
     Renderer::s_submit([x, y, w, h]() { glViewport(x, y, w, h); });
 }
 
-void GlGraphicsApi::setWireframe(bool on)
+void GlGraphicsApi::setWireframe(bool on) noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -167,11 +167,11 @@ void GlGraphicsApi::setWireframe(bool on)
     }
 }
 
-void GlGraphicsApi::setDepthTest(bool on)
+void GlGraphicsApi::setDepthTest(bool on) noexcept
 {
     NM_PROFILE_TRACE();
 
-    if(on == s_depthTest)\
+    if (on == s_depthTest)
     {
         return;
     }
@@ -196,7 +196,7 @@ void GlGraphicsApi::setDepthTest(bool on)
     }
 }
 
-void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
+void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode) noexcept
 {
     if (mode == s_currBlendingMode)
     {
@@ -258,7 +258,7 @@ static void APIENTRY _glDebugOutput(GLenum       source,
                                     GLenum       severity,
                                     GLsizei      length,
                                     const char*  message,
-                                    const void*  userParam)
+                                    const void*  userParam) noexcept
 {
     NM_UNUSED(length);
     NM_UNUSED(userParam);
@@ -338,7 +338,7 @@ static void APIENTRY _glDebugOutput(GLenum       source,
     }
 }
 
-void GlGraphicsApi::_enableGlErrPrint()
+void GlGraphicsApi::_enableGlErrPrint() noexcept
 {
     Log::coreInfo("GL Debug Enabled");
     glEnable(GL_DEBUG_OUTPUT);

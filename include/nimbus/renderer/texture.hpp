@@ -92,7 +92,7 @@ class Texture : public refCounted
 
     static ref<Texture> s_create(const Type type,
                                  Spec&      spec,
-                                 bool       submitForMe = true);
+                                 bool       submitForMe = true)  noexcept;
 
     virtual ~Texture() = default;
 
@@ -102,7 +102,7 @@ class Texture : public refCounted
 
     virtual void setData(void* data, uint32_t size) = 0;
 
-    virtual uint32_t getId() const = 0;;
+    virtual uint32_t getId() const = 0;
     
     virtual uint32_t getWidth() const = 0;
 
@@ -121,19 +121,19 @@ class Texture : public refCounted
         return m_loaded;
     }
 
-    static void s_setMaxTextures(uint32_t maxTextures);
+    static void s_setMaxTextures(uint32_t maxTextures) noexcept;
 
-    static uint32_t s_getMaxTextures();
+    static uint32_t s_getMaxTextures() noexcept;
 
-    static uint32_t s_format(Format format);
+    static uint32_t s_format(Format format) noexcept;
 
-    static uint32_t s_formatInternal(FormatInternal format);
+    static uint32_t s_formatInternal(FormatInternal format) noexcept;
 
-    static uint32_t s_dataType(DataType dataType);
+    static uint32_t s_dataType(DataType dataType) noexcept;
 
-    static uint32_t s_filterType(FilterType filterType);
+    static uint32_t s_filterType(FilterType filterType) noexcept;
 
-    static uint32_t s_wrapType(WrapType wrapType);
+    static uint32_t s_wrapType(WrapType wrapType) noexcept;
 
    protected:
     Type    m_type;
@@ -151,7 +151,7 @@ class Texture : public refCounted
     // ensure only Resource manager can call this
     static ref<Texture> s_create(const Type         type,
                                  const std::string& path,
-                                 const bool         flipOnLoad);
+                                 const bool         flipOnLoad)  noexcept;
 
     friend class ResourceManager;
 };

@@ -69,22 +69,22 @@ void Renderer::s_destroy()
     }
 }
 
-void Renderer::s_setScene(const glm::mat4& vpMatrix)
+void Renderer::s_setScene(const glm::mat4& vpMatrix) noexcept
 {
     m_vpMatrix = vpMatrix;
 }
 
-void Renderer::s_startFrame()
+void Renderer::s_startFrame() noexcept
 {
     s_swapAndStart();
 }
 
-void Renderer::s_endFrame()
+void Renderer::s_endFrame() noexcept
 {
     static SDL_Window* p_window = static_cast<SDL_Window*>(
                            Application::s_get().getWindow().getOsWindow());
 
-    Renderer::s_submit([]() { SDL_GL_SwapWindow(p_window); });
+    Renderer::s_submit(+[]() { SDL_GL_SwapWindow(p_window); });
 }
 
 void Renderer::s_render(ref<Shader>      p_shader,
@@ -174,15 +174,26 @@ void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
     }
 }
 
-void Renderer::s_swapAndStart()
+void Renderer::s_swapAndStart() noexcept
 {
     _s_qSwap();
     s_renderThread.setState(RenderThread::State::READY);
 }
 
-void Renderer::s_waitForRenderThread()
+void Renderer::s_waitForRenderThread() noexcept
 {
     s_renderThread.waitForState(RenderThread::State::PEND);
+}
+
+void Renderer::s_pumpCmds() noexcept
+{
+    uint32_t queuesToPump = std::max({k_numRenderCmdQ, k_numObjectCmdQ});
+
+    for (uint32_t i = 0; i < queuesToPump; i++)
+    {
+        Renderer::s_swapAndStart();
+        Renderer::s_waitForRenderThread();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,10 +223,10 @@ void Renderer::_s_renderThreadFn()
         // Stopwatch processTimer;
 
         // process all the commands in object queue
-        _s_getProcessObjectCmdQ()->processQ();
+        _s_getProcessObjectCmdQ()->pump();
 
         // process all the commands in render queue
-        _s_getProcessRenderCmdQ()->processQ();
+        _s_getProcessRenderCmdQ()->pump();
 
         s_renderThread.setState(RenderThread::State::PEND);
     }

@@ -195,7 +195,7 @@ class Shader : public refCounted
     virtual void setMat4(const std::string& name, const glm::mat4& mat) const
         = 0;
 
-    static uint32_t s_getShaderType(ShaderType type);
+    static uint32_t s_getShaderType(ShaderType type) noexcept;
 
    protected:
     std::uint32_t m_id;            ///< The unique ID of the shader.
@@ -216,10 +216,10 @@ class Shader : public refCounted
     // ensure only Resouce manager can call this
     static ref<Shader> s_create(const std::string& name,
                                 const std::string& vertexSource,
-                                const std::string& fragmentSource);
+                                const std::string& fragmentSource) noexcept;
 
     static ref<Shader> s_create(const std::string& vertexPath,
-                                const std::string& fragmentPath);
+                                const std::string& fragmentPath) noexcept;
 
     friend class ResourceManager;
 };

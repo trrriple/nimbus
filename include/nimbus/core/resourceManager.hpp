@@ -13,25 +13,25 @@ namespace nimbus
 class ResourceManager
 {
    public:
-    ResourceManager();
+    ResourceManager() noexcept;
 
-    ~ResourceManager();
+    ~ResourceManager() noexcept;
 
 
     // Other member functions and variables...
 
     ref<Texture> loadTexture(const Texture::Type type,
                              const std::string&  path,
-                             const bool          flipOnLoad = false);
+                             const bool          flipOnLoad = false) noexcept;
 
     ref<Shader> loadShader(const std::string& name,
                            const std::string& vertexSource,
-                           const std::string& fragmentSource);
+                           const std::string& fragmentSource) noexcept;
 
     ref<Shader> loadShader(const std::string& vertexPath,
-                           const std::string& fragmentPath);
+                           const std::string& fragmentPath) noexcept;
 
-    ref<Font> loadFont(const std::string& path);
+    ref<Font> loadFont(const std::string& path) noexcept;
    
    private:
     std::unordered_map<std::string, ref<Texture>> m_loadedTextures;

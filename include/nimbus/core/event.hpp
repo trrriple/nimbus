@@ -677,17 +677,29 @@ class Event
 
     ~Event() = default;
 
-    EventDetails& getDetails();
+    inline EventDetails& getDetails() noexcept
+    {
+        return m_details;
+    }
 
-    Type getEventType() const;
+    inline Type getEventType() const noexcept
+    {
+        return m_details.type;
+    }
 
-    bool wasHandled() const;
+    inline bool wasHandled() const noexcept
+    {
+        return m_wasHandled;
+    }
 
-    void markAsHandled();
+    inline void markAsHandled() noexcept
+    {
+        m_wasHandled = true;
+    }
 
-    void clear();
+    void clear() noexcept;
 
-    const std::string toString() const;
+    const std::string toString() const noexcept;
 
    private:
     EventDetails m_details;

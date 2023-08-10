@@ -8,29 +8,28 @@
 namespace nimbus
 {
 
-RenderCmdQ::RenderCmdQ()
+RenderCmdQ::RenderCmdQ() noexcept
 {
     mp_cmdBuf = static_cast<uint8_t*>(calloc(k_cmdBufSize, sizeof(uint8_t)));
     NM_CORE_ASSERT(mp_cmdBuf, "Failed to allocate command queue!");
     mp_cmdBufPtr = mp_cmdBuf;
 }
 
-RenderCmdQ::~RenderCmdQ()
+RenderCmdQ::~RenderCmdQ() noexcept
 {
     free(mp_cmdBuf);
 }
 
-void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size)
+void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size) noexcept
 {
     // expect this function to be called with mutual exclusion
-    // TODO: alignment
     *(renderCmdFn*)mp_cmdBufPtr = fn;
     mp_cmdBufPtr += sizeof(renderCmdFn);
     m_cmdBufUsedSz += sizeof(renderCmdFn);
 
     *(uint32_t*)mp_cmdBufPtr = size;
     mp_cmdBufPtr += sizeof(uint32_t);
-    m_cmdBufUsedSz +=  sizeof(uint32_t);
+    m_cmdBufUsedSz += sizeof(uint32_t);
 
     void* slot = mp_cmdBufPtr;
     mp_cmdBufPtr += size;
@@ -42,7 +41,7 @@ void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size)
     return slot;
 }
 
-void RenderCmdQ::processQ()
+void RenderCmdQ::pump() noexcept
 {
     // exit if there's nothing to process
     if (m_cmdCount > 0)
@@ -63,6 +62,7 @@ void RenderCmdQ::processQ()
             fn(ptr);
 
             ptr += size;
+
         }
 
         mp_cmdBufPtr   = mp_cmdBuf;

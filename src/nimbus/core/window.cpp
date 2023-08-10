@@ -12,7 +12,7 @@ namespace nimbus
 
 Window::Window(const std::string& windowCaption,
                uint32_t           width,
-               uint32_t           height)
+               uint32_t           height) noexcept
     : m_width(width),
       m_height(height),
       m_aspectRatio(static_cast<float>(width) / static_cast<float>(height))
@@ -21,8 +21,7 @@ Window::Window(const std::string& windowCaption,
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        NM_CORE_ASSERT(
-            0, "SDL could not init. SDL_Error: %s", SDL_GetError());
+        NM_CORE_ASSERT(0, "SDL could not init. SDL_Error: %s", SDL_GetError());
     }
 
     // relative mouse
@@ -38,12 +37,11 @@ Window::Window(const std::string& windowCaption,
 
     m_windowId = SDL_GetWindowID(static_cast<SDL_Window*>(mp_window));
 
-    NM_CORE_ASSERT(mp_window,
-                   "Window could not be created. sdl error %s",
-                   SDL_GetError());
+    NM_CORE_ASSERT(
+        mp_window, "Window could not be created. sdl error %s", SDL_GetError());
 }
 
-Window::~Window()
+Window::~Window() noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -56,7 +54,7 @@ Window::~Window()
     SDL_Quit();
 }
 
-void Window::graphicsContextInit()
+void Window::graphicsContextInit() noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -80,30 +78,29 @@ void Window::graphicsContextInit()
         mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
 
     // Set V-sync
-    SDL_GL_SetSwapInterval(m_VSyncOn);    
+    SDL_GL_SetSwapInterval(m_VSyncOn);
 }
 
-void Window::setEventCallback(const WindowEventCallback_t& callback)
+void Window::setEventCallback(const WindowEventCallback_t& callback) noexcept
 {
     NM_PROFILE_TRACE();
 
     m_evtCallback = callback;
 }
 
-void Window::setExitCallback(const WindowEventCallback_t& callback)
+void Window::setExitCallback(const WindowEventCallback_t& callback) noexcept
 {
     NM_PROFILE_TRACE();
 
     m_exitCallback = callback;
 }
 
-void Window::onUpdate()
+void Window::onUpdate() noexcept
 {
     _calcFramerate();
 }
 
-
-void Window::pumpEvents()
+void Window::pumpEvents() noexcept
 {
     NM_PROFILE();
 
@@ -131,8 +128,8 @@ void Window::pumpEvents()
             }
             case (Event::Type::MOUSEWHEEL):
             {
-                // track the mouse wheel because SDL doesn't g78ive us a way 
-                // to get current position, just event based relative 
+                // track the mouse wheel because SDL doesn't g78ive us a way
+                // to get current position, just event based relative
                 // position
                 m_mouseWheelPos += m_event.getDetails().wheel.preciseY;
             }
@@ -142,13 +139,12 @@ void Window::pumpEvents()
 
         // call the event callback for each event
         m_evtCallback(m_event);
-        
 
         m_event.clear();
     }
 }
 
-bool Window::keyPressed(ScanCode scanCode) const
+bool Window::keyPressed(ScanCode scanCode) const noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -158,17 +154,15 @@ bool Window::keyPressed(ScanCode scanCode) const
     return keyboardState[static_cast<uint32_t>(scanCode)];
 }
 
-bool Window::modKeyPressed(KeyMod keyMod) const
+bool Window::modKeyPressed(KeyMod keyMod) const noexcept
 {
     NM_PROFILE_TRACE();
 
     // Will break if SDL changes their keymap
     return SDL_GetModState() & static_cast<uint32_t>(keyMod);
-
 }
 
-
-bool Window::mouseButtonPressed(MouseButton button) const
+bool Window::mouseButtonPressed(MouseButton button) const noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -178,7 +172,7 @@ bool Window::mouseButtonPressed(MouseButton button) const
     return mouseState & SDL_BUTTON(static_cast<uint32_t>(button));
 }
 
-glm::vec2 Window::mousePos() const
+glm::vec2 Window::mousePos() const noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -190,12 +184,12 @@ glm::vec2 Window::mousePos() const
     return {xPos, yPos};
 }
 
-float Window::mouseWheelPos() const
+float Window::mouseWheelPos() const noexcept
 {
     return m_mouseWheelPos;
 }
 
-void Window::setVSync(bool on)
+void Window::setVSync(bool on) noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -206,12 +200,7 @@ void Window::setVSync(bool on)
     }
 }
 
-bool Window::getVSync()
-{
-    return m_VSyncOn;
-}
-
-void Window::_handleWindowEvents()
+void Window::_handleWindowEvents() noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -243,9 +232,7 @@ void Window::_handleWindowEvents()
     }
 }
 
-
-
-void Window::_calcFramerate()
+void Window::_calcFramerate() noexcept
 {
     NM_PROFILE_TRACE();
 

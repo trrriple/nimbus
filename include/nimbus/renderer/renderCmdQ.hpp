@@ -13,18 +13,17 @@ class RenderCmdQ
    public:
     typedef void (*renderCmdFn)(void*);
 
-    RenderCmdQ();
-    ~RenderCmdQ();
+    RenderCmdQ() noexcept;
+    ~RenderCmdQ() noexcept;
 
-    void* slot(renderCmdFn fn, uint32_t size);
+    void* slot(renderCmdFn fn, uint32_t size) noexcept;
 
-    uint32_t getCmdCount()
+    inline uint32_t getCmdCount() noexcept
     {
-        // should be called with mutual exclusion
         return m_cmdCount;
     }
 
-    void processQ();
+    void pump() noexcept;
 
    private:
     uint8_t*                 mp_cmdBuf;
