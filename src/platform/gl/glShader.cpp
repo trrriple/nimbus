@@ -324,7 +324,7 @@ void GlShader::_compileShader(const std::string& vertexSource,
 {
     NM_PROFILE_DETAIL();
 
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [=]()
         {
             const char* vShaderCode = vertexSource.c_str();
@@ -383,10 +383,9 @@ void GlShader::_compileShader(const std::string& vertexSource,
             glDeleteShader(vertex);
             glDeleteShader(fragment);
 
-            // get uniform locations
-
-
-
+            ///////////////////////////
+            // Get Uniform Locations
+            ///////////////////////////
             // Get the number of active uniforms
             GLint numUniforms = 0;
             glGetProgramiv(m_id, GL_ACTIVE_UNIFORMS, &numUniforms);

@@ -21,8 +21,7 @@ namespace nimbus
 Font::Font(const std::string& fontPath)
     : m_path(fontPath), m_data(new FontData())
 {
-    m_workerThread = std::thread(&Font::_loadFont, this);
-    m_workerThread.detach();  // Detach the thread so it runs independently
+     m_workerThread = std::thread(&Font::_loadFont, this);
 }
 
 ref<Font> Font::s_create(const std::string& fontPath)
@@ -32,6 +31,8 @@ ref<Font> Font::s_create(const std::string& fontPath)
 
 Font::~Font()
 {
+    
+    m_workerThread.join();
     if(m_data->pixels != nullptr)
     {
         free(m_data->pixels);

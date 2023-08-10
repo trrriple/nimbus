@@ -32,6 +32,8 @@ class Window : public refCounted
 
     void onUpdate();
 
+    void pumpEvents();
+
     bool keyPressed(ScanCode scanCode) const;
 
     bool modKeyPressed(KeyMod keyMod) const;

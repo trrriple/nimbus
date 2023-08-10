@@ -25,13 +25,16 @@ class Renderer : public refCounted
     static void s_init();
     static void s_destroy();
 
-
    private:
     inline static glm::mat4     m_vpMatrix      = glm::mat4(1.0f);
-    inline static const int32_t k_numRenderCmdQ = 2; // >= 2
-    static RenderCmdQ*          s_cmdQ[k_numRenderCmdQ];
-    static uint32_t             s_submitCmdQIdx;
-    static uint32_t             s_renderCmdQIdx;
+    inline static const int32_t k_numRenderCmdQ = 2;  // >= 2
+    inline static const int32_t k_numObjectCmdQ = 2;  // >= 2
+    static RenderCmdQ*          s_renderCmdQ[k_numRenderCmdQ];
+    static RenderCmdQ*          s_objectCmdQ[k_numRenderCmdQ];
+    static uint32_t             s_submitRenderCmdQIdx;
+    static uint32_t             s_processRenderCmdQIdx;
+    static uint32_t             s_submitObjectCmdQIdx;
+    static uint32_t             s_processObjectCmdQIdx;
 
     ///////////////////////////
     // Threads
@@ -52,8 +55,23 @@ class Renderer : public refCounted
             ;
             pFunc->~T();
         };
-        auto storageBuffer = _s_getSubmitCmdQ()->slot(renderCmd, sizeof(func));
-        new (storageBuffer) T(std::forward<T>(func));
+        auto slot = _s_getSubmitRenderCmdQ()->slot(renderCmd, sizeof(func));
+        new (slot) T(std::forward<T>(func));
+    }
+
+    template <typename T>
+    inline static void s_submitObject(T&& func) noexcept
+    {
+        auto objectCmd = [](void* ptr)
+        {
+            auto pFunc = (T*)ptr;
+            (*pFunc)();
+            ;
+            pFunc->~T();
+        };
+        auto slot
+            = _s_getSubmitObjectCmdQ()->slot(objectCmd, sizeof(func));
+        new (slot) T(std::forward<T>(func));
     }
 
     // TODO consider this
@@ -79,13 +97,22 @@ class Renderer : public refCounted
                                   bool    setViewProjection = true);
 
    private:
-    inline static RenderCmdQ* _s_getSubmitCmdQ() noexcept
+    inline static RenderCmdQ* _s_getSubmitRenderCmdQ() noexcept
     {
-        return s_cmdQ[s_submitCmdQIdx];
+        return s_renderCmdQ[s_submitRenderCmdQIdx];
     }
-    inline static RenderCmdQ* _s_getRenderCmdQ() noexcept
+    inline static RenderCmdQ* _s_getProcessRenderCmdQ() noexcept
     {
-        return s_cmdQ[s_renderCmdQIdx];
+        return s_renderCmdQ[s_processRenderCmdQIdx];
+    }
+
+    inline static RenderCmdQ* _s_getSubmitObjectCmdQ() noexcept
+    {
+        return s_objectCmdQ[s_submitRenderCmdQIdx];
+    }
+    inline static RenderCmdQ* _s_getProcessObjectCmdQ() noexcept
+    {
+        return s_objectCmdQ[s_processRenderCmdQIdx];
     }
 
     static void _s_qSwap() noexcept;

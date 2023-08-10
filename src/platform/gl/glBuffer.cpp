@@ -24,7 +24,7 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
     {
         case (VertexBuffer::Type::STATIC_DRAW):
         {
-            Renderer::s_submit(
+            Renderer::s_submitObject(
                 [p_instance, vertices]() mutable
                 {
                     glCreateBuffers(1, &p_instance->m_id);
@@ -37,7 +37,7 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
         case (VertexBuffer::Type::DYNAMIC_DRAW):
         case (VertexBuffer::Type::STREAM_DRAW):
         {
-            Renderer::s_submit(
+            Renderer::s_submitObject(
                 [p_instance, vertices]() mutable
                 {
                     glCreateBuffers(1, &p_instance->m_id);
@@ -60,7 +60,7 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
 GlVertexBuffer::~GlVertexBuffer()
 {
     uint32_t id = m_id;
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [id]()
         {
             glBindBuffer(GL_ARRAY_BUFFER, id);
@@ -118,7 +118,7 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
     void* localCpy = malloc(p_instance->m_count * sizeof(uint32_t));
     memcpy(localCpy, indices, p_instance->m_count * sizeof(uint32_t));
 
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [p_instance, localCpy]() mutable
         {
             glCreateBuffers(1, &p_instance->m_id);
@@ -141,7 +141,7 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
     void* localCpy = malloc(p_instance->m_count * sizeof(uint16_t));
     memcpy(localCpy, indices, p_instance->m_count * sizeof(uint16_t));
 
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [p_instance, localCpy]() mutable
         {
             glCreateBuffers(1, &p_instance->m_id);
@@ -164,7 +164,7 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
     void* localCpy = malloc(p_instance->m_count * sizeof(uint8_t));
     memcpy(localCpy, indices, p_instance->m_count * sizeof(uint8_t));
 
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [p_instance, localCpy]() mutable
         {
             glCreateBuffers(1, &p_instance->m_id);
@@ -180,7 +180,7 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
 GlIndexBuffer::~GlIndexBuffer()
 {
     uint32_t id = m_id;
-    Renderer::s_submit([id]() { glDeleteBuffers(1, &id); });
+    Renderer::s_submitObject([id]() { glDeleteBuffers(1, &id); });
 }
 
 void GlIndexBuffer::bind() const
@@ -201,7 +201,7 @@ GlVertexArray::GlVertexArray()
 {
     ref<GlVertexArray> p_instance = this;
 
-        Renderer::s_submit(
+        Renderer::s_submitObject(
             [p_instance]() mutable
             {
                 glCreateVertexArrays(1, &p_instance->m_id);
@@ -211,7 +211,7 @@ GlVertexArray::GlVertexArray()
 GlVertexArray::~GlVertexArray()
 {
     uint32_t id = m_id;
-    Renderer::s_submit([id]() { glDeleteVertexArrays(1, &id); });
+    Renderer::s_submitObject([id]() { glDeleteVertexArrays(1, &id); });
 }
 
 void GlVertexArray::bind() const
@@ -242,7 +242,7 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
 
     ref<GlVertexArray> p_instance = this;
 
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [p_instance, p_vertexBuffer]() mutable
         {
             uint32_t vboId = p_vertexBuffer->getId();
@@ -349,7 +349,7 @@ void GlVertexArray::setIndexBuffer(ref<IndexBuffer> p_indexBuffer)
 {
     ref<GlVertexArray> p_instance = this;
 
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [p_instance, p_indexBuffer]()
         {
             glBindVertexArray(p_instance->m_id);

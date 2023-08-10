@@ -17,10 +17,14 @@
 namespace nimbus
 {
 
-RenderCmdQ*  Renderer::s_cmdQ[k_numRenderCmdQ];
+RenderCmdQ*  Renderer::s_renderCmdQ[k_numRenderCmdQ];
+RenderCmdQ*  Renderer::s_objectCmdQ[k_numObjectCmdQ];
+
 RenderThread Renderer::s_renderThread;
-uint32_t     Renderer::s_submitCmdQIdx;
-uint32_t     Renderer::s_renderCmdQIdx;
+uint32_t     Renderer::s_submitRenderCmdQIdx;
+uint32_t     Renderer::s_processRenderCmdQIdx;
+uint32_t     Renderer::s_submitObjectCmdQIdx;
+uint32_t     Renderer::s_processObjectCmdQIdx;
 
 void Renderer::s_init()
 {
@@ -33,11 +37,20 @@ void Renderer::s_init()
 
         for(int i = 0; i < k_numRenderCmdQ; i++)
         {
-            s_cmdQ[i] = new RenderCmdQ();
+            s_renderCmdQ[i] = new RenderCmdQ();
         }
 
-        s_submitCmdQIdx = 0;
-        s_renderCmdQIdx = 1;
+        s_submitRenderCmdQIdx = 0;
+        s_processRenderCmdQIdx = 1;
+
+        
+        for(int i = 0; i < k_numObjectCmdQ; i++)
+        {
+            s_objectCmdQ[i] = new RenderCmdQ();
+        }
+
+        s_submitObjectCmdQIdx = 0;
+        s_processObjectCmdQIdx = 1;
 
         s_renderThread.run(Renderer::_s_renderThreadFn);
 
@@ -52,7 +65,7 @@ void Renderer::s_destroy()
     
     for (int i = 0; i < k_numRenderCmdQ; i++)
     {
-        delete s_cmdQ[i];
+        delete s_renderCmdQ[i];
     }
 }
 
@@ -177,8 +190,11 @@ void Renderer::s_waitForRenderThread()
 ////////////////////////////////////////////////////////////////////////////////
 void Renderer::_s_qSwap() noexcept
 {
-    s_submitCmdQIdx = (s_submitCmdQIdx + 1) % k_numRenderCmdQ;
-    s_renderCmdQIdx = (s_renderCmdQIdx + 1) % k_numRenderCmdQ;
+    s_submitRenderCmdQIdx  = (s_submitRenderCmdQIdx + 1) % k_numRenderCmdQ;
+    s_processRenderCmdQIdx = (s_processRenderCmdQIdx + 1) % k_numRenderCmdQ;
+
+    s_submitObjectCmdQIdx  = (s_submitObjectCmdQIdx + 1) % k_numObjectCmdQ;
+    s_processObjectCmdQIdx = (s_processObjectCmdQIdx + 1) % k_numObjectCmdQ;
 }
 
 void Renderer::_s_renderThreadFn()
@@ -193,10 +209,13 @@ void Renderer::_s_renderThreadFn()
         s_renderThread.waitForState(RenderThread::State::READY);
         s_renderThread.setState(RenderThread::State::BUSY);
 
-
         // Stopwatch processTimer;
-        // process all the commands in the temp queue
-        _s_getRenderCmdQ()->processQ();
+
+        // process all the commands in object queue
+        _s_getProcessObjectCmdQ()->processQ();
+
+        // process all the commands in render queue
+        _s_getProcessRenderCmdQ()->processQ();
 
         s_renderThread.setState(RenderThread::State::PEND);
     }

@@ -64,7 +64,7 @@ GlTexture::GlTexture(const Type         type,
         // ref<GlTexture>     p_instance       = makeRef<GlTexture>(*this);
         GlTexture*            p_instance       = this;
     
-        Renderer::s_submit(
+        Renderer::s_submitObject(
             [p_instance, data]()
             {
                 _s_gen(p_instance->m_id);
@@ -138,7 +138,8 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
     if (submitForMe)
     {
         ref<GlTexture> p_instance = this;
-        Renderer::s_submit([p_instance]() mutable { p_instance->_storage(); });
+        Renderer::s_submitObject([p_instance]() mutable
+                                 { p_instance->_storage(); });
     }
     else
     {
@@ -149,7 +150,7 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
 GlTexture::~GlTexture()
 {
     uint32_t id = m_id;
-    Renderer::s_submit([id]() { glDeleteTextures(1, &id); });
+    Renderer::s_submitObject([id]() { glDeleteTextures(1, &id); });
 }
 
 void GlTexture::bind(const uint32_t glTextureUnit) const
@@ -268,10 +269,9 @@ void GlTexture::setData(void* data, uint32_t size)
     void* localCpy = malloc(size);
     memcpy(localCpy, data, size);
 
-    // ref<GlTexture>     p_instance       = makeRef<GlTexture>(this);
-    GlTexture*            p_instance       = this;
+    ref<GlTexture>     p_instance       = this;
 
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [p_instance, localCpy]()
         {
             glTextureSubImage2D(p_instance->m_id,

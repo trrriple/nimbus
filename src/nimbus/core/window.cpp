@@ -99,10 +99,53 @@ void Window::setExitCallback(const WindowEventCallback_t& callback)
 
 void Window::onUpdate()
 {
+    _calcFramerate();
+}
+
+
+void Window::pumpEvents()
+{
     NM_PROFILE();
 
-    _pollEvents();
-    _calcFramerate();
+    m_event.clear();
+
+    while (SDL_PollEvent(reinterpret_cast<SDL_Event*>(&m_event.getDetails())))
+    {
+        // handle internal window event stuff
+        // SDL_QUIT comes if all windows are closed
+        switch (m_event.getEventType())
+        {
+            case (Event::Type::QUIT):
+            {
+                m_exitCallback(m_event);
+                break;
+            }
+            case (Event::Type::WINDOW):
+            {
+                // we only want to handle window events for this window
+                if (m_event.getDetails().window.windowID == m_windowId)
+                {
+                    _handleWindowEvents();
+                }
+                break;
+            }
+            case (Event::Type::MOUSEWHEEL):
+            {
+                // track the mouse wheel because SDL doesn't g78ive us a way 
+                // to get current position, just event based relative 
+                // position
+                m_mouseWheelPos += m_event.getDetails().wheel.preciseY;
+            }
+            default:
+                break;
+        }
+
+        // call the event callback for each event
+        m_evtCallback(m_event);
+        
+
+        m_event.clear();
+    }
 }
 
 bool Window::keyPressed(ScanCode scanCode) const
@@ -200,50 +243,7 @@ void Window::_handleWindowEvents()
     }
 }
 
-void Window::_pollEvents()
-{
-    NM_PROFILE();
 
-    m_event.clear();
-
-    while (SDL_PollEvent(reinterpret_cast<SDL_Event*>(&m_event.getDetails())))
-    {
-        // handle internal window event stuff
-        // SDL_QUIT comes if all windows are closed
-        switch (m_event.getEventType())
-        {
-            case (Event::Type::QUIT):
-            {
-                m_exitCallback(m_event);
-                break;
-            }
-            case (Event::Type::WINDOW):
-            {
-                // we only want to handle window events for this window
-                if (m_event.getDetails().window.windowID == m_windowId)
-                {
-                    _handleWindowEvents();
-                }
-                break;
-            }
-            case (Event::Type::MOUSEWHEEL):
-            {
-                // track the mouse wheel because SDL doesn't g78ive us a way 
-                // to get current position, just event based relative 
-                // position
-                m_mouseWheelPos += m_event.getDetails().wheel.preciseY;
-            }
-            default:
-                break;
-        }
-
-        // call the event callback for each event
-        m_evtCallback(m_event);
-        
-
-        m_event.clear();
-    }
-}
 
 void Window::_calcFramerate()
 {

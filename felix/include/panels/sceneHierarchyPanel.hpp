@@ -17,11 +17,10 @@ namespace nimbus
 class SceneHeirarchyPanel
 {
    private:
-    ref<Texture>    mp_checkerboardTex = nullptr;
+    ref<Texture> mp_checkerboardTex = nullptr;
 
    public:
     typedef std::function<void(Entity)> EntitySelectedCallback_t;
-
 
     SceneHeirarchyPanel(ref<Scene>& p_scene)
     {
@@ -30,8 +29,10 @@ class SceneHeirarchyPanel
 
         mp_sceneContext = p_scene;
 
-        mp_checkerboardTex = Application::s_get().getResourceManager().loadTexture(
-            Texture::Type::DIFFUSE, "../resources/textures/checkerboard.png");
+        mp_checkerboardTex
+            = Application::s_get().getResourceManager().loadTexture(
+                Texture::Type::DIFFUSE,
+                "../resources/textures/checkerboard.png");
     }
     ~SceneHeirarchyPanel()
     {
@@ -93,7 +94,7 @@ class SceneHeirarchyPanel
         {
             m_selectionContext = {};
 
-            if(m_entitySelectedCallback)
+            if (m_entitySelectedCallback)
             {
                 m_entitySelectedCallback(m_selectionContext);
             }
@@ -244,8 +245,9 @@ class SceneHeirarchyPanel
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
-                        Texture::Type::DIFFUSE, filePath, false);
+                    ref<Texture> texture
+                        = Application::s_get().getResourceManager().loadTexture(
+                            Texture::Type::DIFFUSE, filePath, false);
 
                     if (texture)
                     {
@@ -273,9 +275,10 @@ class SceneHeirarchyPanel
                 if (const ImGuiPayload* payload
                     = ImGui::AcceptDragDropPayload("DND_FILE"))
                 {
-                    const char*  path    = (const char*)payload->Data;
-                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
-                        Texture::Type::DIFFUSE, path, false);
+                    const char*  path = (const char*)payload->Data;
+                    ref<Texture> texture
+                        = Application::s_get().getResourceManager().loadTexture(
+                            Texture::Type::DIFFUSE, path, false);
 
                     if (texture)
                     {
@@ -354,7 +357,8 @@ class SceneHeirarchyPanel
                 {
                     const char* filePath = (const char*)payload->Data;
                     ref<Font>   font
-                        = Application::s_get().getResourceManager().loadFont(filePath);
+                        = Application::s_get().getResourceManager().loadFont(
+                            filePath);
 
                     if (font)
                     {
@@ -380,7 +384,8 @@ class SceneHeirarchyPanel
                     auto filePath = selection[0];
 
                     ref<Font> font
-                        = Application::s_get().getResourceManager().loadFont(filePath);
+                        = Application::s_get().getResourceManager().loadFont(
+                            filePath);
 
                     if (font)
                     {
@@ -393,13 +398,17 @@ class SceneHeirarchyPanel
                 }
             }
 
-            //show when the font is loading
+            // show when the font is loading
             if (textCmp.format.p_font != nullptr)
             {
                 if (!textCmp.format.p_font->isLoaded())
                 {
-                    static const std::vector<std::string> anim
-                        = {"", ".", "..", "...",};
+                    static const std::vector<std::string> anim = {
+                        "",
+                        ".",
+                        "..",
+                        "...",
+                    };
                     ImGui::Text(
                         "Generating Font Atlas%s",
                         anim[(int)(ImGui::GetTime() / 0.25f) & 3].c_str());
@@ -423,7 +432,6 @@ class SceneHeirarchyPanel
 
             ImGui::TreePop();
         }
-
     }
 
     void _drawCameraCmp(Entity entity)
@@ -469,9 +477,9 @@ class SceneHeirarchyPanel
         // the primary state on all camera components
         cameraCmp.primary = primary;
 
-        if(ImGui::Checkbox("Fixed Aspect", &cameraCmp.fixedAspect))
+        if (ImGui::Checkbox("Fixed Aspect", &cameraCmp.fixedAspect))
         {
-            if(!cameraCmp.fixedAspect)
+            if (!cameraCmp.fixedAspect)
             {
                 cameraCmp.camera.setAspectRatio(mp_sceneContext->m_aspectRatio);
             }
@@ -506,7 +514,7 @@ class SceneHeirarchyPanel
         }
         else
         {
-            float fov = cameraCmp.camera.getFov();  
+            float fov = cameraCmp.camera.getFov();
             if (ImGui::DragFloat("FOV", &fov, 0.1f))
             {
                 cameraCmp.camera.setZoom(fov);
@@ -644,7 +652,6 @@ class SceneHeirarchyPanel
             {
                 entity.removeComponent<SpriteCmp>();
             }
-            
         }
 
         ///////////////////////////
@@ -724,8 +731,8 @@ class SceneHeirarchyPanel
 
         static ImVec2 buttonSize = {lineHeight - 3, lineHeight};
 
-        ImGuiIO& io = ImGui::GetIO();
-        auto boldfont = io.Fonts->Fonts[1];
+        ImGuiIO& io       = ImGui::GetIO();
+        auto     boldfont = io.Fonts->Fonts[1];
 
         // set the size of the buttons
         bool changedX = false;
@@ -772,7 +779,7 @@ class SceneHeirarchyPanel
                               ImVec4{0.3f, 0.8f, 0.3f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
                               ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
-        
+
         ImGui::PushFont(boldfont);
         if (ImGui::Button("Y", buttonSize))
         {
@@ -796,7 +803,7 @@ class SceneHeirarchyPanel
                               ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonActive,
                               ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
-        
+
         ImGui::PushFont(boldfont);
         if (ImGui::Button("Z", buttonSize))
         {
@@ -847,7 +854,6 @@ class SceneHeirarchyPanel
                 m_selectionContext.addComponent<T>();
                 added = true;
                 ImGui::CloseCurrentPopup();
-
             }
         }
         return added;

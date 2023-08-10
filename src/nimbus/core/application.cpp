@@ -54,6 +54,13 @@ Application::Application(const std::string& name,
 
 Application::~Application()
 {
+
+    // pump out all of the render commands from both queues
+    Renderer::s_swapAndStart();
+    Renderer::s_waitForRenderThread();
+    Renderer::s_swapAndStart();
+    Renderer::s_waitForRenderThread();
+    
     m_layerDeck.clear();
     mp_resourceManager.reset();
 
@@ -81,22 +88,17 @@ void Application::execute()
 
     Stopwatch sw;
 
-        // TODO remove hack
-    std::promise<void> renderDonePromise;
-    std::future<void>  renderDoneFuture = renderDonePromise.get_future();
-
     // TODO better solution
     SDL_Window* p_window = static_cast<SDL_Window*>(mp_window->getOsWindow());
     Renderer::s_submit(
-        [p_window, &renderDonePromise]()
+        [p_window]()
         {
             SDL_GL_SwapWindow(p_window);
-            renderDonePromise.set_value();
         });
 
     Renderer::s_swapAndStart();
 
-    renderDoneFuture.wait();
+    Renderer::s_waitForRenderThread();
 
     while (m_active)
     {
@@ -144,13 +146,21 @@ void Application::execute()
         ///////////////////////////
         bool doDraw = m_drawLag >= m_drawPeriodLimit;
 
-        // allow renderer to finish
+        ///////////////////////////
+        // Render thread
+        ///////////////////////////
         Renderer::s_waitForRenderThread();
+
+        ///////////////////////////
+        // Pump events
+        ///////////////////////////
+        mp_window->pumpEvents();
+
 
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions
         ////////////////////////////////////////////////////////////////////////
-        for (uint32_t i = 0; i < updatesRequired; i++)
+        for (uint32_t i = 0; i < 1; i++)
         {
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
@@ -168,8 +178,8 @@ void Application::execute()
             // Start a Frame
             ///////////////////////////
             Renderer::s_startFrame();
-            GraphicsApi::clear();
 
+            GraphicsApi::clear();
 
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
@@ -189,13 +199,6 @@ void Application::execute()
             Application* app = this;
             Renderer::s_submit([app]() { app->guiRender(); });
             Renderer::s_submit([app]() { app->mp_guiSubsystemLayer->end(); });
-
- 
-            SDL_Window* p_window
-                = static_cast<SDL_Window*>(mp_window->getOsWindow());
-
-
-            // Renderer::s_processHook();
 
             Renderer::s_endFrame();
 

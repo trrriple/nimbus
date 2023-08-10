@@ -45,7 +45,7 @@ GlFrameBuffer::~GlFrameBuffer()
     uint32_t id    = m_fbo;
     uint32_t rboId = m_rbo;
 
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [id, rboId]()
         {
             glDeleteFramebuffers(1, &id);
@@ -208,7 +208,7 @@ void GlFrameBuffer::clear(const uint32_t attachmentIdx) const
     }
 
     uint32_t id = m_textures[attachmentIdx]->getId();
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [id]()
         {
             glClearTexImage(id, 0, GL_RGBA, GL_INT, nullptr);
@@ -235,7 +235,7 @@ void GlFrameBuffer::_construct()
     }
 
     ref<GlFrameBuffer> p_instance = this;
-    Renderer::s_submit(
+    Renderer::s_submitObject(
         [p_instance]() mutable
         {
             ////////////////////////////////////////////////////////////////////
