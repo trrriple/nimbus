@@ -10,10 +10,16 @@
 namespace nimbus
 {
 
-ResourceManager& ResourceManager::s_get()
+ResourceManager::ResourceManager()
 {
-    static ResourceManager instance;
-    return instance;
+
+}
+
+ResourceManager::~ResourceManager()
+{
+    m_loadedFonts.clear();
+    m_loadedShaders.clear();
+    m_loadedTextures.clear();
 }
 
 ref<Texture> ResourceManager::loadTexture(const Texture::Type type,
@@ -168,23 +174,6 @@ ref<Font> ResourceManager::loadFont(const std::string& path)
                       fontPair.first->second->getPath().c_str());
 
         return fontPair.first->second;
-    }
-}
-
-ResourceManager::ResourceManager()
-{
-}
-
-ResourceManager::~ResourceManager()
-{
-    for (auto& p_texture : m_loadedTextures)
-    {
-        p_texture.second.reset();
-    }
-
-    for (auto& p_shader : m_loadedTextures)
-    {
-        p_shader.second.reset();
     }
 }
 

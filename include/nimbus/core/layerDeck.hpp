@@ -23,6 +23,8 @@ class LayerDeck
 
     void removeLayer(ref<Layer> p_layer);
 
+    void clear();
+
     const std::vector<std::string> getLayerNames() const;
 
     ////////////////////////////////////////////////////////////////////

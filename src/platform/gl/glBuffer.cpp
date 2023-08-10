@@ -28,13 +28,8 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
                 [p_instance, vertices]() mutable
                 {
                     glCreateBuffers(1, &p_instance->m_id);
-
                     glNamedBufferStorage(
                         p_instance->m_id, p_instance->m_size, vertices, 0);
-                    p_instance->mp_memory = glMapNamedBufferRange(
-                        p_instance->m_id, 0, p_instance->m_size, 0);
-
-                    p_instance->m_mapped = true;
                 });
 
             break;

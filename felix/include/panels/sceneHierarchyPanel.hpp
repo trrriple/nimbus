@@ -30,7 +30,7 @@ class SceneHeirarchyPanel
 
         mp_sceneContext = p_scene;
 
-        mp_checkerboardTex = ResourceManager::s_get().loadTexture(
+        mp_checkerboardTex = Application::s_get().getResourceManager().loadTexture(
             Texture::Type::DIFFUSE, "../resources/textures/checkerboard.png");
     }
     ~SceneHeirarchyPanel()
@@ -244,7 +244,7 @@ class SceneHeirarchyPanel
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture = ResourceManager::s_get().loadTexture(
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
                         Texture::Type::DIFFUSE, filePath, false);
 
                     if (texture)
@@ -274,7 +274,7 @@ class SceneHeirarchyPanel
                     = ImGui::AcceptDragDropPayload("DND_FILE"))
                 {
                     const char*  path    = (const char*)payload->Data;
-                    ref<Texture> texture = ResourceManager::s_get().loadTexture(
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
                         Texture::Type::DIFFUSE, path, false);
 
                     if (texture)
@@ -354,7 +354,7 @@ class SceneHeirarchyPanel
                 {
                     const char* filePath = (const char*)payload->Data;
                     ref<Font>   font
-                        = ResourceManager::s_get().loadFont(filePath);
+                        = Application::s_get().getResourceManager().loadFont(filePath);
 
                     if (font)
                     {
@@ -380,7 +380,7 @@ class SceneHeirarchyPanel
                     auto filePath = selection[0];
 
                     ref<Font> font
-                        = ResourceManager::s_get().loadFont(filePath);
+                        = Application::s_get().getResourceManager().loadFont(filePath);
 
                     if (font)
                     {

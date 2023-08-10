@@ -33,6 +33,8 @@ Application::Application(const std::string& name,
     Log::coreInfo("----- Nimbus Engine Application Init -----");
     Log::coreInfo("------------------------------------------");
 
+    mp_resourceManager = genScope<ResourceManager>();
+
     mp_window->graphicsContextInit();
 
     mp_window->setEventCallback(
@@ -41,18 +43,45 @@ Application::Application(const std::string& name,
     mp_window->setExitCallback(
         std::bind(&Application::shouldQuit, this, std::placeholders::_1));
 
- 
     mp_guiSubsystemLayer = ref<GuiSubsystem>::gen();
     insertLayer(mp_guiSubsystemLayer);
 
-    // TODO put back
-    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(mp_window->getOsWindow()),
-                       nullptr);
-
-    Renderer::s_init(mp_window->getOsWindow(), mp_window->getContext());
+    Renderer::s_init();
+        
     Renderer2D::s_init();
 
-    // TODO remove hack
+}
+
+Application::~Application()
+{
+    m_layerDeck.clear();
+    mp_resourceManager.reset();
+
+
+    Renderer2D::s_destroy();
+    
+    // must ensure all renderer object destructors are called before this
+    // as this destroys the renderer queue which handles those
+    // destructors
+    Renderer::s_destroy();
+
+    // this will blow away our window and context
+    mp_window.reset();
+}
+
+void Application::shouldQuit(Event& event)
+{
+    NM_UNUSED(event);
+    m_active = false;
+}
+
+void Application::execute()
+{
+    double currentTime = core::getTime_s();
+
+    Stopwatch sw;
+
+        // TODO remove hack
     std::promise<void> renderDonePromise;
     std::future<void>  renderDoneFuture = renderDonePromise.get_future();
 
@@ -64,29 +93,12 @@ Application::Application(const std::string& name,
             SDL_GL_SwapWindow(p_window);
             renderDonePromise.set_value();
         });
-    
-    // Renderer::s_processHook();
+
+    Renderer::s_swapAndStart();
 
     renderDoneFuture.wait();
-}
 
-Application::~Application()
-{
-    Renderer2D::s_destroy();
-    Renderer::s_destroy();
-}
-
-void Application::shouldQuit(Event& event)
-{
-    NM_UNUSED(event);
-    m_Active = false;
-}
-
-void Application::execute()
-{
-    double currentTime = core::getTime_s();
-    
-    while (m_Active)
+    while (m_active)
     {
         NM_PROFILE();
 
@@ -98,13 +110,13 @@ void Application::execute()
         currentTime     = newTime;
 
         // prevent spiral of death if we're running really slow
-        if(loopTime >= 0.1f)
+        if (loopTime >= 0.1f)
         {
             loopTime = 0.1f;
         }
 
         m_updateLag += loopTime;
-        m_drawLag   += loopTime;
+        m_drawLag += loopTime;
 
         ///////////////////////////
         // Updates are fixed step
@@ -115,11 +127,11 @@ void Application::execute()
         {
             // we can run multiple updates if we're behind
             updatesRequired = m_updateLag / m_updatePeriodLimit;
-            
+
             // calculate how much time we're about to process
             float gameTimeProgression
                 = (float)updatesRequired * m_updatePeriodLimit;
-            
+
             // remove the lag we're about to update through
             m_updateLag -= gameTimeProgression;
 
@@ -131,6 +143,9 @@ void Application::execute()
         // Draws are limited
         ///////////////////////////
         bool doDraw = m_drawLag >= m_drawPeriodLimit;
+
+        // allow renderer to finish
+        Renderer::s_waitForRenderThread();
 
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions
@@ -148,9 +163,14 @@ void Application::execute()
         // Call layer draw functions
         ////////////////////////////////////////////////////////////////////////
         if (doDraw)
-        {   
-
+        {
+            ///////////////////////////
+            // Start a Frame
+            ///////////////////////////
+            Renderer::s_startFrame();
             GraphicsApi::clear();
+
+
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
                 // call each draw with how long it's been since last draw
@@ -170,26 +190,20 @@ void Application::execute()
             Renderer::s_submit([app]() { app->guiRender(); });
             Renderer::s_submit([app]() { app->mp_guiSubsystemLayer->end(); });
 
-            std::promise<void> renderDonePromise;
-            std::future<void> renderDoneFuture = renderDonePromise.get_future();
-
-            // TODO better solution            
+ 
             SDL_Window* p_window
                 = static_cast<SDL_Window*>(mp_window->getOsWindow());
-            Renderer::s_submit(
-                [p_window, &renderDonePromise]()
-                {
-                    SDL_GL_SwapWindow(p_window);
-                    renderDonePromise.set_value();
-                });
+
 
             // Renderer::s_processHook();
-            renderDoneFuture.wait();
+
+            Renderer::s_endFrame();
 
 
             ////////////////////////////////////////////////////////////////////
             // Call window update function (events polled and buffers swapped)
             ////////////////////////////////////////////////////////////////////
+            // TODO rework this func
             mp_window->onUpdate();
             m_drawLag = 0.0f;
         }
@@ -200,7 +214,7 @@ void Application::execute()
 
 void Application::terminate()
 {
-    m_Active = false;
+    m_active = false;
 }
 
 void Application::onEvent(Event& event)
@@ -225,7 +239,7 @@ void Application::onEvent(Event& event)
     {
         case Event::Type::QUIT:
         {
-            m_Active = false;
+            m_active = false;
             break;
         }
         default:

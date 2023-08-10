@@ -144,13 +144,17 @@ class FelixLayer : public Layer
     {
     }
 
+    ~FelixLayer()
+    {
+    }
+
     virtual void onInsert() override
     {
         Log::info("Hello from Felix!");
 
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
-        mp_appRef->setDrawPeriodLimit(0.00000f);
+        mp_appRef->setDrawPeriodLimit(0.00f);
 
         mp_scene = ref<Scene>::gen("Demo Scene");
 
@@ -216,7 +220,7 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Text text
         ///////////////////////////
-        mp_generalFont = ResourceManager::s_get().loadFont(
+        mp_generalFont = Application::s_get().getResourceManager().loadFont(
             "../resources/fonts/Roboto/Roboto-Regular.ttf");
 
         Font::Format format;

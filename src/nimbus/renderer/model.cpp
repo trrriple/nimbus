@@ -3,6 +3,7 @@
 
 #include "nimbus/renderer/model.hpp"
 #include "nimbus/core/resourceManager.hpp"
+#include "nimbus/core/application.hpp"
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
@@ -231,7 +232,7 @@ std::vector<ref<Texture>> Model::loadMaterialTextures(void*         mat,
 
         if (!skip)
         {
-            ResourceManager& rm = ResourceManager::s_get();
+            ResourceManager& rm = Application::s_get().getResourceManager();
 
             ref<Texture> p_texture
                 = rm.loadTexture(texType, path, m_flipOnLoad);

@@ -3,6 +3,7 @@
 
 #include "nimbus/renderer/particleEmitter.hpp"
 #include "nimbus/renderer/renderer.hpp"
+#include "nimbus/core/application.hpp"
 #include "nimbus/core/resourceManager.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 
@@ -100,10 +101,10 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
     }
     else
     {
-        mp_shader
-            = ResourceManager::s_get().loadShader("particleDefault",
-                                                  k_particleVertexShader,
-                                                  k_particleFragmentShader);
+        mp_shader = Application::s_get().getResourceManager().loadShader(
+            "particleDefault",
+            k_particleVertexShader,
+            k_particleFragmentShader);
     }
 
     if (!m_is3d)

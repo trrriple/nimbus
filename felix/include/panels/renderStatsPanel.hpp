@@ -16,8 +16,7 @@ class RenderStatsPanel
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
 
-         m_frameTimes_ms.reserve(k_frameHistoryLength);
-
+        m_frameTimes_ms.reserve(k_frameHistoryLength);
     }
     ~RenderStatsPanel()
     {
@@ -25,11 +24,12 @@ class RenderStatsPanel
 
     void onDraw(float deltaTime)
     {
+        NM_UNUSED(deltaTime);
         char buf[128];
         snprintf(buf,
                  128,
                  "%.02f ms/frame (%.02f FPS)###RenderStatus",
-                 deltaTime * 1000.0f,
+                 mp_appWinRef->m_tFrame_s * 1000.0f,
                  mp_appWinRef->m_fps);
 
         ImGui::Begin(buf, 0);
@@ -44,7 +44,7 @@ class RenderStatsPanel
 
         ImGui::Checkbox("Wireframe Mode", &m_wireFrame);
 
-        if(ImGui::Checkbox("Depth Test", &m_depthTest))
+        if (ImGui::Checkbox("Depth Test", &m_depthTest))
         {
             GraphicsApi::setDepthTest(m_depthTest);
         }
@@ -63,7 +63,7 @@ class RenderStatsPanel
         {
             m_frameTimes_ms.erase(m_frameTimes_ms.begin());
         }
-        m_frameTimes_ms.push_back(deltaTime * 1000.0);
+        m_frameTimes_ms.push_back(mp_appWinRef->m_tFrame_s * 1000.0);
 
         ImGui::PlotLines("Frame Times",
                          m_frameTimes_ms.data(),

@@ -4,11 +4,11 @@
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/shader.hpp"
 #include "nimbus/renderer/renderCmdQ.hpp"
+#include "nimbus/renderer/renderThread.hpp"
 
 #include "glm.hpp"
 
 #include <thread>
-#include <queue>
 #include <mutex>
 #include <condition_variable>
 
@@ -16,16 +16,34 @@ namespace nimbus
 {
 class Renderer : public refCounted
 {
+    ////////////////////////////////////////////////////////////////////////////
+    // Variables
+    ////////////////////////////////////////////////////////////////////////////
    public:
     inline static const int32_t k_detectCountIfPossible = -1;
 
-    static void s_init(void* p_window, void* p_context);
+    static void s_init();
     static void s_destroy();
 
-    static void s_setScene(const glm::mat4& vpMatrix);
 
+   private:
+    inline static glm::mat4     m_vpMatrix      = glm::mat4(1.0f);
+    inline static const int32_t k_numRenderCmdQ = 2; // >= 2
+    static RenderCmdQ*          s_cmdQ[k_numRenderCmdQ];
+    static uint32_t             s_submitCmdQIdx;
+    static uint32_t             s_renderCmdQIdx;
+
+    ///////////////////////////
+    // Threads
+    ///////////////////////////
+    static RenderThread s_renderThread;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Functions
+    ////////////////////////////////////////////////////////////////////////////
+   public:
     template <typename T>
-    static void s_submit(T&& func)
+    inline static void s_submit(T&& func) noexcept
     {
         auto renderCmd = [](void* ptr)
         {
@@ -34,21 +52,25 @@ class Renderer : public refCounted
             ;
             pFunc->~T();
         };
-
-        std::lock_guard<std::mutex> lock(s_cmdQMutex);
-        auto storageBuffer = s_cmdQ.slot(renderCmd, sizeof(func));
+        auto storageBuffer = _s_getSubmitCmdQ()->slot(renderCmd, sizeof(func));
         new (storageBuffer) T(std::forward<T>(func));
-        s_cmdQCondition.notify_one();
     }
 
-    // static void s_submit(std::function<void()> fn);
+    // TODO consider this
+    static void s_setScene(const glm::mat4& vpMatrix);
 
-    static void s_processHook();
+    static void s_startFrame();
 
-    static void s_render(ref<Shader>                p_shader,
-                         ref<VertexArray>           p_vertexArray,
-                         int32_t vertexCount       = k_detectCountIfPossible,
-                         bool    setViewProjection = true);
+    static void s_endFrame();
+
+    static void s_swapAndStart();
+
+    static void s_waitForRenderThread();
+
+    static void s_render(ref<Shader>      p_shader,
+                         ref<VertexArray> p_vertexArray,
+                         int32_t          vertexCount = k_detectCountIfPossible,
+                         bool             setViewProjection = true);
 
     static void s_renderInstanced(const ref<Shader>&      p_shader,
                                   const ref<VertexArray>& p_vertexArray,
@@ -57,24 +79,28 @@ class Renderer : public refCounted
                                   bool    setViewProjection = true);
 
    private:
-    static RenderCmdQ              s_cmdQ;
-    static std::thread             s_renderThread;
-    static std::mutex              s_cmdQMutex;
-    static std::condition_variable s_cmdQCondition;
-    static bool                    s_terminate;
-    static bool                    s_initialized;
+    inline static RenderCmdQ* _s_getSubmitCmdQ() noexcept
+    {
+        return s_cmdQ[s_submitCmdQIdx];
+    }
+    inline static RenderCmdQ* _s_getRenderCmdQ() noexcept
+    {
+        return s_cmdQ[s_renderCmdQIdx];
+    }
 
-    inline static glm::mat4 mp_vpMatrix = glm::mat4(1.0f);
+    static void _s_qSwap() noexcept;
 
-    static void _s_serviceQueue(void* p_window, void* p_context);
-    // static void _s_processCmd(const Command& cmd);
+    static void _s_renderThreadFn();
 
+
+    ///////////////////////////
+    // TODO port these
+    ///////////////////////////
     static void _s_submit(const ref<Shader>&      p_shader,
                           const ref<VertexArray>& p_vertexArray,
                           const glm::mat4&        model,
                           int32_t vertexCount       = k_detectCountIfPossible,
                           bool    setViewProjection = true);
-
 
     static void _s_submitInstanced(const ref<Shader>&      p_shader,
                                    const ref<VertexArray>& p_vertexArray,
@@ -84,5 +110,8 @@ class Renderer : public refCounted
                                    = k_detectCountIfPossible,
                                    bool setViewProjection = true);
 
+
+
+    friend class RenderThread;
 };
 }  // namespace nimbus

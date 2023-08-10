@@ -39,6 +39,17 @@ class GlFrameBuffer : public FrameBuffer
     virtual uint32_t getTextureId(const uint32_t attachmentIdx
                                   = 0) const override
     {
+        if (attachmentIdx >= m_textures.size())
+        {
+            Log::coreError(
+                "Attachment Index %i out of range. FrameBuffer has %i "
+                "attachements",
+                attachmentIdx,
+                m_textures.size());
+
+            return 0;
+        }
+
         return m_textures[attachmentIdx]->getId();
     }
 

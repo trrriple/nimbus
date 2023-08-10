@@ -121,7 +121,7 @@ class Renderer2D : public refCounted
         bool                        needsResize = false;
     };
 
-    static QuadData s_quadData;
+    static QuadData* s_quadData;
 
     ///////////////////////////
     //  Text layout and data
@@ -164,7 +164,7 @@ class Renderer2D : public refCounted
         bool                      needsResize = false;
     };
 
-    static TextData s_textData;
+    static TextData* s_textData;
 
     static Stats s_stats;
 

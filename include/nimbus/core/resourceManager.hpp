@@ -13,7 +13,10 @@ namespace nimbus
 class ResourceManager
 {
    public:
-    static ResourceManager& s_get();
+    ResourceManager();
+
+    ~ResourceManager();
+
 
     // Other member functions and variables...
 
@@ -35,11 +38,6 @@ class ResourceManager
     std::unordered_map<std::string, ref<Shader>>  m_loadedShaders;
     std::unordered_map<std::string, ref<Font>>    m_loadedFonts;
 
-    // Private constructor to prevent direct instantiation
-    ResourceManager();
-
-    // Private destructor
-    ~ResourceManager();
 
     // Disable copy constructor
     ResourceManager(const ResourceManager&) = delete;

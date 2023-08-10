@@ -6,6 +6,8 @@
 #include "nimbus/scene/entity.hpp"
 #include "nimbus/scene/component.hpp"
 #include "nimbus/core/resourceManager.hpp"
+#include "nimbus/core/application.hpp"
+
 
 #include "yaml-cpp/yaml.h"
 
@@ -299,7 +301,7 @@ static void s_deserializeEntity(YAML::Node entityNode, Scene* p_scene)
 
         if(texNode)
         {
-            sc.p_texture = ResourceManager::s_get().loadTexture(
+            sc.p_texture = Application::s_get().getResourceManager().loadTexture(
                 Texture::Type::DIFFUSE, texNode["path"].as<std::string>());
 
             sc.tilingFactor = texNode["tilingFactor"].as<float>();
@@ -322,7 +324,7 @@ static void s_deserializeEntity(YAML::Node entityNode, Scene* p_scene)
 
         if (!formatNode["path"].IsNull())
         {
-            tc.format.p_font = ResourceManager::s_get().loadFont(
+            tc.format.p_font = Application::s_get().getResourceManager().loadFont(
                 formatNode["path"].as<std::string>());
         }
 

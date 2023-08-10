@@ -53,6 +53,20 @@ void LayerDeck::removeLayer(ref<Layer> p_layer)
     }
 }
 
+
+void LayerDeck::clear()
+{
+    NM_PROFILE();
+
+    for(auto p_layer : m_deck)
+    {
+        p_layer->onRemove();
+    }
+
+    m_deck.clear();
+}
+
+
 const std::vector<std::string> LayerDeck::getLayerNames() const
 {
     NM_PROFILE_TRACE();

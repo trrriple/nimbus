@@ -13,15 +13,11 @@ RenderCmdQ::RenderCmdQ()
     mp_cmdBuf = static_cast<uint8_t*>(calloc(k_cmdBufSize, sizeof(uint8_t)));
     NM_CORE_ASSERT(mp_cmdBuf, "Failed to allocate command queue!");
     mp_cmdBufPtr = mp_cmdBuf;
-
-    mp_cmdBufTmp = static_cast<uint8_t*>(calloc(k_cmdBufSize, sizeof(uint8_t)));
-    NM_CORE_ASSERT(mp_cmdBuf, "Failed to Temp command queue!");
 }
 
 RenderCmdQ::~RenderCmdQ()
 {
     free(mp_cmdBuf);
-    free(mp_cmdBufTmp);
 }
 
 void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size)
@@ -40,35 +36,18 @@ void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size)
     mp_cmdBufPtr += size;
     m_cmdBufUsedSz += size;
 
-    if(size > 32)
-    {
-        Log::coreWarn("Big Yoshi %i", size);
-    }
-
     NM_CORE_ASSERT(m_cmdBufUsedSz < k_cmdBufSize, "Command Queue Overflow!");
 
     m_cmdCount++;
     return slot;
 }
 
-void RenderCmdQ::prepTmpQ()
+
+void RenderCmdQ::processQ()
 {
-    // expect this function to be called with mutual exclusion
-    
-    memcpy(mp_cmdBufTmp, mp_cmdBuf, m_cmdBufUsedSz);
-    m_cmdCountTmp = m_cmdCount;
+    uint8_t* ptr = mp_cmdBuf;
 
-    // reset the command buffer
-    mp_cmdBufPtr   = mp_cmdBuf;
-    m_cmdCount     = 0;
-    m_cmdBufUsedSz = 0;
-}
-
-void RenderCmdQ::processTmpQ()
-{
-    uint8_t* ptr = mp_cmdBufTmp;
-
-    for (uint32_t i = 0; i < m_cmdCountTmp; i++)
+    for (uint32_t i = 0; i < m_cmdCount; i++)
     {
         // grab the function out
         renderCmdFn fn = *(renderCmdFn*)ptr;
@@ -83,6 +62,10 @@ void RenderCmdQ::processTmpQ()
 
         ptr += size;
     }
+
+    mp_cmdBufPtr   = mp_cmdBuf;
+    m_cmdCount     = 0;
+    m_cmdBufUsedSz = 0;
 }
 
 }  // namespace nimbus

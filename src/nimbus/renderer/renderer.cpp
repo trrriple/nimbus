@@ -2,7 +2,10 @@
 #include "nimbus/core/core.hpp"
 
 #include "nimbus/renderer/renderer.hpp"
+
+#include "nimbus/core/application.hpp"
 #include "nimbus/renderer/renderCmdQ.hpp"
+#include "nimbus/renderer/renderThread.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 
 #include <thread>
@@ -14,139 +17,61 @@
 namespace nimbus
 {
 
-RenderCmdQ                        Renderer::s_cmdQ;
-std::thread                       Renderer::s_renderThread;
-std::mutex                        Renderer::s_cmdQMutex;
-std::condition_variable           Renderer::s_cmdQCondition;
-bool                              Renderer::s_terminate   = false;
-bool                              Renderer::s_initialized = false;
+RenderCmdQ*  Renderer::s_cmdQ[k_numRenderCmdQ];
+RenderThread Renderer::s_renderThread;
+uint32_t     Renderer::s_submitCmdQIdx;
+uint32_t     Renderer::s_renderCmdQIdx;
 
-void Renderer::s_init(void* p_window, void* p_context)
+void Renderer::s_init()
 {
     // clang-format off
     static std::once_flag initFlag;
     std::call_once(initFlag,
-    [p_window, p_context]()
+    []()
     {
-        s_initialized = true;
+        GraphicsApi::init();
 
-        s_renderThread = std::thread(&Renderer::_s_serviceQueue, p_window, p_context);
+        for(int i = 0; i < k_numRenderCmdQ; i++)
+        {
+            s_cmdQ[i] = new RenderCmdQ();
+        }
+
+        s_submitCmdQIdx = 0;
+        s_renderCmdQIdx = 1;
+
+        s_renderThread.run(Renderer::_s_renderThreadFn);
+
     });
     // clang-format on
 }
 
 void Renderer::s_destroy()
 {
+    
+    s_renderThread.stop();
+    
+    for (int i = 0; i < k_numRenderCmdQ; i++)
     {
-        std::lock_guard<std::mutex> lock(s_cmdQMutex);
-        s_terminate = true;
+        delete s_cmdQ[i];
     }
-    s_cmdQCondition.notify_one();
-    s_renderThread.join();
 }
 
 void Renderer::s_setScene(const glm::mat4& vpMatrix)
 {
-    mp_vpMatrix = vpMatrix;
+    m_vpMatrix = vpMatrix;
 }
 
-// void Renderer::s_submit(std::function<void()> fn)
-// {
-//     std::lock_guard<std::mutex> lock(s_queueMutex);
-//     s_cmdQueue.push(fn);
-//     s_cmdCondition.notify_one();
-// }
-
-// void Renderer::s_processHook()
-// {
-//     static std::queue<std::function<void()>> localQueue;
-
-//     {
-//         std::unique_lock<std::mutex> lock(s_cmdQMutex);
-//         s_cmdQCondition.wait(
-//             lock, []() { return !s_cmdQueue.empty() || s_terminate; });
-
-//         // Transfer commands to the local queue
-//         while (!s_cmdQueue.empty())
-//         {
-//             localQueue.push(std::move(s_cmdQueue.front()));
-//             s_cmdQueue.pop();
-//         }
-//     }  // Mutex is released here
-
-//     // Process the commands outside of the locked section
-//     while (!localQueue.empty())
-//     {
-//         auto& command = localQueue.front();
-//         command();
-//         localQueue.pop();
-//     }
-// }
-
-////////////////////////////////////////////////////////////////////////////////
-// Private Functions
-////////////////////////////////////////////////////////////////////////////////
-void Renderer::_s_serviceQueue(void* p_window, void* p_context)
+void Renderer::s_startFrame()
 {
-    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(p_window), p_context);
-
-    while (!s_terminate)
-    {
-        std::unique_lock<std::mutex> lock(s_cmdQMutex);
-
-        // don't wait if there's data on the queue
-        s_cmdQCondition.wait(lock, []() { return s_cmdQ.getCmdCount(); });
-
-        // Prep the temporary cmd Q
-        s_cmdQ.prepTmpQ();
-        lock.unlock();
-
-        // process all the commands in the temp queue
-        s_cmdQ.processTmpQ();
-    }
+    s_swapAndStart();
 }
 
-void Renderer::_s_submit(const ref<Shader>&      p_shader,
-                         const ref<VertexArray>& p_vertexArray,
-                         const glm::mat4&        model,
-                         int32_t                 vertexCount,
-                         bool                    setViewProjection)
+void Renderer::s_endFrame()
 {
-    NM_PROFILE();
+    static SDL_Window* p_window = static_cast<SDL_Window*>(
+                           Application::s_get().getWindow().getOsWindow());
 
-    p_shader->bind();
-    p_shader->setMat4("u_model", model);
-
-    if (setViewProjection)
-    {
-        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
-    }
-
-    // do we have an index buffer?
-    if (p_vertexArray->getIndexBuffer())
-    {
-        // we do, so drawElements
-        if (vertexCount == k_detectCountIfPossible)
-        {
-            GraphicsApi::drawElements(p_vertexArray);
-        }
-        else
-        {
-            GraphicsApi::drawElements(p_vertexArray, vertexCount);
-        }
-    }
-    else
-    {
-        // we don't so drawArrays
-        if (vertexCount == k_detectCountIfPossible)
-        {
-            GraphicsApi::drawArrays(p_vertexArray);
-        }
-        else
-        {
-            GraphicsApi::drawArrays(p_vertexArray, vertexCount);
-        }
-    }
+    Renderer::s_submit([]() { SDL_GL_SwapWindow(p_window); });
 }
 
 void Renderer::s_render(ref<Shader>      p_shader,
@@ -160,7 +85,7 @@ void Renderer::s_render(ref<Shader>      p_shader,
 
     if (setViewProjection)
     {
-        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
+        p_shader->setMat4("u_viewProjection", m_vpMatrix);
     }
 
     // do we have an index buffer?
@@ -204,7 +129,7 @@ void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
+        p_shader->setMat4("u_viewProjection", m_vpMatrix);
     }
 
     // do we have an index buffer?
@@ -236,6 +161,90 @@ void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
     }
 }
 
+void Renderer::s_swapAndStart()
+{
+    _s_qSwap();
+    s_renderThread.setState(RenderThread::State::READY);
+}
+
+void Renderer::s_waitForRenderThread()
+{
+    s_renderThread.waitForState(RenderThread::State::PEND);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Private Functions
+////////////////////////////////////////////////////////////////////////////////
+void Renderer::_s_qSwap() noexcept
+{
+    s_submitCmdQIdx = (s_submitCmdQIdx + 1) % k_numRenderCmdQ;
+    s_renderCmdQIdx = (s_renderCmdQIdx + 1) % k_numRenderCmdQ;
+}
+
+void Renderer::_s_renderThreadFn()
+{
+    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(
+                           Application::s_get().getWindow().getOsWindow()),
+                       Application::s_get().getWindow().getContext());
+
+    while (s_renderThread.isActive())
+    {
+        // Stopwatch pendTimer;
+        s_renderThread.waitForState(RenderThread::State::READY);
+        s_renderThread.setState(RenderThread::State::BUSY);
+
+
+        // Stopwatch processTimer;
+        // process all the commands in the temp queue
+        _s_getRenderCmdQ()->processQ();
+
+        s_renderThread.setState(RenderThread::State::PEND);
+    }
+}
+
+void Renderer::_s_submit(const ref<Shader>&      p_shader,
+                         const ref<VertexArray>& p_vertexArray,
+                         const glm::mat4&        model,
+                         int32_t                 vertexCount,
+                         bool                    setViewProjection)
+{
+    NM_PROFILE();
+
+    p_shader->bind();
+    p_shader->setMat4("u_model", model);
+
+    if (setViewProjection)
+    {
+        p_shader->setMat4("u_viewProjection", m_vpMatrix);
+    }
+
+    // do we have an index buffer?
+    if (p_vertexArray->getIndexBuffer())
+    {
+        // we do, so drawElements
+        if (vertexCount == k_detectCountIfPossible)
+        {
+            GraphicsApi::drawElements(p_vertexArray);
+        }
+        else
+        {
+            GraphicsApi::drawElements(p_vertexArray, vertexCount);
+        }
+    }
+    else
+    {
+        // we don't so drawArrays
+        if (vertexCount == k_detectCountIfPossible)
+        {
+            GraphicsApi::drawArrays(p_vertexArray);
+        }
+        else
+        {
+            GraphicsApi::drawArrays(p_vertexArray, vertexCount);
+        }
+    }
+}
+
 void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
                                  const ref<VertexArray>& p_vertexArray,
                                  int32_t                 instanceCount,
@@ -248,7 +257,7 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        p_shader->setMat4("u_viewProjection", mp_vpMatrix);
+        p_shader->setMat4("u_viewProjection", m_vpMatrix);
     }
 
     // do we have an index buffer?

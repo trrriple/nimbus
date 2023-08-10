@@ -80,10 +80,7 @@ void Window::graphicsContextInit()
         mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
 
     // Set V-sync
-    SDL_GL_SetSwapInterval(m_VSyncOn);
-
-    GraphicsApi::init();
-    
+    SDL_GL_SetSwapInterval(m_VSyncOn);    
 }
 
 void Window::setEventCallback(const WindowEventCallback_t& callback)

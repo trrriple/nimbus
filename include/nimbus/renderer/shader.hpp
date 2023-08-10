@@ -202,6 +202,7 @@ class Shader : public refCounted
     std::string   m_vertexPath;    ///< The path to the vertex shader.
     std::string   m_fragmentPath;  ///< The path to the fragment shader.
     std::string   m_name;          ///< The name of the shader.
+    bool          m_loaded;        ///< Shader is loaded.
 
     inline static std::uint32_t s_currBoundId = 0;  ///< Static counter for IDs.
 

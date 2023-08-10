@@ -17,7 +17,6 @@ class RenderCmdQ
     ~RenderCmdQ();
 
     void* slot(renderCmdFn fn, uint32_t size);
-    void  slotDone();
 
     uint32_t getCmdCount()
     {
@@ -25,15 +24,12 @@ class RenderCmdQ
         return m_cmdCount;
     }
 
-    void prepTmpQ();
-    void processTmpQ();
+    void processQ();
 
    private:
     uint8_t*                 mp_cmdBuf;
     uint8_t*                 mp_cmdBufPtr;
     uint32_t                 m_cmdCount = 0;
-    uint8_t*                 mp_cmdBufTmp;
-    uint32_t                 m_cmdCountTmp  = 0;
     uint32_t                 m_cmdBufUsedSz = 0;
 };
 

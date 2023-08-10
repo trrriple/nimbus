@@ -2,6 +2,7 @@
 
 #include "nimbus/core/common.hpp"
 #include "nimbus/core/log.hpp"
+#include "nimbus/core/stopwatch.hpp"
 
 #include <memory>
 
@@ -101,27 +102,11 @@ namespace nimbus::core
 inline double getTime_s()
 {
     static std::mutex mtx;
-    static bool       initialized = false;
-    static std::chrono::time_point<std::chrono::steady_clock> startTime;
-
+    
     std::lock_guard<std::mutex> lock(mtx);
+    static Stopwatch  sw;
 
-    if (!initialized)
-    {
-        startTime   = std::chrono::steady_clock::now();
-        initialized = true;
-    }
-
-    // Get the current time point using the steady clock
-    auto currentTime = std::chrono::steady_clock::now();
-
-    // Calculate the elapsed time in microseconds
-    auto elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(
-                           currentTime - startTime)
-                           .count();
-
-    // Convert microseconds to seconds (with microsecond precision)
-    return static_cast<double>(elapsedTime) * 1E-6;
+    return sw.elapsed();
 }
 
 }  // namespace nimbus::core

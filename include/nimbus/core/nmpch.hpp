@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <vector>
 #include <future>
+#include <thread>
+#include <atomic>
 
 
 ///////////////////////

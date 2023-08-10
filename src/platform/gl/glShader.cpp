@@ -15,6 +15,7 @@ GlShader::GlShader(const std::string& name,
                    const std::string& vertexSource,
                    const std::string& fragmentSource)
 {
+    m_loaded       = false;
     m_vertexPath   = "none";
     m_fragmentPath = "none";
     m_name         = name;
@@ -25,6 +26,7 @@ GlShader::GlShader(const std::string& vertexPath,
                    const std::string& fragmentPath)
 
 {
+    m_loaded       = false;
     m_vertexPath   = vertexPath;
     m_fragmentPath = fragmentPath;
     m_name         = vertexPath + fragmentPath;
@@ -380,6 +382,45 @@ void GlShader::_compileShader(const std::string& vertexSource,
             // longer necessary
             glDeleteShader(vertex);
             glDeleteShader(fragment);
+
+            // get uniform locations
+
+
+
+            // Get the number of active uniforms
+            GLint numUniforms = 0;
+            glGetProgramiv(m_id, GL_ACTIVE_UNIFORMS, &numUniforms);
+
+            // Get the maximum name length of any uniform
+            GLint maxNameLength = 0;
+            glGetProgramiv(m_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
+
+            // Allocate memory to hold the uniform name
+            char* uniformName = new char[maxNameLength];
+
+            for (GLint i = 0; i < numUniforms; ++i)
+            {
+                GLsizei actualLength = 0;
+                GLint   size         = 0;
+                GLenum  type         = 0;
+
+                // Retrieve the uniform's name, size, and type
+                glGetActiveUniform(m_id,
+                                   i,
+                                   maxNameLength,
+                                   &actualLength,
+                                   &size,
+                                   &type,
+                                   uniformName);
+
+                uint32_t loc = glGetUniformLocation(m_id, uniformName);
+                m_uniformLocCache[uniformName] = loc;
+
+                Log::coreInfo(
+                    "Uniform %s at %i in %s", uniformName, loc, m_name.c_str());
+            }
+
+            delete[] uniformName;
         });
 }
 
@@ -397,31 +438,10 @@ std::int32_t GlShader::_getUniformLocation(const std::string& name) const
     }
     else
     {
-        // bad boys, what you gonna do?
-        ref<GlShader> p_instance = const_cast<GlShader*>(this);
-
-        std::promise<void> renderDonePromise;
-        std::future<void>  renderDoneFuture = renderDonePromise.get_future();
-
-        Renderer::s_submit(
-            [p_instance, name, &location, &renderDonePromise]()
-            {
-                location = glGetUniformLocation(p_instance->m_id, name.c_str());
-                p_instance->m_uniformLocCache[name] = location;
-
-                if (location == -1)
-                {
-                    Log::coreWarn(
-                        "Uniform %s not found in shader program (vertex: "
-                        "%s, fragment: %s",
-                        name.c_str(),
-                        p_instance->m_vertexPath.c_str(),
-                        p_instance->m_fragmentPath.c_str());
-                }
-                renderDonePromise.set_value();
-            });
-
-        renderDoneFuture.wait();
+        Log::coreError("Uniform %s doesn't exist in shader %s",
+                       name.c_str(),
+                       m_name.c_str());
+        location = -1;
     }
 
     return location;

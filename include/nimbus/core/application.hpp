@@ -7,6 +7,7 @@
 #include "nimbus/core/window.hpp"
 
 #include "nimbus/guiLayers/guiSubsystem.hpp"
+#include "nimbus/core/resourceManager.hpp"
 
 namespace nimbus
 {
@@ -73,6 +74,11 @@ class Application
         return *mp_window;
     }
 
+    ResourceManager& getResourceManager()
+    {
+        return *mp_resourceManager;
+    }
+
     float getUpdateLag() const
     {
         return m_updateLag;
@@ -100,7 +106,7 @@ class Application
     // State
     ///////////////////////////
     bool          m_menuMode  = false;
-    volatile bool m_Active    = true;
+    volatile bool m_active    = true;
     double        m_gameTime  = 0.0f;
     float         m_updateLag = 0.0f;
     float         m_drawLag   = 0.0f;
@@ -109,9 +115,11 @@ class Application
     ///////////////////////////
     // References
     ///////////////////////////
-    inline static Application* sp_instance          = nullptr;
-    scope<Window>              mp_window            = nullptr;
-    ref<GuiSubsystem>          mp_guiSubsystemLayer = nullptr;
+    inline static Application* sp_instance        = nullptr;
+    scope<Window>              mp_window          = nullptr;
+    scope<ResourceManager>     mp_resourceManager = nullptr;
+
+    ref<GuiSubsystem> mp_guiSubsystemLayer = nullptr;
 };
 
 Application* createApplication();
