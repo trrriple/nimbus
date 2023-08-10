@@ -234,28 +234,28 @@ void GlFrameBuffer::_construct()
         m_textures.clear();
     }
 
-    ref<GlFrameBuffer> p_instance = this;
+    ref<GlFrameBuffer> p_this = this;
     Renderer::s_submitObject(
-        [p_instance]() mutable
+        [p_this]() mutable
         {
             ////////////////////////////////////////////////////////////////////
             // blow away existing frame buffer if we've already made it and
             // create new
             ////////////////////////////////////////////////////////////////////
-            if (p_instance->m_fbo)
+            if (p_this->m_fbo)
             {
-                glDeleteFramebuffers(1, &p_instance->m_fbo);
-                glDeleteRenderbuffers(1, &p_instance->m_rbo);
+                glDeleteFramebuffers(1, &p_this->m_fbo);
+                glDeleteRenderbuffers(1, &p_this->m_rbo);
             }
 
-            glCreateFramebuffers(1, &p_instance->m_fbo);
+            glCreateFramebuffers(1, &p_this->m_fbo);
 
-            for (auto texSpec : p_instance->m_spec.colorAttachments)
+            for (auto texSpec : p_this->m_spec.colorAttachments)
             {
                 ////////////////////////////////////////////////////////////////
                 // generate and bind the texture in which to write
                 ////////////////////////////////////////////////////////////////
-                if (texSpec.samples != p_instance->m_spec.samples)
+                if (texSpec.samples != p_this->m_spec.samples)
                 {
                     NM_CORE_ASSERT_STATIC(
                         false,
@@ -264,8 +264,8 @@ void GlFrameBuffer::_construct()
                         "spec samples!");
                 }
 
-                if (texSpec.width != p_instance->m_spec.width
-                    || texSpec.height != p_instance->m_spec.height)
+                if (texSpec.width != p_this->m_spec.width
+                    || texSpec.height != p_this->m_spec.height)
                 {
                     NM_CORE_ASSERT_STATIC(
                         false,
@@ -277,9 +277,9 @@ void GlFrameBuffer::_construct()
                 ref<Texture> texture
                     = Texture::s_create(Texture::Type::DIFFUSE, texSpec, false);
 
-                p_instance->m_textures.push_back(texture);
+                p_this->m_textures.push_back(texture);
 
-                glNamedFramebufferTexture(p_instance->m_fbo,
+                glNamedFramebufferTexture(p_this->m_fbo,
                                           GL_COLOR_ATTACHMENT0,
                                           texture->getId(),
                                           0);
@@ -289,32 +289,32 @@ void GlFrameBuffer::_construct()
             // use render buffer for depth and stencil
             ////////////////////////////////////////////////////////////////////
 
-            if (Texture::s_formatInternal(p_instance->m_spec.depthType))
+            if (Texture::s_formatInternal(p_this->m_spec.depthType))
             {
-                glCreateRenderbuffers(1, &p_instance->m_rbo);
+                glCreateRenderbuffers(1, &p_this->m_rbo);
                 // allocate
-                if (p_instance->m_spec.samples == 1)
+                if (p_this->m_spec.samples == 1)
                 {
                     glNamedRenderbufferStorage(
-                        p_instance->m_rbo,
-                        Texture::s_formatInternal(p_instance->m_spec.depthType),
-                        p_instance->m_spec.width,
-                        p_instance->m_spec.height);
+                        p_this->m_rbo,
+                        Texture::s_formatInternal(p_this->m_spec.depthType),
+                        p_this->m_spec.width,
+                        p_this->m_spec.height);
                 }
                 else
                 {
                     glNamedRenderbufferStorageMultisample(
-                        p_instance->m_rbo,
-                        p_instance->m_spec.samples,
-                        Texture::s_formatInternal(p_instance->m_spec.depthType),
-                        p_instance->m_spec.width,
-                        p_instance->m_spec.height);
+                        p_this->m_rbo,
+                        p_this->m_spec.samples,
+                        Texture::s_formatInternal(p_this->m_spec.depthType),
+                        p_this->m_spec.width,
+                        p_this->m_spec.height);
                 }
 
-                glNamedFramebufferRenderbuffer(p_instance->m_fbo,
+                glNamedFramebufferRenderbuffer(p_this->m_fbo,
                                                GL_DEPTH_STENCIL_ATTACHMENT,
                                                GL_RENDERBUFFER,
-                                               p_instance->m_rbo);
+                                               p_this->m_rbo);
             }
 
             ////////////////////////////////////////////////////////////////////////////
@@ -331,7 +331,7 @@ void GlFrameBuffer::_construct()
                                   glCheckFramebufferStatus(GL_FRAMEBUFFER));
             }
 
-            glBindFramebuffer(GL_FRAMEBUFFER, p_instance->m_fbo);
+            glBindFramebuffer(GL_FRAMEBUFFER, p_this->m_fbo);
             // bind the default frame buffer
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         });

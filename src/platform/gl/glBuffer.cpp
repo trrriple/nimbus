@@ -18,18 +18,18 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
     m_size = size;
     m_type = type;
 
-    ref<GlVertexBuffer> p_instance = this;
+    ref<GlVertexBuffer> p_this = this;
 
     switch (m_type)
     {
         case (VertexBuffer::Type::STATIC_DRAW):
         {
             Renderer::s_submitObject(
-                [p_instance, vertices]() mutable
+                [p_this, vertices]() mutable
                 {
-                    glCreateBuffers(1, &p_instance->m_id);
+                    glCreateBuffers(1, &p_this->m_id);
                     glNamedBufferStorage(
-                        p_instance->m_id, p_instance->m_size, vertices, 0);
+                        p_this->m_id, p_this->m_size, vertices, 0);
                 });
 
             break;
@@ -38,18 +38,18 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
         case (VertexBuffer::Type::STREAM_DRAW):
         {
             Renderer::s_submitObject(
-                [p_instance, vertices]() mutable
+                [p_this, vertices]() mutable
                 {
-                    glCreateBuffers(1, &p_instance->m_id);
+                    glCreateBuffers(1, &p_this->m_id);
 
                     GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT
                                        | GL_MAP_COHERENT_BIT;
                     glNamedBufferStorage(
-                        p_instance->m_id, p_instance->m_size, vertices, flags);
-                    p_instance->mp_memory = glMapNamedBufferRange(
-                        p_instance->m_id, 0, p_instance->m_size, flags);
+                        p_this->m_id, p_this->m_size, vertices, flags);
+                    p_this->mp_memory = glMapNamedBufferRange(
+                        p_this->m_id, 0, p_this->m_size, flags);
 
-                    p_instance->m_mapped = true;
+                    p_this->m_mapped = true;
                 });
 
             break;
@@ -76,15 +76,15 @@ GlVertexBuffer::~GlVertexBuffer()
 
 void GlVertexBuffer::bind() const
 {
-    ref<GlVertexBuffer> p_instance = const_cast<GlVertexBuffer*>(this);
+    ref<GlVertexBuffer> p_this = const_cast<GlVertexBuffer*>(this);
 
     Renderer::s_submit(
-        [p_instance]()
+        [p_this]()
         {
-            if (p_instance->m_id != s_currBoundId)
+            if (p_this->m_id != s_currBoundId)
             {
-                glBindBuffer(GL_ARRAY_BUFFER, p_instance->m_id );
-                s_currBoundId = p_instance->m_id ;
+                glBindBuffer(GL_ARRAY_BUFFER, p_this->m_id );
+                s_currBoundId = p_this->m_id ;
             }
         });
 }
@@ -119,17 +119,17 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
     m_count = count;
     m_type  = GL_UNSIGNED_INT;
 
-    ref<GlIndexBuffer> p_instance = this;
+    ref<GlIndexBuffer> p_this = this;
 
-    void* localCpy = malloc(p_instance->m_count * sizeof(uint32_t));
-    memcpy(localCpy, indices, p_instance->m_count * sizeof(uint32_t));
+    void* localCpy = malloc(p_this->m_count * sizeof(uint32_t));
+    memcpy(localCpy, indices, p_this->m_count * sizeof(uint32_t));
 
     Renderer::s_submitObject(
-        [p_instance, localCpy]() mutable
+        [p_this, localCpy]() mutable
         {
-            glCreateBuffers(1, &p_instance->m_id);
-            glNamedBufferStorage(p_instance->m_id,
-                                 p_instance->m_count * sizeof(uint32_t),
+            glCreateBuffers(1, &p_this->m_id);
+            glNamedBufferStorage(p_this->m_id,
+                                 p_this->m_count * sizeof(uint32_t),
                                  localCpy,
                                  0);
 
@@ -142,17 +142,17 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
     m_count = count;
     m_type  = GL_UNSIGNED_SHORT;
 
-    ref<GlIndexBuffer> p_instance = this;
+    ref<GlIndexBuffer> p_this = this;
 
-    void* localCpy = malloc(p_instance->m_count * sizeof(uint16_t));
-    memcpy(localCpy, indices, p_instance->m_count * sizeof(uint16_t));
+    void* localCpy = malloc(p_this->m_count * sizeof(uint16_t));
+    memcpy(localCpy, indices, p_this->m_count * sizeof(uint16_t));
 
     Renderer::s_submitObject(
-        [p_instance, localCpy]() mutable
+        [p_this, localCpy]() mutable
         {
-            glCreateBuffers(1, &p_instance->m_id);
-            glNamedBufferStorage(p_instance->m_id,
-                                 p_instance->m_count * sizeof(uint16_t),
+            glCreateBuffers(1, &p_this->m_id);
+            glNamedBufferStorage(p_this->m_id,
+                                 p_this->m_count * sizeof(uint16_t),
                                  localCpy,
                                  0);
 
@@ -165,17 +165,17 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
     m_count = count;
     m_type  = GL_UNSIGNED_BYTE;
 
-    ref<GlIndexBuffer> p_instance = this;
+    ref<GlIndexBuffer> p_this = this;
 
-    void* localCpy = malloc(p_instance->m_count * sizeof(uint8_t));
-    memcpy(localCpy, indices, p_instance->m_count * sizeof(uint8_t));
+    void* localCpy = malloc(p_this->m_count * sizeof(uint8_t));
+    memcpy(localCpy, indices, p_this->m_count * sizeof(uint8_t));
 
     Renderer::s_submitObject(
-        [p_instance, localCpy]() mutable
+        [p_this, localCpy]() mutable
         {
-            glCreateBuffers(1, &p_instance->m_id);
-            glNamedBufferStorage(p_instance->m_id,
-                                 p_instance->m_count * sizeof(uint8_t),
+            glCreateBuffers(1, &p_this->m_id);
+            glNamedBufferStorage(p_this->m_id,
+                                 p_this->m_count * sizeof(uint8_t),
                                  localCpy,
                                  0);
 
@@ -191,11 +191,11 @@ GlIndexBuffer::~GlIndexBuffer()
 
 void GlIndexBuffer::bind() const
 {
-    ref<GlIndexBuffer> p_instance = const_cast<GlIndexBuffer*>(this);
+    ref<GlIndexBuffer> p_this = const_cast<GlIndexBuffer*>(this);
 
     Renderer::s_submit(
-        [p_instance]()
-        { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_instance->m_id); });
+        [p_this]()
+        { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_this->m_id); });
 }
 
 void GlIndexBuffer::unbind() const
@@ -208,12 +208,12 @@ void GlIndexBuffer::unbind() const
 ////////////////////////////////////////////////////////////////////////////////
 GlVertexArray::GlVertexArray()
 {
-    ref<GlVertexArray> p_instance = this;
+    ref<GlVertexArray> p_this = this;
 
         Renderer::s_submitObject(
-            [p_instance]() mutable
+            [p_this]() mutable
             {
-                glCreateVertexArrays(1, &p_instance->m_id);
+                glCreateVertexArrays(1, &p_this->m_id);
             });
 }
 
@@ -227,16 +227,16 @@ GlVertexArray::~GlVertexArray()
 
 void GlVertexArray::bind() const
 {
-    ref<GlVertexArray> p_instance = const_cast<GlVertexArray*>(this);
+    ref<GlVertexArray> p_this = const_cast<GlVertexArray*>(this);
 
     Renderer::s_submit(
-        [p_instance]()
+        [p_this]()
         {
-            if (p_instance->m_id != s_currBoundId)
+            if (p_this->m_id != s_currBoundId)
             {
-                glBindVertexArray(p_instance->m_id);
+                glBindVertexArray(p_this->m_id);
 
-                s_currBoundId = p_instance->m_id;
+                s_currBoundId = p_this->m_id;
             }
         });
 }
@@ -252,13 +252,13 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
     NM_CORE_ASSERT(p_vertexBuffer->getFormat().getComponents().size(),
                    "VBO format is required to create VBA");
 
-    ref<GlVertexArray> p_instance = this;
+    ref<GlVertexArray> p_this = this;
 
     Renderer::s_submitObject(
-        [p_instance, p_vertexBuffer]() mutable
+        [p_this, p_vertexBuffer]() mutable
         {
             uint32_t vboId = p_vertexBuffer->getId();
-            glBindVertexArray(p_instance->m_id);
+            glBindVertexArray(p_this->m_id);
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
 
             const auto& format = p_vertexBuffer->getFormat();
@@ -269,11 +269,11 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
 
                 if (glType == GL_INT || glType == GL_BOOL)
                 {
-                    glEnableVertexAttribArray(p_instance->m_vertexBufferIndex);
+                    glEnableVertexAttribArray(p_this->m_vertexBufferIndex);
 
                     uint32_t numOfComponent = std::get<2>(component.dataType);
 
-                    glVertexAttribIPointer(p_instance->m_vertexBufferIndex,
+                    glVertexAttribIPointer(p_this->m_vertexBufferIndex,
                                            numOfComponent,
                                            glType,
                                            format.getStride(),
@@ -281,10 +281,10 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
 
                     if (component.type == BufferComponent::Type::PER_INSTANCE)
                     {
-                        glVertexAttribDivisor(p_instance->m_vertexBufferIndex,
+                        glVertexAttribDivisor(p_this->m_vertexBufferIndex,
                                               component.perInstance);
                     }
-                    p_instance->m_vertexBufferIndex++;
+                    p_this->m_vertexBufferIndex++;
                 }
                 else if (glType == GL_FLOAT)
                 {
@@ -309,9 +309,9 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
                               + (sizeof(float) * numOfComponentsPerColumn * i);
 
                         glEnableVertexAttribArray(
-                            p_instance->m_vertexBufferIndex);
+                            p_this->m_vertexBufferIndex);
                         glVertexAttribPointer(
-                            p_instance->m_vertexBufferIndex,
+                            p_this->m_vertexBufferIndex,
                             numOfComponentsPerColumn,
                             glType,
                             component.normalized ? GL_TRUE : GL_FALSE,
@@ -322,10 +322,10 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
                             == BufferComponent::Type::PER_INSTANCE)
                         {
                             glVertexAttribDivisor(
-                                p_instance->m_vertexBufferIndex,
+                                p_this->m_vertexBufferIndex,
                                 component.perInstance);
                         }
-                        p_instance->m_vertexBufferIndex++;
+                        p_this->m_vertexBufferIndex++;
                     }
                 }
                 else
@@ -341,28 +341,28 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
                 = p_vertexBuffer->getSize() / format.getStride();
 
             // accumulate the size of the vertex
-            p_instance->m_vertexSize += format.getStride();
+            p_this->m_vertexSize += format.getStride();
 
-            if (p_instance->m_vertexBuffers.size() == 0)
+            if (p_this->m_vertexBuffers.size() == 0)
             {
                 // this is our first vertex buffer, so set the expected size in
                 // number of vertexes because this "should" to match between all
                 // vbos bound to this vba
-                p_instance->m_expectedVboVertexCount = thisVboVertexCount;
+                p_this->m_expectedVboVertexCount = thisVboVertexCount;
             }
 
-            p_instance->m_vertexBuffers.push_back(p_vertexBuffer);
+            p_this->m_vertexBuffers.push_back(p_vertexBuffer);
         });
 }
 
 void GlVertexArray::setIndexBuffer(ref<IndexBuffer> p_indexBuffer)
 {
-    ref<GlVertexArray> p_instance = this;
+    ref<GlVertexArray> p_this = this;
 
     Renderer::s_submitObject(
-        [p_instance, p_indexBuffer]()
+        [p_this, p_indexBuffer]()
         {
-            glBindVertexArray(p_instance->m_id);
+            glBindVertexArray(p_this->m_id);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_indexBuffer->getId());
             glBindVertexArray(0);
         });

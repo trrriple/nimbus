@@ -91,16 +91,16 @@ void GlShader::bind() const
 {
     NM_PROFILE_TRACE();
 
-    ref<GlShader> p_instance = const_cast<GlShader*>(this);
+    ref<GlShader> p_this = const_cast<GlShader*>(this);
 
     Renderer::s_submit(
-        [p_instance]()
+        [p_this]()
         {
             // don't rebind the same shader
-            if (p_instance->m_id != s_currBoundId)
+            if (p_this->m_id != s_currBoundId)
             {
-                glUseProgram(p_instance->m_id);
-                s_currBoundId = p_instance->m_id;
+                glUseProgram(p_this->m_id);
+                s_currBoundId = p_this->m_id;
             }
         });
 }

@@ -61,22 +61,22 @@ GlTexture::GlTexture(const Type         type,
                 0, "Unknown image format has %i components", numComponents);
         }
 
-        // ref<GlTexture>     p_instance       = makeRef<GlTexture>(*this);
-        GlTexture*            p_instance       = this;
+        // ref<GlTexture>     p_this       = makeRef<GlTexture>(*this);
+        GlTexture*            p_this       = this;
     
         Renderer::s_submitObject(
-            [p_instance, data]()
+            [p_this, data]()
             {
-                _s_gen(p_instance->m_id);
-                glBindTexture(GL_TEXTURE_2D, p_instance->m_id);
+                _s_gen(p_this->m_id);
+                glBindTexture(GL_TEXTURE_2D, p_this->m_id);
 
                 // TODO, determine how to set this
-                p_instance->m_spec.dataType      = DataType::UNSIGNED_BYTE;
-                p_instance->m_spec.filterTypeMin = FilterType::MIPMAP_LINEAR;
-                p_instance->m_spec.filterTypeMag = FilterType::LINEAR;
-                p_instance->m_spec.wrapTypeS     = WrapType::REPEAT;
-                p_instance->m_spec.wrapTypeT     = WrapType::REPEAT;
-                p_instance->m_spec.wrapTypeR     = WrapType::REPEAT;
+                p_this->m_spec.dataType      = DataType::UNSIGNED_BYTE;
+                p_this->m_spec.filterTypeMin = FilterType::MIPMAP_LINEAR;
+                p_this->m_spec.filterTypeMag = FilterType::LINEAR;
+                p_this->m_spec.wrapTypeS     = WrapType::REPEAT;
+                p_this->m_spec.wrapTypeT     = WrapType::REPEAT;
+                p_this->m_spec.wrapTypeR     = WrapType::REPEAT;
 
                 // safety check for:
                 // If a non-zero named buffer object is bound to the
@@ -87,34 +87,34 @@ GlTexture::GlTexture(const Type         type,
                 glTexImage2D(
                     GL_TEXTURE_2D,
                     0,
-                    s_formatInternal(p_instance->m_spec.formatInternal),
-                    p_instance->m_spec.width,
-                    p_instance->m_spec.height,
+                    s_formatInternal(p_this->m_spec.formatInternal),
+                    p_this->m_spec.width,
+                    p_this->m_spec.height,
                     0,
-                    s_format(p_instance->m_spec.format),
-                    s_dataType(p_instance->m_spec.dataType),
+                    s_format(p_this->m_spec.format),
+                    s_dataType(p_this->m_spec.dataType),
                     data);
                 glGenerateMipmap(GL_TEXTURE_2D);
 
                 glTexParameteri(GL_TEXTURE_2D,
                                 GL_TEXTURE_MIN_FILTER,
-                                s_filterType(p_instance->m_spec.filterTypeMin));
+                                s_filterType(p_this->m_spec.filterTypeMin));
                 glTexParameteri(GL_TEXTURE_2D,
                                 GL_TEXTURE_MAG_FILTER,
-                                s_filterType(p_instance->m_spec.filterTypeMag));
+                                s_filterType(p_this->m_spec.filterTypeMag));
                 glTexParameteri(GL_TEXTURE_2D,
                                 GL_TEXTURE_WRAP_S,
-                                s_wrapType(p_instance->m_spec.wrapTypeS));
+                                s_wrapType(p_this->m_spec.wrapTypeS));
                 glTexParameteri(GL_TEXTURE_2D,
                                 GL_TEXTURE_WRAP_T,
-                                s_wrapType(p_instance->m_spec.wrapTypeT));
+                                s_wrapType(p_this->m_spec.wrapTypeT));
                 glTexParameteri(GL_TEXTURE_2D,
                                 GL_TEXTURE_WRAP_R,
-                                s_wrapType(p_instance->m_spec.wrapTypeR));
+                                s_wrapType(p_this->m_spec.wrapTypeR));
                 
                 stbi_image_free(data);
 
-                p_instance->m_loaded = true;
+                p_this->m_loaded = true;
             });
 
         // renderDoneFuture.wait();
@@ -137,9 +137,9 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
 
     if (submitForMe)
     {
-        ref<GlTexture> p_instance = this;
-        Renderer::s_submitObject([p_instance]() mutable
-                                 { p_instance->_storage(); });
+        ref<GlTexture> p_this = this;
+        Renderer::s_submitObject([p_this]() mutable
+                                 { p_this->_storage(); });
     }
     else
     {
@@ -164,10 +164,10 @@ void GlTexture::bind(const uint32_t glTextureUnit) const
         return;
     }
 
-    ref<GlTexture> p_instance = const_cast<GlTexture*>(this);
+    ref<GlTexture> p_this = const_cast<GlTexture*>(this);
 
     Renderer::s_submit(
-        [p_instance, glTextureUnit]()
+        [p_this, glTextureUnit]()
         {
             if (glTextureUnit != s_currBoundTextureUnit)
             {
@@ -175,13 +175,13 @@ void GlTexture::bind(const uint32_t glTextureUnit) const
                 s_currBoundTextureUnit = glTextureUnit;
             }
 
-            if (p_instance->m_id != s_currBoundId)
+            if (p_this->m_id != s_currBoundId)
             {
-                glBindTexture(p_instance->m_spec.samples > 1
+                glBindTexture(p_this->m_spec.samples > 1
                                   ? GL_TEXTURE_2D_MULTISAMPLE
                                   : GL_TEXTURE_2D,
-                              p_instance->m_id);
-                s_currBoundId = p_instance->m_id;
+                              p_this->m_id);
+                s_currBoundId = p_this->m_id;
             }
         });
 }
@@ -270,19 +270,19 @@ void GlTexture::setData(void* data, uint32_t size)
     void* localCpy = malloc(size);
     memcpy(localCpy, data, size);
 
-    ref<GlTexture>     p_instance       = this;
+    ref<GlTexture>     p_this       = this;
 
     Renderer::s_submitObject(
-        [p_instance, localCpy]()
+        [p_this, localCpy]()
         {
-            glTextureSubImage2D(p_instance->m_id,
+            glTextureSubImage2D(p_this->m_id,
                                 0,
                                 0,
                                 0,
-                                p_instance->m_spec.width,
-                                p_instance->m_spec.height,
-                                s_format(p_instance->m_spec.format),
-                                s_dataType(p_instance->m_spec.dataType),
+                                p_this->m_spec.width,
+                                p_this->m_spec.height,
+                                s_format(p_this->m_spec.format),
+                                s_dataType(p_this->m_spec.dataType),
                                 localCpy);
             
             free(localCpy);
