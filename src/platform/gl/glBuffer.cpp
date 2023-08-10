@@ -59,26 +59,32 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
 
 GlVertexBuffer::~GlVertexBuffer()
 {
-    uint32_t id = m_id;
+    uint32_t id     = m_id;
+    bool     mapped = m_mapped;
     Renderer::s_submitObject(
-        [id]()
+        [id, mapped]()
         {
-            glBindBuffer(GL_ARRAY_BUFFER, id);
-            glUnmapBuffer(GL_ARRAY_BUFFER);
+            if (mapped)
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, id);
+                glUnmapBuffer(GL_ARRAY_BUFFER);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            }
             glDeleteBuffers(1, &id);
         });
 }
 
 void GlVertexBuffer::bind() const
 {
-    uint32_t id = m_id;
+    ref<GlVertexBuffer> p_instance = const_cast<GlVertexBuffer*>(this);
+
     Renderer::s_submit(
-        [id]()
+        [p_instance]()
         {
-            if (id != s_currBoundId)
+            if (p_instance->m_id != s_currBoundId)
             {
-                glBindBuffer(GL_ARRAY_BUFFER, id);
-                s_currBoundId = id;
+                glBindBuffer(GL_ARRAY_BUFFER, p_instance->m_id );
+                s_currBoundId = p_instance->m_id ;
             }
         });
 }
@@ -185,8 +191,11 @@ GlIndexBuffer::~GlIndexBuffer()
 
 void GlIndexBuffer::bind() const
 {
-    uint32_t id = m_id;
-    Renderer::s_submit([id]() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id); });
+    ref<GlIndexBuffer> p_instance = const_cast<GlIndexBuffer*>(this);
+
+    Renderer::s_submit(
+        [p_instance]()
+        { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_instance->m_id); });
 }
 
 void GlIndexBuffer::unbind() const
@@ -211,20 +220,23 @@ GlVertexArray::GlVertexArray()
 GlVertexArray::~GlVertexArray()
 {
     uint32_t id = m_id;
-    Renderer::s_submitObject([id]() { glDeleteVertexArrays(1, &id); });
+    Renderer::s_submitObject([id]() { 
+        glDeleteVertexArrays(1, &id); 
+    });
 }
 
 void GlVertexArray::bind() const
 {
-    uint32_t id = m_id;
-    Renderer::s_submit(
-        [id]()
-        {
-            if (id != s_currBoundId)
-            {
-                glBindVertexArray(id);
+    ref<GlVertexArray> p_instance = const_cast<GlVertexArray*>(this);
 
-                s_currBoundId = id;
+    Renderer::s_submit(
+        [p_instance]()
+        {
+            if (p_instance->m_id != s_currBoundId)
+            {
+                glBindVertexArray(p_instance->m_id);
+
+                s_currBoundId = p_instance->m_id;
             }
         });
 }
@@ -324,25 +336,23 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
 
             glBindVertexArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            uint32_t thisVboVertexCount
+                = p_vertexBuffer->getSize() / format.getStride();
+
+            // accumulate the size of the vertex
+            p_instance->m_vertexSize += format.getStride();
+
+            if (p_instance->m_vertexBuffers.size() == 0)
+            {
+                // this is our first vertex buffer, so set the expected size in
+                // number of vertexes because this "should" to match between all
+                // vbos bound to this vba
+                p_instance->m_expectedVboVertexCount = thisVboVertexCount;
+            }
+
+            p_instance->m_vertexBuffers.push_back(p_vertexBuffer);
         });
-
-    const auto& format = p_vertexBuffer->getFormat();
-
-    uint32_t thisVboVertexCount
-        = p_vertexBuffer->getSize() / format.getStride();
-
-    // accumulate the size of the vertex
-    m_vertexSize += format.getStride();
-
-    if (m_vertexBuffers.size() == 0)
-    {
-        // this is our first vertex buffer, so set the expected size in number
-        // of vertexes because this "should" to match between all vbos bound to
-        // this vba
-        m_expectedVboVertexCount = thisVboVertexCount;
-    }
-
-    m_vertexBuffers.push_back(p_vertexBuffer);
 }
 
 void GlVertexArray::setIndexBuffer(ref<IndexBuffer> p_indexBuffer)

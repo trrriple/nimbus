@@ -42,30 +42,33 @@ void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size)
     return slot;
 }
 
-
 void RenderCmdQ::processQ()
 {
-    uint8_t* ptr = mp_cmdBuf;
-
-    for (uint32_t i = 0; i < m_cmdCount; i++)
+    // exit if there's nothing to process
+    if (m_cmdCount > 0)
     {
-        // grab the function out
-        renderCmdFn fn = *(renderCmdFn*)ptr;
-        ptr += sizeof(renderCmdFn);
+        uint8_t* ptr = mp_cmdBuf;
 
-        // grab the size of the data
-        uint32_t size = *(uint32_t*)ptr;
-        ptr += sizeof(uint32_t);
+        for (uint32_t i = 0; i < m_cmdCount; i++)
+        {
+            // grab the function out
+            renderCmdFn fn = *(renderCmdFn*)ptr;
+            ptr += sizeof(renderCmdFn);
 
-        // execute the function with the data
-        fn(ptr);
+            // grab the size of the data
+            uint32_t size = *(uint32_t*)ptr;
+            ptr += sizeof(uint32_t);
 
-        ptr += size;
+            // execute the function with the data
+            fn(ptr);
+
+            ptr += size;
+        }
+
+        mp_cmdBufPtr   = mp_cmdBuf;
+        m_cmdCount     = 0;
+        m_cmdBufUsedSz = 0;
     }
-
-    mp_cmdBufPtr   = mp_cmdBuf;
-    m_cmdCount     = 0;
-    m_cmdBufUsedSz = 0;
 }
 
 }  // namespace nimbus

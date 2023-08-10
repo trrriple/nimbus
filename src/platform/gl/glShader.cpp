@@ -91,18 +91,20 @@ void GlShader::bind() const
 {
     NM_PROFILE_TRACE();
 
-    uint32_t id = m_id;
+    ref<GlShader> p_instance = const_cast<GlShader*>(this);
+
     Renderer::s_submit(
-        [id]()
+        [p_instance]()
         {
             // don't rebind the same shader
-            if (id != s_currBoundId)
+            if (p_instance->m_id != s_currBoundId)
             {
-                glUseProgram(id);
-                s_currBoundId = id;
+                glUseProgram(p_instance->m_id);
+                s_currBoundId = p_instance->m_id;
             }
         });
 }
+
 // utility uniform functions
 void GlShader::setBool(const std::string& name, bool value) const
 {

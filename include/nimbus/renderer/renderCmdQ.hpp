@@ -8,7 +8,7 @@ namespace nimbus
 
 class RenderCmdQ
 {
-    const uint32_t k_cmdBufSize = (2 << 23);
+    const uint32_t k_cmdBufSize = (2 << 16);
 
    public:
     typedef void (*renderCmdFn)(void*);

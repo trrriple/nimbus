@@ -164,10 +164,10 @@ void GlTexture::bind(const uint32_t glTextureUnit) const
         return;
     }
 
-    uint32_t id      = m_id;
-    uint32_t samples = m_spec.samples;
+    ref<GlTexture> p_instance = const_cast<GlTexture*>(this);
+
     Renderer::s_submit(
-        [id, samples, glTextureUnit]()
+        [p_instance, glTextureUnit]()
         {
             if (glTextureUnit != s_currBoundTextureUnit)
             {
@@ -175,12 +175,13 @@ void GlTexture::bind(const uint32_t glTextureUnit) const
                 s_currBoundTextureUnit = glTextureUnit;
             }
 
-            if (id != s_currBoundId)
+            if (p_instance->m_id != s_currBoundId)
             {
-                glBindTexture(
-                    samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D,
-                    id);
-                s_currBoundId = id;
+                glBindTexture(p_instance->m_spec.samples > 1
+                                  ? GL_TEXTURE_2D_MULTISAMPLE
+                                  : GL_TEXTURE_2D,
+                              p_instance->m_id);
+                s_currBoundId = p_instance->m_id;
             }
         });
 }
