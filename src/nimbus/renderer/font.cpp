@@ -116,7 +116,7 @@ void Font::_loadFont()
             attributes.config.overlapSupport = true;
             attributes.scanlinePass          = true;
             generator.setAttributes(attributes);
-            generator.setThreadCount(16);
+            generator.setThreadCount(4);
             // Generate atlas bitmap
             generator.generate(m_data->glyphs.data(), m_data->glyphs.size());
             // The atlas bitmap can now be retrieved via atlasStorage as a

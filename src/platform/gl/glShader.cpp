@@ -93,16 +93,7 @@ void GlShader::bind() const
 
     ref<GlShader> p_this = const_cast<GlShader*>(this);
 
-    Renderer::s_submit(
-        [p_this]()
-        {
-            // don't rebind the same shader
-            if (p_this->m_id != s_currBoundId)
-            {
-                glUseProgram(p_this->m_id);
-                s_currBoundId = p_this->m_id;
-            }
-        });
+    Renderer::s_submit([p_this]() { glUseProgram(p_this->m_id); });
 }
 
 // utility uniform functions

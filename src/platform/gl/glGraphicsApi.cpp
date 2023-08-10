@@ -142,15 +142,27 @@ void GlGraphicsApi::setWireframe(bool on)
 {
     NM_PROFILE_TRACE();
 
-    if (on != s_wireframeOn)
+    if (on == s_wireframe)
     {
-        uint32_t mode = on ? GL_LINE : GL_FILL;
+        return;
+    }
 
+    if (!on)
+    {
         Renderer::s_submit(
-            [mode]()
+            []()
             {
-                glPolygonMode(GL_FRONT_AND_BACK, mode);
-                s_wireframeOn = mode == GL_LINE ? true : false;
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                s_wireframe = false;
+            });
+    }
+    else
+    {
+        Renderer::s_submit(
+            []()
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                s_wireframe = true;
             });
     }
 }
@@ -158,6 +170,11 @@ void GlGraphicsApi::setWireframe(bool on)
 void GlGraphicsApi::setDepthTest(bool on)
 {
     NM_PROFILE_TRACE();
+
+    if(on == s_depthTest)\
+    {
+        return;
+    }
 
     if (!on)
     {

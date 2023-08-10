@@ -169,20 +169,11 @@ void GlTexture::bind(const uint32_t glTextureUnit) const
     Renderer::s_submit(
         [p_this, glTextureUnit]()
         {
-            if (glTextureUnit != s_currBoundTextureUnit)
-            {
-                glActiveTexture(GL_TEXTURE0 + glTextureUnit);
-                s_currBoundTextureUnit = glTextureUnit;
-            }
+            glActiveTexture(GL_TEXTURE0 + glTextureUnit);
 
-            if (p_this->m_id != s_currBoundId)
-            {
-                glBindTexture(p_this->m_spec.samples > 1
-                                  ? GL_TEXTURE_2D_MULTISAMPLE
-                                  : GL_TEXTURE_2D,
-                              p_this->m_id);
-                s_currBoundId = p_this->m_id;
-            }
+            glBindTexture(p_this->m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE
+                                                     : GL_TEXTURE_2D,
+                          p_this->m_id);
         });
 }
 
@@ -194,7 +185,6 @@ void GlTexture::unbind() const
         {
             glBindTexture(
                 samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 0);
-            s_currBoundId = 0;
         });
 }
 

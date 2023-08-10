@@ -147,9 +147,6 @@ class Texture : public refCounted
     static const uint32_t k_maxTexturesUninit = 0;
     inline static uint32_t s_maxTextures = k_maxTexturesUninit;
 
-    inline static std::uint32_t s_currBoundId          = 0;
-    inline static std::uint32_t s_currBoundTextureUnit = 0;
-   
    private:
     // ensure only Resource manager can call this
     static ref<Texture> s_create(const Type         type,

@@ -193,8 +193,6 @@ class VertexBuffer : public refCounted
     uint32_t           m_size;  // in bytes
     VertexBuffer::Type m_type;
     BufferFormat       m_format;
-
-    inline static uint32_t s_currBoundId = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -259,8 +257,6 @@ class VertexArray : public refCounted
     ref<IndexBuffer>               m_indexBuffer            = nullptr;
     uint32_t                       m_expectedVboVertexCount = 0;
     uint32_t                       m_vertexSize             = 0;
-
-    inline static uint32_t s_currBoundId = 0;
 };
 
 }  // namespace nimbus

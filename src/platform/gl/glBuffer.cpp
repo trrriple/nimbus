@@ -20,16 +20,21 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
 
     ref<GlVertexBuffer> p_this = this;
 
+    void* localCpy = malloc(size);
+    memcpy(localCpy, vertices, size);
+
     switch (m_type)
     {
         case (VertexBuffer::Type::STATIC_DRAW):
         {
             Renderer::s_submitObject(
-                [p_this, vertices]() mutable
+                [p_this, localCpy]() mutable
                 {
                     glCreateBuffers(1, &p_this->m_id);
                     glNamedBufferStorage(
-                        p_this->m_id, p_this->m_size, vertices, 0);
+                        p_this->m_id, p_this->m_size, localCpy, 0);
+
+                    free(localCpy);
                 });
 
             break;
@@ -38,22 +43,27 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
         case (VertexBuffer::Type::STREAM_DRAW):
         {
             Renderer::s_submitObject(
-                [p_this, vertices]() mutable
+                [p_this, localCpy]() mutable
                 {
                     glCreateBuffers(1, &p_this->m_id);
 
                     GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT
                                        | GL_MAP_COHERENT_BIT;
                     glNamedBufferStorage(
-                        p_this->m_id, p_this->m_size, vertices, flags);
+                        p_this->m_id, p_this->m_size, localCpy, flags);
                     p_this->mp_memory = glMapNamedBufferRange(
                         p_this->m_id, 0, p_this->m_size, flags);
 
                     p_this->m_mapped = true;
+
+                    free(localCpy);
                 });
 
             break;
         }
+        default:
+            NM_CORE_ASSERT(false, "Unknown VertexBuffer::Type %i", type);
+            free(localCpy);
     }
 }
 
@@ -78,21 +88,13 @@ void GlVertexBuffer::bind() const
 {
     ref<GlVertexBuffer> p_this = const_cast<GlVertexBuffer*>(this);
 
-    Renderer::s_submit(
-        [p_this]()
-        {
-            if (p_this->m_id != s_currBoundId)
-            {
-                glBindBuffer(GL_ARRAY_BUFFER, p_this->m_id );
-                s_currBoundId = p_this->m_id ;
-            }
-        });
+    Renderer::s_submit([p_this]()
+                       { glBindBuffer(GL_ARRAY_BUFFER, p_this->m_id); });
 }
 
 void GlVertexBuffer::unbind() const
 {
     Renderer::s_submit([]() { glBindBuffer(GL_ARRAY_BUFFER, 0); });
-    s_currBoundId = 0;
 }
 
 void GlVertexBuffer::setData(const void* data, uint32_t size)
@@ -232,19 +234,13 @@ void GlVertexArray::bind() const
     Renderer::s_submit(
         [p_this]()
         {
-            if (p_this->m_id != s_currBoundId)
-            {
-                glBindVertexArray(p_this->m_id);
-
-                s_currBoundId = p_this->m_id;
-            }
+            glBindVertexArray(p_this->m_id);
         });
 }
 
 void GlVertexArray::unbind() const
 {
     Renderer::s_submit([]() { glBindVertexArray(0); });
-    s_currBoundId = 0;
 }
 
 void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)

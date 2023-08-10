@@ -160,7 +160,7 @@ void Application::execute()
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions
         ////////////////////////////////////////////////////////////////////////
-        for (uint32_t i = 0; i < 1; i++)
+        for (uint32_t i = 0; i < updatesRequired; i++)
         {
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {

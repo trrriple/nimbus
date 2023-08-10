@@ -45,7 +45,7 @@ class GraphicsApi
 
     static bool getWireframe()
     {
-        return s_wireframeOn;
+        return s_wireframe;
     }
 
     static void setDepthTest(bool on);
@@ -63,7 +63,7 @@ class GraphicsApi
     }
 
    protected:
-    inline static bool         s_wireframeOn      = false;
+    inline static bool         s_wireframe      = false;
     inline static bool         s_depthTest        = false;
     inline static BlendingMode s_currBlendingMode = BlendingMode::ALPHA_BLEND;
 };

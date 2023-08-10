@@ -547,8 +547,6 @@ void Renderer2D::_s_createQuadBuffers()
     if (s_quadData->p_vao)
     {
         // this is a resize
-        s_quadData->p_vao->unbind();
-
         newSize = s_quadData->instVertices.size() + k_quadGrowCount;
 
         if (newSize >= k_quadMaxCount)

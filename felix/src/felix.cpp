@@ -194,7 +194,7 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Test Sprite
         ///////////////////////////
-        uint32_t sz = 150;
+        uint32_t sz = 10;
         for (uint32_t i = 0; i < sz; i++)
         {
             for (uint32_t j = 0; j < sz; j++)
@@ -352,11 +352,6 @@ class FelixLayer : public Layer
             mp_scene->onDraw();
         }
 
-        // turn it off for the blit
-        if (mp_renderStatsPanel->m_wireFrame)
-        {
-            GraphicsApi::setWireframe(false);
-        }
 
         mp_frameBuffer->blit(*mp_screenBuffer);
 
