@@ -105,7 +105,8 @@
 			"xtree": "cpp",
 			"xutility": "cpp",
 			"future": "cpp",
-			"resumable": "cpp"
+			"resumable": "cpp",
+			"*.natvis": "cpp"
 		}
 	}
 }

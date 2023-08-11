@@ -25,7 +25,7 @@ Entity Scene::addEntity(const std::string& name)
     // TODO: default name to the UUID of the entity
     // add a name component because we'll probably want one
 
-    entity.addComponent<GuidCmp>();
+    entity.addComponent<GuidCmp>(m_nextcreationOrder++);
 
     entity.addComponent<NameCmp>(
         name.empty() ? entity.getComponent<GuidCmp>().guid.toString() : name);
@@ -38,6 +38,14 @@ void Scene::removeEntity(Entity entity)
     m_registry.destroy(entity.getId());
 }
 
+void Scene::sortEntities()
+{
+    m_registry.sort<GuidCmp>(
+        [&](const auto lhs, const auto rhs)
+        {
+           return lhs.creationOrder < rhs.creationOrder;
+        });
+}
 
 void Scene::onStart()
 {
@@ -148,12 +156,16 @@ void Scene::_render(Camera* p_camera)
     ///////////////////////////
     // Sprites
     ///////////////////////////
-    auto spriteGroup = m_registry.group<TransformCmp>(entt::get<SpriteCmp>);
-    for (auto entity : spriteGroup)
-    {
-        auto [transform, sprite]
-            = spriteGroup.get<TransformCmp, SpriteCmp>(entity);
+    auto spriteView
+        = m_registry.view<GuidCmp, TransformCmp, SpriteCmp>();
 
+    // order based on GuidCmp which should be sorted based on creationOrder
+    // we want to render these by the order they were created, so newest
+    // objects are on top (assuming = Z due to 2D)
+    spriteView.use<GuidCmp>();
+
+    for (auto [entity, guid, transform, sprite] : spriteView.each())
+    {
         Renderer2D::s_drawQuad(transform.getTransform(),
                                sprite.p_texture,
                                sprite.color,
@@ -164,11 +176,14 @@ void Scene::_render(Camera* p_camera)
     ///////////////////////////
     // Text
     ///////////////////////////
-    auto textView = m_registry.view<TransformCmp, TextCmp>();
-    for (auto entity : textView)
-    {
-        auto [transform, text] = textView.get<TransformCmp, TextCmp>(entity);
+    auto textView = m_registry.view<GuidCmp, TransformCmp, TextCmp>();
 
+    // same as for sprites, but we also assume we want to draw text after
+    // sprites
+    textView.use<GuidCmp>();
+
+    for (auto [entity, guid, transform, text] : textView.each())
+    {
         Renderer2D::s_drawText(text.text,
                                text.format,
                                transform.getTransform(),

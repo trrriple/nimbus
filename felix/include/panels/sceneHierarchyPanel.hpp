@@ -55,6 +55,7 @@ class SceneHeirarchyPanel
         if (ImGui::Button(ICON_FA_SQUARE_PLUS))
         {
             mp_sceneContext->addEntity();
+            mp_sceneContext->sortEntities();
         }
         if (ImGui::IsItemHovered())
         {
@@ -62,7 +63,6 @@ class SceneHeirarchyPanel
             ImGui::Text("Add new entity");
             ImGui::EndTooltip();
         }
-
 
         ImGui::SameLine();
         ImGuiTextFilter filter;
@@ -77,7 +77,7 @@ class SceneHeirarchyPanel
             ImGui::EndTooltip();
         }
 
-        auto view  = mp_sceneContext->m_registry.view<NameCmp>();
+        auto view  = mp_sceneContext->m_registry.view<GuidCmp>();
         int  count = view.size();
 
         std::vector<Entity> passedFilterEntities;
@@ -177,17 +177,13 @@ class SceneHeirarchyPanel
             m_entitySelectedCallback(m_selectionContext);
         }
 
+        bool deleted = false;
         // Check for right-click on the node
         if (ImGui::BeginPopupContextItem())
         {
             if (ImGui::MenuItem("Remove Entity"))
             {
-                mp_sceneContext->removeEntity(entity);
-                if (m_selectionContext == entity)
-                {
-                    m_selectionContext = {};
-                    m_entitySelectedCallback(m_selectionContext);
-                }
+                deleted = true;
             }
 
             ImGui::EndPopup();
@@ -197,6 +193,17 @@ class SceneHeirarchyPanel
         {
             ImGui::Text("Blah blah blah");
             ImGui::TreePop();
+        }
+
+        if (deleted)
+        {
+            mp_sceneContext->removeEntity(entity);
+            if (m_selectionContext == entity)
+            {
+                m_selectionContext = {};
+                m_entitySelectedCallback(m_selectionContext);
+            }
+            mp_sceneContext->sortEntities();
         }
     }
 
@@ -213,8 +220,9 @@ class SceneHeirarchyPanel
         if (ImGui::IsItemHovered())
         {
             ImGui::BeginTooltip();
-            ImGui::Text("GUID: %s",
-                        entity.getComponent<GuidCmp>().guid.toString().c_str());
+            ImGui::Text("GUID: %s \n CreationOrder %i",
+                        entity.getComponent<GuidCmp>().guid.toString().c_str(),
+                        entity.getComponent<GuidCmp>().creationOrder);
             ImGui::EndTooltip();
         }
     }

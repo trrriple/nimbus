@@ -15,13 +15,17 @@ namespace nimbus
 
 class EntityLogic;  // forward decl
 
-
 struct GuidCmp
 {
-    Guid guid;
+    Guid     guid;
+    uint32_t creationOrder;
+    GuidCmp(uint32_t icreationOrder) : creationOrder(icreationOrder)
+    {
 
+    }
+
+    GuidCmp() = delete;
 };
-
 
 struct NameCmp
 {

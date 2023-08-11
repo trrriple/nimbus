@@ -19,6 +19,7 @@ class Scene : public refCounted
 
     Entity addEntity(const std::string& name = std::string());
     void   removeEntity(Entity entity);
+    void   sortEntities();
 
     void onStart();
     void onUpdate(float deltaTime);
@@ -31,6 +32,7 @@ class Scene : public refCounted
     entt::registry m_registry;
     float          m_aspectRatio;
     std::string    m_name;
+    uint32_t       m_nextcreationOrder = 1;
 
 
     friend class Entity;
