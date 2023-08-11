@@ -6,6 +6,7 @@
 #include "nimbus/core/keyCode.hpp"
 #include "nimbus/core/mouseButton.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
+#include "nimbus/renderer/renderer.hpp"
 
 namespace nimbus
 {
@@ -95,8 +96,12 @@ void Window::setExitCallback(const WindowEventCallback_t& callback) noexcept
     m_exitCallback = callback;
 }
 
-void Window::onUpdate() noexcept
+void Window::swapBuffers() noexcept
 {
+    static SDL_Window* p_window = static_cast<SDL_Window*>(mp_window);
+
+    Renderer::s_submit(+[]() { SDL_GL_SwapWindow(p_window); });
+
     _calcFramerate();
 }
 
@@ -220,7 +225,17 @@ void Window::_handleWindowEvents() noexcept
             Log::coreInfo("Window Resized %d x %d", m_width, m_height);
             break;
         }
-        // main window closed
+        case (SDL_WINDOWEVENT_MINIMIZED):
+        {
+            m_minimized = true;
+            break;
+        }
+        case (SDL_WINDOWEVENT_MAXIMIZED):
+        case (SDL_WINDOWEVENT_RESTORED):
+        {
+            m_minimized = false;
+            break;
+        }  // main window closed
         case (SDL_WINDOWEVENT_CLOSE):
         {
             Log::coreInfo("This window closed");

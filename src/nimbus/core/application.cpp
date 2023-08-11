@@ -47,9 +47,8 @@ Application::Application(const std::string& name,
     insertLayer(mp_guiSubsystemLayer);
 
     Renderer::s_init();
-        
-    Renderer2D::s_init();
 
+    Renderer2D::s_init();
 }
 
 Application::~Application() noexcept
@@ -60,9 +59,8 @@ Application::~Application() noexcept
     m_layerDeck.clear();
     mp_resourceManager.reset();
 
-
     Renderer2D::s_destroy();
-    
+
     // must ensure all renderer object destructors are called before this
     // as this destroys the renderer queue which handles those
     // destructors
@@ -86,11 +84,20 @@ void Application::execute() noexcept
     ////////////////////////////////////////////////////////////////////////////
     Renderer::s_pumpCmds();
 
+    auto mainLoopSw =  m_swBank.newSw("Main loop");
+
+    auto mainThreadProcessSw = m_swBank.newSw("MainThread Process");
+
+    auto mainThreadPendRenderThreadSw
+        = m_swBank.newSw("MainThread Pend on RenderThread");
+
     double currentTime = core::getTime_s();
     while (m_active)
     {
         NM_PROFILE();
 
+        mainLoopSw->split();
+        mainThreadProcessSw->split();
         ///////////////////////////
         // Loop time handling
         ///////////////////////////
@@ -136,12 +143,24 @@ void Application::execute() noexcept
         ///////////////////////////
         // Render thread
         ///////////////////////////
+        float prePendCpuProcessTime_s = mainThreadProcessSw->split();
+        mainThreadPendRenderThreadSw->split();
         Renderer::s_waitForRenderThread();
+        mainThreadPendRenderThreadSw->splitAndSave();
+        mainThreadProcessSw->split(); // post pend
 
         ///////////////////////////
         // Pump events
         ///////////////////////////
         mp_window->pumpEvents();
+
+        ///////////////////////////
+        // Don't pass here if min
+        ///////////////////////////
+        if (mp_window->isMinimized())
+        {
+            continue;
+        }
 
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions
@@ -155,15 +174,20 @@ void Application::execute() noexcept
             }
         }
 
+        ///////////////////////////
+        // Start a Frame
+        ///////////////////////////
+        if (doUpdate || doDraw)
+        {
+            // we do frames for both update and draw cycles
+            Renderer::s_startFrame();
+        }
+
         ////////////////////////////////////////////////////////////////////////
         // Call layer draw functions
         ////////////////////////////////////////////////////////////////////////
         if (doDraw)
         {
-            ///////////////////////////
-            // Start a Frame
-            ///////////////////////////
-            Renderer::s_startFrame();
 
             GraphicsApi::clear();
 
@@ -186,11 +210,23 @@ void Application::execute() noexcept
             Renderer::s_submit([app]() { app->guiRender(); });
             Renderer::s_submit([app]() { app->mp_guiSubsystemLayer->end(); });
 
-            Renderer::s_endFrame();
-
-            mp_window->onUpdate();
-            m_drawLag = 0.0f;
+            mp_window->swapBuffers();
+            m_drawLag = 0.0f;    
         }
+        
+        ///////////////////////////
+        // Frame done!
+        ///////////////////////////
+        if (doUpdate || doDraw)
+        {
+            Renderer::s_endFrame();
+        }
+
+        float postPendCpuProcessTime_s = mainThreadProcessSw->split();
+        mainThreadProcessSw->saveSplitOverride(prePendCpuProcessTime_s
+                                               + postPendCpuProcessTime_s);
+
+        mainLoopSw->splitAndSave();
     }
 
     Log::coreInfo("Quitting");
@@ -233,7 +269,8 @@ void Application::onEvent(Event& event) noexcept
     }
 }
 
-void Application::insertLayer(const ref<Layer>& p_layer, int32_t location) noexcept
+void Application::insertLayer(const ref<Layer>& p_layer,
+                              int32_t           location) noexcept
 {
     m_layerDeck.insertLayer(p_layer, location);
 }

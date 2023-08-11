@@ -54,7 +54,7 @@ class SceneHeirarchyPanel
 
         if (ImGui::Button(ICON_FA_SQUARE_PLUS))
         {
-            mp_sceneContext->addEntity("New Entity");
+            mp_sceneContext->addEntity();
         }
         if (ImGui::IsItemHovered())
         {
@@ -183,6 +183,13 @@ class SceneHeirarchyPanel
         if (ImGui::InputText("##Name", m_scratch, sizeof(m_scratch)))
         {
             name = std::string(m_scratch);
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text("GUID: %s",
+                        entity.getComponent<GuidCmp>().guid.toString().c_str());
+            ImGui::EndTooltip();
         }
     }
 

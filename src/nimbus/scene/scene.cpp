@@ -24,7 +24,11 @@ Entity Scene::addEntity(const std::string& name)
 
     // TODO: default name to the UUID of the entity
     // add a name component because we'll probably want one
-    entity.addComponent<NameCmp>(name.empty() ? "UUID" : name);
+
+    entity.addComponent<GuidCmp>();
+
+    entity.addComponent<NameCmp>(
+        name.empty() ? entity.getComponent<GuidCmp>().guid.toString() : name);
 
     return entity;
 }
@@ -32,8 +36,6 @@ Entity Scene::addEntity(const std::string& name)
 void Scene::removeEntity(Entity entity)
 {
     m_registry.destroy(entity.getId());
-
-
 }
 
 

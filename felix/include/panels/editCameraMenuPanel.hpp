@@ -94,28 +94,30 @@ class EditCameraMenuPanel
 
         ImGui::Spacing();
 
-        ImGui::BeginTable(
-            "Camera Attributes",
-            4,
-            ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_NoHostExtendX);
+        if (ImGui::BeginTable("Camera Attributes",
+                              4,
+                              ImGuiTableFlags_SizingStretchSame
+                                  | ImGuiTableFlags_NoHostExtendX))
 
-        ImGui::TableSetupColumn("Yaw", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Pitch", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Zoom", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("FOV", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
+        {
+           ImGui::TableSetupColumn("Yaw", ImGuiTableColumnFlags_WidthStretch);
+           ImGui::TableSetupColumn("Pitch", ImGuiTableColumnFlags_WidthStretch);
+           ImGui::TableSetupColumn("Zoom", ImGuiTableColumnFlags_WidthStretch);
+           ImGui::TableSetupColumn("FOV", ImGuiTableColumnFlags_WidthStretch);
+           ImGui::TableHeadersRow();
 
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-        ImGui::Text("%+.02f", mp_editCamera->getYaw());
-        ImGui::TableNextColumn();
-        ImGui::Text("%+.02f", mp_editCamera->getPitch());
-        ImGui::TableNextColumn();
-        ImGui::Text("%+.02f", mp_editCamera->getZoom());
-        ImGui::TableNextColumn();
-        ImGui::Text("%+.02f", mp_editCamera->getFov());
+           ImGui::TableNextRow();
+           ImGui::TableNextColumn();
+           ImGui::Text("%+.02f", mp_editCamera->getYaw());
+           ImGui::TableNextColumn();
+           ImGui::Text("%+.02f", mp_editCamera->getPitch());
+           ImGui::TableNextColumn();
+           ImGui::Text("%+.02f", mp_editCamera->getZoom());
+           ImGui::TableNextColumn();
+           ImGui::Text("%+.02f", mp_editCamera->getFov());
 
-        ImGui::EndTable();
+           ImGui::EndTable();
+        }
 
         if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
         {

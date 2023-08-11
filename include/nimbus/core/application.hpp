@@ -5,6 +5,7 @@
 #include "nimbus/core/layerDeck.hpp"
 #include "nimbus/core/log.hpp"
 #include "nimbus/core/window.hpp"
+#include "nimbus/core/stopwatch.hpp"
 
 #include "nimbus/guiLayers/guiSubsystem.hpp"
 #include "nimbus/core/resourceManager.hpp"
@@ -94,6 +95,11 @@ class Application
         return m_gameTime;
     }
 
+    inline StopWatchBank& getSwBank() noexcept
+    {
+       return m_swBank;
+    } 
+
    private:
     ///////////////////////////
     // Parameters
@@ -105,12 +111,13 @@ class Application
     ///////////////////////////
     // State
     ///////////////////////////
+    LayerDeck     m_layerDeck;
     bool          m_menuMode  = false;
     volatile bool m_active    = true;
     double        m_gameTime  = 0.0f;
     float         m_updateLag = 0.0f;
     float         m_drawLag   = 0.0f;
-    LayerDeck     m_layerDeck;
+    StopWatchBank m_swBank;
 
     ///////////////////////////
     // References

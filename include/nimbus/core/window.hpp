@@ -33,7 +33,7 @@ class Window : public refCounted
 
     void setExitCallback(const WindowEventCallback_t& callback) noexcept;
 
-    void onUpdate() noexcept;
+    void swapBuffers() noexcept;
 
     void pumpEvents() noexcept;
 
@@ -73,9 +73,14 @@ class Window : public refCounted
 
     void setVSync(bool on) noexcept;
 
-    inline bool getVSync() noexcept
+    inline bool getVSync() const noexcept
     {
         return m_VSyncOn;
+    }
+
+    inline bool isMinimized() const noexcept
+    {
+        return m_minimized;
     }
 
    private:
@@ -93,6 +98,7 @@ class Window : public refCounted
     float    m_aspectRatio;
     bool     m_VSyncOn       = true;
     float    m_mouseWheelPos = 0.0f;
+    bool     m_minimized     = false;
 
     void _handleWindowEvents() noexcept;
 

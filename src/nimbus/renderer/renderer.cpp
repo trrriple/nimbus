@@ -17,8 +17,8 @@
 namespace nimbus
 {
 
-RenderCmdQ*  Renderer::s_renderCmdQ[k_numRenderCmdQ];
-RenderCmdQ*  Renderer::s_objectCmdQ[k_numObjectCmdQ];
+RenderCmdQ* Renderer::s_renderCmdQ[k_numRenderCmdQ];
+RenderCmdQ* Renderer::s_objectCmdQ[k_numObjectCmdQ];
 
 RenderThread Renderer::s_renderThread;
 uint32_t     Renderer::s_submitRenderCmdQIdx;
@@ -60,9 +60,8 @@ void Renderer::s_init()
 
 void Renderer::s_destroy()
 {
-    
     s_renderThread.stop();
-    
+
     for (int i = 0; i < k_numRenderCmdQ; i++)
     {
         delete s_renderCmdQ[i];
@@ -76,15 +75,13 @@ void Renderer::s_setScene(const glm::mat4& vpMatrix) noexcept
 
 void Renderer::s_startFrame() noexcept
 {
+    GraphicsApi::clear();
     s_swapAndStart();
 }
 
 void Renderer::s_endFrame() noexcept
 {
-    static SDL_Window* p_window = static_cast<SDL_Window*>(
-                           Application::s_get().getWindow().getOsWindow());
-
-    Renderer::s_submit(+[]() { SDL_GL_SwapWindow(p_window); });
+    // nothing for now
 }
 
 void Renderer::s_render(ref<Shader>      p_shader,
@@ -214,21 +211,26 @@ void Renderer::_s_renderThreadFn()
                            Application::s_get().getWindow().getOsWindow()),
                        Application::s_get().getWindow().getContext());
 
+    auto pendSw
+        = Application::s_get().getSwBank().newSw("RenderThread Pend");
+
+    auto processSw
+        = Application::s_get().getSwBank().newSw("RenderThread Process");
+
     while (s_renderThread.isActive())
     {
-        // Stopwatch pendTimer;
+        pendSw->split();
         s_renderThread.waitForState(RenderThread::State::READY);
+        pendSw->splitAndSave();
+
+        processSw->split();
         s_renderThread.setState(RenderThread::State::BUSY);
-
-        // Stopwatch processTimer;
-
         // process all the commands in object queue
         _s_getProcessObjectCmdQ()->pump();
-
         // process all the commands in render queue
         _s_getProcessRenderCmdQ()->pump();
-
         s_renderThread.setState(RenderThread::State::PEND);
+        processSw->splitAndSave();
     }
 }
 

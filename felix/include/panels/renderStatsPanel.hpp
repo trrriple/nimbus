@@ -65,56 +65,78 @@ class RenderStatsPanel
         }
         m_frameTimes_ms.push_back(mp_appWinRef->m_tFrame_s * 1000.0);
 
-        ImGui::PlotLines("Frame Times",
-                         m_frameTimes_ms.data(),
-                         m_frameTimes_ms.size(),
-                         0,
-                         nullptr,
-                         0.0f,
-                         20.0f,
-                         ImVec2(0, 0),
-                         sizeof(float));
+     
 
         ImGui::Separator();
 
-        if (ImGui::CollapsingHeader("Renderer2D Stats"))
+        ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+        if (ImGui::BeginTabBar("Stats", tab_bar_flags))
         {
-            Renderer2D::Stats stats = Renderer2D::s_getStats();
-
-            ImGui::PushItemWidth(60.0f);
-            ImGui::LabelText("Draw Calls", "%i", stats.drawCalls);
-            ImGui::LabelText("Quads", "%i", stats.quads);
-            ImGui::LabelText("Characters", "%i", stats.characters);
-
-            ImGui::LabelText("Total Vertices", "%i", stats.totalVertices);
-            ImGui::LabelText(
-                "Quad Vertices Available", "%i", stats.quadVertsAvail);
-            ImGui::LabelText(
-                "Text Vertices Available", "%i", stats.textVertsAvail);
-
-            ImGui::PopItemWidth();
-        }
-
-        if (ImGui::CollapsingHeader("Layers"))
-        {
-            if (ImGui::BeginTable("Layer Order", 2))
+            if (ImGui::BeginTabItem("Performance"))
             {
-                ImGui::TableSetupColumn("#");
-                ImGui::TableSetupColumn("Name");
-                ImGui::TableHeadersRow();
+                ImGui::PlotLines("Frame Times",
+                                 m_frameTimes_ms.data(),
+                                 m_frameTimes_ms.size(),
+                                 0,
+                                 nullptr,
+                                 0.0f,
+                                 20.0f,
+                                 ImVec2(0, 0),
+                                 sizeof(float));
 
-                auto layerNames = mp_appRef->getLayerDeck().getLayerNames();
-                for (uint32_t i = 0; i < layerNames.size(); i++)
+                const auto swBank = mp_appRef->getSwBank().getBank();
+                for (const auto& pair : swBank)
                 {
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%d", i);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%s", layerNames[i].c_str());
+                    ImGui::Text("%s: %.3fms",
+                                pair.first,
+                                pair.second->getLastSavedSplit() * 1000.0);
                 }
 
-                ImGui::EndTable();
+                ImGui::EndTabItem();
             }
+
+            if (ImGui::BeginTabItem("Calls"))
+            {
+                Renderer2D::Stats stats = Renderer2D::s_getStats();
+
+                ImGui::PushItemWidth(60.0f);
+                ImGui::LabelText("Draw Calls", "%i", stats.drawCalls);
+                ImGui::LabelText("Quads", "%i", stats.quads);
+                ImGui::LabelText("Characters", "%i", stats.characters);
+
+                ImGui::LabelText("Total Vertices", "%i", stats.totalVertices);
+                ImGui::LabelText(
+                    "Quad Vertices Available", "%i", stats.quadVertsAvail);
+                ImGui::LabelText(
+                    "Text Vertices Available", "%i", stats.textVertsAvail);
+
+                ImGui::PopItemWidth();
+
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Layers"))
+            {
+                if (ImGui::BeginTable("Layer Order", 2))
+                {
+                    ImGui::TableSetupColumn("#");
+                    ImGui::TableSetupColumn("Name");
+                    ImGui::TableHeadersRow();
+
+                    auto layerNames = mp_appRef->getLayerDeck().getLayerNames();
+                    for (uint32_t i = 0; i < layerNames.size(); i++)
+                    {
+                        ImGui::TableNextRow();
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%d", i);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%s", layerNames[i].c_str());
+                    }
+
+                    ImGui::EndTable();
+                }
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
         }
 
         ImGui::End();

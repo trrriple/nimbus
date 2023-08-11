@@ -4,6 +4,7 @@
 #include "nimbus/renderer/font.hpp"
 #include "nimbus/scene/camera.hpp"
 #include "nimbus/core/window.hpp"
+#include "nimbus/core/guid.hpp"
 
 #include "glm.hpp"
 #include "gtx/quaternion.hpp"
@@ -13,6 +14,14 @@ namespace nimbus
 {
 
 class EntityLogic;  // forward decl
+
+
+struct GuidCmp
+{
+    Guid guid;
+
+};
+
 
 struct NameCmp
 {
