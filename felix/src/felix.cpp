@@ -453,7 +453,7 @@ class FelixLayer : public Layer
                 event.markAsHandled();
             }
 
-            // shortcuts
+            // shortcuts TODO make this less hacky
             else if (eventType == Event::Type::KEYDOWN)
             {
                 if (mp_appWinRef->modKeyPressed(KeyMod::CTRL))
@@ -463,7 +463,7 @@ class FelixLayer : public Layer
                     {
                         _open();
                     }
-                    //save, saveas
+                    // save, saveas
                     else if (mp_appWinRef->keyPressed(ScanCode::S))
                     {
                         if (mp_appWinRef->modKeyPressed(KeyMod::SHIFT))
@@ -473,6 +473,53 @@ class FelixLayer : public Layer
                         else
                         {
                             _save(false);
+                        }
+                    }
+                }
+                else
+                {
+                    if (mp_appWinRef->keyPressed(ScanCode::ESCAPE))
+                    {
+                        if (m_selectedEntity)
+                        {
+                            if (mp_sceneControlPanel->getState().toolState
+                                != SceneControlPanel::ToolState::NONE)
+                            {
+                                mp_sceneControlPanel->getState().toolState
+                                    = SceneControlPanel::ToolState::NONE;
+                            }
+                        }
+                    }
+                    if (mp_appWinRef->keyPressed(ScanCode::U))
+                    {
+                        if (m_selectedEntity)
+                        {
+                            mp_sceneControlPanel->getState().toolState
+                                = SceneControlPanel::ToolState::UNIVERSAL;
+                        }
+                    }
+                    else if (mp_appWinRef->keyPressed(ScanCode::M))
+                    {
+                        if (m_selectedEntity)
+                        {
+                            mp_sceneControlPanel->getState().toolState
+                                = SceneControlPanel::ToolState::MOVE;
+                        }
+                    }
+                    else if (mp_appWinRef->keyPressed(ScanCode::R))
+                    {
+                        if (m_selectedEntity)
+                        {
+                            mp_sceneControlPanel->getState().toolState
+                                = SceneControlPanel::ToolState::ROTATE;
+                        }
+                    }
+                    else if (mp_appWinRef->keyPressed(ScanCode::E))
+                    {
+                        if (m_selectedEntity)
+                        {
+                            mp_sceneControlPanel->getState().toolState
+                                = SceneControlPanel::ToolState::SCALE;
                         }
                     }
                 }

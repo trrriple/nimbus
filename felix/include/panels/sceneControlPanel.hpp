@@ -48,7 +48,13 @@ class SceneControlPanel
 
     void onDraw()
     {
-        ImGui::Begin("Scene Control");
+        // overlay
+        ImGuiWindowFlags windowFlags
+            = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking
+              | ImGuiWindowFlags_AlwaysAutoResize
+              | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+        ImGui::Begin("Scene Control", nullptr, windowFlags);
 
         ImGui::BeginTable(
             "##Controls",
@@ -160,7 +166,7 @@ class SceneControlPanel
         ImGui::End();
     }
 
-    State getState()
+    State& getState()
     {
         return m_state;
     }
