@@ -4,6 +4,7 @@
 #include "nimbus/core/window.hpp"
 #include "nimbus/core/utility.hpp"
 #include "nimbus/renderer/frameBuffer.hpp"
+#include "panels/sceneControlPanel.hpp"
 
 #include "glm.hpp"
 #include "ImGuizmo.h"
@@ -17,8 +18,8 @@ class ViewportPanel
     glm::vec2 m_viewportSize = {800, 600};
     glm::vec2 m_viewportRegion[2];
 
-    bool      m_viewportFocused;
-    bool      m_viewportHovered;
+    bool m_viewportFocused;
+    bool m_viewportHovered;
 
     bool m_wireFrame = false;
 
@@ -27,8 +28,7 @@ class ViewportPanel
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
 
-        mp_editCamera   = p_editCamera;
-
+        mp_editCamera = p_editCamera;
     }
     ~ViewportPanel()
     {
@@ -47,10 +47,11 @@ class ViewportPanel
         }
     }
 
-    void onDraw(ref<FrameBuffer>& p_screenBuffer,
-                bool              orthographic,
-                Camera::Bounds&   bounds,
-                Entity            selectedEntity)
+    void onDraw(ref<FrameBuffer>&            p_screenBuffer,
+                bool                         orthographic,
+                Camera::Bounds&              bounds,
+                Entity                       selectedEntity,
+                SceneControlPanel::ToolState toolState)
     {
         ImGui::SetNextWindowSize({m_viewportSize.x, m_viewportSize.y},
                                  ImGuiCond_FirstUseEver);
@@ -78,7 +79,7 @@ class ViewportPanel
         {
             // we need to resize
             m_viewportSize = {viewportPanelSize.x, viewportPanelSize.y};
-            m_wasResized = true;
+            m_wasResized   = true;
         }
 
         uint64_t textureID = p_screenBuffer->getTextureId();
@@ -112,7 +113,7 @@ class ViewportPanel
                  (int)m_viewportSize.y,
                  m_viewportSize.x / m_viewportSize.y);
 
-        ImVec2 dimLoc = {windowPos.x + m_viewportSize.x - 105.0f,
+        ImVec2 dimLoc = {windowPos.x + m_viewportSize.x - 115.0f,
                          windowPos.y + m_viewportSize.y - 17.0f};
 
         // Draw the text on the draw list
@@ -156,10 +157,39 @@ class ViewportPanel
             drawList->AddText(posLoc, IM_COL32(255, 255, 255, 255), posString);
         }
 
-        if (selectedEntity)
+        if (selectedEntity && toolState != SceneControlPanel::ToolState::NONE)
         {
             if (selectedEntity.hasComponent<TransformCmp>())
             {
+                ImGuizmo::OPERATION operation = ImGuizmo::OPERATION::UNIVERSAL;
+                switch (toolState)
+                {
+                    case (SceneControlPanel::ToolState::UNIVERSAL):
+                    {
+                        operation = ImGuizmo::OPERATION::UNIVERSAL;
+                        break;
+                    }
+                    case (SceneControlPanel::ToolState::MOVE):
+                    {
+                        operation = ImGuizmo::OPERATION::TRANSLATE;
+                        break;
+                    }
+                    case (SceneControlPanel::ToolState::SCALE):
+                    {
+                        operation = ImGuizmo::OPERATION::SCALE;
+                        break;
+                    }
+                    case (SceneControlPanel::ToolState::ROTATE):
+                    {
+                        operation = ImGuizmo::OPERATION::ROTATE;
+                        break;
+                    }
+                    default:
+                    {
+                        NM_ASSERT(false, "Unkown tool state %i", toolState);
+                    }
+                }
+
                 ImGuizmo::SetOrthographic(orthographic);
                 ImGuizmo::SetDrawlist();
 
@@ -178,7 +208,7 @@ class ViewportPanel
 
                 ImGuizmo::Manipulate(glm::value_ptr(cameraView),
                                      glm::value_ptr(cameraProjection),
-                                     ImGuizmo::OPERATION::SCALE,
+                                     operation,
                                      ImGuizmo::LOCAL,
                                      glm::value_ptr(transform),
                                      nullptr,

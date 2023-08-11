@@ -1,7 +1,7 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
 
-#include "nimbus/guiLayers/guiSubsystem.hpp"
+#include "nimbus/guiSubsystem/guiSubsystem.hpp"
 
 #include "nimbus/core/application.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"

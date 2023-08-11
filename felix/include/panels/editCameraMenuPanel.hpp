@@ -183,7 +183,11 @@ class EditCameraMenuPanel
     {
         if (mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
         {
-            mp_editCamera->setPosition({0.0f, 0.0f, 2.4125f});
+#if IMGUIZO_SCALE_FIXED
+            mp_editCamera->setPosition({0.00f, 0.00f, 2.4125f});
+#else
+            mp_editCamera->setPosition({0.05f, -0.05f, 2.4125f});
+#endif
             mp_editCamera->setYaw(-90.0f);
             mp_editCamera->setPitch(0.0f);
             mp_editCamera->setFov(45.0f);

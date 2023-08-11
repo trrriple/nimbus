@@ -3,7 +3,7 @@
 
 #include "nimbus/core/application.hpp"
 
-#include "nimbus/guiLayers/guiSubsystem.hpp"
+#include "nimbus/guiSubsystem/guiSubsystem.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/renderer/renderer2D.hpp"

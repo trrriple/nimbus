@@ -4,10 +4,15 @@
 #include "panels/sceneControlPanel.hpp"
 #include "panels/sceneHierarchyPanel.hpp"
 #include "panels/renderStatsPanel.hpp"
-#include "panels/editCameraMenuPanel.hpp"
 #include "nimbus/scene/sceneSerializer.hpp"
 
 #include <filesystem>
+
+
+// for some reason when looking straight on, the scale gizmo is broken
+// so shift the camera slightly off origin until this is fixed.
+#define IMGUIZO_SCALE_FIXED 0
+#include "panels/editCameraMenuPanel.hpp"
 
 
 namespace nimbus
@@ -163,7 +168,11 @@ class FelixLayer : public Layer
         ///////////////////////////
         mp_editCamera = ref<Camera>::gen(Camera::Type::PERSPECTIVE);
         mp_editCamera->setAspectRatio(m_aspectRatio);
-        mp_editCamera->setPosition({0.0f, 0.0f, 2.4125f});
+#if IMGUIZO_SCALE_FIXED
+         mp_editCamera->setPosition({0.00f, 0.00f, 2.4125f});
+#else
+        mp_editCamera->setPosition({0.05f, -0.05f, 2.4125f});
+#endif
         mp_editCamera->setYaw(-90.0f);
         mp_editCamera->setSpeed(5.0f);
 
@@ -194,7 +203,7 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Test Sprite
         ///////////////////////////
-        uint32_t sz = 1;
+        uint32_t sz = 2;
         for (uint32_t i = 0; i < sz; i++)
         {
             for (uint32_t j = 0; j < sz; j++)
@@ -306,14 +315,15 @@ class FelixLayer : public Layer
             mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
         }
 
-        if (mp_sceneControlPanel->getState() == SceneControlPanel::State::PLAY
+        if (mp_sceneControlPanel->getState().runState
+                == SceneControlPanel::RunState::PLAY
             && m_sceneState != State::PLAY)
         {
             m_sceneState = State::PLAY;
             mp_scene->onStart();
         }
-        else if (mp_sceneControlPanel->getState()
-                     == SceneControlPanel::State::PAUSE
+        else if (mp_sceneControlPanel->getState().runState
+                     == SceneControlPanel::RunState::PAUSE
                  && m_sceneState != State::PAUSE)
         {
             m_sceneState = State::PAUSE;
@@ -682,22 +692,22 @@ class FelixLayer : public Layer
         }
 
         ///////////////////////////
+        // Scene Control
+        ///////////////////////////
+        mp_sceneControlPanel->onDraw();
+
+        ///////////////////////////
         // Viewport
         ///////////////////////////
-
         mp_viewportPanel->onDraw(
             mp_screenBuffer,
             mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC,
             worldBounds,
-            m_selectedEntity);
+            m_selectedEntity,
+            mp_sceneControlPanel->getState().toolState);
 
         m_viewportFocused = mp_viewportPanel->m_viewportFocused;
         m_viewportHovered = mp_viewportPanel->m_viewportHovered;
-
-        ///////////////////////////
-        // Scene Control
-        ///////////////////////////
-        mp_sceneControlPanel->onDraw();
 
         ///////////////////////////
         // Scene Heirarchy

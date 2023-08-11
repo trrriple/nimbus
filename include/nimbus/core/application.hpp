@@ -7,7 +7,7 @@
 #include "nimbus/core/window.hpp"
 #include "nimbus/core/stopwatch.hpp"
 
-#include "nimbus/guiLayers/guiSubsystem.hpp"
+#include "nimbus/guiSubsystem/guiSubsystem.hpp"
 #include "nimbus/core/resourceManager.hpp"
 
 namespace nimbus
