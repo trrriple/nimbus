@@ -28,7 +28,7 @@ class RenderStatsPanel
         char buf[128];
         snprintf(buf,
                  128,
-                 "%.02f ms/frame (%.02f FPS)###RenderStatus",
+                 "%05.02f ms/frame (%05.02f FPS)###RenderStatus",
                  mp_appWinRef->m_tFrame_s * 1000.0f,
                  mp_appWinRef->m_fps);
 

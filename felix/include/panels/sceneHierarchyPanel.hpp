@@ -62,6 +62,8 @@ class SceneHeirarchyPanel
             ImGui::Text("Add new entity");
             ImGui::EndTooltip();
         }
+
+
         ImGui::SameLine();
         ImGuiTextFilter filter;
         filter.Draw(ICON_FA_FILTER);
@@ -75,18 +77,39 @@ class SceneHeirarchyPanel
             ImGui::EndTooltip();
         }
 
-        for (auto [entityHandle] :
-             mp_sceneContext->m_registry.storage<entt::entity>().each())
+        auto view  = mp_sceneContext->m_registry.view<NameCmp>();
+        int  count = view.size();
+
+        std::vector<Entity> passedFilterEntities;
+        passedFilterEntities.reserve(count);
+
+        for (auto entityHandle : view)
         {
             Entity entity = {entityHandle, mp_sceneContext.raw()};
-
-            auto name = entity.getComponent<NameCmp>().name;
+            auto&  name   = entity.getComponent<NameCmp>().name;
 
             if (filter.PassFilter(name.c_str()))
             {
+                passedFilterEntities.push_back(entity);
+            }
+        }
+
+        ImGui::Separator();
+
+        ImGui::BeginChild("##ScrollRegion");
+
+        ImGuiListClipper clipper;
+        clipper.Begin(passedFilterEntities.size());
+        while (clipper.Step())
+        {
+            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+            {
+                Entity& entity = passedFilterEntities[i];
                 _drawEntity(entity);
             }
         }
+
+        clipper.End();
 
         // clear selection when clicked off of in window
         if (m_selectionContext && ImGui::IsMouseDown(0)
@@ -99,6 +122,8 @@ class SceneHeirarchyPanel
                 m_entitySelectedCallback(m_selectionContext);
             }
         }
+        ImGui::EndChild();
+
 
         // reduce default indentation for component panel
         float originalIndent            = ImGui::GetStyle().IndentSpacing;
@@ -130,7 +155,7 @@ class SceneHeirarchyPanel
     ////////////////////////////////////////////////////////////////////////////
     // Private Functions
     ////////////////////////////////////////////////////////////////////////////
-    void _drawEntity(Entity entity)
+    void _drawEntity(Entity& entity)
     {
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
                                    | ImGuiTreeNodeFlags_OpenOnDoubleClick
@@ -140,15 +165,10 @@ class SceneHeirarchyPanel
         flags |= ((m_selectionContext == entity) ? ImGuiTreeNodeFlags_Selected
                                                  : 0);
 
-        auto name = entity.getComponent<NameCmp>().name;
+        auto& name = entity.getComponent<NameCmp>().name;
 
-        if (ImGui::TreeNodeEx((void*)entity.getId(),
-                              flags,
-                              ICON_FA_CUBES " %s",
-                              name.c_str()))
-        {
-            ImGui::TreePop();
-        }
+        bool open = ImGui::TreeNodeEx(
+            (void*)entity.getId(), flags, ICON_FA_CUBES " %s", name.c_str());
 
         // select item as context if it's clicked
         if (ImGui::IsItemClicked(0))
@@ -172,9 +192,15 @@ class SceneHeirarchyPanel
 
             ImGui::EndPopup();
         }
+
+        if (open)
+        {
+            ImGui::Text("Blah blah blah");
+            ImGui::TreePop();
+        }
     }
 
-    void _drawNameCmp(Entity entity)
+    void _drawNameCmp(Entity& entity)
     {
         auto& name = entity.getComponent<NameCmp>().name;
 
@@ -193,7 +219,7 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawSpriteCmp(Entity entity)
+    void _drawSpriteCmp(Entity& entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
                                           | ImGuiTreeNodeFlags_DefaultOpen;
@@ -310,7 +336,7 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawTextCmp(Entity entity)
+    void _drawTextCmp(Entity& entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
                                           | ImGuiTreeNodeFlags_DefaultOpen;
@@ -441,7 +467,7 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawCameraCmp(Entity entity)
+    void _drawCameraCmp(Entity& entity)
     {
         auto& cameraCmp = entity.getComponent<CameraCmp>();
 
@@ -541,7 +567,7 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawTransformCmp(Entity entity)
+    void _drawTransformCmp(Entity& entity)
     {
         auto& transformCmp = entity.getComponent<TransformCmp>();
 
@@ -591,7 +617,7 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawComponents(Entity entity)
+    void _drawComponents(Entity& entity)
     {
         static ImGuiTreeNodeFlags flags
             = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen
@@ -600,11 +626,8 @@ class SceneHeirarchyPanel
         ///////////////////////////
         // Name  Component
         ///////////////////////////
-        if (entity.hasComponent<NameCmp>())
-        {
-            // no tree node for the name
-            _drawNameCmp(entity);
-        }
+        // no tree node for the name
+        _drawNameCmp(entity);
 
         ImGui::SameLine();
         if (ImGui::Button("Add " ICON_FA_SORT_DOWN))
