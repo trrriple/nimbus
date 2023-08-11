@@ -84,13 +84,17 @@ class RenderStatsPanel
                                  ImVec2(0, 0),
                                  sizeof(float));
 
+                
+                ImGui::PushItemWidth(70.0f);
                 const auto swBank = mp_appRef->getSwBank().getBank();
                 for (const auto& pair : swBank)
                 {
-                    ImGui::Text("%s: %.3fms",
-                                pair.first,
-                                pair.second->getLastSavedSplit() * 1000.0);
+                    ImGui::LabelText(pair.first,
+                                     "%05.2f ms",
+                                     pair.second->getLastSavedSplit() * 1000.0);
                 }
+                ImGui::PopItemWidth();
+
 
                 ImGui::EndTabItem();
             }

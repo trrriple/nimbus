@@ -194,7 +194,7 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Test Sprite
         ///////////////////////////
-        uint32_t sz = 250;
+        uint32_t sz = 300;
         for (uint32_t i = 0; i < sz; i++)
         {
             for (uint32_t j = 0; j < sz; j++)
@@ -694,17 +694,17 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Scene Control
         ///////////////////////////
-        // mp_sceneControlPanel->onDraw();
+        mp_sceneControlPanel->onDraw();
 
         ///////////////////////////
         // Scene Heirarchy
         ///////////////////////////
-        // mp_sceneHierarchyPanel->onDraw();
+        mp_sceneHierarchyPanel->onDraw();
 
         ///////////////////////////
         // Camera Menu
         ///////////////////////////
-        // mp_editCameraMenuPanel->onDraw(worldBounds);
+        mp_editCameraMenuPanel->onDraw(worldBounds);
 
         ///////////////////////////
         // Render Stats
