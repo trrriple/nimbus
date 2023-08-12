@@ -4,7 +4,6 @@
 #include "nimbus/core/application.hpp"
 
 #include "nimbus/guiSubsystem/guiSubsystem.hpp"
-#include "nimbus/renderer/graphicsApi.hpp"
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/renderer/renderer2D.hpp"
 
@@ -188,9 +187,6 @@ void Application::execute() noexcept
         ////////////////////////////////////////////////////////////////////////
         if (doDraw)
         {
-
-            GraphicsApi::clear();
-
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
                 // call each draw with how long it's been since last draw

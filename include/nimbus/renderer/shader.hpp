@@ -17,6 +17,7 @@ class Shader : public refCounted
     enum class ShaderType
     {
         INT,
+        UINT,
         FLOAT,
         BOOL
     };

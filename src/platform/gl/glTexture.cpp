@@ -296,6 +296,8 @@ uint32_t GlTexture::s_format(Format format) noexcept
             return GL_RG;
         case Format::RED:
             return GL_RED;
+        case Format::RED_INT:
+            return GL_RED_INTEGER;
         default:
         {
             NM_CORE_ASSERT_STATIC(
@@ -331,8 +333,20 @@ uint32_t GlTexture::s_formatInternal(FormatInternal format) noexcept
             return GL_RG32F;
         case FormatInternal::R8:
             return GL_R8;
-        case FormatInternal::R16F:
-            return GL_R16F;
+        case FormatInternal::R16:
+            return GL_R16;
+        case FormatInternal::R8I:
+            return GL_R8I;
+        case FormatInternal::R16I:
+            return GL_R16I;
+        case FormatInternal::R32I:
+            return GL_R32I;
+         case FormatInternal::R8UI:
+            return GL_R8UI;
+        case FormatInternal::R16UI:
+            return GL_R16UI;
+        case FormatInternal::R32UI:
+            return GL_R32UI;
         case FormatInternal::R32F:
             return GL_R32F;
         case FormatInternal::DEPTH_COMPONENT16:
@@ -390,6 +404,8 @@ uint32_t GlTexture::s_filterType(FilterType filterType) noexcept
             return GL_LINEAR;
         case (FilterType::MIPMAP_LINEAR):
             return GL_LINEAR_MIPMAP_LINEAR;
+        case (FilterType::NEAREST):
+            return GL_NEAREST;
         default:
         {
             NM_CORE_ASSERT_STATIC(
@@ -437,6 +453,8 @@ void GlTexture::_storage() noexcept
                            m_spec.width,
                            m_spec.height);
 
+        glBindTexture(GL_TEXTURE_2D, m_id);
+
         glTextureParameteri(m_id,
                             GL_TEXTURE_MAG_FILTER,
                             Texture::s_filterType(m_spec.filterTypeMag));
@@ -453,6 +471,9 @@ void GlTexture::_storage() noexcept
             m_id, GL_TEXTURE_WRAP_T, Texture::s_wrapType(m_spec.wrapTypeT));
 
         m_loaded = true;
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
 
     }
     else

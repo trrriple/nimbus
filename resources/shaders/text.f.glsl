@@ -5,12 +5,12 @@ layout(location = 1)      in vec4  v_fgColor;
 layout(location = 2)      in vec4  v_bgColor;
 layout(location = 3)      in vec2  v_unitRange;
 layout(location = 4) flat in int   v_texIndex;
-layout(location = 5) flat in int   v_entityId;
+layout(location = 5) flat in uint  v_entityId;
 
 layout(binding = 0) uniform sampler2D u_atlases[32];
 
-layout(location = 0) out vec4 fragColor;
-layout(location = 1) out int  o_entityId;
+layout(location = 0) out vec4 o_fragColor;
+layout(location = 1) out uint o_entityId;
 
 float screenPxRange()
 {
@@ -34,7 +34,7 @@ void main()
     if (opacity == 0.0f)
         discard;
 
-    fragColor = mix(v_bgColor, v_fgColor, opacity);
-    if (fragColor.a == 0.0f)
+    o_fragColor = mix(v_bgColor, v_fgColor, opacity);
+    if (o_fragColor.a == 0.0f)
         discard;
 }

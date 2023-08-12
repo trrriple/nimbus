@@ -28,6 +28,7 @@ class Texture : public refCounted
         RGB,
         RG,
         RED,
+        RED_INT
     };
 
     enum class FormatInternal
@@ -43,6 +44,13 @@ class Texture : public refCounted
         RG16F,
         RG32F,
         R8,
+        R16,
+        R8I,
+        R16I,
+        R32I,
+        R8UI,
+        R16UI,
+        R32UI,
         R16F,
         R32F,
         DEPTH_COMPONENT16,
@@ -66,7 +74,8 @@ class Texture : public refCounted
     enum class FilterType
     {
         LINEAR,
-        MIPMAP_LINEAR
+        MIPMAP_LINEAR,
+        NEAREST,
     };
 
     enum class WrapType

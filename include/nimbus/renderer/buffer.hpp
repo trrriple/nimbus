@@ -38,6 +38,14 @@ const ShaderDataType k_shaderInt3
     = std::make_tuple(Shader::ShaderType::INT, 12, 3);
 const ShaderDataType k_shaderInt4
     = std::make_tuple(Shader::ShaderType::INT, 16, 4);
+const ShaderDataType k_shaderUInt
+    = std::make_tuple(Shader::ShaderType::UINT, 4, 1);
+const ShaderDataType k_shaderUInt2
+    = std::make_tuple(Shader::ShaderType::UINT, 8, 2);
+const ShaderDataType k_shaderUInt3
+    = std::make_tuple(Shader::ShaderType::UINT, 12, 3);
+const ShaderDataType k_shaderUInt4
+    = std::make_tuple(Shader::ShaderType::UINT, 16, 4);
 const ShaderDataType k_shaderBool
     = std::make_tuple(Shader::ShaderType::BOOL, 1, 1);
 

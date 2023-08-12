@@ -8,12 +8,10 @@
 
 #include <filesystem>
 
-
 // for some reason when looking straight on, the scale gizmo is broken
 // so shift the camera slightly off origin until this is fixed.
 #define IMGUIZO_SCALE_FIXED 0
 #include "panels/editCameraMenuPanel.hpp"
-
 
 namespace nimbus
 {
@@ -106,16 +104,16 @@ class FelixLayer : public Layer
     ref<Scene>  mp_scene;
     State       m_sceneState      = State::PAUSE;
     std::string m_openedScenePath = "";
-    Entity      m_selectedEntity = {};
+    Entity      m_selectedEntity  = {};
 
     ///////////////////////////
     // Viewport Info
     ///////////////////////////
     glm::vec2 m_viewportSize = {800, 600};
 
-    float     m_aspectRatio     = 800 / 600;
-    bool      m_viewportFocused = false;
-    bool      m_viewportHovered = false;
+    float m_aspectRatio     = 800 / 600;
+    bool  m_viewportFocused = false;
+    bool  m_viewportHovered = false;
 
     ref<Font> mp_generalFont = nullptr;
 
@@ -169,7 +167,7 @@ class FelixLayer : public Layer
         mp_editCamera = ref<Camera>::gen(Camera::Type::PERSPECTIVE);
         mp_editCamera->setAspectRatio(m_aspectRatio);
 #if IMGUIZO_SCALE_FIXED
-         mp_editCamera->setPosition({0.00f, 0.00f, 2.4125f});
+        mp_editCamera->setPosition({0.00f, 0.00f, 2.4125f});
 #else
         mp_editCamera->setPosition({0.05f, -0.05f, 2.4125f});
 #endif
@@ -224,7 +222,7 @@ class FelixLayer : public Layer
         auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
         transformCmp2.setScale({0.75f, 0.75f, 1.0f});
         auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
-        spriteCmp2.color = {1.0f, 0.0f, 0.0f, 1.0f};
+        spriteCmp2.color = {0.1f, 0.9f, 0.2f, 1.0f};
 
         ///////////////////////////
         // Text text
@@ -245,7 +243,6 @@ class FelixLayer : public Layer
         transformCmp3.setTranslationY(0.30f);
         auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
 
-
         mp_scene->sortEntities();
 
         ///////////////////////////
@@ -260,9 +257,23 @@ class FelixLayer : public Layer
             Texture::Spec(fbSpec.width,
                           fbSpec.height,
                           fbSpec.samples,
-                          Texture::Format::RGBA,  // irrelevant
+                          Texture::Format::RGBA,
                           Texture::FormatInternal::RGBA8,
-                          Texture::DataType::UNSIGNED_BYTE,  // irrelevant
+                          Texture::DataType::UNSIGNED_BYTE,
+                          Texture::FilterType::LINEAR,
+                          Texture::FilterType::LINEAR,
+                          Texture::WrapType::CLAMP_TO_EDGE,
+                          Texture::WrapType::CLAMP_TO_EDGE,
+                          Texture::WrapType::CLAMP_TO_EDGE));
+
+        // for entity id
+        fbSpec.colorAttachments.push_back(
+            Texture::Spec(fbSpec.width,
+                          fbSpec.height,
+                          fbSpec.samples,
+                          Texture::Format::RED_INT,
+                          Texture::FormatInternal::R32UI,
+                          Texture::DataType::UNSIGNED_INT,
                           Texture::FilterType::LINEAR,
                           Texture::FilterType::LINEAR,
                           Texture::WrapType::CLAMP_TO_EDGE,
@@ -346,8 +357,8 @@ class FelixLayer : public Layer
     virtual void onDraw(float deltaTime) override
     {
         mp_frameBuffer->bind();
-        GraphicsApi::clear();
-        // mp_frameBuffer->clear();
+        mp_frameBuffer->clearAllAttachments();
+
 
         if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
         {
@@ -365,8 +376,9 @@ class FelixLayer : public Layer
             mp_scene->onDraw();
         }
 
+        mp_frameBuffer->blit(*mp_screenBuffer, 0, 0);
+        mp_frameBuffer->unbind();
 
-        mp_frameBuffer->blit(*mp_screenBuffer);
 
         NM_UNUSED(deltaTime);
     }
@@ -697,7 +709,7 @@ class FelixLayer : public Layer
 
                 if (ImGui::MenuItem("Save", "Ctrl+S"))
                 {
-                   _save(false);
+                    _save(false);
                 }
 
                 if (ImGui::MenuItem("Save-as", "Ctrl+Shift+S"))

@@ -14,7 +14,6 @@ namespace nimbus
 class Renderer2D : public refCounted
 {
    public:
-
     struct Stats
     {
         uint32_t drawCalls     = 0;
@@ -40,22 +39,22 @@ class Renderer2D : public refCounted
                            const ref<Texture>& p_texture,
                            const glm::vec4&    color,
                            float               texTilingFactor = 1.0f,
-                           int                 entityId        = -1) noexcept;
+                           uint32_t            entityId        = 0) noexcept;
 
     static void s_drawQuad(const glm::mat4& transform,
                            const glm::vec4& color,
-                           int              entityId = -1) noexcept;
+                           uint32_t         entityId = 0) noexcept;
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::vec3&    position,
                            const glm::vec2&    size,
-                           int                 entityId = -1) noexcept;
+                           uint32_t            entityId = 0) noexcept;
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::mat4&    transform,
-                           int                 entityId = -1) noexcept;
+                           uint32_t            entityId = 0) noexcept;
 
     static void s_resetStats() noexcept;
 
@@ -86,7 +85,6 @@ class Renderer2D : public refCounted
     {
         glm::vec4 position;
         glm::vec2 texCoord;
-
     };
 
     inline static const BufferFormat k_quadInstVertexFormat = {
@@ -97,16 +95,16 @@ class Renderer2D : public refCounted
          "texTilingFactor",
          BufferComponent::Type::PER_INSTANCE,
          1},
-        {k_shaderInt, "entityId", BufferComponent::Type::PER_INSTANCE, 1},
+        {k_shaderUInt, "entityId", BufferComponent::Type::PER_INSTANCE, 1},
     };
 
     struct QuadInstVertex
     {
         glm::mat4 transform;
         glm::vec4 color;
-        int       texIndex;
+        int32_t   texIndex;
         float     texTilingFactor;
-        int       entityId;
+        uint32_t  entityId;
     };
 
     struct QuadData
@@ -137,7 +135,7 @@ class Renderer2D : public refCounted
         {k_shaderVec4, "bgColor"},
         {k_shaderVec2, "unitRange"},
         {k_shaderInt, "texIndex"},
-        {k_shaderInt, "entityId"},
+        {k_shaderUInt, "entityId"},
     };
 
     struct TextVertex
@@ -147,9 +145,8 @@ class Renderer2D : public refCounted
         glm::vec4 fgColor;
         glm::vec4 bgColor;
         glm::vec2 unitRange;
-        int       texIndex;
-        int       entityId;
-
+        int32_t   texIndex;
+        uint32_t  entityId;
     };
 
     struct TextData

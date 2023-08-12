@@ -13,7 +13,10 @@ class GlFrameBuffer : public FrameBuffer
 
     virtual void resize(uint32_t width, uint32_t height) noexcept override;
 
-    virtual void blit(const FrameBuffer& destination) const noexcept override;
+    virtual void blit(const FrameBuffer& destination,
+                      const uint32_t     srcAttachmentIdx = 0,
+                      const uint32_t     destAttachmentIdx
+                      = 0) const noexcept override;
 
     virtual void bind(Mode mode = Mode::READ_WRITE) const noexcept override;
 
@@ -26,8 +29,12 @@ class GlFrameBuffer : public FrameBuffer
     virtual void unbindTexture(
         const uint32_t attachmentIdx) const noexcept override;
 
-    virtual void clear(const uint32_t attachmentIdx
-                       = 0) const noexcept override;
+    virtual void clearColorAttachment(const uint32_t attachmentIdx
+                                      = 0) noexcept override;
+
+    virtual void clearDepthAttachment() noexcept override;
+
+    virtual void clearAllAttachments() noexcept override;
 
     inline virtual uint32_t getId() const noexcept override
     {

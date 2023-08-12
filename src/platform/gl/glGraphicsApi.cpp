@@ -31,6 +31,8 @@ void GlGraphicsApi::init() noexcept
 
     glEnable(GL_LINE_SMOOTH);
 
+    glDisable(GL_DITHER);
+    
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -264,7 +266,8 @@ static void APIENTRY _glDebugOutput(GLenum       source,
     NM_UNUSED(userParam);
 
     // ignore non-significant error/warning codes
-    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204
+        || id == 131140 || id == 131220) // integer framebuffer warning
         return;
 
     Log::coreError("Debug message (%d):  %s", id, message);

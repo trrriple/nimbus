@@ -8,13 +8,13 @@ layout(location = 5) in vec4  a_transform3;
 layout(location = 6) in vec4  a_color;
 layout(location = 7) in int   a_texIndex;
 layout(location = 8) in float a_texTilingFactor;
-layout(location = 9) in int   a_entityId;
+layout(location = 9) in uint  a_entityId;
 
 layout(location = 0)      out vec2  v_texCoord;
 layout(location = 1)      out vec4  v_color;
 layout(location = 2) flat out int   v_texIndex;
 layout(location = 3)      out float v_texTilingFactor;
-layout(location = 4) flat out int   v_entityId;
+layout(location = 4) flat out uint  v_entityId;
 
 uniform mat4 u_viewProjection;
 

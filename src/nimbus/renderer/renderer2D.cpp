@@ -127,7 +127,7 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
                             const ref<Texture>& p_texture,
                             const glm::vec4&    color,
                             float               texTilingFactor,
-                            int                 entityId) noexcept
+                            uint32_t            entityId) noexcept
 {
     // first make sure we can fit this quad:
     //  verify we have room left for this character
@@ -182,7 +182,7 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
 
 void Renderer2D::s_drawQuad(const glm::mat4& transform,
                             const glm::vec4& color,
-                            int              entityId) noexcept
+                            uint32_t         entityId) noexcept
 {
     NM_PROFILE_TRACE();
     s_drawQuad(transform, nullptr, color, 1.0f, entityId);
@@ -192,7 +192,7 @@ void Renderer2D::s_drawText(const std::string&  text,
                             const Font::Format& fontFormat,
                             const glm::vec3&    position,
                             const glm::vec2&    size,
-                            int                 entityId) noexcept
+                            uint32_t            entityId) noexcept
 {
     NM_PROFILE_TRACE();
     glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
@@ -203,7 +203,7 @@ void Renderer2D::s_drawText(const std::string&  text,
 void Renderer2D::s_drawText(const std::string&  text,
                             const Font::Format& fontFormat,
                             const glm::mat4&    transform,
-                            int                 entityId) noexcept
+                            uint32_t            entityId) noexcept
 
 {
     NM_PROFILE();

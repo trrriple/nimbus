@@ -263,7 +263,8 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer) noexcept
                 uint32_t glType
                     = Shader::s_getShaderType(std::get<0>(component.dataType));
 
-                if (glType == GL_INT || glType == GL_BOOL)
+                if (glType == GL_INT || glType == GL_UNSIGNED_INT
+                    || glType == GL_BOOL)
                 {
                     glEnableVertexAttribArray(p_this->m_vertexBufferIndex);
 

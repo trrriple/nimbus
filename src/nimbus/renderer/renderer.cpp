@@ -75,7 +75,7 @@ void Renderer::s_setScene(const glm::mat4& vpMatrix) noexcept
 
 void Renderer::s_startFrame() noexcept
 {
-    GraphicsApi::clear();
+    // GraphicsApi::clear();
     s_swapAndStart();
 }
 
@@ -125,17 +125,15 @@ void Renderer::s_render(ref<Shader>      p_shader,
     }
 }
 
-void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
-                                  const ref<VertexArray>& p_vertexArray,
-                                  int32_t                 instanceCount,
-                                  const glm::mat4&        model,
-                                  int32_t                 vertexCount,
-                                  bool                    setViewProjection)
+void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
+                                 const ref<VertexArray>& p_vertexArray,
+                                 int32_t                 instanceCount,
+                                 int32_t                 vertexCount,
+                                 bool                    setViewProjection)
 {
     NM_PROFILE();
 
     p_shader->bind();
-    p_shader->setMat4("u_model", model);
 
     if (setViewProjection)
     {
@@ -277,15 +275,18 @@ void Renderer::_s_submit(const ref<Shader>&      p_shader,
     }
 }
 
-void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
-                                 const ref<VertexArray>& p_vertexArray,
-                                 int32_t                 instanceCount,
-                                 int32_t                 vertexCount,
-                                 bool                    setViewProjection)
+
+void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
+                                  const ref<VertexArray>& p_vertexArray,
+                                  int32_t                 instanceCount,
+                                  const glm::mat4&        model,
+                                  int32_t                 vertexCount,
+                                  bool                    setViewProjection)
 {
     NM_PROFILE();
 
     p_shader->bind();
+    p_shader->setMat4("u_model", model);
 
     if (setViewProjection)
     {

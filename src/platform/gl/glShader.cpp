@@ -307,6 +307,8 @@ uint32_t GlShader::s_getShaderType(ShaderType type)
     {
         case (ShaderType::INT):
             return GL_INT;
+        case (ShaderType::UINT):
+            return GL_UNSIGNED_INT;
         case (ShaderType::FLOAT):
             return GL_FLOAT;
         case (ShaderType::BOOL):

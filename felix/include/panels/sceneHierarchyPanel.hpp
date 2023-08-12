@@ -638,7 +638,7 @@ class SceneHeirarchyPanel
         _drawNameCmp(entity);
 
         ImGui::SameLine();
-        if (ImGui::Button("Add " ICON_FA_SORT_DOWN))
+        if (ImGui::Button("Add " ICON_FA_CARET_DOWN))
         {
             ImGui::OpenPopup("addComponent");
         }

@@ -82,36 +82,67 @@ void GlFrameBuffer::resize(uint32_t width, uint32_t height) noexcept
     _construct();
 }
 
-void GlFrameBuffer::blit(const FrameBuffer& destination) const noexcept
+void GlFrameBuffer::blit(const FrameBuffer& destination,
+                         const uint32_t     srcAttachmentIdx,
+                         const uint32_t     destAttachmentIdx) const noexcept
 {
     NM_PROFILE();
 
-    uint32_t id1     = m_fbo;
-    uint32_t id2     = destination.getId();
+    uint32_t id1 = m_fbo;
+    uint32_t id2 = destination.getId();
+
+    NM_CORE_ASSERT(id1 != id2, "Cannot blit to self!");
+
+    if (srcAttachmentIdx >= m_spec.colorAttachments.size())
+    {
+        Log::coreError(
+            "Can't blit from attachment %i, FBO only has %i attachments!",
+            srcAttachmentIdx,
+            m_spec.colorAttachments.size());
+    }
+
+    if (destAttachmentIdx >= destination.getSpec().colorAttachments.size())
+    {
+        Log::coreError(
+            "Can't blit from attachment %i, FBO only has %i attachments!",
+            destAttachmentIdx,
+            destination.getSpec().colorAttachments.size());
+    }
+
     uint32_t width1  = m_spec.width;
     uint32_t height1 = m_spec.height;
     uint32_t width2  = destination.getSpec().width;
     uint32_t height2 = destination.getSpec().height;
 
     Renderer::s_submit(
-        [id1, id2, width1, height1, width2, height2]()
+        [id1,
+         id2,
+         width1,
+         height1,
+         width2,
+         height2,
+         srcAttachmentIdx,
+         destAttachmentIdx]()
         {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, id1);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id2);
+            glNamedFramebufferReadBuffer(
+                id1, GL_COLOR_ATTACHMENT0 + srcAttachmentIdx);
 
-            glBlitFramebuffer(0,
-                              0,
-                              width1,
-                              height1,
-                              0,
-                              0,
-                              width2,
-                              height2,
-                              GL_COLOR_BUFFER_BIT,
-                              GL_NEAREST);
+            GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0 + destAttachmentIdx};
 
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+            glNamedFramebufferDrawBuffers(id2, 1, drawBuffers);
+
+            glBlitNamedFramebuffer(id1,
+                                   id2,
+                                   0,
+                                   0,
+                                   width1,
+                                   height1,
+                                   0,
+                                   0,
+                                   width2,
+                                   height2,
+                                   GL_COLOR_BUFFER_BIT,
+                                   GL_NEAREST);
         });
 }
 
@@ -198,7 +229,8 @@ void GlFrameBuffer::unbindTexture(const uint32_t attachmentIdx) const noexcept
     m_textures[attachmentIdx]->unbind();
 }
 
-void GlFrameBuffer::clear(const uint32_t attachmentIdx) const noexcept
+void GlFrameBuffer::clearColorAttachment(
+    const uint32_t attachmentIdx) noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -207,9 +239,124 @@ void GlFrameBuffer::clear(const uint32_t attachmentIdx) const noexcept
         return;
     }
 
-    uint32_t id = m_textures[attachmentIdx]->getId();
-    Renderer::s_submitObject(
-        [id]() { glClearTexImage(id, 0, GL_RGBA, GL_INT, nullptr); });
+    ref<GlFrameBuffer> p_this = this;
+
+    switch (m_textures[attachmentIdx]->getSpec().formatInternal)
+    {
+        case (Texture::FormatInternal::RGBA8):
+        case (Texture::FormatInternal::RGBA16F):
+        case (Texture::FormatInternal::RGBA32F):
+        case (Texture::FormatInternal::RGB8):
+        case (Texture::FormatInternal::RGB16F):
+        case (Texture::FormatInternal::RGB32F):
+        case (Texture::FormatInternal::RG8):
+        case (Texture::FormatInternal::RG16F):
+        case (Texture::FormatInternal::RG32F):
+        case (Texture::FormatInternal::R8):
+        case (Texture::FormatInternal::R16):
+        case (Texture::FormatInternal::R16F):
+        case (Texture::FormatInternal::R32F):
+        {
+            // floating types
+            Renderer::s_submitObject(
+                [p_this, attachmentIdx]()
+                {
+                    GLfloat clearValue[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+                    glClearNamedFramebufferfv(
+                        p_this->m_fbo, GL_COLOR, attachmentIdx, clearValue);
+                });
+            break;
+        }
+        case (Texture::FormatInternal::R8I):
+        case (Texture::FormatInternal::R16I):
+        case (Texture::FormatInternal::R32I):
+        {
+            // signed int
+            Renderer::s_submitObject(
+                [p_this, attachmentIdx]()
+                {
+                    GLint clearValue[4] = {0, 0, 0, 0};
+                    glClearNamedFramebufferiv(
+                        p_this->m_fbo, GL_COLOR, attachmentIdx, clearValue);
+                });
+            break;
+        }
+        case (Texture::FormatInternal::R8UI):
+        case (Texture::FormatInternal::R16UI):
+        case (Texture::FormatInternal::R32UI):
+        {
+            // unsigned int
+            Renderer::s_submitObject(
+                [p_this, attachmentIdx]()
+                {
+                    GLuint clearValue[4] = {0, 0, 0, 0};
+                    glClearNamedFramebufferuiv(
+                        p_this->m_fbo, GL_COLOR, attachmentIdx, clearValue);
+                });
+            break;
+        }
+         default:
+            NM_CORE_ASSERT(false,
+                           "Can't clear framebuffer attachment type %i",
+                           m_textures[attachmentIdx]->getSpec().formatInternal);
+            break;
+    }
+}
+
+void GlFrameBuffer::clearDepthAttachment() noexcept
+{
+    ref<GlFrameBuffer> p_this = this;
+
+    switch (m_spec.depthType)
+    {
+         case (Texture::FormatInternal::DEPTH_COMPONENT16):
+         case (Texture::FormatInternal::DEPTH_COMPONENT24):
+         case (Texture::FormatInternal::DEPTH_COMPONENT32F):
+         {
+            // depth
+            Renderer::s_submitObject(
+                [p_this]()
+                {
+                    GLfloat depthClearValue = 1.0f;
+                    glClearNamedFramebufferfv(
+                        p_this->m_fbo, GL_DEPTH, 0, &depthClearValue);
+                });
+            break;
+         }
+         case (Texture::FormatInternal::DEPTH24_STENCIL8):
+         {
+            Renderer::s_submitObject(
+                [p_this]()
+                {
+                    // depth & stencil
+                    GLfloat depthClearValue   = 1.0f;
+                    GLint   stencilClearValue = 0;
+                    glClearNamedFramebufferfi(p_this->m_fbo,
+                                              GL_DEPTH_STENCIL,
+                                              0,
+                                              depthClearValue,
+                                              stencilClearValue);
+                });
+            break;
+         }
+         default:
+            NM_CORE_ASSERT(false,
+                           "Can't clear framebuffer depth attachment type %i",
+                           m_spec.depthType);
+            break;
+    }
+}
+
+void GlFrameBuffer::clearAllAttachments() noexcept
+{
+    for (uint32_t i = 0; i < m_spec.colorAttachments.size(); i++)
+    {
+         clearColorAttachment(i);
+    }
+    if (m_spec.depthType != Texture::FormatInternal::NONE)
+    {
+         clearDepthAttachment();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -245,8 +392,13 @@ void GlFrameBuffer::_construct() noexcept
 
             glCreateFramebuffers(1, &p_this->m_fbo);
 
-            for (auto texSpec : p_this->m_spec.colorAttachments)
+            
+            GLenum colorAttachments[p_this->m_spec.colorAttachments.size()];
+            
+            for (uint32_t i = 0; i < p_this->m_spec.colorAttachments.size();
+                 i++)
             {
+                auto texSpec = p_this->m_spec.colorAttachments[i];
                 ////////////////////////////////////////////////////////////////
                 // generate and bind the texture in which to write
                 ////////////////////////////////////////////////////////////////
@@ -274,9 +426,21 @@ void GlFrameBuffer::_construct() noexcept
 
                 p_this->m_textures.push_back(texture);
 
-                glNamedFramebufferTexture(
-                    p_this->m_fbo, GL_COLOR_ATTACHMENT0, texture->getId(), 0);
+                glNamedFramebufferTexture(p_this->m_fbo,
+                                          GL_COLOR_ATTACHMENT0 + i,
+                                          texture->getId(),
+                                          0);
+
+                colorAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
             }
+
+            ////////////////////////////////////////////////////////////////////
+            // Tell GL To draw to all of our color attachments
+            ////////////////////////////////////////////////////////////////////
+            glNamedFramebufferDrawBuffers(
+                p_this->m_fbo,
+                p_this->m_spec.colorAttachments.size(),
+                colorAttachments);
 
             ////////////////////////////////////////////////////////////////////
             // use render buffer for depth and stencil
@@ -313,20 +477,15 @@ void GlFrameBuffer::_construct() noexcept
             ////////////////////////////////////////////////////////////////////////////
             // Verify complete frame buffer
             ////////////////////////////////////////////////////////////////////////////
-            if (glCheckFramebufferStatus(GL_FRAMEBUFFER)
-                != GL_FRAMEBUFFER_COMPLETE)
+            uint32_t result
+                = glCheckNamedFramebufferStatus(p_this->m_fbo, GL_FRAMEBUFFER);
+            if (result != GL_FRAMEBUFFER_COMPLETE)
             {
-                NM_CORE_ASSERT_STATIC(false,
-                                      "Incomplete framebuffer! Error 0x%X",
-                                      glCheckFramebufferStatus(GL_FRAMEBUFFER));
+                NM_CORE_ASSERT_STATIC(
+                    false, "Incomplete framebuffer! Error 0x%X", result);
 
-                Log::coreCritical("Incomplete framebuffer! Error 0x%X",
-                                  glCheckFramebufferStatus(GL_FRAMEBUFFER));
+                Log::coreCritical("Incomplete framebuffer! Error 0x%X", result);
             }
-
-            glBindFramebuffer(GL_FRAMEBUFFER, p_this->m_fbo);
-            // bind the default frame buffer
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         });
 }
 

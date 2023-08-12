@@ -35,19 +35,28 @@ class FrameBuffer : public refCounted
 
     virtual void resize(uint32_t width, uint32_t height) = 0;
 
-    virtual void blit(const FrameBuffer& destination) const = 0;
+    virtual void blit(const FrameBuffer& destination,
+                      const uint32_t     srcAttachmentIdx  = 0,
+                      const uint32_t     destAttachmentIdx = 0) const noexcept
+        = 0;
 
     virtual void bind(Mode mode = Mode::READ_WRITE) const = 0;
 
     virtual void unbind(Mode mode = Mode::READ_WRITE) const = 0;
 
     virtual void bindTexture(const uint32_t textureUnit,
-                             const uint32_t attachmentIdx = 0) const
+                             const uint32_t attachmentIdx = 0) const noexcept
         = 0;
 
     virtual void unbindTexture(const uint32_t attachmentIdx = 0) const = 0;
 
-    virtual void clear(const uint32_t attachmentIdx = 0) const = 0;
+    virtual void clearColorAttachment(const uint32_t attachmentIdx
+                                      = 0) noexcept
+        = 0;
+
+    virtual void clearDepthAttachment() noexcept = 0;
+
+    virtual void clearAllAttachments() noexcept = 0;
 
     virtual uint32_t getId() const = 0;
 
