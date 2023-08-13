@@ -2,7 +2,7 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
 
-#include "platform/gl/glFrameBuffer.hpp"
+#include "platform/gl/glFramebuffer.hpp"
 
 #include "nimbus/renderer/texture.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"
@@ -16,21 +16,21 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 // Public Functions
 ////////////////////////////////////////////////////////////////////////////////
-GlFrameBuffer::GlFrameBuffer(FrameBuffer::Spec& spec) noexcept
+GlFramebuffer::GlFramebuffer(Framebuffer::Spec& spec) noexcept
 {
     NM_PROFILE_DETAIL();
 
     m_spec = spec;
 
     if (m_spec.width == 0 || m_spec.height == 0
-        || m_spec.width > FrameBuffer::k_maxDimension
-        || m_spec.height > FrameBuffer::k_maxDimension)
+        || m_spec.width > Framebuffer::k_maxDimension
+        || m_spec.height > Framebuffer::k_maxDimension)
     {
         NM_CORE_ASSERT(
             false,
-            "Attempted to make null sized FrameBuffer or Yuge (> %i) "
-            "FrameBuffer\n",
-            FrameBuffer::k_maxDimension);
+            "Attempted to make null sized Framebuffer or Yuge (> %i) "
+            "Framebuffer\n",
+            Framebuffer::k_maxDimension);
     }
 
     NM_CORE_ASSERT(m_spec.samples, "Must have at least 1 sample ");
@@ -38,7 +38,7 @@ GlFrameBuffer::GlFrameBuffer(FrameBuffer::Spec& spec) noexcept
     _construct();
 }
 
-GlFrameBuffer::~GlFrameBuffer() noexcept
+GlFramebuffer::~GlFramebuffer() noexcept
 {
     NM_PROFILE_DETAIL();
 
@@ -52,21 +52,21 @@ GlFrameBuffer::~GlFrameBuffer() noexcept
             glDeleteRenderbuffers(1, &rboId);
         });
 
-    m_textures.clear();
+    m_colorAttachments.clear();
 }
 
-void GlFrameBuffer::resize(uint32_t width, uint32_t height) noexcept
+void GlFramebuffer::resize(uint32_t width, uint32_t height) noexcept
 {
     NM_PROFILE();
 
-    if (width == 0 || height == 0 || width > FrameBuffer::k_maxDimension
-        || height > FrameBuffer::k_maxDimension)
+    if (width == 0 || height == 0 || width > Framebuffer::k_maxDimension
+        || height > Framebuffer::k_maxDimension)
     {
         NM_CORE_ASSERT(
             false,
-            "Attempted to make null sized FrameBuffer or Yuge (> %i) "
-            "FrameBuffer",
-            FrameBuffer::k_maxDimension);
+            "Attempted to make null sized Framebuffer or Yuge (> %i) "
+            "Framebuffer",
+            Framebuffer::k_maxDimension);
     }
 
     m_spec.width  = width;
@@ -82,16 +82,13 @@ void GlFrameBuffer::resize(uint32_t width, uint32_t height) noexcept
     _construct();
 }
 
-void GlFrameBuffer::blit(const FrameBuffer& destination,
-                         const uint32_t     srcAttachmentIdx,
-                         const uint32_t     destAttachmentIdx) const noexcept
+void GlFramebuffer::blit(ref<Framebuffer> p_destination,
+                         const uint32_t   srcAttachmentIdx,
+                         const uint32_t   destAttachmentIdx) const noexcept
 {
     NM_PROFILE();
 
-    uint32_t id1 = m_fbo;
-    uint32_t id2 = destination.getId();
-
-    NM_CORE_ASSERT(id1 != id2, "Cannot blit to self!");
+    NM_CORE_ASSERT(m_fbo != p_destination->getId(), "Cannot blit to self!");
 
     if (srcAttachmentIdx >= m_spec.colorAttachments.size())
     {
@@ -101,52 +98,48 @@ void GlFrameBuffer::blit(const FrameBuffer& destination,
             m_spec.colorAttachments.size());
     }
 
-    if (destAttachmentIdx >= destination.getSpec().colorAttachments.size())
+    if (destAttachmentIdx >= p_destination->getSpec().colorAttachments.size())
     {
         Log::coreError(
             "Can't blit from attachment %i, FBO only has %i attachments!",
             destAttachmentIdx,
-            destination.getSpec().colorAttachments.size());
+            p_destination->getSpec().colorAttachments.size());
     }
 
-    uint32_t width1  = m_spec.width;
-    uint32_t height1 = m_spec.height;
-    uint32_t width2  = destination.getSpec().width;
-    uint32_t height2 = destination.getSpec().height;
+    ref<Framebuffer> p_source = const_cast<GlFramebuffer*>(this);
 
     Renderer::s_submit(
-        [id1,
-         id2,
-         width1,
-         height1,
-         width2,
-         height2,
-         srcAttachmentIdx,
-         destAttachmentIdx]()
+        [p_source, p_destination, srcAttachmentIdx, destAttachmentIdx]()
         {
             glNamedFramebufferReadBuffer(
-                id1, GL_COLOR_ATTACHMENT0 + srcAttachmentIdx);
+                p_source->getId(), GL_COLOR_ATTACHMENT0 + srcAttachmentIdx);
 
             GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0 + destAttachmentIdx};
 
-            glNamedFramebufferDrawBuffers(id2, 1, drawBuffers);
+            glNamedFramebufferDrawBuffers(
+                p_destination->getId(), 1, drawBuffers);
 
-            glBlitNamedFramebuffer(id1,
-                                   id2,
-                                   0,
-                                   0,
-                                   width1,
-                                   height1,
-                                   0,
-                                   0,
-                                   width2,
-                                   height2,
-                                   GL_COLOR_BUFFER_BIT,
-                                   GL_NEAREST);
+            glBlitNamedFramebuffer(
+                p_source->getId(),
+                p_destination->getId(),
+                0,
+                0,
+                p_source->getSpec().colorAttachments[srcAttachmentIdx].width,
+                p_source->getSpec().colorAttachments[srcAttachmentIdx].height,
+                0,
+                0,
+                p_destination->getSpec()
+                    .colorAttachments[destAttachmentIdx]
+                    .width,
+                p_destination->getSpec()
+                    .colorAttachments[destAttachmentIdx]
+                    .height,
+                GL_COLOR_BUFFER_BIT,
+                GL_NEAREST);
         });
 }
 
-void GlFrameBuffer::bind(Mode mode) const noexcept
+void GlFramebuffer::bind(Mode mode) const noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -180,7 +173,7 @@ void GlFrameBuffer::bind(Mode mode) const noexcept
         });
 }
 
-void GlFrameBuffer::unbind(Mode mode) const noexcept
+void GlFramebuffer::unbind(Mode mode) const noexcept
 {
     NM_PROFILE_TRACE();
 
@@ -208,40 +201,40 @@ void GlFrameBuffer::unbind(Mode mode) const noexcept
         });
 }
 
-void GlFrameBuffer::bindTexture(const uint32_t textureUnit,
+void GlFramebuffer::bindTexture(const uint32_t textureUnit,
                                 const uint32_t attachmentIdx) const noexcept
 {
-    if (attachmentIdx >= m_textures.size())
+    if (attachmentIdx >= m_colorAttachments.size())
     {
+        Log::coreWarn("Color attachment Index out of range! (%i >= %i)",
+                      attachmentIdx,
+                      m_colorAttachments.size());
         return;
     }
 
-    m_textures[attachmentIdx]->bind(textureUnit);
+    m_colorAttachments[attachmentIdx]->bind(textureUnit);
 }
 
-void GlFrameBuffer::unbindTexture(const uint32_t attachmentIdx) const noexcept
+void GlFramebuffer::unbindTexture(const uint32_t attachmentIdx) const noexcept
 {
-    if (attachmentIdx >= m_textures.size())
+    if (attachmentIdx >= m_colorAttachments.size())
     {
+        Log::coreWarn("Color attachment Index out of range! (%i >= %i)",
+                      attachmentIdx,
+                      m_colorAttachments.size());
         return;
     }
 
-    m_textures[attachmentIdx]->unbind();
+    m_colorAttachments[attachmentIdx]->unbind();
 }
 
-void GlFrameBuffer::clearColorAttachment(
-    const uint32_t attachmentIdx) noexcept
+void GlFramebuffer::clearColorAttachment(const uint32_t attachmentIdx) noexcept
 {
     NM_PROFILE_DETAIL();
 
-    if (attachmentIdx >= m_textures.size())
-    {
-        return;
-    }
+    ref<GlFramebuffer> p_this = this;
 
-    ref<GlFrameBuffer> p_this = this;
-
-    switch (m_textures[attachmentIdx]->getSpec().formatInternal)
+    switch (m_colorAttachments[attachmentIdx]->getSpec().formatInternal)
     {
         case (Texture::FormatInternal::RGBA8):
         case (Texture::FormatInternal::RGBA16F):
@@ -261,9 +254,25 @@ void GlFrameBuffer::clearColorAttachment(
             Renderer::s_submitObject(
                 [p_this, attachmentIdx]()
                 {
-                    GLfloat clearValue[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-                    glClearNamedFramebufferfv(
-                        p_this->m_fbo, GL_COLOR, attachmentIdx, clearValue);
+                    if (attachmentIdx >= p_this->m_colorAttachments.size())
+                    {
+                        Log::coreWarn(
+                            "Color attachment Index out of range! (%i >= %i)",
+                            attachmentIdx,
+                            p_this->m_colorAttachments.size());
+                        return;
+                    }
+
+                    const std::array<float, 4> clearColor
+                        = std::get<std::array<float, 4>>(
+                            p_this->m_colorAttachments[attachmentIdx]
+                                ->getSpec()
+                                .clearColor);
+
+                    glClearNamedFramebufferfv(p_this->m_fbo,
+                                              GL_COLOR,
+                                              attachmentIdx,
+                                              clearColor.data());
                 });
             break;
         }
@@ -275,9 +284,25 @@ void GlFrameBuffer::clearColorAttachment(
             Renderer::s_submitObject(
                 [p_this, attachmentIdx]()
                 {
-                    GLint clearValue[4] = {0, 0, 0, 0};
-                    glClearNamedFramebufferiv(
-                        p_this->m_fbo, GL_COLOR, attachmentIdx, clearValue);
+                    if (attachmentIdx >= p_this->m_colorAttachments.size())
+                    {
+                        Log::coreWarn(
+                            "Color attachment Index out of range! (%i >= %i)",
+                            attachmentIdx,
+                            p_this->m_colorAttachments.size());
+                        return;
+                    }
+
+                    const std::array<int32_t, 4> clearColor
+                        = std::get<std::array<int32_t, 4>>(
+                            p_this->m_colorAttachments[attachmentIdx]
+                                ->getSpec()
+                                .clearColor);
+
+                    glClearNamedFramebufferiv(p_this->m_fbo,
+                                              GL_COLOR,
+                                              attachmentIdx,
+                                              clearColor.data());
                 });
             break;
         }
@@ -289,30 +314,47 @@ void GlFrameBuffer::clearColorAttachment(
             Renderer::s_submitObject(
                 [p_this, attachmentIdx]()
                 {
-                    GLuint clearValue[4] = {0, 0, 0, 0};
-                    glClearNamedFramebufferuiv(
-                        p_this->m_fbo, GL_COLOR, attachmentIdx, clearValue);
+                    if (attachmentIdx >= p_this->m_colorAttachments.size())
+                    {
+                        Log::coreWarn(
+                            "Color attachment Index out of range! (%i >= %i)",
+                            attachmentIdx,
+                            p_this->m_colorAttachments.size());
+                        return;
+                    }
+
+                    const std::array<uint32_t, 4> clearColor
+                        = std::get<std::array<uint32_t, 4>>(
+                            p_this->m_colorAttachments[attachmentIdx]
+                                ->getSpec()
+                                .clearColor);
+
+                    glClearNamedFramebufferuiv(p_this->m_fbo,
+                                               GL_COLOR,
+                                               attachmentIdx,
+                                               clearColor.data());
                 });
             break;
         }
-         default:
-            NM_CORE_ASSERT(false,
-                           "Can't clear framebuffer attachment type %i",
-                           m_textures[attachmentIdx]->getSpec().formatInternal);
+        default:
+            NM_CORE_ASSERT(
+                false,
+                "Can't clear framebuffer attachment type %i",
+                m_colorAttachments[attachmentIdx]->getSpec().formatInternal);
             break;
     }
 }
 
-void GlFrameBuffer::clearDepthAttachment() noexcept
+void GlFramebuffer::clearDepthAttachment() noexcept
 {
-    ref<GlFrameBuffer> p_this = this;
+    ref<GlFramebuffer> p_this = this;
 
     switch (m_spec.depthType)
     {
-         case (Texture::FormatInternal::DEPTH_COMPONENT16):
-         case (Texture::FormatInternal::DEPTH_COMPONENT24):
-         case (Texture::FormatInternal::DEPTH_COMPONENT32F):
-         {
+        case (Texture::FormatInternal::DEPTH_COMPONENT16):
+        case (Texture::FormatInternal::DEPTH_COMPONENT24):
+        case (Texture::FormatInternal::DEPTH_COMPONENT32F):
+        {
             // depth
             Renderer::s_submitObject(
                 [p_this]()
@@ -322,9 +364,9 @@ void GlFrameBuffer::clearDepthAttachment() noexcept
                         p_this->m_fbo, GL_DEPTH, 0, &depthClearValue);
                 });
             break;
-         }
-         case (Texture::FormatInternal::DEPTH24_STENCIL8):
-         {
+        }
+        case (Texture::FormatInternal::DEPTH24_STENCIL8):
+        {
             Renderer::s_submitObject(
                 [p_this]()
                 {
@@ -338,8 +380,8 @@ void GlFrameBuffer::clearDepthAttachment() noexcept
                                               stencilClearValue);
                 });
             break;
-         }
-         default:
+        }
+        default:
             NM_CORE_ASSERT(false,
                            "Can't clear framebuffer depth attachment type %i",
                            m_spec.depthType);
@@ -347,22 +389,116 @@ void GlFrameBuffer::clearDepthAttachment() noexcept
     }
 }
 
-void GlFrameBuffer::clearAllAttachments() noexcept
+void GlFramebuffer::clearAllAttachments() noexcept
 {
-    for (uint32_t i = 0; i < m_spec.colorAttachments.size(); i++)
+    for (uint32_t i = 0; i < m_colorAttachments.size(); i++)
     {
-         clearColorAttachment(i);
+        clearColorAttachment(i);
     }
     if (m_spec.depthType != Texture::FormatInternal::NONE)
     {
-         clearDepthAttachment();
+        clearDepthAttachment();
     }
+}
+
+void GlFramebuffer::requestPixel(ref<PixelReadRequest> p_request) noexcept
+{
+    ref<GlFramebuffer> p_this = this;
+
+    Renderer::s_submit(
+        [p_this, p_request]() mutable
+        {
+            auto [idx, x, y] = p_request->getLocation();
+
+            if (idx >= p_this->m_colorAttachments.size())
+            {
+                Log::coreWarn("Color attachment Index out of range! (%i >= %i)",
+                              idx,
+                              p_this->m_colorAttachments.size());
+                return;
+            }
+
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, p_this->m_fbo);
+
+            glReadBuffer(GL_COLOR_ATTACHMENT0 + idx);
+
+            Texture::Format format
+                = p_this->m_spec.colorAttachments[idx].format;
+
+            switch (format)
+            {
+                case (Texture::Format::RGBA):
+                {
+                    glm::vec4 data;
+                    glReadPixels(
+                        x,
+                        y,
+                        1,
+                        1,
+                        Texture::s_format(format),
+                        Texture::s_dataType(
+                            p_this->m_spec.colorAttachments[idx].dataType),
+                        &data);
+                    p_request->setValue(data);
+                    break;
+                }
+                case (Texture::Format::RGB):
+                {
+                    glm::vec3 data;
+                    glReadPixels(
+                        x,
+                        y,
+                        1,
+                        1,
+                        Texture::s_format(format),
+                        Texture::s_dataType(
+                            p_this->m_spec.colorAttachments[idx].dataType),
+                        &data);
+                    p_request->setValue(glm::vec4({data, 0.0f}));
+                    break;
+                }
+                case (Texture::Format::RG):
+                {
+                    glm::vec2 data;
+                    glReadPixels(
+                        x,
+                        y,
+                        1,
+                        1,
+                        Texture::s_format(format),
+                        Texture::s_dataType(
+                            p_this->m_spec.colorAttachments[idx].dataType),
+                        &data);
+                    p_request->setValue(glm::vec4({data, 0.0f, 0.0f}));
+                    break;
+                }
+                case (Texture::Format::RED_INT):
+                {
+                    uint32_t data;
+                    glReadPixels(
+                        x,
+                        y,
+                        1,
+                        1,
+                        Texture::s_format(format),
+                        Texture::s_dataType(
+                            p_this->m_spec.colorAttachments[idx].dataType),
+                        &data);
+                    p_request->setValue(data);
+                    break;
+                }
+                default:
+                {
+                    return;
+                }
+            }
+        });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private Functions
 ////////////////////////////////////////////////////////////////////////////////
-void GlFrameBuffer::_construct() noexcept
+void GlFramebuffer::_construct() noexcept
 {
     NM_PROFILE();
 
@@ -373,10 +509,10 @@ void GlFrameBuffer::_construct() noexcept
     ///////////////////////////////////////////////////////////////////////////
     if (m_fbo)
     {
-        m_textures.clear();
+        m_colorAttachments.clear();
     }
 
-    ref<GlFrameBuffer> p_this = this;
+    ref<GlFramebuffer> p_this = this;
     Renderer::s_submitObject(
         [p_this]() mutable
         {
@@ -392,9 +528,8 @@ void GlFrameBuffer::_construct() noexcept
 
             glCreateFramebuffers(1, &p_this->m_fbo);
 
-            
             GLenum colorAttachments[p_this->m_spec.colorAttachments.size()];
-            
+
             for (uint32_t i = 0; i < p_this->m_spec.colorAttachments.size();
                  i++)
             {
@@ -424,7 +559,7 @@ void GlFrameBuffer::_construct() noexcept
                 ref<Texture> texture
                     = Texture::s_create(Texture::Type::DIFFUSE, texSpec, false);
 
-                p_this->m_textures.push_back(texture);
+                p_this->m_colorAttachments.push_back(texture);
 
                 glNamedFramebufferTexture(p_this->m_fbo,
                                           GL_COLOR_ATTACHMENT0 + i,
@@ -437,10 +572,9 @@ void GlFrameBuffer::_construct() noexcept
             ////////////////////////////////////////////////////////////////////
             // Tell GL To draw to all of our color attachments
             ////////////////////////////////////////////////////////////////////
-            glNamedFramebufferDrawBuffers(
-                p_this->m_fbo,
-                p_this->m_spec.colorAttachments.size(),
-                colorAttachments);
+            glNamedFramebufferDrawBuffers(p_this->m_fbo,
+                                          p_this->m_colorAttachments.size(),
+                                          colorAttachments);
 
             ////////////////////////////////////////////////////////////////////
             // use render buffer for depth and stencil
@@ -489,7 +623,7 @@ void GlFrameBuffer::_construct() noexcept
         });
 }
 
-uint32_t GlFrameBuffer::_textureTarget() const noexcept
+uint32_t GlFramebuffer::_textureTarget() const noexcept
 {
     return m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 }

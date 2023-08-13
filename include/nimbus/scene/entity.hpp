@@ -9,6 +9,8 @@ namespace nimbus
 class Entity
 {
    public:
+    inline static const uint32_t k_nullEntity = entt::null;
+
     Entity() = default;
     Entity(entt::entity handle, Scene* scene) noexcept
         : mh_entity(handle), mp_sceneParent(scene)

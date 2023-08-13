@@ -48,6 +48,7 @@ void RenderCmdQ::pump() noexcept
     {
         uint8_t* ptr = mp_cmdBuf;
 
+
         for (uint32_t i = 0; i < m_cmdCount; i++)
         {
             // grab the function out

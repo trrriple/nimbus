@@ -91,6 +91,7 @@ void Application::execute() noexcept
         = m_swBank.newSw("MainThread Pend on RenderThread");
 
     double currentTime = core::getTime_s();
+    bool   didDraw     = false;
     while (m_active)
     {
         NM_PROFILE();
@@ -161,6 +162,25 @@ void Application::execute() noexcept
             continue;
         }
 
+        /////////////////////////////////////////////////////////////////////
+        // If we just drew, start the render thread
+        /////////////////////////////////////////////////////////////////////
+        if (didDraw)
+        {
+            // The render thread always runs latent, meaning it's always 
+            // processing the previous commands while this thread 
+            // (the main thread) is generating the commands for this frame.
+            // It can be considered two ways, like said already or as if the
+            // renderer is processing the current frame, and this thread is
+            // generating commands for the next frame. Regardless, it bodes
+            // consideration that updates made to objects requiring graphics
+            // API calls, won't be made until the following cycle.
+            // Do note that object calls (creation/deletion/resize) are handled
+            // before all draw/render calls
+            
+            Renderer::s_swapAndStart();
+        }
+
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions
         ////////////////////////////////////////////////////////////////////////
@@ -173,20 +193,16 @@ void Application::execute() noexcept
             }
         }
 
-        ///////////////////////////
-        // Start a Frame
-        ///////////////////////////
-        if (doUpdate || doDraw)
-        {
-            // we do frames for both update and draw cycles
-            Renderer::s_startFrame();
-        }
-
         ////////////////////////////////////////////////////////////////////////
         // Call layer draw functions
         ////////////////////////////////////////////////////////////////////////
         if (doDraw)
         {
+            ///////////////////////////
+            // Start frame
+            ///////////////////////////
+            Renderer::s_startFrame();
+            
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
                 // call each draw with how long it's been since last draw
@@ -206,16 +222,19 @@ void Application::execute() noexcept
             Renderer::s_submit([app]() { app->guiRender(); });
             Renderer::s_submit([app]() { app->mp_guiSubsystemLayer->end(); });
 
-            mp_window->swapBuffers();
-            m_drawLag = 0.0f;    
-        }
-        
-        ///////////////////////////
-        // Frame done!
-        ///////////////////////////
-        if (doUpdate || doDraw)
-        {
+            ///////////////////////////
+            // End Frame
+            ///////////////////////////
             Renderer::s_endFrame();
+
+            mp_window->swapBuffers();
+
+            didDraw   = true;
+            m_drawLag = 0.0f;
+        }
+        else
+        {
+            didDraw = false;
         }
 
         float postPendCpuProcessTime_s = mainThreadProcessSw->split();
@@ -287,7 +306,7 @@ void Application::guiRender() noexcept
 
     for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
     {
-        (*it)->onGuiUpdate(m_drawLag);
+        (*it)->onGuiDraw(m_drawLag);
     }
 }
 

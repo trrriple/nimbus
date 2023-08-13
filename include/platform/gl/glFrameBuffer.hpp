@@ -1,21 +1,23 @@
 #pragma once
 #include "nimbus/core/common.hpp"
-#include "nimbus/renderer/frameBuffer.hpp"
+#include "nimbus/renderer/framebuffer.hpp"
+
+#include <mutex>
 
 namespace nimbus
 {
 
-class GlFrameBuffer : public FrameBuffer
+class GlFramebuffer : public Framebuffer
 {
    public:
-    GlFrameBuffer(Spec& spec) noexcept;
-    virtual ~GlFrameBuffer() noexcept override;
+    GlFramebuffer(Spec& spec) noexcept;
+    virtual ~GlFramebuffer() noexcept override;
 
     virtual void resize(uint32_t width, uint32_t height) noexcept override;
 
-    virtual void blit(const FrameBuffer& destination,
-                      const uint32_t     srcAttachmentIdx = 0,
-                      const uint32_t     destAttachmentIdx
+    virtual void blit(ref<Framebuffer> p_destination,
+                      const uint32_t   srcAttachmentIdx = 0,
+                      const uint32_t   destAttachmentIdx
                       = 0) const noexcept override;
 
     virtual void bind(Mode mode = Mode::READ_WRITE) const noexcept override;
@@ -49,19 +51,19 @@ class GlFrameBuffer : public FrameBuffer
     virtual uint32_t getTextureId(const uint32_t attachmentIdx
                                   = 0) const noexcept override
     {
-        if (attachmentIdx >= m_textures.size())
+        if (attachmentIdx >= m_colorAttachments.size())
         {
-            Log::coreError(
-                "Attachment Index %i out of range. FrameBuffer has %i "
-                "attachements",
-                attachmentIdx,
-                m_textures.size());
+            Log::coreWarn("Color attachment Index out of range! (%i >= %i)",
+                          attachmentIdx,
+                          m_colorAttachments.size());
 
             return 0;
         }
-
-        return m_textures[attachmentIdx]->getId();
+        return m_colorAttachments[attachmentIdx]->getId();
     }
+
+    virtual void requestPixel(
+        ref<PixelReadRequest> p_request) noexcept override;
 
    private:
     uint32_t _textureTarget() const noexcept;

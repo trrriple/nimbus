@@ -42,6 +42,7 @@ class Scene : public refCounted
     friend class FelixLayer;
     friend class SceneHeirarchyPanel;
     friend class EditCameraMenuPanel;
+    friend class ViewportPanel;
 
     void _render(Camera* p_camera);
     void _onDrawEditor(Camera* p_editorCamera);

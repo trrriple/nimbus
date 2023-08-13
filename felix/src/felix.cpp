@@ -120,8 +120,8 @@ class FelixLayer : public Layer
     ///////////////////////////
     // Framebuffers
     ///////////////////////////
-    ref<FrameBuffer> mp_frameBuffer;
-    ref<FrameBuffer> mp_screenBuffer;
+    ref<Framebuffer> mp_frameBuffer;
+    ref<Framebuffer> mp_screenBuffer;
 
     ///////////////////////////
     // Cameras
@@ -177,12 +177,17 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Panels
         ///////////////////////////
-        mp_viewportPanel       = genScope<ViewportPanel>(mp_editCamera.raw());
+        mp_viewportPanel
+            = genScope<ViewportPanel>(mp_editCamera.raw(), mp_scene);
         mp_sceneControlPanel   = genScope<SceneControlPanel>();
         mp_sceneHierarchyPanel = genScope<SceneHeirarchyPanel>(mp_scene);
         mp_renderStatsPanel    = genScope<RenderStatsPanel>();
         mp_editCameraMenuPanel
             = genScope<EditCameraMenuPanel>(mp_editCamera.raw());
+
+
+        mp_viewportPanel->setEntitySelectedCallback(std::bind(
+            &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
 
         mp_sceneHierarchyPanel->setEntitySelectedCallback(std::bind(
             &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
@@ -249,62 +254,89 @@ class FelixLayer : public Layer
         // Setup Framebuffers
         ///////////////////////////
         // multisampled buffer we render to
-        FrameBuffer::Spec fbSpec;
+        Framebuffer::Spec fbSpec;
         fbSpec.width   = m_viewportSize.x;
         fbSpec.height  = m_viewportSize.y;
         fbSpec.samples = 4;
-        fbSpec.colorAttachments.push_back(
-            Texture::Spec(fbSpec.width,
-                          fbSpec.height,
-                          fbSpec.samples,
-                          Texture::Format::RGBA,
-                          Texture::FormatInternal::RGBA8,
-                          Texture::DataType::UNSIGNED_BYTE,
-                          Texture::FilterType::LINEAR,
-                          Texture::FilterType::LINEAR,
-                          Texture::WrapType::CLAMP_TO_EDGE,
-                          Texture::WrapType::CLAMP_TO_EDGE,
-                          Texture::WrapType::CLAMP_TO_EDGE));
 
-        // for entity id
-        fbSpec.colorAttachments.push_back(
-            Texture::Spec(fbSpec.width,
-                          fbSpec.height,
-                          fbSpec.samples,
-                          Texture::Format::RED_INT,
-                          Texture::FormatInternal::R32UI,
-                          Texture::DataType::UNSIGNED_INT,
-                          Texture::FilterType::LINEAR,
-                          Texture::FilterType::LINEAR,
-                          Texture::WrapType::CLAMP_TO_EDGE,
-                          Texture::WrapType::CLAMP_TO_EDGE,
-                          Texture::WrapType::CLAMP_TO_EDGE));
+        Texture::Spec fbMainTex;
+        fbMainTex.width          = fbSpec.width;
+        fbMainTex.height         = fbSpec.height;
+        fbMainTex.samples        = fbSpec.samples;
+        fbMainTex.format         = Texture::Format::RGBA;
+        fbMainTex.formatInternal = Texture::FormatInternal::RGBA8;
+        fbMainTex.dataType       = Texture::DataType::UNSIGNED_BYTE;
+        fbMainTex.filterTypeMin  = Texture::FilterType::LINEAR;
+        fbMainTex.filterTypeMag  = Texture::FilterType::LINEAR;
+        fbMainTex.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
+        fbMainTex.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
+        fbMainTex.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
+        fbMainTex.clearColor     = std::array<float, 4>{0.1f, 0.1f, 0.1f, 1.0f};
+
+        fbSpec.colorAttachments.push_back(fbMainTex);
+
+        Texture::Spec fbEntIdTexSpec;
+        fbEntIdTexSpec.width          = fbSpec.width;
+        fbEntIdTexSpec.height         = fbSpec.height;
+        fbEntIdTexSpec.samples        = fbSpec.samples;
+        fbEntIdTexSpec.format         = Texture::Format::RED_INT;
+        fbEntIdTexSpec.formatInternal = Texture::FormatInternal::R32UI;
+        fbEntIdTexSpec.dataType       = Texture::DataType::UNSIGNED_INT;
+        fbEntIdTexSpec.filterTypeMin  = Texture::FilterType::NEAREST;
+        fbEntIdTexSpec.filterTypeMag  = Texture::FilterType::NEAREST;
+        fbEntIdTexSpec.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
+        fbEntIdTexSpec.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
+        fbEntIdTexSpec.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
+        fbEntIdTexSpec.clearColor
+            = std::array<uint32_t, 4>{Entity::k_nullEntity};
+
+        fbSpec.colorAttachments.push_back(fbEntIdTexSpec);
 
         fbSpec.depthType = Texture::FormatInternal::DEPTH24_STENCIL8;
 
-        mp_frameBuffer = FrameBuffer::s_create(fbSpec);
+        mp_frameBuffer = Framebuffer::s_create(fbSpec);
 
         // buffer we blit multisampled buffer to for output to screen
-        FrameBuffer::Spec screenSpec;
+        Framebuffer::Spec screenSpec;
         screenSpec.width   = m_viewportSize.x;
         screenSpec.height  = m_viewportSize.y;
         screenSpec.samples = 1;
-        screenSpec.colorAttachments.push_back(
-            Texture::Spec(screenSpec.width,
-                          screenSpec.height,
-                          screenSpec.samples,
-                          Texture::Format::RGBA,  // irrelevant
-                          Texture::FormatInternal::RGBA8,
-                          Texture::DataType::UNSIGNED_BYTE,  // irrelevant
-                          Texture::FilterType::LINEAR,
-                          Texture::FilterType::LINEAR,
-                          Texture::WrapType::REPEAT,
-                          Texture::WrapType::REPEAT,
-                          Texture::WrapType::REPEAT));
+        Texture::Spec sbMainTex;
+        sbMainTex.width          = screenSpec.width;
+        sbMainTex.height         = screenSpec.height;
+        sbMainTex.samples        = screenSpec.samples;
+        sbMainTex.format         = Texture::Format::RGBA;
+        sbMainTex.formatInternal = Texture::FormatInternal::RGBA8;
+        sbMainTex.dataType       = Texture::DataType::UNSIGNED_BYTE;
+        sbMainTex.filterTypeMin  = Texture::FilterType::LINEAR;
+        sbMainTex.filterTypeMag  = Texture::FilterType::LINEAR;
+        sbMainTex.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
+        sbMainTex.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
+        sbMainTex.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
+        sbMainTex.clearColor     = std::array<float, 4>{0.1f, 0.1f, 0.1f, 1.0f};
+
+        screenSpec.colorAttachments.push_back(sbMainTex);
+
+        Texture::Spec sbEntIdTexSpec;
+        sbEntIdTexSpec.width          = screenSpec.width;
+        sbEntIdTexSpec.height         = screenSpec.height;
+        sbEntIdTexSpec.samples        = screenSpec.samples;
+        sbEntIdTexSpec.format         = Texture::Format::RED_INT;
+        sbEntIdTexSpec.formatInternal = Texture::FormatInternal::R32UI;
+        sbEntIdTexSpec.dataType       = Texture::DataType::UNSIGNED_INT;
+        sbEntIdTexSpec.filterTypeMin  = Texture::FilterType::NEAREST;
+        sbEntIdTexSpec.filterTypeMag  = Texture::FilterType::NEAREST;
+        sbEntIdTexSpec.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
+        sbEntIdTexSpec.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
+        sbEntIdTexSpec.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
+        sbEntIdTexSpec.clearColor
+            = std::array<uint32_t, 4>{Entity::k_nullEntity};
+
+        screenSpec.colorAttachments.push_back(sbEntIdTexSpec);
 
         screenSpec.depthType = Texture::FormatInternal::NONE;
 
-        mp_screenBuffer = FrameBuffer::s_create(screenSpec);
+        mp_screenBuffer = Framebuffer::s_create(screenSpec);
     }
 
     virtual void onRemove() override
@@ -313,19 +345,6 @@ class FelixLayer : public Layer
 
     virtual void onUpdate(float deltaTime) override
     {
-        if (mp_viewportPanel->wasResized())
-        {
-            // we need to resize some stuff
-            m_viewportSize = mp_viewportPanel->m_viewportSize;
-            m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
-            mp_editCamera->setAspectRatio(m_aspectRatio);
-
-            mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-            mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
-
-            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
-        }
-
         if (mp_sceneControlPanel->getState().runState
                 == SceneControlPanel::RunState::PLAY
             && m_sceneState != State::PLAY)
@@ -376,7 +395,9 @@ class FelixLayer : public Layer
             mp_scene->onDraw();
         }
 
-        mp_frameBuffer->blit(*mp_screenBuffer, 0, 0);
+        mp_frameBuffer->blit(mp_screenBuffer, 0, 0);
+        mp_frameBuffer->blit(mp_screenBuffer, 1, 1);
+
         mp_frameBuffer->unbind();
 
 
@@ -663,7 +684,7 @@ class FelixLayer : public Layer
         style.WindowMinSize.x = minWinSizeX;
     }
 
-    virtual void onGuiUpdate(float deltaTime) override
+    virtual void onGuiDraw(float deltaTime) override
     {
         ///////////////////////////
         // Allow external file drops
@@ -771,7 +792,7 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Scene Heirarchy
         ///////////////////////////
-        mp_sceneHierarchyPanel->onDraw();
+        mp_sceneHierarchyPanel->onDraw(m_selectedEntity);
 
         ///////////////////////////
         // Camera Menu
@@ -784,6 +805,19 @@ class FelixLayer : public Layer
         mp_renderStatsPanel->onDraw(deltaTime);
 
         ImGui::End();  // dockspace
+
+        if (mp_viewportPanel->wasResized())
+        {
+            // we need to resize some stuff
+            m_viewportSize = mp_viewportPanel->m_viewportSize;
+            m_aspectRatio  = m_viewportSize.x / m_viewportSize.y;
+            mp_editCamera->setAspectRatio(m_aspectRatio);
+
+            mp_frameBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+            mp_screenBuffer->resize(m_viewportSize.x, m_viewportSize.y);
+
+            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
+        }
     }
 
     void _onEntitySelected(Entity entity)

@@ -30,27 +30,30 @@ class Layer : public refCounted
     {
     }
 
+    // IMPORTANT: DO NOT perform any Graphics API or renderer calls in onUpdate.
+    // It wont be deterministed because render thread, which handles those
+    // updates only runs after onDraw!
     virtual void onUpdate(float deltaTime)
     {
         NM_UNUSED(deltaTime);
     }
-    
+
     virtual void onDraw(float deltaTime)
     {
         NM_UNUSED(deltaTime);
     }
 
-    virtual void onEvent(Event& event)
-    {
-        NM_UNUSED(event);
-    }
-
-    virtual void onGuiUpdate(float deltaTime)
+    virtual void onGuiDraw(float deltaTime)
     {
         NM_UNUSED(deltaTime);
     }
 
-
-    
+    // IMPORTANT: DO NOT perform any Graphics API or renderer calls in onEvent.
+    // It wont be deterministed because render thread, which handles those
+    // updates only runs after onDraw!
+    virtual void onEvent(Event& event)
+    {
+        NM_UNUSED(event);
+    }
 };
 }  // namespace nimbus

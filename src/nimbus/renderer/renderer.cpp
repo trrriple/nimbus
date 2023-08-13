@@ -75,8 +75,7 @@ void Renderer::s_setScene(const glm::mat4& vpMatrix) noexcept
 
 void Renderer::s_startFrame() noexcept
 {
-    // GraphicsApi::clear();
-    s_swapAndStart();
+
 }
 
 void Renderer::s_endFrame() noexcept
@@ -165,7 +164,7 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
         {
             GraphicsApi::drawArraysInstanced(
                 p_vertexArray, instanceCount, vertexCount);
-        }
+        }   
     }
 }
 
@@ -192,9 +191,9 @@ void Renderer::s_pumpCmds() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Private Functions
 ////////////////////////////////////////////////////////////////////////////////
 void Renderer::_s_qSwap() noexcept
+// Private Functions
 {
     s_submitRenderCmdQIdx  = (s_submitRenderCmdQIdx + 1) % k_numRenderCmdQ;
     s_processRenderCmdQIdx = (s_processRenderCmdQIdx + 1) % k_numRenderCmdQ;
@@ -222,6 +221,8 @@ void Renderer::_s_renderThreadFn()
         pendSw->splitAndSave();
 
         processSw->split();
+
+
         s_renderThread.setState(RenderThread::State::BUSY);
         // process all the commands in object queue
         _s_getProcessObjectCmdQ()->pump();

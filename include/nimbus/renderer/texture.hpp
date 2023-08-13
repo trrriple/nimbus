@@ -4,6 +4,8 @@
 
 #include <cstdint>
 #include <string>
+#include <variant>
+#include <array>
 
 
 namespace nimbus
@@ -87,7 +89,7 @@ class Texture : public refCounted
     struct Spec
     {
         uint32_t       width          = 1;
-        uint32_t       height         = 1;   
+        uint32_t       height         = 1;
         uint32_t       samples        = 1;
         Format         format         = Format::RGBA;
         FormatInternal formatInternal = FormatInternal::RGBA8;
@@ -97,11 +99,15 @@ class Texture : public refCounted
         WrapType       wrapTypeS      = WrapType::CLAMP_TO_EDGE;
         WrapType       wrapTypeT      = WrapType::CLAMP_TO_EDGE;
         WrapType       wrapTypeR      = WrapType::CLAMP_TO_EDGE;
+        std::variant<std::array<float, 4>,
+                     std::array<int32_t, 4>,
+                     std::array<uint32_t, 4>>
+            clearColor = std::array<float, 4>{0.0f, 0.0f, 0.0f, 0.0f};
     };
 
     static ref<Texture> s_create(const Type type,
                                  Spec&      spec,
-                                 bool       submitForMe = true)  noexcept;
+                                 bool       submitForMe = true) noexcept;
 
     virtual ~Texture() = default;
 

@@ -3,7 +3,7 @@
 #include "nimbus/core/application.hpp"
 #include "nimbus/core/window.hpp"
 #include "nimbus/core/utility.hpp"
-#include "nimbus/renderer/frameBuffer.hpp"
+#include "nimbus/renderer/framebuffer.hpp"
 #include "panels/sceneControlPanel.hpp"
 
 #include "glm.hpp"
@@ -15,20 +15,23 @@ namespace nimbus
 class ViewportPanel
 {
    public:
+    typedef std::function<void(Entity)> EntitySelectedCallback_t;
+
     glm::vec2 m_viewportSize = {800, 600};
     glm::vec2 m_viewportRegion[2];
+    bool      m_viewportFocused;
+    bool      m_viewportHovered;
+    bool      m_wireFrame = false;
 
-    bool m_viewportFocused;
-    bool m_viewportHovered;
-
-    bool m_wireFrame = false;
-
-    ViewportPanel(Camera* p_editCamera)
+    ViewportPanel(Camera* p_editCamera, ref<Scene>& p_scene)
     {
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
 
-        mp_editCamera = p_editCamera;
+        mp_editCamera   = p_editCamera;
+        mp_sceneContext = p_scene;
+
+        mp_pixelRequest = ref<Framebuffer::PixelReadRequest>::gen();
     }
     ~ViewportPanel()
     {
@@ -47,7 +50,12 @@ class ViewportPanel
         }
     }
 
-    void onDraw(ref<FrameBuffer>&            p_screenBuffer,
+    void setEntitySelectedCallback(const EntitySelectedCallback_t& callback)
+    {
+        m_entitySelectedCallback = callback;
+    }
+
+    void onDraw(ref<Framebuffer>&            p_screenBuffer,
                 bool                         orthographic,
                 Camera::Bounds&              bounds,
                 Entity                       selectedEntity,
@@ -56,7 +64,7 @@ class ViewportPanel
         ImGui::SetNextWindowSize({m_viewportSize.x, m_viewportSize.y},
                                  ImGuiCond_FirstUseEver);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
-        ImGui::Begin("Viewport");
+        ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
 
         auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
         auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -92,16 +100,11 @@ class ViewportPanel
                          ImVec2{1, 0});
         }
 
-        float titleBarHeight
-            = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2;
-
         ///////////////////////////
         // Draw the Viewport Size
         ///////////////////////////
         // Get the top-left corner of
         // the current ImGui window
-        ImVec2 windowPos = ImGui::GetWindowPos();
-
         ImDrawList* drawList = ImGui::GetWindowDrawList();
 
         char dimString[32];
@@ -113,48 +116,93 @@ class ViewportPanel
                  (int)m_viewportSize.y,
                  m_viewportSize.x / m_viewportSize.y);
 
-        ImVec2 dimLoc = {windowPos.x + m_viewportSize.x - 115.0f,
-                         windowPos.y + m_viewportSize.y - 17.0f};
+        ImVec2 dimLoc = {m_viewportRegion[1].x - 115.0f,
+                         m_viewportRegion[1].y - 17.0f};
 
         // Draw the text on the draw list
         drawList->AddText(dimLoc, IM_COL32(255, 255, 255, 255), dimString);
 
+
         ///////////////////////////
-        // Draw the cursor pos
+        // Handle Cursor position
         ///////////////////////////
-        if (m_viewportHovered && orthographic)
+        if (m_viewportHovered)
         {
             ImVec2 mousePos = ImGui::GetMousePos();
 
             glm::vec2 mousePosInViewportPix
-                = {mousePos.x - windowPos.x,
-                   mousePos.y - windowPos.y - titleBarHeight};
+                = {mousePos.x - m_viewportRegion[0].x,
+                   mousePos.y - m_viewportRegion[0].y};
 
-            glm::vec2 mousePosInViewport = util::mapPixToScreen(
-                {mousePosInViewportPix.x, mousePosInViewportPix.y},
-                bounds.topLeft.x,
-                bounds.topRight.x,
-                bounds.topLeft.y,
-                bounds.bottomLeft.y,
-                m_viewportSize.x,
-                m_viewportSize.y);
+            if (m_requestedPixelVal)
+            {
+                auto pv = mp_pixelRequest->getAndInvalidateValue();
 
-            // draw mouse position over image
-            ImDrawList* drawList = ImGui::GetWindowDrawList();
+                // because the rendering thread runs latent, the request
+                // will be handled (typically) by the time this comes around
+                // twice, i.e., the first time we check it will probably
+                // not be valid.
+                if (pv.valid)
+                {
+                    m_requestedPixelVal = false;
 
-            char posString[32];
+                    entt::entity id = static_cast<entt::entity>(
+                        std::get<uint32_t>(pv.value));
 
-            snprintf(posString,
-                     sizeof(posString),
-                     "X:%+.04f, Y:%+.04f",
-                     mousePosInViewport.x,
-                     mousePosInViewport.y);
+                    if (mp_sceneContext->m_registry.valid((id)))
+                    {
+                        m_selectionContext = Entity(id, mp_sceneContext.raw());
 
-            ImVec2 posLoc
-                = {windowPos.x + 5.0f, windowPos.y + m_viewportSize.y - 17.0f};
+                        m_entitySelectedCallback(m_selectionContext);
+                    }
+                }
+            }
 
-            // Draw the text on the draw list
-            drawList->AddText(posLoc, IM_COL32(255, 255, 255, 255), posString);
+            if (ImGui::IsMouseClicked(0))
+            {
+                uint32_t framebufPosInPixX = mousePosInViewportPix.x;
+                uint32_t framebufPosInPixY
+                    = m_viewportSize.y - mousePosInViewportPix.y;
+
+                mp_pixelRequest->updateRequest(
+                    1, framebufPosInPixX, framebufPosInPixY);
+
+                p_screenBuffer->requestPixel(mp_pixelRequest);
+                m_requestedPixelVal = true;
+            }
+
+            if (orthographic)
+            {
+
+                // if we're orthographic we can map where the curosr is in
+                // the world easily
+                glm::vec2 mousePosInViewport = util::mapPixToScreen(
+                    {mousePosInViewportPix.x, mousePosInViewportPix.y},
+                    bounds.topLeft.x,
+                    bounds.topRight.x,
+                    bounds.topLeft.y,
+                    bounds.bottomLeft.y,
+                    m_viewportSize.x,
+                    m_viewportSize.y);
+
+                // draw mouse position over image
+                ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+                char posString[32];
+
+                snprintf(posString,
+                         sizeof(posString),
+                         "X:%+.04f, Y:%+.04f",
+                         mousePosInViewport.x,
+                         mousePosInViewport.y);
+
+                ImVec2 posLoc = {m_viewportRegion[0].x + 5.0f,
+                                 m_viewportRegion[1].y - 17.0f};
+
+                // Draw the text on the draw list
+                drawList->AddText(
+                    posLoc, IM_COL32(255, 255, 255, 255), posString);
+            }
         }
 
         if (selectedEntity && toolState != SceneControlPanel::ToolState::NONE)
@@ -227,12 +275,15 @@ class ViewportPanel
     }
 
    private:
-    Application* mp_appRef;
-    Window*      mp_appWinRef;
-
-    bool m_wasResized;
-
-    Camera* mp_editCamera;
+    Application*                       mp_appRef;
+    Window*                            mp_appWinRef;
+    Camera*                            mp_editCamera;
+    ref<Scene>                         mp_sceneContext;
+    bool                               m_wasResized;
+    ref<Framebuffer::PixelReadRequest> mp_pixelRequest;
+    EntitySelectedCallback_t           m_entitySelectedCallback;
+    bool                               m_requestedPixelVal = false;
+    Entity                             m_selectionContext;
 };
 
 }  // namespace nimbus

@@ -48,7 +48,7 @@ class SceneHeirarchyPanel
         mp_sceneContext = p_scene;
     }
 
-    void onDraw()
+    void onDraw(Entity selectedEntity)
     {
         ImGui::Begin("Heirarchy");
 
@@ -63,6 +63,8 @@ class SceneHeirarchyPanel
             ImGui::Text("Add new entity");
             ImGui::EndTooltip();
         }
+
+        m_selectionContext = selectedEntity;
 
         ImGui::SameLine();
         ImGuiTextFilter filter;

@@ -1,16 +1,16 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
 
-#include "nimbus/renderer/frameBuffer.hpp"
+#include "nimbus/renderer/framebuffer.hpp"
 
-#include "platform/gl/glFrameBuffer.hpp"
+#include "platform/gl/glFramebuffer.hpp"
 
 namespace nimbus
 {
 
-ref<FrameBuffer> FrameBuffer::s_create(FrameBuffer::Spec& spec) noexcept
+ref<Framebuffer> Framebuffer::s_create(Framebuffer::Spec& spec) noexcept
 {
-    return ref<GlFrameBuffer>::gen(spec);
+    return ref<GlFramebuffer>::gen(spec);
 }
 
 }  // namespace nimbus

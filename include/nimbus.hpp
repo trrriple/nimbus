@@ -13,7 +13,7 @@
 #include "nimbus/physics/physics2D.hpp"
 #include "nimbus/renderer/buffer.hpp"
 #include "nimbus/renderer/font.hpp"
-#include "nimbus/renderer/frameBuffer.hpp"
+#include "nimbus/renderer/framebuffer.hpp"
 #include "nimbus/scene/camera.hpp"
 #include "nimbus/renderer/mesh.hpp"
 #include "nimbus/renderer/model.hpp"
