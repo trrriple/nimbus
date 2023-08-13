@@ -64,7 +64,12 @@ class SceneHeirarchyPanel
             ImGui::EndTooltip();
         }
 
-        m_selectionContext = selectedEntity;
+        bool selectionChanged = false;
+        if (selectedEntity != m_selectionContext)
+        {
+            m_selectionContext = selectedEntity;
+            selectionChanged   = true;
+        }
 
         ImGui::SameLine();
         ImGuiTextFilter filter;
@@ -85,14 +90,22 @@ class SceneHeirarchyPanel
         std::vector<Entity> passedFilterEntities;
         passedFilterEntities.reserve(count);
 
-        for (auto entityHandle : view)
+        int selectedIdx = -1;
+        for (int i = 0; i < count; i++)
         {
-            Entity entity = {entityHandle, mp_sceneContext.raw()};
-            auto&  name   = entity.getComponent<NameCmp>().name;
+            auto   entityHandle = view[i];
+            Entity entity       = {entityHandle, mp_sceneContext.raw()};
+            auto&  name         = entity.getComponent<NameCmp>().name;
 
             if (filter.PassFilter(name.c_str()))
             {
                 passedFilterEntities.push_back(entity);
+            }
+
+            if (entity == m_selectionContext && selectionChanged)
+            {
+                // force the selected entity to always be shown
+                selectedIdx = i;
             }
         }
 
@@ -102,12 +115,21 @@ class SceneHeirarchyPanel
 
         ImGuiListClipper clipper;
         clipper.Begin(passedFilterEntities.size());
+        if (selectedIdx != -1)
+        {
+            clipper.IncludeRangeByIndices(selectedIdx, selectedIdx + 1);
+        }
         while (clipper.Step())
         {
             for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
             {
                 Entity& entity = passedFilterEntities[i];
                 _drawEntity(entity);
+
+                if (selectionChanged && entity == m_selectionContext)
+                {
+                    ImGui::SetScrollHereY();
+                }
             }
         }
 
