@@ -278,7 +278,7 @@ struct SpriteCmp
     {
     }
     SpriteCmp(const glm::vec4& icolor,
-              ref<Texture>&    p_itexture,
+              ref<Texture>     p_itexture,
               float            itilingFactor = 1.0f) noexcept
         : color(icolor), p_texture(p_itexture), tilingFactor(itilingFactor)
     {

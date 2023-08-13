@@ -43,8 +43,8 @@ class Application
 
     void onEvent(Event& event) noexcept;
 
-    void insertLayer(const ref<Layer>& p_layer,
-                     int32_t location = k_insertLocationHead) noexcept;
+    void insertLayer(const ref<Layer> p_layer,
+                     int32_t          location = k_insertLocationHead) noexcept;
 
     void removeLayer(const ref<Layer>& p_layer) noexcept;
 
@@ -122,11 +122,10 @@ class Application
     ///////////////////////////
     // References
     ///////////////////////////
-    inline static Application* sp_instance        = nullptr;
-    scope<Window>              mp_window          = nullptr;
-    scope<ResourceManager>     mp_resourceManager = nullptr;
-
-    ref<GuiSubsystem> mp_guiSubsystemLayer = nullptr;
+    inline static Application* sp_instance          = nullptr;
+    scope<Window>              mp_window            = nullptr;
+    scope<ResourceManager>     mp_resourceManager   = nullptr;
+    ref<GuiSubsystem>          mp_guiSubsystemLayer = nullptr;
 };
 
 Application* createApplication();

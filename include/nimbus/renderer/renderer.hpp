@@ -22,8 +22,8 @@ class Renderer : public refCounted
    public:
     inline static const int32_t k_detectCountIfPossible = -1;
 
-    static void s_init();
-    static void s_destroy();
+    static void s_init() noexcept;
+    static void s_destroy() noexcept;
 
    private:
     inline static glm::mat4     m_vpMatrix      = glm::mat4(1.0f);
@@ -92,13 +92,13 @@ class Renderer : public refCounted
     static void s_render(ref<Shader>      p_shader,
                          ref<VertexArray> p_vertexArray,
                          int32_t          vertexCount = k_detectCountIfPossible,
-                         bool             setViewProjection = true);
+                         bool             setViewProjection = true) noexcept;
 
     static void s_renderInstanced(const ref<Shader>&      p_shader,
                                   const ref<VertexArray>& p_vertexArray,
                                   int32_t                 instanceCount,
                                   int32_t vertexCount = k_detectCountIfPossible,
-                                  bool    setViewProjection = true);
+                                  bool    setViewProjection = true) noexcept;
 
    private:
     inline static RenderCmdQ* _s_getSubmitRenderCmdQ() noexcept
@@ -121,8 +121,9 @@ class Renderer : public refCounted
 
     static void _s_qSwap() noexcept;
 
-    static void _s_renderThreadFn();
+    static void _s_renderThreadFn() noexcept;
 
+    static void _s_processObjectQueue() noexcept;
 
     ///////////////////////////
     // TODO port these

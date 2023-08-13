@@ -22,7 +22,7 @@ class SceneHeirarchyPanel
    public:
     typedef std::function<void(Entity)> EntitySelectedCallback_t;
 
-    SceneHeirarchyPanel(ref<Scene>& p_scene)
+    SceneHeirarchyPanel(ref<Scene> p_scene)
     {
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();

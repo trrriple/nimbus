@@ -364,6 +364,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Add debug-specific flags
     target_compile_options(nimbus PRIVATE -g)
+    target_compile_definitions(nimbus PRIVATE NIMBUS_GL_DEBUG)
 
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # clang lets us get an pdb file for debugging with remedybg/vs

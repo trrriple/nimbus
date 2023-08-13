@@ -104,7 +104,6 @@ class Framebuffer : public refCounted
         uint32_t   attachmentIdx;
         uint32_t   x;
         uint32_t   y;
-        // todo use variant?
         PixelValues pixValue;
 
     };

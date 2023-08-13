@@ -66,14 +66,14 @@ Mesh::Mesh(std::vector<Vertex> verticies, bool normalize)
     _setupMesh();
 }
 
-void Mesh::setShader(ref<Shader>& p_shader)
+void Mesh::setShader(ref<Shader> p_shader)
 {
     NM_PROFILE_TRACE();
 
     mp_shader = p_shader;
 }
 
-ref<Shader>& Mesh::getShader()
+ref<Shader> Mesh::getShader()
 {
     NM_PROFILE_TRACE();
 

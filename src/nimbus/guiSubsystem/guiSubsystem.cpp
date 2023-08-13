@@ -127,13 +127,18 @@ void GuiSubsystem::onInsert()
 
 void GuiSubsystem::onRemove()
 {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
+    // TODO this causes issues right now due to how we shutdown, so dont' do
+    // this
+
+    // ImGui_ImplOpenGL3_Shutdown();
+    // ImGui_ImplSDL2_Shutdown();
+    // ImGui::DestroyContext();
 }
 
 void GuiSubsystem::onEvent(Event& event)
 {
+    static Application* p_appRef = &Application::s_get();
+
     ImGui_ImplSDL2_ProcessEvent((SDL_Event*)&event.getDetails());
 
     if (m_captureEvents)
@@ -163,7 +168,7 @@ void GuiSubsystem::onEvent(Event& event)
         else if (!io.WantCaptureMouse
                  && eventType == Event::Type::MOUSEBUTTONDOWN)
         {
-            Application::s_get().setMenuMode(false);
+            p_appRef->setMenuMode(false);
         }
     }
 }
@@ -182,10 +187,11 @@ void GuiSubsystem::end()
 {
     NM_PROFILE_DETAIL();
 
-    ImGuiIO&     io  = ImGui::GetIO();
-    Application& app = Application::s_get();
-    io.DisplaySize   = ImVec2((float)app.getWindow().getWidth(),
-                            (float)app.getWindow().getHeight());
+    static Window* p_window = &Application::s_get().getWindow();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize
+        = ImVec2((float)p_window->getWidth(), (float)p_window->getHeight());
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

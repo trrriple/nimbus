@@ -66,9 +66,9 @@ class Mesh : public refCounted
     // with verticies only
     Mesh(std::vector<Vertex> verticies, bool normalize = false);
 
-    void setShader(ref<Shader>& p_shader);
+    void setShader(ref<Shader> p_shader);
 
-    ref<Shader>& getShader();
+    ref<Shader> getShader();
 
     void draw(const glm::mat4& model) const;
 

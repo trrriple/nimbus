@@ -23,7 +23,7 @@ class ViewportPanel
     bool      m_viewportHovered;
     bool      m_wireFrame = false;
 
-    ViewportPanel(Camera* p_editCamera, ref<Scene>& p_scene)
+    ViewportPanel(Camera* p_editCamera, ref<Scene> p_scene)
     {
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();

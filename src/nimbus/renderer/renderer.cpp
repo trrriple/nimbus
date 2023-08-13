@@ -26,7 +26,7 @@ uint32_t     Renderer::s_processRenderCmdQIdx;
 uint32_t     Renderer::s_submitObjectCmdQIdx;
 uint32_t     Renderer::s_processObjectCmdQIdx;
 
-void Renderer::s_init()
+void Renderer::s_init() noexcept
 {
     // clang-format off
     static std::once_flag initFlag;
@@ -58,12 +58,37 @@ void Renderer::s_init()
     // clang-format on
 }
 
-void Renderer::s_destroy()
+void Renderer::s_destroy() noexcept
 {
+    // flush the queues, order matters here due to not wanting to use resources
+    // that are being deleted, so we run all of the renders first before
+    // doing the deletes, typically this is done the other way around where
+    // objects are processed first.
+    // TODO think about: is this potentially a crash point on close if objects
+    // are being used that technically haven't been created yet.
+    for (uint32_t i = 0; i < k_numRenderCmdQ; i++)
+    {
+        s_swapAndStart();
+        s_waitForRenderThread();
+    }
+
+    // render command queues should now be empty
+    for (uint32_t i = 0; i < k_numObjectCmdQ; i++)
+    {
+        _s_processObjectQueue();
+        s_swapAndStart();
+        s_waitForRenderThread();
+    }
+
     s_renderThread.stop();
 
     for (int i = 0; i < k_numRenderCmdQ; i++)
     {
+        if (s_renderCmdQ[i]->getCmdCount() != 0)
+        {
+            Log::coreWarn("Unprocessed commands (%i) let on queue",
+                          s_renderCmdQ[i]->getCmdCount());
+        }
         delete s_renderCmdQ[i];
     }
 }
@@ -75,7 +100,7 @@ void Renderer::s_setScene(const glm::mat4& vpMatrix) noexcept
 
 void Renderer::s_startFrame() noexcept
 {
-
+    _s_processObjectQueue();
 }
 
 void Renderer::s_endFrame() noexcept
@@ -86,7 +111,7 @@ void Renderer::s_endFrame() noexcept
 void Renderer::s_render(ref<Shader>      p_shader,
                         ref<VertexArray> p_vertexArray,
                         int32_t          vertexCount,
-                        bool             setViewProjection)
+                        bool             setViewProjection) noexcept
 {
     NM_PROFILE();
 
@@ -128,7 +153,7 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
                                  const ref<VertexArray>& p_vertexArray,
                                  int32_t                 instanceCount,
                                  int32_t                 vertexCount,
-                                 bool                    setViewProjection)
+                                 bool setViewProjection) noexcept
 {
     NM_PROFILE();
 
@@ -185,8 +210,9 @@ void Renderer::s_pumpCmds() noexcept
 
     for (uint32_t i = 0; i < queuesToPump; i++)
     {
-        Renderer::s_swapAndStart();
-        Renderer::s_waitForRenderThread();
+        _s_processObjectQueue();
+        s_swapAndStart();
+        s_waitForRenderThread();
     }
 }
 
@@ -202,7 +228,7 @@ void Renderer::_s_qSwap() noexcept
     s_processObjectCmdQIdx = (s_processObjectCmdQIdx + 1) % k_numObjectCmdQ;
 }
 
-void Renderer::_s_renderThreadFn()
+void Renderer::_s_renderThreadFn() noexcept
 {
     SDL_GL_MakeCurrent(static_cast<SDL_Window*>(
                            Application::s_get().getWindow().getOsWindow()),
@@ -222,15 +248,19 @@ void Renderer::_s_renderThreadFn()
 
         processSw->split();
 
-
         s_renderThread.setState(RenderThread::State::BUSY);
-        // process all the commands in object queue
-        _s_getProcessObjectCmdQ()->pump();
         // process all the commands in render queue
         _s_getProcessRenderCmdQ()->pump();
         s_renderThread.setState(RenderThread::State::PEND);
         processSw->splitAndSave();
     }
+}
+
+void Renderer::_s_processObjectQueue() noexcept
+{
+    // typically we call this before starting a frame, so that all
+    // object commands get procesed before render commands
+    Renderer::s_submit([]() { _s_getProcessObjectCmdQ()->pump(); });
 }
 
 void Renderer::_s_submit(const ref<Shader>&      p_shader,
@@ -275,7 +305,6 @@ void Renderer::_s_submit(const ref<Shader>&      p_shader,
         }
     }
 }
-
 
 void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
                                   const ref<VertexArray>& p_vertexArray,

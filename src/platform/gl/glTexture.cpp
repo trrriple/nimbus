@@ -61,11 +61,10 @@ GlTexture::GlTexture(const Type         type,
                 0, "Unknown image format has %i components", numComponents);
         }
 
-        // ref<GlTexture>     p_this       = makeRef<GlTexture>(*this);
-        GlTexture*            p_this       = this;
+        ref<GlTexture>     p_this       = this;
     
         Renderer::s_submitObject(
-            [p_this, data]()
+            [p_this, data]() mutable
             {
                 _s_gen(p_this->m_id);
                 glBindTexture(GL_TEXTURE_2D, p_this->m_id);

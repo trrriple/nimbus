@@ -43,6 +43,7 @@ Application::Application(const std::string& name,
         std::bind(&Application::shouldQuit, this, std::placeholders::_1));
 
     mp_guiSubsystemLayer = ref<GuiSubsystem>::gen();
+
     insertLayer(mp_guiSubsystemLayer);
 
     Renderer::s_init();
@@ -52,7 +53,8 @@ Application::Application(const std::string& name,
 
 Application::~Application() noexcept
 {
-    // pump out all of the commands
+    // pump all the commands out before we clear layers as we odn't want
+    // pending draw commands to use deleted resources
     Renderer::s_pumpCmds();
 
     m_layerDeck.clear();
@@ -284,8 +286,8 @@ void Application::onEvent(Event& event) noexcept
     }
 }
 
-void Application::insertLayer(const ref<Layer>& p_layer,
-                              int32_t           location) noexcept
+void Application::insertLayer(const ref<Layer> p_layer,
+                              int32_t          location) noexcept
 {
     m_layerDeck.insertLayer(p_layer, location);
 }

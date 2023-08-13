@@ -15,26 +15,15 @@ class refCounted
     {
         ++m_refCount;
     }
-    inline void decRefCount() const noexcept
+    inline uint32_t decRefCount() const noexcept
     {
-        --m_refCount;
-    }
-
-    inline uint32_t getRefCount() const noexcept
-    {
-        return m_refCount.load();
+        return --m_refCount;
     }
 
    private:
     mutable std::atomic<uint32_t> m_refCount = 0;
 };
 
-namespace refUtils
-{
-void addToLiveReferences(void* instance);
-void removeFromLiveReferences(void* instance);
-bool isLive(void* instance);
-}  // namespace refUtils
 
 template <typename T>
 class ref
@@ -71,7 +60,7 @@ class ref
         other.m_inst = nullptr;
     }
 
-    static ref<T> CopyWithoutIncrement(const ref<T>& other) noexcept
+    static ref<T> replicate(const ref<T>& other) noexcept
     {
         ref<T> result  = nullptr;
         result->m_inst = other.m_inst;
@@ -206,7 +195,6 @@ class ref
         if (m_inst) 
         {
             m_inst->incRefCount();
-            refUtils::addToLiveReferences((void*)m_inst);
         }
     }
 
@@ -214,11 +202,9 @@ class ref
     {
         if (m_inst)
         {
-            m_inst->decRefCount();
-            if (m_inst->getRefCount() == 0)
+            if (m_inst->decRefCount() == 0)
             {
                 delete m_inst;
-                refUtils::removeFromLiveReferences((void*)m_inst);
                 m_inst = nullptr;
             }
         }
@@ -229,53 +215,53 @@ class ref
     mutable T* m_inst;
 };
 
-template <typename T>
-class weakRef
-{
-   public:
-    weakRef() = default;
+// template <typename T>
+// class weakRef
+// {
+//    public:
+//     weakRef() = default;
 
-    inline weakRef(ref<T> ref) noexcept
-    {
-        m_inst = ref.raw();
-    }
+//     inline weakRef(ref<T> ref) noexcept
+//     {
+//         m_inst = ref.raw();
+//     }
 
-    inline weakRef(T* instance) noexcept
-    {
-        m_inst = instance;
-    }
+//     inline weakRef(T* instance) noexcept
+//     {
+//         m_inst = instance;
+//     }
 
-    inline T* operator->() noexcept
-    {
-        return m_inst;
-    }
-    inline const T* operator->() const noexcept
-    {
-        return m_inst;
-    }
+//     inline T* operator->() noexcept
+//     {
+//         return m_inst;
+//     }
+//     inline const T* operator->() const noexcept
+//     {
+//         return m_inst;
+//     }
 
-    inline T& operator*() noexcept
-    {
-        return *m_inst;
-    }
+//     inline T& operator*() noexcept
+//     {
+//         return *m_inst;
+//     }
 
-    inline const T& operator*() const noexcept
-    {
-        return *m_inst;
-    }
+//     inline const T& operator*() const noexcept
+//     {
+//         return *m_inst;
+//     }
 
-    inline bool isValid() const noexcept
-    {
-        return m_inst ? refUtils::isLive(m_inst) : false;
-    }
+//     inline bool isValid() const noexcept
+//     {
+//         return m_inst ? refUtils::isLive(m_inst) : false;
+//     }
 
-    inline operator bool() const noexcept
-    {
-        return isValid();
-    }
+//     inline operator bool() const noexcept
+//     {
+//         return isValid();
+//     }
 
-   private:
-    T* m_inst = nullptr;
-};
+//    private:
+//     T* m_inst = nullptr;
+// };
 
 }  // namespace nimbus

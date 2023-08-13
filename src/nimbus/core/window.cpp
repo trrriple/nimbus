@@ -8,9 +8,6 @@
 #include "nimbus/renderer/graphicsApi.hpp"
 #include "nimbus/renderer/renderer.hpp"
 
-// TODO better
-#define NIMBUS_GL_DEBUG 1
-
 namespace nimbus
 {
 
@@ -62,7 +59,7 @@ void Window::graphicsContextInit() noexcept
 {
     NM_PROFILE_DETAIL();
 
-#if NIMBUS_GL_DEBUG
+#ifdef NIMBUS_GL_DEBUG
     int contextFlags = 0;
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
     contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
