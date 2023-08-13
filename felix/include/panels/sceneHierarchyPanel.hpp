@@ -64,15 +64,20 @@ class SceneHeirarchyPanel
             ImGui::EndTooltip();
         }
 
-        bool selectionChanged = false;
+        ImGui::SameLine();
+        static ImGuiTextFilter filter;
+
+        static bool selectionScrollHandled = true;
+
         if (selectedEntity != m_selectionContext)
         {
-            m_selectionContext = selectedEntity;
-            selectionChanged   = true;
+            m_selectionContext     = selectedEntity;
+            selectionScrollHandled = false;
+            filter.Clear();
         }
 
-        ImGui::SameLine();
-        ImGuiTextFilter filter;
+        bool filterActive = filter.IsActive();
+
         filter.Draw(ICON_FA_FILTER);
         if (ImGui::IsItemHovered())
         {
@@ -82,6 +87,33 @@ class SceneHeirarchyPanel
                 "lines containing 'xxx' or 'yyy'\n '-xxx' hide lines "
                 "containing 'xxx' ");
             ImGui::EndTooltip();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Clear"))
+        {
+            filter.Clear();
+        }
+
+        ImGui::Separator();
+        ImGui::BeginChild("##ScrollRegion");
+
+        static float preFilterScrollPos = 0.0f;
+        static bool  scrollResetHandled = true;
+        if (!filterActive && scrollResetHandled)
+        {
+            preFilterScrollPos = ImGui::GetScrollY();
+        }
+
+        // handle resetting scroll position after finishing a filter
+        if ((filterActive && scrollResetHandled))
+        {
+            scrollResetHandled = false;
+        }
+        else if (!filterActive && !scrollResetHandled)
+        {
+            ImGui::SetScrollY(preFilterScrollPos);
+            scrollResetHandled = true;
         }
 
         auto view  = mp_sceneContext->m_registry.view<GuidCmp>();
@@ -102,52 +134,72 @@ class SceneHeirarchyPanel
                 passedFilterEntities.push_back(entity);
             }
 
-            if (entity == m_selectionContext && selectionChanged)
+            if (entity == m_selectionContext && !selectionScrollHandled)
             {
-                // force the selected entity to always be shown
-                selectedIdx = i;
+                if (!selectionScrollHandled && !filterActive)
+                {
+                    // selected entity must be in list in order to scroll to it
+                    selectedIdx = i;
+                }
             }
         }
-
-        ImGui::Separator();
-
-        ImGui::BeginChild("##ScrollRegion");
 
         ImGuiListClipper clipper;
         clipper.Begin(passedFilterEntities.size());
         if (selectedIdx != -1)
         {
+            // selected entity must be in list in order to scroll to it
             clipper.IncludeRangeByIndices(selectedIdx, selectedIdx + 1);
         }
         while (clipper.Step())
         {
             for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
             {
-                Entity& entity = passedFilterEntities[i];
-                _drawEntity(entity);
+                Entity& entity   = passedFilterEntities[i];
+                bool    selected = _drawEntity(entity);
 
-                if (selectionChanged && entity == m_selectionContext)
+                if (selected)
                 {
-                    ImGui::SetScrollHereY();
+                    if (entity != m_selectionContext)
+                    {
+                        m_selectionContext = entity;
+                        m_entitySelectedCallback(m_selectionContext);
+
+                        if (filterActive)
+                        {
+                            selectionScrollHandled = false;
+                        }
+                    }
+                }
+
+                if (entity == m_selectionContext)
+                {
+                    if (!selectionScrollHandled && !filterActive)
+                    {
+                        ImGui::SetScrollHereY();
+                        selectionScrollHandled = true;
+                    }
                 }
             }
         }
 
         clipper.End();
 
+
         // clear selection when clicked off of in window
-        if (m_selectionContext && ImGui::IsMouseDown(0)
-            && ImGui::IsWindowHovered())
-        {
-            m_selectionContext = {};
+        // TODO: do I want this?
+        // if (m_selectionContext && ImGui::IsMouseDown(0)
+        //     && ImGui::IsWindowHovered())
+        // {
+        //     m_selectionContext = {};
+        //     m_selectionChanged = true;
 
-            if (m_entitySelectedCallback)
-            {
-                m_entitySelectedCallback(m_selectionContext);
-            }
-        }
+        //     if (m_entitySelectedCallback)
+        //     {
+        //         m_entitySelectedCallback(m_selectionContext);
+        //     }
+        // }
         ImGui::EndChild();
-
 
         // reduce default indentation for component panel
         float originalIndent            = ImGui::GetStyle().IndentSpacing;
@@ -179,8 +231,10 @@ class SceneHeirarchyPanel
     ////////////////////////////////////////////////////////////////////////////
     // Private Functions
     ////////////////////////////////////////////////////////////////////////////
-    void _drawEntity(Entity& entity)
+    bool _drawEntity(Entity& entity)
     {
+        bool selected = false;
+
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
                                    | ImGuiTreeNodeFlags_OpenOnDoubleClick
                                    | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -197,8 +251,7 @@ class SceneHeirarchyPanel
         // select item as context if it's clicked
         if (ImGui::IsItemClicked(0))
         {
-            m_selectionContext = entity;
-            m_entitySelectedCallback(m_selectionContext);
+            selected = true;
         }
 
         bool deleted = false;
@@ -229,6 +282,8 @@ class SceneHeirarchyPanel
             }
             mp_sceneContext->sortEntities();
         }
+
+        return selected;
     }
 
     void _drawNameCmp(Entity& entity)
