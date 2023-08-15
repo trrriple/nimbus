@@ -290,7 +290,7 @@ class SceneHeirarchyPanel
         if (ImGui::IsItemHovered())
         {
             ImGui::BeginTooltip();
-            ImGui::Text("GUID: %s \n CreationOrder %i",
+            ImGui::Text("GUID: %s \n genesisIndex %i",
                         entity.getComponent<GuidCmp>().guid.toString().c_str(),
                         entity.getComponent<GuidCmp>().genesisIndex);
             ImGui::EndTooltip();

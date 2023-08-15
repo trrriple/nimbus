@@ -195,60 +195,60 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Test Camera
         ///////////////////////////
-        auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
-        sceneCameraEntity.addComponent<CameraCmp>();
+        // auto sceneCameraEntity = mp_scene->addEntity("Scene Camera");
+        // sceneCameraEntity.addComponent<CameraCmp>();
 
-        sceneCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
+        // sceneCameraEntity.addComponent<WindowRefCmp>(mp_appWinRef);
 
-        sceneCameraEntity.addComponent<NativeLogicCmp>()
-            .bind<sceneCameraController>();
+        // sceneCameraEntity.addComponent<NativeLogicCmp>()
+        //     .bind<sceneCameraController>();
 
-        ///////////////////////////
-        // Test Sprite
-        ///////////////////////////
-        uint32_t sz = 5;
-        for (uint32_t i = 0; i < sz; i++)
-        {
-            for (uint32_t j = 0; j < sz; j++)
-            {
-                auto spriteEntity1 = mp_scene->addEntity(
-                    "Test Sprite " + std::to_string((i * sz) + j));
-                auto& transformCmp1
-                    = spriteEntity1.addComponent<TransformCmp>();
-                transformCmp1.setScale({0.1f, 0.1f, 1.0f});
-                transformCmp1.setTranslationX(0.12 * i);
-                transformCmp1.setTranslationY(0.12 * j);
-                auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
-                spriteCmp1.color = {0.0f, 0.02f * i, 0.02f * j, 1.0f};
-            }
-        }
+        // ///////////////////////////
+        // // Test Sprite
+        // ///////////////////////////
+        // uint32_t sz = 5;
+        // for (uint32_t i = 0; i < sz; i++)
+        // {
+        //     for (uint32_t j = 0; j < sz; j++)
+        //     {
+        //         auto spriteEntity1 = mp_scene->addEntity(
+        //             "Test Sprite " + std::to_string((i * sz) + j));
+        //         auto& transformCmp1
+        //             = spriteEntity1.addComponent<TransformCmp>();
+        //         transformCmp1.setScale({0.1f, 0.1f, 1.0f});
+        //         transformCmp1.setTranslationX(0.12 * i);
+        //         transformCmp1.setTranslationY(0.12 * j);
+        //         auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
+        //         spriteCmp1.color = {0.0f, 0.02f * i, 0.02f * j, 1.0f};
+        //     }
+        // }
 
-        auto  spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
-        auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
-        transformCmp2.setScale({0.75f, 0.75f, 1.0f});
-        auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
-        spriteCmp2.color = {0.1f, 0.9f, 0.2f, 1.0f};
+        // auto  spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
+        // auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
+        // transformCmp2.setScale({0.75f, 0.75f, 1.0f});
+        // auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
+        // spriteCmp2.color = {0.1f, 0.9f, 0.2f, 1.0f};
 
-        ///////////////////////////
-        // Text text
-        ///////////////////////////
-        mp_generalFont = Application::s_get().getResourceManager().loadFont(
-            "../resources/fonts/Roboto/Roboto-Regular.ttf");
+        // ///////////////////////////
+        // // Text text
+        // ///////////////////////////
+        // mp_generalFont = Application::s_get().getResourceManager().loadFont(
+        //     "../resources/fonts/Roboto/Roboto-Regular.ttf");
 
-        Font::Format format;
-        format.p_font  = mp_generalFont;
-        format.fgColor = {0.0f, 0.5f, 0.7f, 1.0f};
-        format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
-        format.kerning = 0.0f;
+        // Font::Format format;
+        // format.p_font  = mp_generalFont;
+        // format.fgColor = {0.0f, 0.5f, 0.7f, 1.0f};
+        // format.bgColor = {0.0f, 0.0f, 0.0f, 0.0f};
+        // format.kerning = 0.0f;
 
-        auto  textEntity    = mp_scene->addEntity("Test Text");
-        auto& transformCmp3 = textEntity.addComponent<TransformCmp>();
-        transformCmp3.setScale({0.25f, 0.25f, 1.0f});
-        transformCmp3.setTranslationX(-0.4f);
-        transformCmp3.setTranslationY(0.30f);
-        auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
+        // auto  textEntity    = mp_scene->addEntity("Test Text");
+        // auto& transformCmp3 = textEntity.addComponent<TransformCmp>();
+        // transformCmp3.setScale({0.25f, 0.25f, 1.0f});
+        // transformCmp3.setTranslationX(-0.4f);
+        // transformCmp3.setTranslationY(0.30f);
+        // auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
 
-        mp_scene->sortEntities();
+        // mp_scene->sortEntities();
 
         ///////////////////////////
         // Setup Framebuffers

@@ -27,17 +27,14 @@ static void s_serializeEntity(toml::table& entitiesTbl,
     toml::table entityTbl;
     entityTbl.insert("genesisIndex", guidCmp.genesisIndex);
 
-
     ///////////////////////////
     // NameCmp
     ///////////////////////////
-    if (entity.hasComponent<NameCmp>())
-    {
-        toml::table nameTbl;
-        nameTbl.insert("name", entity.getComponent<NameCmp>().name);
-        entityTbl.insert("NameCmp", nameTbl);
-    }
+    NM_CORE_ASSERT_STATIC(entity.hasComponent<NameCmp>(),
+                          "Entity needs NameCmp to serialize!");
 
+    entityTbl.insert("name", entity.getComponent<NameCmp>().name);
+    
     ///////////////////////////
     // TransformCmp
     ///////////////////////////
@@ -110,8 +107,6 @@ void SceneSerializer::serialize(const std::string& filepath)
 
     for (auto [entityHandle, guid] : entities.each())
     {
-        Log::coreInfo("%i", guid.genesisIndex);
-
         Entity entity = {entityHandle, mp_scene.raw()};
         if (!entity)  // ?
         {
@@ -133,34 +128,57 @@ void SceneSerializer::serializeBin(const std::string& filepath)
     NM_CORE_ASSERT(false, "NOT IMPLEMENTED");
 }
 
-static void s_deserializeEntity(toml::table       entityTbl,
-                                Scene*            p_scene,
-                                const std::string guidStr)
+void SceneSerializer::_deserializeEntity(void*             entityTbl,
+                                         Scene*            p_scene,
+                                         const std::string guidStr)
 {
-    uint32_t genesisIndex = entityTbl["genesisIndex"].value_or(0);
+    toml::table* p_entityTbl = reinterpret_cast<toml::table*>(entityTbl);
 
-    Log::coreInfo("guidStr %s, GenesisIndex %i", guidStr.c_str(), genesisIndex);
+    uint32_t genesisIndex = (*p_entityTbl)["genesisIndex"].value_or(0);
+    std::string& name = (*p_entityTbl)["name"].ref<std::string>();
 
-    entityTbl.for_each(
-        [p_scene](const toml::key& key, auto&& cmpTbl)
+    Log::coreTrace("Name %s, guidStr %s, GenesisIndex %i",
+                   name.c_str(),
+                   guidStr.c_str(),
+                   genesisIndex);
+
+    Entity entity = p_scene->_addEntity(name, guidStr, genesisIndex);
+
+    p_entityTbl->for_each(
+        [&](const toml::key& key, toml::node& node)
         {
             std::string cmpType(key.data());
 
             Log::coreInfo("Component Type %s", cmpType.c_str());
 
-            if constexpr (toml::is_table<decltype(cmpTbl)>)
+            if (node.is_table())
             {
-                if(cmpType == "NameCmp")
+                auto& cmpTbl = *node.as_table();
+
+                ///////////////////////////
+                // TransformCmp
+                ///////////////////////////
+                if (cmpType == "TransformCmp")
                 {
-                    std::optional<std::string> name
-                        = cmpTbl["name"].template value<std::string>();
-                    
-                    if(name)
-                    {
-                        Log::coreInfo("Name %s", name.value().c_str());
+                    auto& tc = entity.addComponent<TransformCmp>();
 
-                    }
+                    auto& translation = *cmpTbl["translation"].as_array();
+                    auto& rotation    = *cmpTbl["rotation"].as_array();
+                    auto& scale       = *cmpTbl["scale"].as_array();
 
+                    tc.setTranslation({translation[0].ref<double>(),
+                                       translation[1].ref<double>(),
+                                       translation[2].ref<double>()});
+
+                    tc.setRotation({rotation[0].ref<double>(),
+                                    rotation[1].ref<double>(),
+                                    rotation[2].ref<double>()});
+
+                    tc.setScale({scale[0].ref<double>(),
+                                 scale[1].ref<double>(),
+                                 scale[2].ref<double>()});
+
+                    tc.setScaleLocked(cmpTbl["scaleLocked"].ref<bool>());
                 }
             }
         });
@@ -213,11 +231,12 @@ bool SceneSerializer::deserialize(const std::string& filepath)
 
             if constexpr (toml::is_table<decltype(entityTbl)>)
             {
-                s_deserializeEntity(entityTbl, mp_scene.raw(), guidStr);
+                _deserializeEntity((void*)&entityTbl, mp_scene.raw(), guidStr);
             }
-
         });
 
+
+    mp_scene->sortEntities();
     return true;
 }
 

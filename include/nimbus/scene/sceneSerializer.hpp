@@ -19,6 +19,9 @@ class SceneSerializer
    private:
     ref<Scene> mp_scene;
 
+    void _deserializeEntity(void*             p_entityTbl,
+                            Scene*            p_scene,
+                            const std::string guidStr);
 };
 
 }  // namespace nimbus
