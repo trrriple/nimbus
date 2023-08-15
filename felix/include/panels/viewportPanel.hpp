@@ -158,7 +158,7 @@ class ViewportPanel
                 }
             }
 
-            if (ImGui::IsMouseClicked(0))
+            if (ImGui::IsMouseClicked(0) && !ImGuizmo::IsOver())
             {
                 uint32_t framebufPosInPixX = mousePosInViewportPix.x;
                 uint32_t framebufPosInPixY
@@ -261,6 +261,7 @@ class ViewportPanel
                                      glm::value_ptr(transform),
                                      nullptr,
                                      nullptr);
+
 
                 if (ImGuizmo::IsUsing())
                 {

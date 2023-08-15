@@ -106,7 +106,8 @@
 			"xutility": "cpp",
 			"future": "cpp",
 			"resumable": "cpp",
-			"*.natvis": "cpp"
+			"*.natvis": "cpp",
+			"*.bak": "cpp"
 		}
 	}
 }

@@ -144,6 +144,11 @@ class SceneHeirarchyPanel
             }
         }
 
+        // clipper allows us to only proceess and render entities that can fit
+        // in the current scroll area of the panel. This is a significant 
+        // performance improvement when there are lots (thousands) of entities
+        // because a. they don't need to be processed by imgui and b. they 
+        // don't need to be processed by us.
         ImGuiListClipper clipper;
         clipper.Begin(passedFilterEntities.size());
         if (selectedIdx != -1)
@@ -185,20 +190,6 @@ class SceneHeirarchyPanel
 
         clipper.End();
 
-
-        // clear selection when clicked off of in window
-        // TODO: do I want this?
-        // if (m_selectionContext && ImGui::IsMouseDown(0)
-        //     && ImGui::IsWindowHovered())
-        // {
-        //     m_selectionContext = {};
-        //     m_selectionChanged = true;
-
-        //     if (m_entitySelectedCallback)
-        //     {
-        //         m_entitySelectedCallback(m_selectionContext);
-        //     }
-        // }
         ImGui::EndChild();
 
         // reduce default indentation for component panel
@@ -301,7 +292,7 @@ class SceneHeirarchyPanel
             ImGui::BeginTooltip();
             ImGui::Text("GUID: %s \n CreationOrder %i",
                         entity.getComponent<GuidCmp>().guid.toString().c_str(),
-                        entity.getComponent<GuidCmp>().creationOrder);
+                        entity.getComponent<GuidCmp>().genesisIndex);
             ImGui::EndTooltip();
         }
     }

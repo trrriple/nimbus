@@ -34,7 +34,6 @@ class Scene : public refCounted
     std::string    m_name;
     uint32_t       m_nextcreationOrder = 1;
 
-
     friend class Entity;
     friend class SceneSerializer;
 
@@ -46,6 +45,11 @@ class Scene : public refCounted
 
     void _render(Camera* p_camera);
     void _onDrawEditor(Camera* p_editorCamera);
+
+    // private addEntity for scene deserialization where these are known
+    Entity _addEntity(const std::string& name,
+                      const std::string& guidStr,
+                      uint32_t           genesisIdx);
 };
 
 }  // namespace nimbus

@@ -32,11 +32,15 @@ class Guid
    private:
     // private constructor takes already generated guid
     Guid(__int128_t guid) noexcept;
+    Guid(const std::string& guidStr) noexcept;
 
     __int128_t  m_guid;
     std::string m_guidStr;
 
     void _toString() noexcept;
+    void _fromString() noexcept;
+
+    friend struct GuidCmp;
 };
 
 }  // namespace nimbus

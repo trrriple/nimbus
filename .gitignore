@@ -5,6 +5,7 @@
 *.vscode
 *.a
 *.o
+*.bak
 
 build/
 vendor/assimp*
@@ -15,7 +16,7 @@ vendor/tracy*
 vendor/msdf-atlas-gen*
 vendor/box2d*
 vendor/entt*
-vendor/yaml*
+vendor/toml*
 
 *.nmscn
 

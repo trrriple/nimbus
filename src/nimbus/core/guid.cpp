@@ -47,6 +47,13 @@ Guid::Guid(__int128_t guid) noexcept
     _toString();
 }
 
+
+Guid::Guid(const std::string& guidStr) noexcept
+{
+    m_guidStr = guidStr;
+    _fromString();
+}
+
 void Guid::_toString() noexcept
 {
     char buffer[37];  // 32 characters, 4 hyphens, and a null terminator
@@ -64,6 +71,29 @@ void Guid::_toString() noexcept
              low & 0xFFFFFFFFFFFF);
 
     m_guidStr = std::string(buffer);
+}
+
+void Guid::_fromString() noexcept
+{
+    uint64_t high, low;
+    uint32_t a;
+    uint16_t b, c, d;
+    uint64_t e;
+
+    sscanf(m_guidStr.c_str(),
+           "%08lx-%04hx-%04hx-%04hx-%012lx",
+           &a,
+           &b,
+           &c,
+           &d,
+           &e);
+
+    high = (static_cast<uint64_t>(a) << 32) | (static_cast<uint64_t>(b) << 16)
+           | static_cast<uint64_t>(c);
+
+    low = (static_cast<uint64_t>(d) << 48) | e;
+
+    m_guid = (static_cast<__int128_t>(high) << 64) | low;
 }
 
 }  // namespace nimbus

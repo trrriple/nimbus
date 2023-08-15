@@ -22,9 +22,6 @@ Entity Scene::addEntity(const std::string& name)
 {
     Entity entity = {m_registry.create(), this};
 
-    // TODO: default name to the UUID of the entity
-    // add a name component because we'll probably want one
-
     entity.addComponent<GuidCmp>(m_nextcreationOrder++);
 
     entity.addComponent<NameCmp>(
@@ -43,7 +40,7 @@ void Scene::sortEntities()
     m_registry.sort<GuidCmp>(
         [&](const auto lhs, const auto rhs)
         {
-           return lhs.creationOrder < rhs.creationOrder;
+           return lhs.genesisIndex < rhs.genesisIndex;
         });
 }
 
@@ -159,7 +156,7 @@ void Scene::_render(Camera* p_camera)
     auto spriteView
         = m_registry.view<GuidCmp, TransformCmp, SpriteCmp>();
 
-    // order based on GuidCmp which should be sorted based on creationOrder
+    // order based on GuidCmp which should be sorted based on genesisIndex
     // we want to render these by the order they were created, so newest
     // objects are on top (assuming = Z due to 2D)
     spriteView.use<GuidCmp>();
@@ -196,6 +193,23 @@ void Scene::_render(Camera* p_camera)
 void Scene::_onDrawEditor(Camera* p_editorCamera)
 {
     _render(p_editorCamera);
+}
+
+Entity Scene::_addEntity(const std::string& name,
+                         const std::string& guidStr,
+                         uint32_t           genesisIdx)
+{
+    Entity entity = {m_registry.create(), this};
+
+    
+    entity.addComponent<GuidCmp>(genesisIdx, guidStr);
+
+    // TODO, is this right?
+    m_nextcreationOrder++;
+
+    entity.addComponent<NameCmp>(name);
+
+    return entity;
 }
 
 }  // namespace nimbus
