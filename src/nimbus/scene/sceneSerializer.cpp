@@ -34,18 +34,18 @@ static void s_serializeEntity(toml::table& entitiesTbl,
                           "Entity needs NameCmp to serialize!");
 
     entityTbl.insert("name", entity.getComponent<NameCmp>().name);
-    
+
     ///////////////////////////
     // TransformCmp
     ///////////////////////////
     if (entity.hasComponent<TransformCmp>())
     {
-        toml::table transformTbl;
-        TransformCmp& transformCmp = entity.getComponent<TransformCmp>();
+        toml::table   transformTbl;
+        TransformCmp& tc = entity.getComponent<TransformCmp>();
 
-        auto& translation = transformCmp.getTranslation();
-        auto& rotation    = transformCmp.getRotation();
-        auto& scale       = transformCmp.getScale();
+        auto& translation = tc.getTranslation();
+        auto& rotation    = tc.getRotation();
+        auto& scale       = tc.getScale();
 
         transformTbl.insert(
             "translation",
@@ -55,11 +55,10 @@ static void s_serializeEntity(toml::table& entitiesTbl,
                             toml::array{rotation.x, rotation.y, rotation.z});
 
         transformTbl.insert("scale", toml::array{scale.x, scale.y, scale.z});
-        transformTbl.insert("scaleLocked", transformCmp.isScaleLocked());
+        transformTbl.insert("scaleLocked", tc.isScaleLocked());
 
         entityTbl.insert("TransformCmp", transformTbl);
     }
-
 
     ///////////////////////////
     // SpriteCmp
@@ -67,23 +66,56 @@ static void s_serializeEntity(toml::table& entitiesTbl,
     if (entity.hasComponent<SpriteCmp>())
     {
         toml::table spriteTbl;
-        SpriteCmp&  spriteCmp = entity.getComponent<SpriteCmp>();
+        SpriteCmp&  sc = entity.getComponent<SpriteCmp>();
 
-        spriteTbl.insert("color",
-                         toml::array{spriteCmp.color.r,
-                                     spriteCmp.color.g,
-                                     spriteCmp.color.b,
-                                     spriteCmp.color.a});
+        spriteTbl.insert(
+            "color",
+            toml::array{sc.color.r, sc.color.g, sc.color.b, sc.color.a});
 
-        if (spriteCmp.p_texture != nullptr)
+        if (sc.p_texture != nullptr)
         {
             toml::table textureTbl;
-            textureTbl.insert("path", spriteCmp.p_texture->getPath());
-            textureTbl.insert("tilingFactor", spriteCmp.tilingFactor);
+            textureTbl.insert("path", sc.p_texture->getPath());
+            textureTbl.insert("tilingFactor", sc.tilingFactor);
             spriteTbl.insert("texture", textureTbl);
         }
 
         entityTbl.insert("SpriteCmp", spriteTbl);
+    }
+
+    ///////////////////////////
+    // TextCmp
+    ///////////////////////////
+    if (entity.hasComponent<TextCmp>())
+    {
+        toml::table textTbl;
+        TextCmp&    tc = entity.getComponent<TextCmp>();
+
+        textTbl.insert("text", tc.text);
+
+        toml::table formatTbl;
+        if (tc.format.p_font != nullptr)
+        {
+            formatTbl.insert("path", tc.format.p_font->getPath());
+        }
+
+        formatTbl.insert("fgColor",
+                         toml ::array{tc.format.fgColor.r,
+                                      tc.format.fgColor.g,
+                                      tc.format.fgColor.b,
+                                      tc.format.fgColor.a});
+
+        formatTbl.insert("bgColor",
+                         toml ::array{tc.format.bgColor.r,
+                                      tc.format.bgColor.g,
+                                      tc.format.bgColor.b,
+                                      tc.format.bgColor.a});
+
+        formatTbl.insert("kerning", tc.format.kerning);
+        formatTbl.insert("leading", tc.format.leading);
+        
+        textTbl.insert("format", formatTbl);
+        entityTbl.insert("TextCmp", textTbl);
     }
 
     entitiesTbl.insert(guidCmp.guid.toString(), entityTbl);
@@ -101,7 +133,7 @@ void SceneSerializer::serialize(const std::string& filepath)
     toml::table sceneTbl;
     sceneTbl.insert("scene", mp_scene->m_name);
     toml::table entitiesTbl;
-    
+
     mp_scene->sortEntities();
     auto entities = mp_scene->m_registry.view<GuidCmp>();
 
@@ -134,8 +166,8 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
 {
     toml::table* p_entityTbl = reinterpret_cast<toml::table*>(entityTbl);
 
-    uint32_t genesisIndex = (*p_entityTbl)["genesisIndex"].value_or(0);
-    std::string& name = (*p_entityTbl)["name"].ref<std::string>();
+    uint32_t     genesisIndex = (*p_entityTbl)["genesisIndex"].value_or(0);
+    std::string& name         = (*p_entityTbl)["name"].ref<std::string>();
 
     Log::coreTrace("Name %s, guidStr %s, GenesisIndex %i",
                    name.c_str(),
@@ -180,6 +212,81 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
 
                     tc.setScaleLocked(cmpTbl["scaleLocked"].ref<bool>());
                 }
+
+                ///////////////////////////
+                // SpriteCmp
+                ///////////////////////////
+                if (cmpType == "SpriteCmp")
+                {
+                    auto& sc = entity.addComponent<SpriteCmp>();
+
+                    auto& color = *cmpTbl["color"].as_array();
+
+                    sc.color = glm::vec4(color[0].ref<double>(),
+                                         color[1].ref<double>(),
+                                         color[2].ref<double>(),
+                                         color[3].ref<double>());
+
+                    auto texture = cmpTbl["texture"].as_table();
+
+                    if (texture)
+                    {
+                        sc.p_texture
+                            = Application::s_get()
+                                  .getResourceManager()
+                                  .loadTexture(
+                                      Texture::Type::DIFFUSE,
+                                      (*texture)["path"].ref<std::string>());
+
+                        sc.tilingFactor
+                            = (*texture)["tilingFactor"].ref<double>();
+                    }
+                }
+
+                ///////////////////////////
+                // TextCmp
+                ///////////////////////////
+                if (cmpType == "TextCmp")
+                {
+                    auto& tc = entity.addComponent<TextCmp>();
+                    
+                    tc.text = cmpTbl["text"].ref<std::string>();
+
+                    auto formatTbl = cmpTbl["format"].as_table();
+
+                    if(formatTbl)
+                    {
+                        auto fontPath
+                            = (*formatTbl)["path"].value<std::string>();
+                        if (fontPath)
+                        {
+                            tc.format.p_font = Application::s_get()
+                                                   .getResourceManager()
+                                                   .loadFont(fontPath.value());
+                        }
+
+                        auto fgColor = (*formatTbl)["fgColor"].as_array();
+
+                        tc.format.fgColor
+                            = glm::vec4((*fgColor)[0].ref<double>(),
+                                        (*fgColor)[1].ref<double>(),
+                                        (*fgColor)[2].ref<double>(),
+                                        (*fgColor)[3].ref<double>());
+
+                        auto bgColor = (*formatTbl)["bgColor"].as_array();
+
+                        tc.format.bgColor
+                            = glm::vec4((*bgColor)[0].ref<double>(),
+                                        (*bgColor)[1].ref<double>(),
+                                        (*bgColor)[2].ref<double>(),
+                                        (*bgColor)[3].ref<double>());
+
+                        tc.format.kerning
+                            = (*formatTbl)["kerning"].ref<double>();
+                        tc.format.leading
+                            = (*formatTbl)["leading"].ref<double>();
+                    }
+                }
             }
         });
 }
@@ -205,7 +312,7 @@ bool SceneSerializer::deserialize(const std::string& filepath)
     toml::table sceneTbl = std::move(result).table();
 
     std::optional<std::string> sceneNm = sceneTbl["scene"].value<std::string>();
-    if(!sceneNm)
+    if (!sceneNm)
     {
         Log::coreError("Scene tag missing from file %s", filepath.c_str());
 
@@ -213,7 +320,6 @@ bool SceneSerializer::deserialize(const std::string& filepath)
     }
 
     Log::coreInfo("Deserialzing scene %s", sceneNm.value().c_str());
-
 
     auto entitiesTbl = sceneTbl["entities"].as_table();
 
@@ -226,7 +332,7 @@ bool SceneSerializer::deserialize(const std::string& filepath)
 
     entitiesTbl->for_each(
         [this](const toml::key& key, auto&& entityTbl)
-        {        
+        {
             std::string guidStr(key.data());
 
             if constexpr (toml::is_table<decltype(entityTbl)>)
@@ -234,7 +340,6 @@ bool SceneSerializer::deserialize(const std::string& filepath)
                 _deserializeEntity((void*)&entityTbl, mp_scene.raw(), guidStr);
             }
         });
-
 
     mp_scene->sortEntities();
     return true;
