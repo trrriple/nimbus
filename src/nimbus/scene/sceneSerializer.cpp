@@ -25,7 +25,7 @@ static void s_serializeEntity(toml::table& entitiesTbl,
                               GuidCmp&     guidCmp)
 {
     toml::table entityTbl;
-    entityTbl.insert("genesisIndex", guidCmp.genesisIndex);
+    entityTbl.insert("sequenceIndex", guidCmp.sequenceIndex);
 
     ///////////////////////////
     // NameCmp
@@ -118,6 +118,35 @@ static void s_serializeEntity(toml::table& entitiesTbl,
         entityTbl.insert("TextCmp", textTbl);
     }
 
+    ///////////////////////////
+    // Camera
+    ///////////////////////////
+    if (entity.hasComponent<CameraCmp>())
+    {   
+        toml::table camTbl;
+
+        auto& camera = entity.getComponent<CameraCmp>();
+
+        camTbl.insert("primary", camera.primary);
+        camTbl.insert("fixedAspect", camera.fixedAspect);
+        camTbl.insert("type", (int)camera.camera.getType());
+        camTbl.insert("aspectRatio", camera.camera.getAspectRatio());
+
+        glm::vec3 camPos = camera.camera.getPosition();
+
+        camTbl.insert("position", toml::array(camPos.x, camPos.y, camPos.z));
+        camTbl.insert("yaw", camera.camera.getYaw());
+        camTbl.insert("pitch", camera.camera.getPitch());
+        camTbl.insert("speed", camera.camera.getSpeed());
+        camTbl.insert("sensitivity", camera.camera.getSensitivity());
+        camTbl.insert("zoom", camera.camera.getZoom());
+        camTbl.insert("fov", camera.camera.getFov());
+        camTbl.insert("farClip", camera.camera.getFarClip());
+        camTbl.insert("nearClip", camera.camera.getNearClip());
+
+        entityTbl.insert("CameraCmp", camTbl);
+    }
+
     entitiesTbl.insert(guidCmp.guid.toString(), entityTbl);
 }
 
@@ -131,7 +160,7 @@ SceneSerializer::SceneSerializer(const ref<Scene>& p_scene) : mp_scene(p_scene)
 void SceneSerializer::serialize(const std::string& filepath)
 {
     toml::table sceneTbl;
-    sceneTbl.insert("scene", mp_scene->m_name);
+    sceneTbl.insert("Scene", mp_scene->m_name);
     toml::table entitiesTbl;
 
     mp_scene->sortEntities();
@@ -148,7 +177,7 @@ void SceneSerializer::serialize(const std::string& filepath)
         s_serializeEntity(entitiesTbl, entity, guid);
     }
 
-    sceneTbl.insert("entities", entitiesTbl);
+    sceneTbl.insert("Entities", entitiesTbl);
     std::filesystem::path path(filepath);
     std::ofstream         fout(path);
 
@@ -166,15 +195,15 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
 {
     toml::table* p_entityTbl = reinterpret_cast<toml::table*>(entityTbl);
 
-    uint32_t     genesisIndex = (*p_entityTbl)["genesisIndex"].value_or(0);
+    uint32_t     sequenceIndex = (*p_entityTbl)["sequenceIndex"].value_or(0);
     std::string& name         = (*p_entityTbl)["name"].ref<std::string>();
 
-    Log::coreTrace("Name %s, guidStr %s, GenesisIndex %i",
+    Log::coreTrace("Name %s, guidStr %s, sequenceIndex %i",
                    name.c_str(),
                    guidStr.c_str(),
-                   genesisIndex);
+                   sequenceIndex);
 
-    Entity entity = p_scene->_addEntity(name, guidStr, genesisIndex);
+    Entity entity = p_scene->_addEntity(name, guidStr, sequenceIndex);
 
     p_entityTbl->for_each(
         [&](const toml::key& key, toml::node& node)
@@ -287,6 +316,39 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
                             = (*formatTbl)["leading"].ref<double>();
                     }
                 }
+
+                ///////////////////////////
+                // Camera
+                ///////////////////////////
+                if (cmpType == "CameraCmp")
+                {
+                    auto& cc = entity.addComponent<CameraCmp>();
+
+                    cc.primary     = cmpTbl["primary"].ref<bool>();
+                    cc.fixedAspect = cmpTbl["fixedAspect"].ref<bool>();
+
+                    cc.camera.setType(static_cast<Camera::Type>(
+                        cmpTbl["type"].ref<int64_t>()));
+
+                    cc.camera.setAspectRatio(
+                        cmpTbl["aspectRatio"].ref<double>());
+
+                    auto position = cmpTbl["position"].as_array();
+
+                    cc.camera.setPosition({(*position)[0].ref<double>(),
+                                           (*position)[1].ref<double>(),
+                                           (*position)[2].ref<double>()});
+
+                    cc.camera.setYaw(cmpTbl["yaw"].ref<double>());
+                    cc.camera.setPitch(cmpTbl["pitch"].ref<double>());
+                    cc.camera.setSpeed(cmpTbl["speed"].ref<double>());
+                    cc.camera.setSensitivity(
+                        cmpTbl["sensitivity"].ref<double>());
+                    cc.camera.setZoom(cmpTbl["zoom"].ref<double>());
+                    cc.camera.setFov(cmpTbl["fov"].ref<double>());
+                    cc.camera.setFarClip(cmpTbl["farClip"].ref<double>());
+                    cc.camera.setNearClip(cmpTbl["nearClip"].ref<double>());
+                }
             }
         });
 }
@@ -311,7 +373,7 @@ bool SceneSerializer::deserialize(const std::string& filepath)
 
     toml::table sceneTbl = std::move(result).table();
 
-    std::optional<std::string> sceneNm = sceneTbl["scene"].value<std::string>();
+    std::optional<std::string> sceneNm = sceneTbl["Scene"].value<std::string>();
     if (!sceneNm)
     {
         Log::coreError("Scene tag missing from file %s", filepath.c_str());
@@ -321,7 +383,7 @@ bool SceneSerializer::deserialize(const std::string& filepath)
 
     Log::coreInfo("Deserialzing scene %s", sceneNm.value().c_str());
 
-    auto entitiesTbl = sceneTbl["entities"].as_table();
+    auto entitiesTbl = sceneTbl["Entities"].as_table();
 
     if (!entitiesTbl)
     {

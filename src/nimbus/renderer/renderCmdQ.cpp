@@ -20,12 +20,11 @@ RenderCmdQ::~RenderCmdQ()
 
 void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size)
 {
-    // expect this function to be called with mutual exclusion
-    *(renderCmdFn*)mp_cmdBufPtr = fn;
+    *reinterpret_cast<renderCmdFn*>(mp_cmdBufPtr) = fn;
     mp_cmdBufPtr += sizeof(renderCmdFn);
     m_cmdBufUsedSz += sizeof(renderCmdFn);
 
-    *(uint32_t*)mp_cmdBufPtr = size;
+    *reinterpret_cast<uint32_t*>(mp_cmdBufPtr) = size;
     mp_cmdBufPtr += sizeof(uint32_t);
     m_cmdBufUsedSz += sizeof(uint32_t);
 
@@ -49,11 +48,11 @@ void RenderCmdQ::pump()
         for (uint32_t i = 0; i < m_cmdCount; i++)
         {
             // grab the function out
-            renderCmdFn fn = *(renderCmdFn*)ptr;
+            renderCmdFn fn = *reinterpret_cast<renderCmdFn*>(ptr);
             ptr += sizeof(renderCmdFn);
 
             // grab the size of the data
-            uint32_t size = *(uint32_t*)ptr;
+            uint32_t size = *reinterpret_cast<uint32_t*>(ptr);
             ptr += sizeof(uint32_t);
 
             // execute the function with the data

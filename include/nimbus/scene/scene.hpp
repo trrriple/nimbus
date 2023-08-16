@@ -30,7 +30,7 @@ class Scene : public refCounted
     entt::registry m_registry;
     float          m_aspectRatio;
     std::string    m_name;
-    uint32_t       m_nextcreationOrder = 1;
+    uint32_t       m_genesisIndex = 0;
 
     friend class Entity;
     friend class SceneSerializer;
@@ -47,7 +47,7 @@ class Scene : public refCounted
     // private addEntity for scene deserialization where these are known
     Entity _addEntity(const std::string& name,
                       const std::string& guidStr,
-                      uint32_t           genesisIdx);
+                      uint32_t           sequenceIndex);
 };
 
 }  // namespace nimbus

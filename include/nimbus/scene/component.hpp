@@ -18,8 +18,8 @@ class EntityLogic;  // forward decl
 struct GuidCmp
 {
     Guid     guid;
-    uint32_t genesisIndex;
-    GuidCmp(uint32_t icreationOrder) : genesisIndex(icreationOrder)
+    uint32_t sequenceIndex;
+    GuidCmp(uint32_t icreationOrder) : sequenceIndex(icreationOrder)
     {
     }
 
@@ -27,7 +27,7 @@ struct GuidCmp
     // For use by Scene::_addEntity only
     ////////////////////////////////////////////////////////////////////////////
     GuidCmp(uint32_t icreationOrder, const std::string& guidStr)
-        : genesisIndex(icreationOrder)
+        : sequenceIndex(icreationOrder)
     {
         guid = Guid(guidStr);
     }

@@ -22,7 +22,9 @@ Entity Scene::addEntity(const std::string& name)
 {
     Entity entity = {m_registry.create(), this};
 
-    entity.addComponent<GuidCmp>(m_nextcreationOrder++);
+    // we pre-increment both to always start at one, and ensure when entities
+    // are added using _addEntity, we account for that.
+    entity.addComponent<GuidCmp>(++m_genesisIndex);
 
     entity.addComponent<NameCmp>(
         name.empty() ? entity.getComponent<GuidCmp>().guid.toString() : name);
@@ -38,7 +40,7 @@ void Scene::removeEntity(Entity entity)
 void Scene::sortEntities()
 {
     m_registry.sort<GuidCmp>([&](const auto lhs, const auto rhs)
-                             { return lhs.genesisIndex < rhs.genesisIndex; });
+                             { return lhs.sequenceIndex < rhs.sequenceIndex; });
 }
 
 void Scene::onStart()
@@ -152,7 +154,7 @@ void Scene::_render(Camera* p_camera)
     ///////////////////////////
     auto spriteView = m_registry.view<GuidCmp, TransformCmp, SpriteCmp>();
 
-    // order based on GuidCmp which should be sorted based on genesisIndex
+    // order based on GuidCmp which should be sorted based on sequenceIndex
     // we want to render these by the order they were created, so newest
     // objects are on top (assuming = Z due to 2D)
     spriteView.use<GuidCmp>();
@@ -193,14 +195,17 @@ void Scene::_onDrawEditor(Camera* p_editorCamera)
 
 Entity Scene::_addEntity(const std::string& name,
                          const std::string& guidStr,
-                         uint32_t           genesisIdx)
+                         uint32_t           sequenceIndex)
 {
     Entity entity = {m_registry.create(), this};
 
-    entity.addComponent<GuidCmp>(genesisIdx, guidStr);
+    entity.addComponent<GuidCmp>(sequenceIndex, guidStr);
 
     // TODO, is this right?
-    m_nextcreationOrder++;
+    if (sequenceIndex > m_genesisIndex)
+    {
+        m_genesisIndex = sequenceIndex;
+    }
 
     entity.addComponent<NameCmp>(name);
 
