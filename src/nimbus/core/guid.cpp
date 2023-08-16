@@ -14,7 +14,7 @@
 namespace nimbus
 {
 
-Guid::Guid() noexcept
+Guid::Guid()
 {
 #if defined(_WIN32) || defined(_WIN64)
     GUID guid;
@@ -41,20 +41,19 @@ Guid::Guid() noexcept
 #endif
 }
 
-Guid::Guid(__int128_t guid) noexcept
+Guid::Guid(__int128_t guid)
 {
     m_guid = guid;
     _toString();
 }
 
-
-Guid::Guid(const std::string& guidStr) noexcept
+Guid::Guid(const std::string& guidStr)
 {
     m_guidStr = guidStr;
     _fromString();
 }
 
-void Guid::_toString() noexcept
+void Guid::_toString()
 {
     char buffer[37];  // 32 characters, 4 hyphens, and a null terminator
 
@@ -65,7 +64,7 @@ void Guid::_toString() noexcept
              sizeof(buffer),
              "%08llx-%04llx-%04llx-%04llx-%012llx",
              high >> 32,
-             (high >> 16) & 0xFFFF,
+            (high >> 16) & 0xFFFF,
              high & 0xFFFF,
              low >> 48,
              low & 0xFFFFFFFFFFFF);
@@ -73,20 +72,20 @@ void Guid::_toString() noexcept
     m_guidStr = std::string(buffer);
 }
 
-void Guid::_fromString() noexcept
+void Guid::_fromString()
 {
     uint64_t high, low;
     uint32_t a;
     uint16_t b, c, d;
     uint64_t e;
 
-    sscanf(m_guidStr.c_str(),
-           "%08lx-%04hx-%04hx-%04hx-%012lx",
-           &a,
-           &b,
-           &c,
-           &d,
-           &e);
+    sscanf_s(m_guidStr.c_str(),
+             "%08lx-%04hx-%04hx-%04hx-%012lx",
+             &a,
+             &b,
+             &c,
+             &d,
+             &e);
 
     high = (static_cast<uint64_t>(a) << 32) | (static_cast<uint64_t>(b) << 16)
            | static_cast<uint64_t>(c);

@@ -13,37 +13,34 @@ namespace nimbus
 class ResourceManager
 {
    public:
-    ResourceManager() noexcept;
+    ResourceManager();
 
-    ~ResourceManager() noexcept;
-
+    ~ResourceManager();
 
     // Other member functions and variables...
 
     ref<Texture> loadTexture(const Texture::Type type,
                              const std::string&  path,
-                             const bool          flipOnLoad = false) noexcept;
+                             const bool          flipOnLoad = false);
 
     ref<Shader> loadShader(const std::string& name,
                            const std::string& vertexSource,
-                           const std::string& fragmentSource) noexcept;
+                           const std::string& fragmentSource);
 
     ref<Shader> loadShader(const std::string& vertexPath,
-                           const std::string& fragmentPath) noexcept;
+                           const std::string& fragmentPath);
 
-    ref<Font> loadFont(const std::string& path) noexcept;
-   
+    ref<Font> loadFont(const std::string& path);
+
    private:
     std::unordered_map<std::string, ref<Texture>> m_loadedTextures;
     std::unordered_map<std::string, ref<Shader>>  m_loadedShaders;
     std::unordered_map<std::string, ref<Font>>    m_loadedFonts;
-
 
     // Disable copy constructor
     ResourceManager(const ResourceManager&) = delete;
 
     // Disable assignment operator
     ResourceManager& operator=(const ResourceManager&) = delete;
-
 };
 }  // namespace nimbus

@@ -11,19 +11,19 @@ namespace nimbus
 class Stopwatch : public refCounted
 {
    public:
-    inline Stopwatch() noexcept
+    inline Stopwatch()
     {
         reset();
         m_splitElapsed_s = 0.0;
         m_lastSplit_s    = 0.0;
     }
 
-    inline void reset() noexcept
+    inline void reset()
     {
         m_ts = std::chrono::steady_clock::now();
     }
 
-    inline double elapsed() const noexcept
+    inline double elapsed() const
     {
         return std::chrono::duration_cast<std::chrono::microseconds>(
                    std::chrono::steady_clock::now() - m_ts)
@@ -31,17 +31,17 @@ class Stopwatch : public refCounted
                * 1E-6;
     }
 
-    inline uint32_t elapsedMs() const noexcept
+    inline uint32_t elapsedMs() const
     {
         return elapsed() * 1000.0f;
     }
 
-    inline uint32_t elapsedUs() const noexcept
+    inline uint32_t elapsedUs() const
     {
         return elapsed() * 1000000.0f;
     }
 
-    inline float split() noexcept
+    inline float split()
     {
         double tNow_s    = elapsed();
         m_lastSplit_s    = tNow_s - m_splitElapsed_s;
@@ -49,13 +49,13 @@ class Stopwatch : public refCounted
         return m_lastSplit_s;
     }
 
-    inline void splitAndSave() noexcept
+    inline void splitAndSave()
     {
         split();
         saveSplit();
     }
 
-    inline void saveSplit() noexcept
+    inline void saveSplit()
     {
         std::scoped_lock<std::mutex> lock(m_splitMtx);
         m_savedSplit = m_lastSplit_s;
@@ -67,12 +67,12 @@ class Stopwatch : public refCounted
         m_savedSplit = split;
     }
 
-    inline float getLastSplit() const noexcept
+    inline float getLastSplit() const
     {
         return m_lastSplit_s;
     }
 
-    inline float getLastSavedSplit() const noexcept
+    inline float getLastSavedSplit() const
     {
         std::scoped_lock<std::mutex> lock(m_splitMtx);
         return m_savedSplit;
@@ -91,21 +91,21 @@ class Stopwatch : public refCounted
 class StopWatchBank
 {
    public:
-    StopWatchBank() noexcept = default;
-    ~StopWatchBank() noexcept
+    StopWatchBank() = default;
+    ~StopWatchBank()
     {
         std::scoped_lock<std::mutex> lock(m_bankMtx);
         m_bank.clear();
     }
 
-    ref<Stopwatch> newSw(const char* name) noexcept
+    ref<Stopwatch> newSw(const char* name)
     {
         std::scoped_lock<std::mutex> lock(m_bankMtx);
 
         return m_bank.emplace(name, ref<Stopwatch>::gen()).first->second;
     }
 
-    void delSw(const char* name) noexcept
+    void delSw(const char* name)
     {
         std::scoped_lock<std::mutex> lock(m_bankMtx);
         auto                         p_sw = m_bank.find(name);
@@ -116,13 +116,13 @@ class StopWatchBank
         }
     }
 
-    void clear() noexcept
+    void clear()
     {
         std::scoped_lock<std::mutex> lock(m_bankMtx);
         m_bank.clear();
     }
 
-    const std::unordered_map<const char*, ref<Stopwatch>>& getBank() noexcept
+    const std::unordered_map<const char*, ref<Stopwatch>>& getBank()
     {
         return m_bank;
     }

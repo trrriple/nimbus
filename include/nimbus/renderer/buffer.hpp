@@ -102,38 +102,38 @@ struct BufferComponent
 class BufferFormat
 {
    public:
-    BufferFormat() noexcept
+    BufferFormat()
     {
     }
 
-    BufferFormat(std::initializer_list<BufferComponent> components)  noexcept
+    BufferFormat(std::initializer_list<BufferComponent> components)
         : m_components(components)
     {
         _genOffsetsAndStride();
     }
 
-    uint32_t getStride() const  noexcept
+    uint32_t getStride() const
     {
         return m_stride;
     }
-    const std::vector<BufferComponent>& getComponents() const noexcept
+    const std::vector<BufferComponent>& getComponents() const
     {
         return m_components;
     }
 
-    std::vector<BufferComponent>::iterator begin() noexcept
+    std::vector<BufferComponent>::iterator begin()
     {
         return m_components.begin();
     }
-    std::vector<BufferComponent>::iterator end() noexcept
+    std::vector<BufferComponent>::iterator end()
     {
         return m_components.end();
     }
-    std::vector<BufferComponent>::const_iterator begin() const noexcept
+    std::vector<BufferComponent>::const_iterator begin() const
     {
         return m_components.begin();
     }
-    std::vector<BufferComponent>::const_iterator end() const noexcept
+    std::vector<BufferComponent>::const_iterator end() const
     {
         return m_components.end();
     }
@@ -142,7 +142,7 @@ class BufferFormat
     std::vector<BufferComponent> m_components;
     uint32_t                     m_stride = 0;
 
-    inline void _genOffsetsAndStride() noexcept
+    inline void _genOffsetsAndStride()
     {
         size_t offset = 0;
         m_stride      = 0;
@@ -171,7 +171,7 @@ class VertexBuffer : public refCounted
     static ref<VertexBuffer> s_create(const void*        vertices,
                                       uint32_t           size,
                                       VertexBuffer::Type type
-                                      = VertexBuffer::Type::STATIC_DRAW) noexcept;
+                                      = VertexBuffer::Type::STATIC_DRAW);
 
     virtual ~VertexBuffer() = default;
 
@@ -185,12 +185,12 @@ class VertexBuffer : public refCounted
 
     virtual void setFormat(const BufferFormat& format) = 0;
 
-    inline virtual uint32_t getSize() const noexcept
+    inline virtual uint32_t getSize() const
     {
         return m_size;
     }
 
-    inline virtual uint32_t getId() const noexcept
+    inline virtual uint32_t getId() const
     {
         return m_id;
     }
@@ -209,9 +209,9 @@ class VertexBuffer : public refCounted
 class IndexBuffer : public refCounted
 {
    public:
-    static ref<IndexBuffer> s_create(uint32_t* indices, uint32_t count) noexcept;
-    static ref<IndexBuffer> s_create(uint16_t* indices, uint32_t count) noexcept;
-    static ref<IndexBuffer> s_create(uint8_t* indices, uint32_t count) noexcept;
+    static ref<IndexBuffer> s_create(uint32_t* indices, uint32_t count);
+    static ref<IndexBuffer> s_create(uint16_t* indices, uint32_t count);
+    static ref<IndexBuffer> s_create(uint8_t* indices, uint32_t count);
 
     virtual ~IndexBuffer() = default;
 
@@ -223,7 +223,7 @@ class IndexBuffer : public refCounted
 
     virtual uint32_t getType() const = 0;
 
-    inline virtual uint32_t getId() const noexcept
+    inline virtual uint32_t getId() const
     {
         return m_id;
     }
@@ -240,7 +240,7 @@ class IndexBuffer : public refCounted
 class VertexArray : public refCounted
 {
    public:
-    static ref<VertexArray> s_create()  noexcept;
+    static ref<VertexArray> s_create();
 
     virtual ~VertexArray() = default;
 

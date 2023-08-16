@@ -85,7 +85,6 @@ class SceneControlPanel
             m_state.runState = play ? RunState::PAUSE : RunState::PLAY;
         }
 
-
         ///////////////////////////
         // Manipulation Tools
         ///////////////////////////

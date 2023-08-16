@@ -12,19 +12,19 @@ class Entity
     inline static const uint32_t k_nullEntity = entt::null;
 
     Entity() = default;
-    Entity(entt::entity handle, Scene* scene) noexcept
+    Entity(entt::entity handle, Scene* scene)
         : mh_entity(handle), mp_sceneParent(scene)
     {
     }
 
     template <typename T>
-    inline bool hasComponent() noexcept
+    inline bool hasComponent()
     {
         return mp_sceneParent->m_registry.all_of<T>(mh_entity);
     }
 
     template <typename T>
-    inline T& getComponent() noexcept
+    inline T& getComponent()
     {
         NM_ASSERT(hasComponent<T>(), "Entity does not have component!");
 
@@ -32,7 +32,7 @@ class Entity
     }
 
     template <typename T, typename... Args>
-    inline T& addComponent(Args&&... args) noexcept
+    inline T& addComponent(Args&&... args)
     {
         NM_ASSERT(!hasComponent<T>(), "Entity already has component!");
 
@@ -43,29 +43,29 @@ class Entity
     }
 
     template <typename T, typename... Args>
-    inline void removeComponent() noexcept
+    inline void removeComponent()
     {
         NM_ASSERT(hasComponent<T>(), "Entity does not have component!");
         mp_sceneParent->m_registry.remove<T>(mh_entity);
     }
 
-    inline entt::entity getId() noexcept
+    inline entt::entity getId()
     {
         return mh_entity;
     }
 
-    inline operator bool() const noexcept
+    inline operator bool() const
     {
         return mh_entity != entt::null;
     }
 
-    inline bool operator==(const Entity& other) const noexcept
+    inline bool operator==(const Entity& other) const
     {
         return (other.mh_entity == mh_entity
                 && other.mp_sceneParent == mp_sceneParent);
     }
 
-    inline bool operator!=(const Entity& other) const noexcept
+    inline bool operator!=(const Entity& other) const
     {
         return !(*this == other);
     }

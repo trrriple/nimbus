@@ -145,9 +145,9 @@ class SceneHeirarchyPanel
         }
 
         // clipper allows us to only proceess and render entities that can fit
-        // in the current scroll area of the panel. This is a significant 
+        // in the current scroll area of the panel. This is a significant
         // performance improvement when there are lots (thousands) of entities
-        // because a. they don't need to be processed by imgui and b. they 
+        // because a. they don't need to be processed by imgui and b. they
         // don't need to be processed by us.
         ImGuiListClipper clipper;
         clipper.Begin(passedFilterEntities.size());

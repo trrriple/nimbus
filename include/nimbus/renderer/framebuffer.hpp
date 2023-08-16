@@ -2,7 +2,6 @@
 #include "nimbus/core/common.hpp"
 #include "nimbus/renderer/texture.hpp"
 
-
 #include <mutex>
 #include <variant>
 
@@ -100,16 +99,14 @@ class Framebuffer : public refCounted
         }
 
        private:
-        std::mutex mtx;
-        uint32_t   attachmentIdx;
-        uint32_t   x;
-        uint32_t   y;
+        std::mutex  mtx;
+        uint32_t    attachmentIdx;
+        uint32_t    x;
+        uint32_t    y;
         PixelValues pixValue;
-
     };
 
-    static ref<Framebuffer>
-    s_create(Framebuffer::Spec& spec) noexcept;
+    static ref<Framebuffer> s_create(Framebuffer::Spec& spec);
 
     virtual ~Framebuffer() = default;
 
@@ -117,7 +114,7 @@ class Framebuffer : public refCounted
 
     virtual void blit(ref<Framebuffer> p_destination,
                       const uint32_t   srcAttachmentIdx  = 0,
-                      const uint32_t   destAttachmentIdx = 0) const noexcept
+                      const uint32_t   destAttachmentIdx = 0) const
         = 0;
 
     virtual void bind(Mode mode = Mode::READ_WRITE) const = 0;
@@ -125,27 +122,24 @@ class Framebuffer : public refCounted
     virtual void unbind(Mode mode = Mode::READ_WRITE) const = 0;
 
     virtual void bindTexture(const uint32_t textureUnit,
-                             const uint32_t attachmentIdx = 0) const noexcept
+                             const uint32_t attachmentIdx = 0) const
         = 0;
 
     virtual void unbindTexture(const uint32_t attachmentIdx = 0) const = 0;
 
-    virtual void clearColorAttachment(const uint32_t attachmentIdx = 0) noexcept
-        = 0;
+    virtual void clearColorAttachment(const uint32_t attachmentIdx = 0) = 0;
 
-    virtual void clearDepthAttachment() noexcept = 0;
+    virtual void clearDepthAttachment() = 0;
 
-    virtual void clearAllAttachments() noexcept = 0;
+    virtual void clearAllAttachments() = 0;
 
-    virtual uint32_t getId() const noexcept = 0;
+    virtual uint32_t getId() const = 0;
 
-    virtual const Spec& getSpec() const noexcept = 0;
+    virtual const Spec& getSpec() const = 0;
 
-    virtual uint32_t getTextureId(const uint32_t attachmentIdx
-                                  = 0) const noexcept
-        = 0;
+    virtual uint32_t getTextureId(const uint32_t attachmentIdx = 0) const = 0;
 
-    virtual void requestPixel(ref<PixelReadRequest> p_request) noexcept = 0;
+    virtual void requestPixel(ref<PixelReadRequest> p_request) = 0;
 
    protected:
     Spec     m_spec;

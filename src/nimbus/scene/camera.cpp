@@ -69,7 +69,7 @@ void Camera::processViewUpdate(const glm::vec2& offset, bool constrainPitch)
     m_pitch += offset.y * m_sensitivity;
 
     // clamp yaw so we don't start losing precision
-    if(m_yaw > 360.0f || m_yaw < -360.0f)
+    if (m_yaw > 360.0f || m_yaw < -360.0f)
     {
         m_yaw = 0.0f;
     }
@@ -253,7 +253,6 @@ void Camera::setNearClip(float near)
 
     m_staleProjection = true;
 }
-
 
 void Camera::setFarClip(float far)
 {

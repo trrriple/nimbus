@@ -49,7 +49,6 @@ void RenderThread::waitForState(State state)
     // clang-format on
 }
 
-
 void RenderThread::setState(State state)
 {
     std::lock_guard<std::mutex> lock(m_pendMtx);

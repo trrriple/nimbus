@@ -75,7 +75,7 @@ class ParticleEmitter : public refCounted
                     const parameters&   particleParameters,
                     const ref<Texture>& p_texture,
                     const ref<Shader>&  p_customShader = nullptr,
-                    bool                is3d = false);
+                    bool                is3d           = false);
 
     ~ParticleEmitter() = default;
 
@@ -98,7 +98,6 @@ class ParticleEmitter : public refCounted
                   float ejectionSpreadAngle_rad,
                   bool  updateLiving = false);
 
-    
     void setPersist(bool persist);
 
    private:
@@ -122,17 +121,17 @@ class ParticleEmitter : public refCounted
             startLifetime = newLifetime;
             curLifetime   = startLifetime;
         }
-        
+
         bool isDead() const
         {
             return curLifetime <= 0;
         }
-   
+
         void decreaseLifetime(float deltaTime)
         {
             curLifetime -= deltaTime;
         }
-        
+
         float getLifePercent()
         {
             return curLifetime / startLifetime;
@@ -221,7 +220,6 @@ class ParticleEmitter : public refCounted
     std::uniform_real_distribution<float>   m_sizeDist;
     std::uniform_real_distribution<float>   m_angleDist;
     std::uniform_int_distribution<uint32_t> m_colorIndexDist;
-
 
     ////////////////////////////////////////////////////////////////////////////
     // Private helper functions

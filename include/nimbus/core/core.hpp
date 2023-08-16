@@ -6,15 +6,13 @@
 
 #include <memory>
 
-
 // TODO do this smarter
 #define NM_RUNTIME_ASSERTS
 
-
-#define NM_PROFILE_LEVEL_TRACE  3
+#define NM_PROFILE_LEVEL_TRACE 3
 #define NM_PROFILE_LEVEL_DETAIL 2
-#define NM_PROFILE_LEVEL_NORM   1
-#define NM_PROFILE_LEVEL_NONE   0
+#define NM_PROFILE_LEVEL_NORM 1
+#define NM_PROFILE_LEVEL_NONE 0
 
 #define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_NONE
 
@@ -27,30 +25,26 @@
 #include <signal.h>
 #define __debugbreak() raise(SIGTRAP)
 #endif
-#define NM_CORE_ASSERT(condition, msg, ...)        \
-{                                                  \
-    if (!(condition))                              \
-    {                                              \
-        Log::coreCritical(                         \
-            "[%s::%s:%i] " msg,                    \
-            typeid(*this).name(),                  \
-            __func__,                              \
-            __LINE__ __VA_OPT__(,) __VA_ARGS__);   \
-            __debugbreak();                        \
-    }                                              \
-}
+#define NM_CORE_ASSERT(condition, msg, ...)                         \
+    {                                                               \
+        if (!(condition))                                           \
+        {                                                           \
+            Log::coreCritical("[%s::%s:%i] " msg,                   \
+                              typeid(*this).name(),                 \
+                              __func__,                             \
+                              __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+            __debugbreak();                                         \
+        }                                                           \
+    }
 
-#define NM_CORE_ASSERT_STATIC(condition, msg, ...) \
-                                                   \
-    if (!(condition))                              \
-    {                                              \
-        Log::coreCritical(                         \
-            "[%s:%i] " msg,                        \
-            __func__,                              \
-            __LINE__ __VA_OPT__(,) __VA_ARGS__);   \
-            __debugbreak();                        \
-    }                                              \
-
+#define NM_CORE_ASSERT_STATIC(condition, msg, ...)                          \
+                                                                            \
+    if (!(condition))                                                       \
+    {                                                                       \
+        Log::coreCritical(                                                  \
+            "[%s:%i] " msg, __func__, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+        __debugbreak();                                                     \
+    }
 
 #else
 #define NM_CORE_ASSERT(condition, msg, ...)
@@ -92,8 +86,6 @@
 #include <chrono>
 #include <mutex>
 
-
-
 namespace nimbus::core
 {
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,9 +94,9 @@ namespace nimbus::core
 inline double getTime_s()
 {
     static std::mutex mtx;
-    
+
     std::lock_guard<std::mutex> lock(mtx);
-    static Stopwatch  sw;
+    static Stopwatch            sw;
 
     return sw.elapsed();
 }

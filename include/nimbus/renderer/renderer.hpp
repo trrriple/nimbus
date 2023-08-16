@@ -22,8 +22,8 @@ class Renderer : public refCounted
    public:
     inline static const int32_t k_detectCountIfPossible = -1;
 
-    static void s_init() noexcept;
-    static void s_destroy() noexcept;
+    static void s_init() ;
+    static void s_destroy() ;
 
    private:
     inline static glm::mat4     m_vpMatrix      = glm::mat4(1.0f);
@@ -46,7 +46,7 @@ class Renderer : public refCounted
     ////////////////////////////////////////////////////////////////////////////
    public:
     template <typename T>
-    inline static void s_submit(T&& func) noexcept
+    inline static void s_submit(T&& func) 
     {
         auto renderCmd = [](void* ptr)
         {
@@ -62,7 +62,7 @@ class Renderer : public refCounted
     }
 
     template <typename T>
-    inline static void s_submitObject(T&& func) noexcept
+    inline static void s_submitObject(T&& func) 
     {
         auto objectCmd = [](void* ptr)
         {
@@ -77,53 +77,53 @@ class Renderer : public refCounted
     }
 
     // TODO consider this
-    static void s_setScene(const glm::mat4& vpMatrix) noexcept;
+    static void s_setScene(const glm::mat4& vpMatrix) ;
 
-    static void s_startFrame()noexcept;
+    static void s_startFrame();
 
-    static void s_endFrame()noexcept;
+    static void s_endFrame();
 
-    static void s_swapAndStart()noexcept;
+    static void s_swapAndStart();
 
-    static void s_waitForRenderThread() noexcept;
+    static void s_waitForRenderThread() ;
 
-    static void s_pumpCmds() noexcept;
+    static void s_pumpCmds() ;
 
     static void s_render(ref<Shader>      p_shader,
                          ref<VertexArray> p_vertexArray,
                          int32_t          vertexCount = k_detectCountIfPossible,
-                         bool             setViewProjection = true) noexcept;
+                         bool             setViewProjection = true) ;
 
     static void s_renderInstanced(const ref<Shader>&      p_shader,
                                   const ref<VertexArray>& p_vertexArray,
                                   int32_t                 instanceCount,
                                   int32_t vertexCount = k_detectCountIfPossible,
-                                  bool    setViewProjection = true) noexcept;
+                                  bool    setViewProjection = true) ;
 
    private:
-    inline static RenderCmdQ* _s_getSubmitRenderCmdQ() noexcept
+    inline static RenderCmdQ* _s_getSubmitRenderCmdQ() 
     {
         return s_renderCmdQ[s_submitRenderCmdQIdx];
     }
-    inline static RenderCmdQ* _s_getProcessRenderCmdQ() noexcept
+    inline static RenderCmdQ* _s_getProcessRenderCmdQ() 
     {
         return s_renderCmdQ[s_processRenderCmdQIdx];
     }
 
-    inline static RenderCmdQ* _s_getSubmitObjectCmdQ() noexcept
+    inline static RenderCmdQ* _s_getSubmitObjectCmdQ() 
     {
         return s_objectCmdQ[s_submitRenderCmdQIdx];
     }
-    inline static RenderCmdQ* _s_getProcessObjectCmdQ() noexcept
+    inline static RenderCmdQ* _s_getProcessObjectCmdQ() 
     {
         return s_objectCmdQ[s_processRenderCmdQIdx];
     }
 
-    static void _s_qSwap() noexcept;
+    static void _s_qSwap() ;
 
-    static void _s_renderThreadFn() noexcept;
+    static void _s_renderThreadFn() ;
 
-    static void _s_processObjectQueue() noexcept;
+    static void _s_processObjectQueue() ;
 
     ///////////////////////////
     // TODO port these

@@ -13,23 +13,23 @@ class RenderCmdQ
    public:
     typedef void (*renderCmdFn)(void*);
 
-    RenderCmdQ() noexcept;
-    ~RenderCmdQ() noexcept;
+    RenderCmdQ();
+    ~RenderCmdQ();
 
-    void* slot(renderCmdFn fn, uint32_t size) noexcept;
+    void* slot(renderCmdFn fn, uint32_t size);
 
-    inline uint32_t getCmdCount() noexcept
+    inline uint32_t getCmdCount()
     {
         return m_cmdCount;
     }
 
-    void pump() noexcept;
+    void pump();
 
    private:
-    uint8_t*                 mp_cmdBuf;
-    uint8_t*                 mp_cmdBufPtr;
-    uint32_t                 m_cmdCount = 0;
-    uint32_t                 m_cmdBufUsedSz = 0;
+    uint8_t* mp_cmdBuf;
+    uint8_t* mp_cmdBufPtr;
+    uint32_t m_cmdCount     = 0;
+    uint32_t m_cmdBufUsedSz = 0;
 };
 
 }  // namespace nimbus

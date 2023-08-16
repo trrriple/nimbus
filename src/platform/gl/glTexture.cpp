@@ -15,7 +15,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 GlTexture::GlTexture(const Type         type,
                      const std::string& path,
-                     const bool         flipOnLoad) noexcept
+                     const bool         flipOnLoad)
 {
     NM_PROFILE();
 
@@ -26,7 +26,6 @@ GlTexture::GlTexture(const Type         type,
     NM_CORE_ASSERT(!(s_maxTextures == k_maxTexturesUninit),
                    "s_maxTextures not initialized. Did you call "
                    "Texture::s_setMaxTextures?");
-
 
     stbi_set_flip_vertically_on_load(m_flipOnLoad);
 
@@ -61,8 +60,8 @@ GlTexture::GlTexture(const Type         type,
                 0, "Unknown image format has %i components", numComponents);
         }
 
-        ref<GlTexture>     p_this       = this;
-    
+        ref<GlTexture> p_this = this;
+
         Renderer::s_submitObject(
             [p_this, data]() mutable
             {
@@ -83,16 +82,15 @@ GlTexture::GlTexture(const Type         type,
                 // texture image is specified, data is treated as a byte offset
                 // into the buffer object's data store.
                 glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-                glTexImage2D(
-                    GL_TEXTURE_2D,
-                    0,
-                    s_formatInternal(p_this->m_spec.formatInternal),
-                    p_this->m_spec.width,
-                    p_this->m_spec.height,
-                    0,
-                    s_format(p_this->m_spec.format),
-                    s_dataType(p_this->m_spec.dataType),
-                    data);
+                glTexImage2D(GL_TEXTURE_2D,
+                             0,
+                             s_formatInternal(p_this->m_spec.formatInternal),
+                             p_this->m_spec.width,
+                             p_this->m_spec.height,
+                             0,
+                             s_format(p_this->m_spec.format),
+                             s_dataType(p_this->m_spec.dataType),
+                             data);
                 glGenerateMipmap(GL_TEXTURE_2D);
 
                 glTexParameteri(GL_TEXTURE_2D,
@@ -110,14 +108,13 @@ GlTexture::GlTexture(const Type         type,
                 glTexParameteri(GL_TEXTURE_2D,
                                 GL_TEXTURE_WRAP_R,
                                 s_wrapType(p_this->m_spec.wrapTypeR));
-                
+
                 stbi_image_free(data);
 
                 p_this->m_loaded = true;
             });
 
         // renderDoneFuture.wait();
-
     }
     else
     {
@@ -127,7 +124,7 @@ GlTexture::GlTexture(const Type         type,
     }
 }
 
-GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)  noexcept
+GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
 {
     m_type = type;
     m_spec = spec;
@@ -137,8 +134,7 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)  noexcept
     if (submitForMe)
     {
         ref<GlTexture> p_this = this;
-        Renderer::s_submitObject([p_this]() mutable
-                                 { p_this->_storage(); });
+        Renderer::s_submitObject([p_this]() mutable { p_this->_storage(); });
     }
     else
     {
@@ -146,19 +142,19 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)  noexcept
     }
 }
 
-GlTexture::~GlTexture() noexcept
+GlTexture::~GlTexture()
 {
     uint32_t id = m_id;
     Renderer::s_submitObject([id]() { glDeleteTextures(1, &id); });
 }
 
-void GlTexture::bind(const uint32_t glTextureUnit) const noexcept
+void GlTexture::bind(const uint32_t glTextureUnit) const
 {
     NM_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
                           "glTextureUnit > s_setMaxTextures. Did you call "
                           "Texture::s_setMaxTextures?");
 
-    if(!m_loaded)
+    if (!m_loaded)
     {
         return;
     }
@@ -176,18 +172,17 @@ void GlTexture::bind(const uint32_t glTextureUnit) const noexcept
         });
 }
 
-void GlTexture::unbind() const noexcept
+void GlTexture::unbind() const
 {
     uint32_t samples = m_spec.samples;
     Renderer::s_submit(
-        [samples]()
-        {
+        [samples]() {
             glBindTexture(
                 samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 0);
         });
 }
 
-void GlTexture::setData(void* data, uint32_t size) noexcept
+void GlTexture::setData(void* data, uint32_t size)
 {
     uint32_t elements        = 0;
     uint32_t bytesPerElement = 0;
@@ -255,11 +250,10 @@ void GlTexture::setData(void* data, uint32_t size) noexcept
                    bytesPerPixel,
                    m_spec.width * m_spec.height * bytesPerPixel);
 
-
     void* localCpy = malloc(size);
     memcpy(localCpy, data, size);
 
-    ref<GlTexture>     p_this       = this;
+    ref<GlTexture> p_this = this;
 
     Renderer::s_submitObject(
         [p_this, localCpy]()
@@ -273,7 +267,7 @@ void GlTexture::setData(void* data, uint32_t size) noexcept
                                 s_format(p_this->m_spec.format),
                                 s_dataType(p_this->m_spec.dataType),
                                 localCpy);
-            
+
             free(localCpy);
         });
 }
@@ -281,7 +275,7 @@ void GlTexture::setData(void* data, uint32_t size) noexcept
 ////////////////////////////////////////////////////////////////////////////////
 // Static functions
 ////////////////////////////////////////////////////////////////////////////////
-uint32_t GlTexture::s_format(Format format) noexcept
+uint32_t GlTexture::s_format(Format format)
 {
     switch (format)
     {
@@ -306,7 +300,7 @@ uint32_t GlTexture::s_format(Format format) noexcept
     }
 }
 
-uint32_t GlTexture::s_formatInternal(FormatInternal format) noexcept
+uint32_t GlTexture::s_formatInternal(FormatInternal format)
 {
     switch (format)
     {
@@ -340,7 +334,7 @@ uint32_t GlTexture::s_formatInternal(FormatInternal format) noexcept
             return GL_R16I;
         case FormatInternal::R32I:
             return GL_R32I;
-         case FormatInternal::R8UI:
+        case FormatInternal::R8UI:
             return GL_R8UI;
         case FormatInternal::R16UI:
             return GL_R16UI;
@@ -365,7 +359,7 @@ uint32_t GlTexture::s_formatInternal(FormatInternal format) noexcept
     }
 }
 
-uint32_t GlTexture::s_dataType(DataType dataType) noexcept
+uint32_t GlTexture::s_dataType(DataType dataType)
 {
     switch (dataType)
     {
@@ -395,7 +389,7 @@ uint32_t GlTexture::s_dataType(DataType dataType) noexcept
     }
 }
 
-uint32_t GlTexture::s_filterType(FilterType filterType) noexcept
+uint32_t GlTexture::s_filterType(FilterType filterType)
 {
     switch (filterType)
     {
@@ -414,7 +408,7 @@ uint32_t GlTexture::s_filterType(FilterType filterType) noexcept
     }
 }
 
-uint32_t GlTexture::s_wrapType(WrapType wrapType) noexcept
+uint32_t GlTexture::s_wrapType(WrapType wrapType)
 {
     switch (wrapType)
     {
@@ -434,13 +428,13 @@ uint32_t GlTexture::s_wrapType(WrapType wrapType) noexcept
 ////////////////////////////////////////////////////////////////////////////////
 // Private functions
 ////////////////////////////////////////////////////////////////////////////////
-void GlTexture::_s_gen(uint32_t& id, bool multisample) noexcept
+void GlTexture::_s_gen(uint32_t& id, bool multisample)
 {
     glCreateTextures(
         multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &id);
 }
 
-void GlTexture::_storage() noexcept
+void GlTexture::_storage()
 {
     if (m_spec.samples == 1)
     {
@@ -472,8 +466,6 @@ void GlTexture::_storage() noexcept
         m_loaded = true;
 
         glBindTexture(GL_TEXTURE_2D, 0);
-
-
     }
     else
     {
@@ -487,7 +479,6 @@ void GlTexture::_storage() noexcept
             GL_TRUE);
 
         m_loaded = true;
-
     }
 }
 

@@ -11,7 +11,7 @@
 namespace nimbus
 {
 
-void GlGraphicsApi::init() noexcept
+void GlGraphicsApi::init()
 {
     NM_PROFILE_DETAIL();
 
@@ -32,7 +32,7 @@ void GlGraphicsApi::init() noexcept
     glEnable(GL_LINE_SMOOTH);
 
     glDisable(GL_DITHER);
-    
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -61,7 +61,7 @@ void GlGraphicsApi::init() noexcept
 }
 
 void GlGraphicsApi::drawElements(ref<VertexArray> p_vertexArray,
-                                 uint32_t         vertexCount) noexcept
+                                 uint32_t         vertexCount)
 {
     NM_PROFILE_DETAIL();
     uint32_t count = vertexCount ? vertexCount
@@ -75,7 +75,7 @@ void GlGraphicsApi::drawElements(ref<VertexArray> p_vertexArray,
 }
 
 void GlGraphicsApi::drawArrays(ref<VertexArray> p_vertexArray,
-                               uint32_t         vertexCount) noexcept
+                               uint32_t         vertexCount)
 {
     NM_PROFILE_DETAIL();
     uint32_t count
@@ -87,7 +87,7 @@ void GlGraphicsApi::drawArrays(ref<VertexArray> p_vertexArray,
 
 void GlGraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray,
                                           uint32_t         instanceCount,
-                                          uint32_t         vertexCount) noexcept
+                                          uint32_t         vertexCount)
 {
     NM_PROFILE_DETAIL();
     uint32_t count = vertexCount ? vertexCount
@@ -106,7 +106,7 @@ void GlGraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray,
 
 void GlGraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray,
                                         uint32_t         instanceCount,
-                                        uint32_t         vertexCount) noexcept
+                                        uint32_t         vertexCount)
 {
     NM_PROFILE_DETAIL();
     uint32_t count
@@ -119,7 +119,7 @@ void GlGraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray,
         { glDrawArraysInstanced(GL_TRIANGLES, 0, count, instanceCount); });
 }
 
-void GlGraphicsApi::clear() noexcept
+void GlGraphicsApi::clear()
 {
     NM_PROFILE_TRACE();
 
@@ -129,18 +129,18 @@ void GlGraphicsApi::clear() noexcept
     Renderer::s_submit([bits]() { glClear(bits); });
 }
 
-void GlGraphicsApi::clearColor(glm::vec4 color) noexcept
+void GlGraphicsApi::clearColor(glm::vec4 color)
 {
     Renderer::s_submit([color]()
                        { glClearColor(color.r, color.g, color.b, color.a); });
 }
 
-void GlGraphicsApi::setViewportSize(int x, int y, int w, int h) noexcept
+void GlGraphicsApi::setViewportSize(int x, int y, int w, int h)
 {
     Renderer::s_submit([x, y, w, h]() { glViewport(x, y, w, h); });
 }
 
-void GlGraphicsApi::setWireframe(bool on) noexcept
+void GlGraphicsApi::setWireframe(bool on)
 {
     NM_PROFILE_TRACE();
 
@@ -169,7 +169,7 @@ void GlGraphicsApi::setWireframe(bool on) noexcept
     }
 }
 
-void GlGraphicsApi::setDepthTest(bool on) noexcept
+void GlGraphicsApi::setDepthTest(bool on)
 {
     NM_PROFILE_TRACE();
 
@@ -198,7 +198,7 @@ void GlGraphicsApi::setDepthTest(bool on) noexcept
     }
 }
 
-void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode) noexcept
+void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
 {
     if (mode == s_currBlendingMode)
     {
@@ -260,14 +260,14 @@ static void APIENTRY _glDebugOutput(GLenum       source,
                                     GLenum       severity,
                                     GLsizei      length,
                                     const char*  message,
-                                    const void*  userParam) noexcept
+                                    const void*  userParam)
 {
     NM_UNUSED(length);
     NM_UNUSED(userParam);
 
     // ignore non-significant error/warning codes
     if (id == 131169 || id == 131185 || id == 131218 || id == 131204
-        || id == 131140 || id == 131220) // integer framebuffer warning
+        || id == 131140 || id == 131220)  // integer framebuffer warning
         return;
 
     Log::coreError("Debug message (%d):  %s", id, message);
@@ -341,7 +341,7 @@ static void APIENTRY _glDebugOutput(GLenum       source,
     }
 }
 
-void GlGraphicsApi::_enableGlErrPrint() noexcept
+void GlGraphicsApi::_enableGlErrPrint()
 {
     Log::coreInfo("GL Debug Enabled");
     glEnable(GL_DEBUG_OUTPUT);

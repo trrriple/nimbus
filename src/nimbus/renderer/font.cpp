@@ -21,7 +21,7 @@ namespace nimbus
 Font::Font(const std::string& fontPath)
     : m_path(fontPath), m_data(new FontData())
 {
-     m_workerThread = std::thread(&Font::_loadFont, this);
+    m_workerThread = std::thread(&Font::_loadFont, this);
 }
 
 ref<Font> Font::s_create(const std::string& fontPath)
@@ -31,9 +31,8 @@ ref<Font> Font::s_create(const std::string& fontPath)
 
 Font::~Font()
 {
-    
     m_workerThread.join();
-    if(m_data->pixels != nullptr)
+    if (m_data->pixels != nullptr)
     {
         free(m_data->pixels);
     }
@@ -47,8 +46,7 @@ void Font::_loadFont()
     if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype())
     {
         // Load font file
-        if (msdfgen::FontHandle* font = msdfgen::loadFont(
-                ft, m_path.c_str()))
+        if (msdfgen::FontHandle* font = msdfgen::loadFont(ft, m_path.c_str()))
         {
             m_data->fontGeometry = msdf_atlas::FontGeometry(&m_data->glyphs);
             // FontGeometry is a helper class that loads a set of glyphs from a
@@ -83,7 +81,8 @@ void Font::_loadFont()
             // setScale for a fixed size or setMinimumScale to use the largest
             // that fits
             // TODO: determine parameters
-            packer.setMinimumScale(50.0); //thin fonts require this to be large
+            packer.setMinimumScale(50.0);  // thin fonts require this to be
+                                           // large
             // packer.setScale(80.0f);
             // setPixelRange or setUnitRange
             m_data->pixelRange = 2.0;

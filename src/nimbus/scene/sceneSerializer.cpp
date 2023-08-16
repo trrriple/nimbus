@@ -113,7 +113,7 @@ static void s_serializeEntity(toml::table& entitiesTbl,
 
         formatTbl.insert("kerning", tc.format.kerning);
         formatTbl.insert("leading", tc.format.leading);
-        
+
         textTbl.insert("format", formatTbl);
         entityTbl.insert("TextCmp", textTbl);
     }
@@ -249,12 +249,12 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
                 if (cmpType == "TextCmp")
                 {
                     auto& tc = entity.addComponent<TextCmp>();
-                    
+
                     tc.text = cmpTbl["text"].ref<std::string>();
 
                     auto formatTbl = cmpTbl["format"].as_table();
 
-                    if(formatTbl)
+                    if (formatTbl)
                     {
                         auto fontPath
                             = (*formatTbl)["path"].value<std::string>();

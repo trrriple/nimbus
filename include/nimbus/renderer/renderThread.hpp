@@ -26,7 +26,7 @@ class RenderThread
     void setState(State state);
     void stop();
 
-    bool isActive() const noexcept
+    bool isActive() const 
     {
         return m_active;
     }

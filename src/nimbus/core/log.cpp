@@ -19,12 +19,12 @@ static const std::string k_criticalColor = "\033[1;31m";  // bold red
 static const std::string k_traceColor    = "\033[35m";    // magenta
 static const std::string k_clear         = "\033[0m";
 
-void Log::init() noexcept
+void Log::init()
 {
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 }
 
-void Log::info(const char* format, ...) noexcept
+void Log::info(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
@@ -44,11 +44,11 @@ void Log::info(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::warn(const char* format, ...) noexcept
+void Log::warn(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
-#else    
+#else
     va_list args;
     va_start(args, format);
 
@@ -64,7 +64,7 @@ void Log::warn(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::error(const char* format, ...) noexcept
+void Log::error(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
@@ -84,7 +84,7 @@ void Log::error(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::critical(const char* format, ...) noexcept
+void Log::critical(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
@@ -104,7 +104,7 @@ void Log::critical(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::trace(const char* format, ...) noexcept
+void Log::trace(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
@@ -124,7 +124,7 @@ void Log::trace(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::coreInfo(const char* format, ...) noexcept
+void Log::coreInfo(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
@@ -144,7 +144,7 @@ void Log::coreInfo(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::coreWarn(const char* format, ...) noexcept
+void Log::coreWarn(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
@@ -164,7 +164,7 @@ void Log::coreWarn(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::coreError(const char* format, ...) noexcept
+void Log::coreError(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
@@ -184,7 +184,7 @@ void Log::coreError(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::coreCritical(const char* format, ...) noexcept
+void Log::coreCritical(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);
@@ -204,7 +204,7 @@ void Log::coreCritical(const char* format, ...) noexcept
 #endif /* NIMBUS_NO_CONSOLE */
 }
 
-void Log::coreTrace(const char* format, ...) noexcept
+void Log::coreTrace(const char* format, ...)
 {
 #ifdef NIMBUS_NO_CONSOLE
     NM_UNUSED(format);

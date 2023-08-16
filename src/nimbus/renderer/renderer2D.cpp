@@ -83,7 +83,7 @@ void Renderer2D::s_destroy()
     delete s_textData;
 }
 
-void Renderer2D::s_begin(const glm::mat4& vpMatrix) noexcept
+void Renderer2D::s_begin(const glm::mat4& vpMatrix)
 {
     NM_PROFILE_TRACE();
 
@@ -98,7 +98,7 @@ void Renderer2D::s_begin(const glm::mat4& vpMatrix) noexcept
     s_inScene = true;
 }
 
-void Renderer2D::s_end() noexcept
+void Renderer2D::s_end()
 {
     NM_PROFILE_TRACE();
 
@@ -127,7 +127,7 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
                             const ref<Texture>& p_texture,
                             const glm::vec4&    color,
                             float               texTilingFactor,
-                            uint32_t            entityId) noexcept
+                            uint32_t            entityId)
 {
     // first make sure we can fit this quad:
     //  verify we have room left for this character
@@ -182,7 +182,7 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
 
 void Renderer2D::s_drawQuad(const glm::mat4& transform,
                             const glm::vec4& color,
-                            uint32_t         entityId) noexcept
+                            uint32_t         entityId)
 {
     NM_PROFILE_TRACE();
     s_drawQuad(transform, nullptr, color, 1.0f, entityId);
@@ -192,7 +192,7 @@ void Renderer2D::s_drawText(const std::string&  text,
                             const Font::Format& fontFormat,
                             const glm::vec3&    position,
                             const glm::vec2&    size,
-                            uint32_t            entityId) noexcept
+                            uint32_t            entityId)
 {
     NM_PROFILE_TRACE();
     glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
@@ -203,7 +203,7 @@ void Renderer2D::s_drawText(const std::string&  text,
 void Renderer2D::s_drawText(const std::string&  text,
                             const Font::Format& fontFormat,
                             const glm::mat4&    transform,
-                            uint32_t            entityId) noexcept
+                            uint32_t            entityId)
 
 {
     NM_PROFILE();
@@ -433,7 +433,7 @@ void Renderer2D::s_drawText(const std::string&  text,
     }
 }
 
-void Renderer2D::s_resetStats() noexcept
+void Renderer2D::s_resetStats()
 {
     s_stats = Stats();
 }
@@ -441,7 +441,7 @@ void Renderer2D::s_resetStats() noexcept
 ////////////////////////////////////////////////////////////////////////////////
 // Private functions
 ////////////////////////////////////////////////////////////////////////////////
-void Renderer2D::_s_submit() noexcept
+void Renderer2D::_s_submit()
 {
     NM_PROFILE();
 
@@ -515,7 +515,7 @@ void Renderer2D::_s_submit() noexcept
 
 template <typename IndexType>
 static void s_generateIndicesAndSetBuffer(uint32_t          quads,
-                                          ref<VertexArray>& p_vao) noexcept
+                                          ref<VertexArray>& p_vao)
 {
     std::vector<IndexType> quadVertexIndices;
     quadVertexIndices.reserve(6 * quads);
@@ -536,7 +536,7 @@ static void s_generateIndicesAndSetBuffer(uint32_t          quads,
         IndexBuffer::s_create(&quadVertexIndices[0], quadVertexIndices.size()));
 }
 
-void Renderer2D::_s_createQuadBuffers() noexcept
+void Renderer2D::_s_createQuadBuffers()
 {
     NM_PROFILE_DETAIL();
 
@@ -602,7 +602,7 @@ void Renderer2D::_s_createQuadBuffers() noexcept
     Log::coreInfo("Quad buffer sized to %i", newSize);
 }
 
-void Renderer2D::_s_createTextBuffers() noexcept
+void Renderer2D::_s_createTextBuffers()
 {
     NM_PROFILE_DETAIL();
 

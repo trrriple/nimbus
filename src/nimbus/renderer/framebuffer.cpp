@@ -8,7 +8,7 @@
 namespace nimbus
 {
 
-ref<Framebuffer> Framebuffer::s_create(Framebuffer::Spec& spec) noexcept
+ref<Framebuffer> Framebuffer::s_create(Framebuffer::Spec& spec)
 {
     return ref<GlFramebuffer>::gen(spec);
 }

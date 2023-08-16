@@ -37,11 +37,8 @@ void Scene::removeEntity(Entity entity)
 
 void Scene::sortEntities()
 {
-    m_registry.sort<GuidCmp>(
-        [&](const auto lhs, const auto rhs)
-        {
-           return lhs.genesisIndex < rhs.genesisIndex;
-        });
+    m_registry.sort<GuidCmp>([&](const auto lhs, const auto rhs)
+                             { return lhs.genesisIndex < rhs.genesisIndex; });
 }
 
 void Scene::onStart()
@@ -153,8 +150,7 @@ void Scene::_render(Camera* p_camera)
     ///////////////////////////
     // Sprites
     ///////////////////////////
-    auto spriteView
-        = m_registry.view<GuidCmp, TransformCmp, SpriteCmp>();
+    auto spriteView = m_registry.view<GuidCmp, TransformCmp, SpriteCmp>();
 
     // order based on GuidCmp which should be sorted based on genesisIndex
     // we want to render these by the order they were created, so newest
@@ -201,7 +197,6 @@ Entity Scene::_addEntity(const std::string& name,
 {
     Entity entity = {m_registry.create(), this};
 
-    
     entity.addComponent<GuidCmp>(genesisIdx, guidStr);
 
     // TODO, is this right?

@@ -12,15 +12,15 @@ namespace nimbus::util
 
 glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos,
                               float     screenWidth,
-                              float     screenHeight) noexcept;
+                              float     screenHeight);
 
 glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize,
                                 float     screenWidth,
-                                float     screenHeight) noexcept;
+                                float     screenHeight);
 
 glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity,
                                         float     screenWidth,
-                                        float     screenHeight) noexcept;
+                                        float     screenHeight);
 
 glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                          float     screenMinX,
@@ -28,18 +28,18 @@ glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                          float     screenMinY,
                          float     screenMaxY,
                          int       imgWidth,
-                         int       imgHeight) noexcept;
+                         int       imgHeight);
 
 std::vector<std::string> openFile(const std::string& prompt    = "",
                                   const std::string& startPath = ".",
                                   const std::vector<std::string>& filters
                                   = {"All Files", "*"},
-                                  bool multiSelect = false) noexcept;
+                                  bool multiSelect = false);
 
 std::string saveFile(const std::string&              prompt    = "",
                      const std::string&              startPath = ".",
                      const std::vector<std::string>& filters
-                     = {"All Files", "*"}) noexcept;
+                     = {"All Files", "*"});
 
 // TODO remove
 struct Transform
@@ -57,10 +57,10 @@ struct Transform
     glm::mat4 getModel() const
     {
         glm::mat4 rot = glm::toMat4(glm::quat(rotation));
-        
+
         glm::mat4 preScale = glm::translate(glm::mat4(1.0f), translation) * rot;
 
-        return  glm::scale(preScale, scale);
+        return glm::scale(preScale, scale);
     }
 };
 

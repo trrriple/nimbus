@@ -18,7 +18,7 @@ namespace nimbus
 
 Application::Application(const std::string& name,
                          uint32_t           windowWidth,
-                         uint32_t           windowHeight) noexcept
+                         uint32_t           windowHeight)
     : m_name(name)
 {
     NM_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
@@ -51,7 +51,7 @@ Application::Application(const std::string& name,
     Renderer2D::s_init();
 }
 
-Application::~Application() noexcept
+Application::~Application()
 {
     // pump all the commands out before we clear layers as we odn't want
     // pending draw commands to use deleted resources
@@ -71,13 +71,13 @@ Application::~Application() noexcept
     mp_window.reset();
 }
 
-void Application::shouldQuit(Event& event) noexcept
+void Application::shouldQuit(Event& event)
 {
     NM_UNUSED(event);
     m_active = false;
 }
 
-void Application::execute() noexcept
+void Application::execute()
 {
     ////////////////////////////////////////////////////////////////////////////
     // Pump all commands out that were generated from application startup
@@ -85,7 +85,7 @@ void Application::execute() noexcept
     ////////////////////////////////////////////////////////////////////////////
     Renderer::s_pumpCmds();
 
-    auto mainLoopSw =  m_swBank.newSw("Main loop");
+    auto mainLoopSw = m_swBank.newSw("Main loop");
 
     auto mainThreadProcessSw = m_swBank.newSw("MainThread Process");
 
@@ -149,7 +149,7 @@ void Application::execute() noexcept
         mainThreadPendRenderThreadSw->split();
         Renderer::s_waitForRenderThread();
         mainThreadPendRenderThreadSw->splitAndSave();
-        mainThreadProcessSw->split(); // post pend
+        mainThreadProcessSw->split();  // post pend
 
         ///////////////////////////
         // Pump events
@@ -169,8 +169,8 @@ void Application::execute() noexcept
         /////////////////////////////////////////////////////////////////////
         if (didDraw)
         {
-            // The render thread always runs latent, meaning it's always 
-            // processing the previous commands while this thread 
+            // The render thread always runs latent, meaning it's always
+            // processing the previous commands while this thread
             // (the main thread) is generating the commands for this frame.
             // It can be considered two ways, like said already or as if the
             // renderer is processing the current frame, and this thread is
@@ -179,7 +179,7 @@ void Application::execute() noexcept
             // API calls, won't be made until the following cycle.
             // Do note that object calls (creation/deletion/resize) are handled
             // before all draw/render calls
-            
+
             Renderer::s_swapAndStart();
         }
 
@@ -204,7 +204,7 @@ void Application::execute() noexcept
             // Start frame
             ///////////////////////////
             Renderer::s_startFrame();
-            
+
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
                 // call each draw with how long it's been since last draw
@@ -249,12 +249,12 @@ void Application::execute() noexcept
     Log::coreInfo("Quitting");
 }
 
-void Application::terminate() noexcept
+void Application::terminate()
 {
     m_active = false;
 }
 
-void Application::onEvent(Event& event) noexcept
+void Application::onEvent(Event& event)
 {
     // interate over the layer deck backwards because we want layers at
     // the top of the deck to handle events first if they so choose
@@ -286,23 +286,22 @@ void Application::onEvent(Event& event) noexcept
     }
 }
 
-void Application::insertLayer(const ref<Layer> p_layer,
-                              int32_t          location) noexcept
+void Application::insertLayer(const ref<Layer> p_layer, int32_t location)
 {
     m_layerDeck.insertLayer(p_layer, location);
 }
 
-void Application::removeLayer(const ref<Layer>& p_layer) noexcept
+void Application::removeLayer(const ref<Layer>& p_layer)
 {
     m_layerDeck.removeLayer(p_layer);
 }
 
-void Application::guiSubsystemCaptureEvents(bool capture) noexcept
+void Application::guiSubsystemCaptureEvents(bool capture)
 {
     mp_guiSubsystemLayer->captureEvents(capture);
 }
 
-void Application::guiRender() noexcept
+void Application::guiRender()
 {
     mp_guiSubsystemLayer->begin();
 
@@ -312,12 +311,12 @@ void Application::guiRender() noexcept
     }
 }
 
-const uint8_t* Application::getKeyboardState() const noexcept
+const uint8_t* Application::getKeyboardState() const
 {
     return SDL_GetKeyboardState(nullptr);
 }
 
-void Application::setMenuMode(bool mode) noexcept
+void Application::setMenuMode(bool mode)
 {
     // if mode doesn't change, don't do anything
     if (m_menuMode == mode)
@@ -338,7 +337,7 @@ void Application::setMenuMode(bool mode) noexcept
     m_menuMode = mode;
 }
 
-void Application::setUpdatePeriodLimit(float limit) noexcept
+void Application::setUpdatePeriodLimit(float limit)
 {
     if (limit < 0.0f)
     {
@@ -349,7 +348,7 @@ void Application::setUpdatePeriodLimit(float limit) noexcept
     m_updatePeriodLimit = limit;
 }
 
-void Application::setDrawPeriodLimit(float limit) noexcept
+void Application::setDrawPeriodLimit(float limit)
 {
     if (limit < 0.0f)
     {

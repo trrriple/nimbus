@@ -45,7 +45,6 @@ Mesh::Mesh(std::vector<Vertex>       verticies,
 
     _setupMesh();
     _setupTextureUniforms();
-
 }
 
 Mesh::Mesh(std::vector<Vertex>   verticies,

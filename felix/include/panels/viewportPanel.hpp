@@ -116,12 +116,11 @@ class ViewportPanel
                  (int)m_viewportSize.y,
                  m_viewportSize.x / m_viewportSize.y);
 
-        ImVec2 dimLoc = {m_viewportRegion[1].x - 115.0f,
-                         m_viewportRegion[1].y - 17.0f};
+        ImVec2 dimLoc
+            = {m_viewportRegion[1].x - 115.0f, m_viewportRegion[1].y - 17.0f};
 
         // Draw the text on the draw list
         drawList->AddText(dimLoc, IM_COL32(255, 255, 255, 255), dimString);
-
 
         ///////////////////////////
         // Handle Cursor position
@@ -173,7 +172,6 @@ class ViewportPanel
 
             if (orthographic)
             {
-
                 // if we're orthographic we can map where the curosr is in
                 // the world easily
                 glm::vec2 mousePosInViewport = util::mapPixToScreen(
@@ -261,7 +259,6 @@ class ViewportPanel
                                      glm::value_ptr(transform),
                                      nullptr,
                                      nullptr);
-
 
                 if (ImGuizmo::IsUsing())
                 {

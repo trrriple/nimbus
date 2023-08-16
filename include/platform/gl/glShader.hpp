@@ -21,102 +21,96 @@ class GlShader : public Shader
     /// @param fragmentSource Source code for the fragment shader.
     GlShader(const std::string& name,
              const std::string& vertexSource,
-             const std::string& fragmentSource) noexcept;
+             const std::string& fragmentSource);
 
     /// Constructor for Shader.
     /// @param vertexPath Path to the vertex shader file.
     /// @param fragmentPath Path to the fragment shader file.
-    GlShader(const std::string& vertexPath,
-             const std::string& fragmentPath) noexcept;
+    GlShader(const std::string& vertexPath, const std::string& fragmentPath);
 
     virtual ~GlShader() override;
 
-    const std::string& getVertexPath() const noexcept override;
+    const std::string& getVertexPath() const override;
 
-    const std::string& getFragmentPath() const noexcept override;
+    const std::string& getFragmentPath() const override;
 
-    void bind() const noexcept override;
+    void bind() const override;
 
-    std::uint32_t getId() const noexcept override
+    std::uint32_t getId() const override
     {
         return m_id;
     }
 
-    const std::string& getName() const noexcept override
+    const std::string& getName() const override
     {
         return m_name;
     }
 
-    void setBool(const std::string& name, bool value) const noexcept override;
+    void setBool(const std::string& name, bool value) const override;
 
     void setInt(const std::string&          name,
                 const std::vector<int32_t>& value,
-                uint32_t                    count) const noexcept override;
+                uint32_t                    count) const override;
 
-    void setInt(const std::string& name, int32_t value) const noexcept override;
+    void setInt(const std::string& name, int32_t value) const override;
 
     void setFloat(const std::string&        name,
                   const std::vector<float>& value,
-                  uint32_t                  count) const noexcept override;
+                  uint32_t                  count) const override;
 
-    void setFloat(const std::string& name, float value) const noexcept override;
+    void setFloat(const std::string& name, float value) const override;
 
     void setVec2(const std::string&            name,
                  const std::vector<glm::vec2>& value,
-                 uint32_t count = 1) const noexcept override;
+                 uint32_t                      count = 1) const override;
 
     void setVec2(const std::string& name,
-                 const glm::vec2&   value) const noexcept override;
+                 const glm::vec2&   value) const override;
 
-    void setVec2(const std::string& name,
-                 float              x,
-                 float              y) const noexcept override;
+    void setVec2(const std::string& name, float x, float y) const override;
 
     void setVec3(const std::string&            name,
                  const std::vector<glm::vec3>& value,
-                 uint32_t count = 1) const noexcept override;
+                 uint32_t                      count = 1) const override;
 
     void setVec3(const std::string& name,
-                 const glm::vec3&   value) const noexcept override;
+                 const glm::vec3&   value) const override;
 
     void setVec3(const std::string& name,
                  float              x,
                  float              y,
-                 float              z) const noexcept override;
+                 float              z) const override;
 
     void setVec4(const std::string&            name,
                  const std::vector<glm::vec4>& value,
-                 uint32_t count = 1) const noexcept override;
+                 uint32_t                      count = 1) const override;
 
     void setVec4(const std::string& name,
-                 const glm::vec4&   value) const noexcept override;
+                 const glm::vec4&   value) const override;
 
     void setVec4(const std::string& name,
                  float              x,
                  float              y,
                  float              z,
-                 float              w) const noexcept override;
+                 float              w) const override;
 
     void setMat2(const std::string&            name,
                  const std::vector<glm::mat2>& value,
-                 uint32_t count = 1) const noexcept override;
+                 uint32_t                      count = 1) const override;
 
-    void setMat2(const std::string& name,
-                 const glm::mat2&   mat) const noexcept override;
+    void setMat2(const std::string& name, const glm::mat2& mat) const override;
 
     void setMat3(const std::string&            name,
                  const std::vector<glm::mat3>& value,
-                 uint32_t count = 1) const noexcept override;
+                 uint32_t                      count = 1) const override;
 
-    void setMat3(const std::string& name,
-                 const glm::mat3&   mat) const noexcept override;
+    void setMat3(const std::string& name, const glm::mat3& mat) const override;
 
     void setMat4(const std::string&            name,
                  const std::vector<glm::mat4>& value,
-                 uint32_t count = 1) const noexcept override;
+                 uint32_t                      count = 1) const override;
 
-    void setMat4(const std::string& name,
-                 const glm::mat4&   mat) const noexcept override;
+    void setMat4(const std::string& name, const glm::mat4& mat) const override;
 
     static uint32_t s_getShaderType(ShaderType type);
 
@@ -125,12 +119,12 @@ class GlShader : public Shader
     /// @param vertexPath The path to the vertex shader.
     /// @param fragmentPath The path to the fragment shader.
     void _compileShader(const std::string& vertexPath,
-                        const std::string& fragmentPath) noexcept;
+                        const std::string& fragmentPath);
 
     /// Retrieves the location of a uniform in the shader.
     /// @param name The name of the uniform.
     /// @return The location of the uniform.
-    std::int32_t _getUniformLocation(const std::string& name) const noexcept;
+    std::int32_t _getUniformLocation(const std::string& name) const;
 };
 
 }  // namespace nimbus

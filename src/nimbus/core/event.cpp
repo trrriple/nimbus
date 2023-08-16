@@ -3,8 +3,6 @@
 
 #include "nimbus/core/event.hpp"
 
-
-
 // because we ripped this from SDL, make sure it actually matches because
 // SDL is going to be provided the data
 NM_CORE_COMPILETIME_ASSERT((sizeof(SDL_Event)
@@ -14,7 +12,7 @@ NM_CORE_COMPILETIME_ASSERT((sizeof(SDL_Event)
 namespace nimbus
 {
 
-void Event::clear() noexcept
+void Event::clear()
 {
     m_wasHandled = false;
 
@@ -31,7 +29,7 @@ void Event::clear() noexcept
     }
 }
 
-const std::string Event::toString() const noexcept
+const std::string Event::toString() const
 {
     switch (m_details.type)
     {

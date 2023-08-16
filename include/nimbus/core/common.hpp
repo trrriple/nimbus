@@ -3,7 +3,6 @@
 #include "nimbus/core/log.hpp"
 #include "nimbus/core/ref.hpp"
 
-
 #include <memory>
 #include <cstdint>
 
@@ -20,7 +19,6 @@
 
 #define NM_RUNTIME_ASSERTS
 
-
 #ifdef NM_RUNTIME_ASSERTS
 ////////////////////////////////////////////////////////////////////////////////
 // Asserts
@@ -30,35 +28,31 @@
 #include <signal.h>
 #define __debugbreak() raise(SIGTRAP)
 #endif
-#define NM_ASSERT(condition, msg, ...)        \
-{                                                  \
-    if (!(condition))                              \
-    {                                              \
-        Log::critical(                         \
-            "[%s::%s:%i] " msg,                    \
-            typeid(*this).name(),                  \
-            __func__,                              \
-            __LINE__ __VA_OPT__(,) __VA_ARGS__);   \
-            __debugbreak();                        \
-    }                                              \
-}
+#define NM_ASSERT(condition, msg, ...)                          \
+    {                                                           \
+        if (!(condition))                                       \
+        {                                                       \
+            Log::critical("[%s::%s:%i] " msg,                   \
+                          typeid(*this).name(),                 \
+                          __func__,                             \
+                          __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+            __debugbreak();                                     \
+        }                                                       \
+    }
 
-#define NM_ASSERT_STATIC(condition, msg, ...) \
-                                                   \
-    if (!(condition))                              \
-    {                                              \
-        Log::critical(                         \
-            "[%s:%i] " msg,                        \
-            __func__,                              \
-            __LINE__ __VA_OPT__(,) __VA_ARGS__);   \
-            __debugbreak();                        \
-    }                                              \
+#define NM_ASSERT_STATIC(condition, msg, ...)                               \
+                                                                            \
+    if (!(condition))                                                       \
+    {                                                                       \
+        Log::critical(                                                      \
+            "[%s:%i] " msg, __func__, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+        __debugbreak();                                                     \
+    }
 
 #else
 #define NM_CORE_ASSERT(condition, msg, ...)
 #define NM_CORE_ASSERT_STATIC(condition, msg, ...)
 #endif /* NM_RUNTIME_ASSERTS */
-
 
 namespace nimbus
 {
@@ -75,4 +69,3 @@ constexpr scope<T> genScope(Args&&... args)
 }
 
 }  // namespace nimbus
-

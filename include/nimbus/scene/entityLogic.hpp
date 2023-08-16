@@ -28,7 +28,7 @@ class EntityLogic
     }
     virtual void onUpdate(float deltaTime)
     {
-		NM_UNUSED(deltaTime);
+        NM_UNUSED(deltaTime);
     }
 
    private:

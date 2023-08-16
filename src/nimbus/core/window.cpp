@@ -13,7 +13,7 @@ namespace nimbus
 
 Window::Window(const std::string& windowCaption,
                uint32_t           width,
-               uint32_t           height) noexcept
+               uint32_t           height)
     : m_width(width),
       m_height(height),
       m_aspectRatio(static_cast<float>(width) / static_cast<float>(height))
@@ -42,7 +42,7 @@ Window::Window(const std::string& windowCaption,
         mp_window, "Window could not be created. sdl error %s", SDL_GetError());
 }
 
-Window::~Window() noexcept
+Window::~Window()
 {
     NM_PROFILE_DETAIL();
 
@@ -55,7 +55,7 @@ Window::~Window() noexcept
     SDL_Quit();
 }
 
-void Window::graphicsContextInit() noexcept
+void Window::graphicsContextInit()
 {
     NM_PROFILE_DETAIL();
 
@@ -84,21 +84,21 @@ void Window::graphicsContextInit() noexcept
     SDL_GL_SetSwapInterval(m_VSyncOn);
 }
 
-void Window::setEventCallback(const WindowEventCallback_t& callback) noexcept
+void Window::setEventCallback(const WindowEventCallback_t& callback)
 {
     NM_PROFILE_TRACE();
 
     m_evtCallback = callback;
 }
 
-void Window::setExitCallback(const WindowEventCallback_t& callback) noexcept
+void Window::setExitCallback(const WindowEventCallback_t& callback)
 {
     NM_PROFILE_TRACE();
 
     m_exitCallback = callback;
 }
 
-void Window::swapBuffers() noexcept
+void Window::swapBuffers()
 {
     static SDL_Window* p_window = static_cast<SDL_Window*>(mp_window);
 
@@ -107,7 +107,7 @@ void Window::swapBuffers() noexcept
     _calcFramerate();
 }
 
-void Window::pumpEvents() noexcept
+void Window::pumpEvents()
 {
     NM_PROFILE();
 
@@ -151,7 +151,7 @@ void Window::pumpEvents() noexcept
     }
 }
 
-bool Window::keyPressed(ScanCode scanCode) const noexcept
+bool Window::keyPressed(ScanCode scanCode) const
 {
     NM_PROFILE_TRACE();
 
@@ -161,7 +161,7 @@ bool Window::keyPressed(ScanCode scanCode) const noexcept
     return keyboardState[static_cast<uint32_t>(scanCode)];
 }
 
-bool Window::modKeyPressed(KeyMod keyMod) const noexcept
+bool Window::modKeyPressed(KeyMod keyMod) const
 {
     NM_PROFILE_TRACE();
 
@@ -169,7 +169,7 @@ bool Window::modKeyPressed(KeyMod keyMod) const noexcept
     return SDL_GetModState() & static_cast<uint32_t>(keyMod);
 }
 
-bool Window::mouseButtonPressed(MouseButton button) const noexcept
+bool Window::mouseButtonPressed(MouseButton button) const
 {
     NM_PROFILE_TRACE();
 
@@ -179,7 +179,7 @@ bool Window::mouseButtonPressed(MouseButton button) const noexcept
     return mouseState & SDL_BUTTON(static_cast<uint32_t>(button));
 }
 
-glm::vec2 Window::mousePos() const noexcept
+glm::vec2 Window::mousePos() const
 {
     NM_PROFILE_TRACE();
 
@@ -191,12 +191,12 @@ glm::vec2 Window::mousePos() const noexcept
     return {xPos, yPos};
 }
 
-float Window::mouseWheelPos() const noexcept
+float Window::mouseWheelPos() const
 {
     return m_mouseWheelPos;
 }
 
-void Window::setVSync(bool on) noexcept
+void Window::setVSync(bool on)
 {
     NM_PROFILE_TRACE();
 
@@ -207,7 +207,7 @@ void Window::setVSync(bool on) noexcept
     }
 }
 
-void Window::_handleWindowEvents() noexcept
+void Window::_handleWindowEvents()
 {
     NM_PROFILE_DETAIL();
 
@@ -249,7 +249,7 @@ void Window::_handleWindowEvents() noexcept
     }
 }
 
-void Window::_calcFramerate() noexcept
+void Window::_calcFramerate()
 {
     NM_PROFILE_TRACE();
 

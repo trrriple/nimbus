@@ -16,7 +16,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 // Public Functions
 ////////////////////////////////////////////////////////////////////////////////
-GlFramebuffer::GlFramebuffer(Framebuffer::Spec& spec) noexcept
+GlFramebuffer::GlFramebuffer(Framebuffer::Spec& spec)
 {
     NM_PROFILE_DETAIL();
 
@@ -38,7 +38,7 @@ GlFramebuffer::GlFramebuffer(Framebuffer::Spec& spec) noexcept
     _construct();
 }
 
-GlFramebuffer::~GlFramebuffer() noexcept
+GlFramebuffer::~GlFramebuffer()
 {
     NM_PROFILE_DETAIL();
 
@@ -55,7 +55,7 @@ GlFramebuffer::~GlFramebuffer() noexcept
     m_colorAttachments.clear();
 }
 
-void GlFramebuffer::resize(uint32_t width, uint32_t height) noexcept
+void GlFramebuffer::resize(uint32_t width, uint32_t height)
 {
     NM_PROFILE();
 
@@ -84,7 +84,7 @@ void GlFramebuffer::resize(uint32_t width, uint32_t height) noexcept
 
 void GlFramebuffer::blit(ref<Framebuffer> p_destination,
                          const uint32_t   srcAttachmentIdx,
-                         const uint32_t   destAttachmentIdx) const noexcept
+                         const uint32_t   destAttachmentIdx) const
 {
     NM_PROFILE();
 
@@ -139,7 +139,7 @@ void GlFramebuffer::blit(ref<Framebuffer> p_destination,
         });
 }
 
-void GlFramebuffer::bind(Mode mode) const noexcept
+void GlFramebuffer::bind(Mode mode) const
 {
     NM_PROFILE_TRACE();
 
@@ -173,7 +173,7 @@ void GlFramebuffer::bind(Mode mode) const noexcept
         });
 }
 
-void GlFramebuffer::unbind(Mode mode) const noexcept
+void GlFramebuffer::unbind(Mode mode) const
 {
     NM_PROFILE_TRACE();
 
@@ -202,7 +202,7 @@ void GlFramebuffer::unbind(Mode mode) const noexcept
 }
 
 void GlFramebuffer::bindTexture(const uint32_t textureUnit,
-                                const uint32_t attachmentIdx) const noexcept
+                                const uint32_t attachmentIdx) const
 {
     if (attachmentIdx >= m_colorAttachments.size())
     {
@@ -215,7 +215,7 @@ void GlFramebuffer::bindTexture(const uint32_t textureUnit,
     m_colorAttachments[attachmentIdx]->bind(textureUnit);
 }
 
-void GlFramebuffer::unbindTexture(const uint32_t attachmentIdx) const noexcept
+void GlFramebuffer::unbindTexture(const uint32_t attachmentIdx) const
 {
     if (attachmentIdx >= m_colorAttachments.size())
     {
@@ -228,7 +228,7 @@ void GlFramebuffer::unbindTexture(const uint32_t attachmentIdx) const noexcept
     m_colorAttachments[attachmentIdx]->unbind();
 }
 
-void GlFramebuffer::clearColorAttachment(const uint32_t attachmentIdx) noexcept
+void GlFramebuffer::clearColorAttachment(const uint32_t attachmentIdx)
 {
     NM_PROFILE_DETAIL();
 
@@ -345,7 +345,7 @@ void GlFramebuffer::clearColorAttachment(const uint32_t attachmentIdx) noexcept
     }
 }
 
-void GlFramebuffer::clearDepthAttachment() noexcept
+void GlFramebuffer::clearDepthAttachment()
 {
     ref<GlFramebuffer> p_this = this;
 
@@ -389,7 +389,7 @@ void GlFramebuffer::clearDepthAttachment() noexcept
     }
 }
 
-void GlFramebuffer::clearAllAttachments() noexcept
+void GlFramebuffer::clearAllAttachments()
 {
     for (uint32_t i = 0; i < m_colorAttachments.size(); i++)
     {
@@ -401,7 +401,7 @@ void GlFramebuffer::clearAllAttachments() noexcept
     }
 }
 
-void GlFramebuffer::requestPixel(ref<PixelReadRequest> p_request) noexcept
+void GlFramebuffer::requestPixel(ref<PixelReadRequest> p_request)
 {
     ref<GlFramebuffer> p_this = this;
 
@@ -498,7 +498,7 @@ void GlFramebuffer::requestPixel(ref<PixelReadRequest> p_request) noexcept
 ////////////////////////////////////////////////////////////////////////////////
 // Private Functions
 ////////////////////////////////////////////////////////////////////////////////
-void GlFramebuffer::_construct() noexcept
+void GlFramebuffer::_construct()
 {
     NM_PROFILE();
 
@@ -623,7 +623,7 @@ void GlFramebuffer::_construct() noexcept
         });
 }
 
-uint32_t GlFramebuffer::_textureTarget() const noexcept
+uint32_t GlFramebuffer::_textureTarget() const
 {
     return m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 }

@@ -185,7 +185,6 @@ class FelixLayer : public Layer
         mp_editCameraMenuPanel
             = genScope<EditCameraMenuPanel>(mp_editCamera.raw());
 
-
         mp_viewportPanel->setEntitySelectedCallback(std::bind(
             &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
 
@@ -378,7 +377,6 @@ class FelixLayer : public Layer
         mp_frameBuffer->bind();
         mp_frameBuffer->clearAllAttachments();
 
-
         if (mp_renderStatsPanel->m_wireFrame != GraphicsApi::getWireframe())
         {
             GraphicsApi::setWireframe(mp_renderStatsPanel->m_wireFrame);
@@ -399,7 +397,6 @@ class FelixLayer : public Layer
         mp_frameBuffer->blit(mp_screenBuffer, 1, 1);
 
         mp_frameBuffer->unbind();
-
 
         NM_UNUSED(deltaTime);
     }

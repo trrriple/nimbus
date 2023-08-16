@@ -5,7 +5,6 @@
 namespace nimbus
 {
 
-
 class Camera : public refCounted
 {
    public:
@@ -24,7 +23,6 @@ class Camera : public refCounted
         UP,
         DOWN,
     };
-    
 
     struct Bounds
     {
@@ -72,15 +70,14 @@ class Camera : public refCounted
 
     float getNearClip()
     {
-        return m_type == Type::ORTHOGRAPHIC ? m_orthoNear : m_near; 
+        return m_type == Type::ORTHOGRAPHIC ? m_orthoNear : m_near;
     }
 
     void setFarClip(float far);
 
     float getFarClip()
     {
-        return m_type == Type::ORTHOGRAPHIC ? m_orthoFar : m_far; 
-
+        return m_type == Type::ORTHOGRAPHIC ? m_orthoFar : m_far;
     }
 
     void setPosition(const glm::vec3& position);
@@ -111,7 +108,7 @@ class Camera : public refCounted
         return m_speed;
     }
 
-    void  setSensitivity(float sensitivity);
+    void setSensitivity(float sensitivity);
 
     float getSensitivity() const
     {
@@ -166,7 +163,7 @@ class Camera : public refCounted
     float m_orthoNear = -1.0f;
     float m_orthoFar  = 1.0f;
 
-    Type  m_type;
+    Type m_type;
 
     // calculates the front vector from the Camera's (updated) Euler Angles
     void  _updateCameraVectors();

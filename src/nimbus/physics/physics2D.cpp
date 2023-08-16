@@ -51,11 +51,10 @@ class ContactListener : public b2ContactListener
 
     void registerSave()
     {
-        
     }
 
    private:
-    Physics2D*                                p_physics2D = nullptr;
+    Physics2D* p_physics2D = nullptr;
     // std::unordered_map< Physics2D::RigidBody*> collisionSaves;
 };
 
@@ -77,7 +76,7 @@ struct Physics2D::RigidBody::RigidBodyData
 Physics2D::Physics2D() : mp_worldData(new Physics2D::WorldData())
 {
     NM_PROFILE_DETAIL();
-    
+
     mp_worldData->p_world = std::make_shared<b2World>(b2Vec2(0.0f, -9.81f));
 
     mp_worldData->p_cl = genScope<ContactListener>(this);
@@ -95,16 +94,14 @@ void Physics2D::update(float deltaTime)
 {
     NM_PROFILE();
 
-    
     mp_worldData->p_world->Step(
         deltaTime, k_solverVelocityIterations, k_solverPositionIterations);
 }
 
-
 ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
 {
     NM_PROFILE_DETAIL();
-    
+
     ref<Physics2D::RigidBody> p_rbody = ref<Physics2D::RigidBody>::gen();
 
     b2BodyDef bodyDef;
@@ -135,7 +132,7 @@ ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
 void Physics2D::removeRigidBody(ref<Physics2D::RigidBody>& p_body)
 {
     NM_PROFILE_DETAIL();
-    
+
     NM_CORE_ASSERT(p_body->inWorld, "Not in world");
 
     mp_worldData->p_world->DestroyBody(p_body->p_data->p_body);
@@ -149,7 +146,6 @@ void Physics2D::removeRigidBody(ref<Physics2D::RigidBody>& p_body)
 Physics2D::RigidBody::RigidBody() : p_data(new RigidBodyData())
 {
     NM_PROFILE_DETAIL();
-
 }
 
 Physics2D::RigidBody::~RigidBody()
@@ -157,14 +153,13 @@ Physics2D::RigidBody::~RigidBody()
     NM_PROFILE_DETAIL();
 
     delete p_data;
-} 
+}
 
 void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
                                       const util::Transform& transform)
 {
     NM_PROFILE_DETAIL();
 
-    
     b2FixtureDef fixtureDef;
 
     fixtureDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
@@ -192,7 +187,7 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
         const Circle*  circle = static_cast<const Circle*>(fixtureSpec.shape);
         b2CircleShape* shape  = new b2CircleShape();
         shape->m_p.Set(circle->offset.x, circle->offset.y);
-        shape->m_radius = transform.scale.x * circle->radius;
+        shape->m_radius  = transform.scale.x * circle->radius;
         fixtureDef.shape = shape;
     }
 
@@ -207,7 +202,6 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
 
     p_data->p_body->CreateFixture(&fixtureDef);
     delete fixtureDef.shape;
-
 }
 
 util::Transform& Physics2D::RigidBody::getTransform()
@@ -256,7 +250,7 @@ void Physics2D::RigidBody::forceVelocity(const glm::vec2& velocity)
 void Physics2D::RigidBody::impulse(const glm::vec2& impulse)
 {
     NM_PROFILE_TRACE();
-    
+
     NM_CORE_ASSERT(inWorld, "Not in world");
 
     p_data->p_body->ApplyLinearImpulseToCenter({impulse.x, impulse.y}, true);
@@ -265,16 +259,15 @@ void Physics2D::RigidBody::impulse(const glm::vec2& impulse)
 void Physics2D::RigidBody::halt()
 {
     NM_PROFILE_TRACE();
-    
+
     NM_CORE_ASSERT(inWorld, "Not in world");
 
-    if(p_data->p_body->GetType() != b2_staticBody)
+    if (p_data->p_body->GetType() != b2_staticBody)
     {
         p_data->p_body->SetLinearVelocity({0.0f, 0.0f});
         p_data->p_body->SetAwake(false);
     }
 }
-
 
 void Physics2D::RigidBody::removeFromWorld()
 {

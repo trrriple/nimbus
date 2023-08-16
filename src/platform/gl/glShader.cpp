@@ -13,7 +13,7 @@ namespace nimbus
 {
 GlShader::GlShader(const std::string& name,
                    const std::string& vertexSource,
-                   const std::string& fragmentSource) noexcept
+                   const std::string& fragmentSource)
 {
     m_loaded       = false;
     m_vertexPath   = "none";
@@ -23,7 +23,7 @@ GlShader::GlShader(const std::string& name,
 }
 
 GlShader::GlShader(const std::string& vertexPath,
-                   const std::string& fragmentPath) noexcept
+                   const std::string& fragmentPath)
 
 {
     m_loaded       = false;
@@ -76,18 +76,18 @@ GlShader::~GlShader()
     glDeleteProgram(m_id);
 }
 
-const std::string& GlShader::getVertexPath() const noexcept
+const std::string& GlShader::getVertexPath() const
 {
     return m_vertexPath;
 }
 
-const std::string& GlShader::getFragmentPath() const noexcept
+const std::string& GlShader::getFragmentPath() const
 {
     return m_fragmentPath;
 }
 
 // user/activate the shader
-void GlShader::bind() const noexcept
+void GlShader::bind() const
 {
     NM_PROFILE_TRACE();
 
@@ -97,7 +97,7 @@ void GlShader::bind() const noexcept
 }
 
 // utility uniform functions
-void GlShader::setBool(const std::string& name, bool value) const noexcept
+void GlShader::setBool(const std::string& name, bool value) const
 {
     uint32_t id = _getUniformLocation(name);
 
@@ -106,7 +106,7 @@ void GlShader::setBool(const std::string& name, bool value) const noexcept
 
 void GlShader::setInt(const std::string&          name,
                       const std::vector<int32_t>& value,
-                      uint32_t                    count) const noexcept
+                      uint32_t                    count) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -116,7 +116,7 @@ void GlShader::setInt(const std::string&          name,
         });
 }
 
-void GlShader::setInt(const std::string& name, int32_t value) const noexcept
+void GlShader::setInt(const std::string& name, int32_t value) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit([id, value]() { glUniform1i(id, value); });
@@ -124,7 +124,7 @@ void GlShader::setInt(const std::string& name, int32_t value) const noexcept
 
 void GlShader::setFloat(const std::string&        name,
                         const std::vector<float>& value,
-                        uint32_t                  count) const noexcept
+                        uint32_t                  count) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -134,7 +134,7 @@ void GlShader::setFloat(const std::string&        name,
         });
 }
 
-void GlShader::setFloat(const std::string& name, float value) const noexcept
+void GlShader::setFloat(const std::string& name, float value) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit([id, value]() { glUniform1f(id, value); });
@@ -142,7 +142,7 @@ void GlShader::setFloat(const std::string& name, float value) const noexcept
 
 void GlShader::setVec2(const std::string&            name,
                        const std::vector<glm::vec2>& value,
-                       uint32_t                      count) const noexcept
+                       uint32_t                      count) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -152,15 +152,14 @@ void GlShader::setVec2(const std::string&            name,
         });
 }
 
-void GlShader::setVec2(const std::string& name,
-                       const glm::vec2&   value) const noexcept
+void GlShader::setVec2(const std::string& name, const glm::vec2& value) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit([id, value]()
                        { glUniform2fv(id, 1, glm::value_ptr(value)); });
 }
 
-void GlShader::setVec2(const std::string& name, float x, float y) const noexcept
+void GlShader::setVec2(const std::string& name, float x, float y) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit([id, x, y]() { glUniform2f(id, x, y); });
@@ -168,7 +167,7 @@ void GlShader::setVec2(const std::string& name, float x, float y) const noexcept
 
 void GlShader::setVec3(const std::string&            name,
                        const std::vector<glm::vec3>& value,
-                       uint32_t                      count) const noexcept
+                       uint32_t                      count) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -178,18 +177,14 @@ void GlShader::setVec3(const std::string&            name,
         });
 }
 
-void GlShader::setVec3(const std::string& name,
-                       const glm::vec3&   value) const noexcept
+void GlShader::setVec3(const std::string& name, const glm::vec3& value) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit([id, value]()
                        { glUniform3fv(id, 1, glm::value_ptr(value)); });
 }
 
-void GlShader::setVec3(const std::string& name,
-                       float              x,
-                       float              y,
-                       float              z) const noexcept
+void GlShader::setVec3(const std::string& name, float x, float y, float z) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit([id, x, y, z]() { glUniform3f(id, x, y, z); });
@@ -197,7 +192,7 @@ void GlShader::setVec3(const std::string& name,
 
 void GlShader::setVec4(const std::string&            name,
                        const std::vector<glm::vec4>& value,
-                       uint32_t                      count) const noexcept
+                       uint32_t                      count) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -207,8 +202,7 @@ void GlShader::setVec4(const std::string&            name,
         });
 }
 
-void GlShader::setVec4(const std::string& name,
-                       const glm::vec4&   value) const noexcept
+void GlShader::setVec4(const std::string& name, const glm::vec4& value) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit([id, value]()
@@ -219,7 +213,7 @@ void GlShader::setVec4(const std::string& name,
                        float              x,
                        float              y,
                        float              z,
-                       float              w) const noexcept
+                       float              w) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit([id, x, y, z, w]() { glUniform4f(id, x, y, z, w); });
@@ -227,7 +221,7 @@ void GlShader::setVec4(const std::string& name,
 
 void GlShader::setMat2(const std::string&            name,
                        const std::vector<glm::mat2>& value,
-                       uint32_t                      count) const noexcept
+                       uint32_t                      count) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -240,8 +234,7 @@ void GlShader::setMat2(const std::string&            name,
         });
 }
 
-void GlShader::setMat2(const std::string& name,
-                       const glm::mat2&   mat) const noexcept
+void GlShader::setMat2(const std::string& name, const glm::mat2& mat) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -251,7 +244,7 @@ void GlShader::setMat2(const std::string& name,
 
 void GlShader::setMat3(const std::string&            name,
                        const std::vector<glm::mat3>& value,
-                       uint32_t                      count) const noexcept
+                       uint32_t                      count) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -264,8 +257,7 @@ void GlShader::setMat3(const std::string&            name,
         });
 }
 
-void GlShader::setMat3(const std::string& name,
-                       const glm::mat3&   mat) const noexcept
+void GlShader::setMat3(const std::string& name, const glm::mat3& mat) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -275,7 +267,7 @@ void GlShader::setMat3(const std::string& name,
 
 void GlShader::setMat4(const std::string&            name,
                        const std::vector<glm::mat4>& value,
-                       uint32_t                      count) const noexcept
+                       uint32_t                      count) const
 {
     uint32_t id = _getUniformLocation(name);
     Renderer::s_submit(
@@ -288,8 +280,7 @@ void GlShader::setMat4(const std::string&            name,
         });
 }
 
-void GlShader::setMat4(const std::string& name,
-                       const glm::mat4&   mat) const noexcept
+void GlShader::setMat4(const std::string& name, const glm::mat4& mat) const
 {
     uint32_t id = _getUniformLocation(name);
 
@@ -324,7 +315,7 @@ uint32_t GlShader::s_getShaderType(ShaderType type)
 ////////////////////////////////////////////////////////////////////////////////
 
 void GlShader::_compileShader(const std::string& vertexSource,
-                              const std::string& fragmentSource) noexcept
+                              const std::string& fragmentSource)
 {
     NM_PROFILE_DETAIL();
 
@@ -427,8 +418,7 @@ void GlShader::_compileShader(const std::string& vertexSource,
         });
 }
 
-std::int32_t GlShader::_getUniformLocation(
-    const std::string& name) const noexcept
+std::int32_t GlShader::_getUniformLocation(const std::string& name) const
 {
     NM_PROFILE_TRACE();
 

@@ -21,64 +21,62 @@ class Window : public refCounted
     float m_tFrame_s = 0.0;
     float m_fps      = 0.0;
 
-    Window(const std::string& windowCaption,
-           uint32_t           width,
-           uint32_t           height) noexcept;
-    
-    ~Window() noexcept;
+    Window(const std::string& windowCaption, uint32_t width, uint32_t height);
 
-    void graphicsContextInit() noexcept;
+    ~Window();
 
-    void setEventCallback(const WindowEventCallback_t& callback) noexcept;
+    void graphicsContextInit();
 
-    void setExitCallback(const WindowEventCallback_t& callback) noexcept;
+    void setEventCallback(const WindowEventCallback_t& callback);
 
-    void swapBuffers() noexcept;
+    void setExitCallback(const WindowEventCallback_t& callback);
 
-    void pumpEvents() noexcept;
+    void swapBuffers();
 
-    bool keyPressed(ScanCode scanCode) const noexcept;
+    void pumpEvents();
 
-    bool modKeyPressed(KeyMod keyMod) const noexcept;
+    bool keyPressed(ScanCode scanCode) const;
 
-    bool mouseButtonPressed(MouseButton button) const noexcept;
+    bool modKeyPressed(KeyMod keyMod) const;
 
-    glm::vec2 mousePos() const noexcept;
+    bool mouseButtonPressed(MouseButton button) const;
 
-    float  mouseWheelPos() const noexcept;
+    glm::vec2 mousePos() const;
 
-    inline uint32_t getHeight() const noexcept
+    float mouseWheelPos() const;
+
+    inline uint32_t getHeight() const
     {
         return m_height;
     }
-    inline uint32_t getWidth() const noexcept
+    inline uint32_t getWidth() const
     {
         return m_width;
     }
 
-    inline float getAspectRatio() const noexcept
+    inline float getAspectRatio() const
     {
         return m_aspectRatio;
     }
 
-    inline void* getOsWindow() const noexcept
+    inline void* getOsWindow() const
     {
         return mp_window;
     }
 
-    inline void* getContext() const noexcept
+    inline void* getContext() const
     {
         return mp_context;
-    } 
+    }
 
-    void setVSync(bool on) noexcept;
+    void setVSync(bool on);
 
-    inline bool getVSync() const noexcept
+    inline bool getVSync() const
     {
         return m_VSyncOn;
     }
 
-    inline bool isMinimized() const noexcept
+    inline bool isMinimized() const
     {
         return m_minimized;
     }
@@ -100,11 +98,11 @@ class Window : public refCounted
     float    m_mouseWheelPos = 0.0f;
     bool     m_minimized     = false;
 
-    void _handleWindowEvents() noexcept;
+    void _handleWindowEvents();
 
-    void _pollEvents() noexcept;
+    void _pollEvents();
 
-    void _calcFramerate() noexcept;
+    void _calcFramerate();
 };
 
 }  // namespace nimbus

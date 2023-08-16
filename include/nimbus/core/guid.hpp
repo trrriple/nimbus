@@ -7,38 +7,38 @@ namespace nimbus
 class Guid
 {
    public:
-    Guid() noexcept;
+    Guid();
 
-    inline __int128_t get() const noexcept
+    inline __int128_t get() const
     {
         return m_guid;
     }
 
-    inline std::string toString() const noexcept
+    inline std::string toString() const
     {
         return m_guidStr;
     }
 
-    inline bool operator==(const Guid& other) const noexcept
+    inline bool operator==(const Guid& other) const
     {
         return m_guid == other.m_guid;
     }
 
-    inline bool operator!=(const Guid& other) const noexcept
+    inline bool operator!=(const Guid& other) const
     {
         return m_guid != other.m_guid;
     }
 
    private:
     // private constructor takes already generated guid
-    Guid(__int128_t guid) noexcept;
-    Guid(const std::string& guidStr) noexcept;
+    Guid(__int128_t guid);
+    Guid(const std::string& guidStr);
 
     __int128_t  m_guid;
     std::string m_guidStr;
 
-    void _toString() noexcept;
-    void _fromString() noexcept;
+    void _toString();
+    void _fromString();
 
     friend struct GuidCmp;
 };

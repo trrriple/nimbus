@@ -27,8 +27,8 @@ class GuiSubsystem : public Layer
     }
 
    private:
-    bool         m_captureEvents = true;
+    bool m_captureEvents = true;
 
     void _setDarkThemeColors();
 };
-}  // namespace nimbus  
+}  // namespace nimbus

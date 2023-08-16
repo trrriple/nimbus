@@ -307,7 +307,7 @@ void ParticleEmitter::draw()
     if (m_numLiveParticles == 0)
     {
         // if this guy is done emitting don't do anything
-        
+
         return;
     }
 

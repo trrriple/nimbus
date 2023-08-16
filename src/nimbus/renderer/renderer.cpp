@@ -26,7 +26,7 @@ uint32_t     Renderer::s_processRenderCmdQIdx;
 uint32_t     Renderer::s_submitObjectCmdQIdx;
 uint32_t     Renderer::s_processObjectCmdQIdx;
 
-void Renderer::s_init() noexcept
+void Renderer::s_init()
 {
     // clang-format off
     static std::once_flag initFlag;
@@ -58,7 +58,7 @@ void Renderer::s_init() noexcept
     // clang-format on
 }
 
-void Renderer::s_destroy() noexcept
+void Renderer::s_destroy()
 {
     // flush the queues, order matters here due to not wanting to use resources
     // that are being deleted, so we run all of the renders first before
@@ -93,17 +93,17 @@ void Renderer::s_destroy() noexcept
     }
 }
 
-void Renderer::s_setScene(const glm::mat4& vpMatrix) noexcept
+void Renderer::s_setScene(const glm::mat4& vpMatrix)
 {
     m_vpMatrix = vpMatrix;
 }
 
-void Renderer::s_startFrame() noexcept
+void Renderer::s_startFrame()
 {
     _s_processObjectQueue();
 }
 
-void Renderer::s_endFrame() noexcept
+void Renderer::s_endFrame()
 {
     // nothing for now
 }
@@ -111,7 +111,7 @@ void Renderer::s_endFrame() noexcept
 void Renderer::s_render(ref<Shader>      p_shader,
                         ref<VertexArray> p_vertexArray,
                         int32_t          vertexCount,
-                        bool             setViewProjection) noexcept
+                        bool             setViewProjection)
 {
     NM_PROFILE();
 
@@ -153,7 +153,7 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
                                  const ref<VertexArray>& p_vertexArray,
                                  int32_t                 instanceCount,
                                  int32_t                 vertexCount,
-                                 bool setViewProjection) noexcept
+                                 bool                    setViewProjection)
 {
     NM_PROFILE();
 
@@ -189,22 +189,22 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
         {
             GraphicsApi::drawArraysInstanced(
                 p_vertexArray, instanceCount, vertexCount);
-        }   
+        }
     }
 }
 
-void Renderer::s_swapAndStart() noexcept
+void Renderer::s_swapAndStart()
 {
     _s_qSwap();
     s_renderThread.setState(RenderThread::State::READY);
 }
 
-void Renderer::s_waitForRenderThread() noexcept
+void Renderer::s_waitForRenderThread()
 {
     s_renderThread.waitForState(RenderThread::State::PEND);
 }
 
-void Renderer::s_pumpCmds() noexcept
+void Renderer::s_pumpCmds()
 {
     uint32_t queuesToPump = std::max({k_numRenderCmdQ, k_numObjectCmdQ});
 
@@ -218,7 +218,7 @@ void Renderer::s_pumpCmds() noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-void Renderer::_s_qSwap() noexcept
+void Renderer::_s_qSwap()
 // Private Functions
 {
     s_submitRenderCmdQIdx  = (s_submitRenderCmdQIdx + 1) % k_numRenderCmdQ;
@@ -228,14 +228,13 @@ void Renderer::_s_qSwap() noexcept
     s_processObjectCmdQIdx = (s_processObjectCmdQIdx + 1) % k_numObjectCmdQ;
 }
 
-void Renderer::_s_renderThreadFn() noexcept
+void Renderer::_s_renderThreadFn()
 {
     SDL_GL_MakeCurrent(static_cast<SDL_Window*>(
                            Application::s_get().getWindow().getOsWindow()),
                        Application::s_get().getWindow().getContext());
 
-    auto pendSw
-        = Application::s_get().getSwBank().newSw("RenderThread Pend");
+    auto pendSw = Application::s_get().getSwBank().newSw("RenderThread Pend");
 
     auto processSw
         = Application::s_get().getSwBank().newSw("RenderThread Process");
@@ -256,7 +255,7 @@ void Renderer::_s_renderThreadFn() noexcept
     }
 }
 
-void Renderer::_s_processObjectQueue() noexcept
+void Renderer::_s_processObjectQueue()
 {
     // typically we call this before starting a frame, so that all
     // object commands get procesed before render commands

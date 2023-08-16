@@ -21,7 +21,6 @@
 #include <thread>
 #include <atomic>
 
-
 ///////////////////////
 /// SDL Stuff
 //////////////////////

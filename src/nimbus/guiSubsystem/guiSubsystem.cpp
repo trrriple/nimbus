@@ -16,7 +16,6 @@
 #include "ImGuizmo.h"
 #include "IconsFontAwesome6.h"
 
-
 namespace nimbus
 {
 
@@ -51,8 +50,6 @@ void GuiSubsystem::onInsert()
     float   fontSize = 15.0f;
     ImFont* p_roboto
         = io.Fonts->AddFontFromFileTTF(k_defaultFontPath.c_str(), fontSize);
-
-
 
     if (p_roboto != nullptr)
     {
@@ -106,7 +103,7 @@ void GuiSubsystem::onInsert()
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
-    //override some values;
+    // override some values;
     _setDarkThemeColors();
 
     // Setup Platform/Renderer bindings
@@ -239,7 +236,7 @@ void GuiSubsystem::_setDarkThemeColors()
     colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.46f, 0.44f, 0.37f, 1.0f};
 
     // Table
-    colors[ImGuiCol_TableHeaderBg]     = ImVec4{0.2f, 0.21f, 0.19f, 1.0f};
+    colors[ImGuiCol_TableHeaderBg] = ImVec4{0.2f, 0.21f, 0.19f, 1.0f};
 
     // misc
     colors[ImGuiCol_CheckMark]        = ImVec4{0.67f, 0.84f, 0.0f, 1.0f};

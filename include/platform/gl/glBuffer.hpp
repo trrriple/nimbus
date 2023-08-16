@@ -28,22 +28,21 @@ class GlVertexBuffer : public VertexBuffer
 
     GlVertexBuffer(const void*        vertices,
                    uint32_t           size,
-                   VertexBuffer::Type type
-                   = VertexBuffer::Type::STATIC_DRAW) noexcept;
+                   VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
 
-    virtual ~GlVertexBuffer() noexcept;
+    virtual ~GlVertexBuffer();
 
-    virtual void bind() const noexcept override;
-    virtual void unbind() const noexcept override;
+    virtual void bind() const override;
+    virtual void unbind() const override;
 
-    virtual void setData(const void* data, uint32_t size) noexcept override;
+    virtual void setData(const void* data, uint32_t size) override;
 
-    inline virtual const BufferFormat& getFormat() const noexcept override
+    inline virtual const BufferFormat& getFormat() const override
     {
         return m_format;
     }
 
-    inline virtual void setFormat(const BufferFormat& format) noexcept override
+    inline virtual void setFormat(const BufferFormat& format) override
     {
         m_format = format;
     }
@@ -58,22 +57,22 @@ class GlVertexBuffer : public VertexBuffer
 class GlIndexBuffer : public IndexBuffer
 {
    public:
-    GlIndexBuffer(uint32_t* indices, uint32_t count) noexcept;
-    GlIndexBuffer(uint16_t* indices, uint32_t count) noexcept;
-    GlIndexBuffer(uint8_t* indices, uint32_t count) noexcept;
+    GlIndexBuffer(uint32_t* indices, uint32_t count);
+    GlIndexBuffer(uint16_t* indices, uint32_t count);
+    GlIndexBuffer(uint8_t* indices, uint32_t count);
 
-    virtual ~GlIndexBuffer() noexcept;
+    virtual ~GlIndexBuffer();
 
-    virtual void bind() const noexcept override;
+    virtual void bind() const override;
 
-    virtual void unbind() const noexcept override;
+    virtual void unbind() const override;
 
-    inline uint32_t getCount() const noexcept override
+    inline uint32_t getCount() const override
     {
         return m_count;
     }
 
-    inline uint32_t getType() const noexcept override
+    inline uint32_t getType() const override
     {
         return m_type;
     }
@@ -85,32 +84,29 @@ class GlIndexBuffer : public IndexBuffer
 class GlVertexArray : public VertexArray
 {
    public:
-    GlVertexArray() noexcept;
-    ~GlVertexArray() noexcept;
+    GlVertexArray();
+    ~GlVertexArray();
 
-    virtual void bind() const noexcept override;
+    virtual void bind() const override;
 
-    virtual void unbind() const noexcept override;
+    virtual void unbind() const override;
 
-    virtual void addVertexBuffer(
-        ref<VertexBuffer> p_vertexBuffer) noexcept override;
+    virtual void addVertexBuffer(ref<VertexBuffer> p_vertexBuffer) override;
 
-    virtual void setIndexBuffer(
-        ref<IndexBuffer> p_indexBuffer) noexcept override;
+    virtual void setIndexBuffer(ref<IndexBuffer> p_indexBuffer) override;
 
     inline virtual const std::vector<ref<VertexBuffer>>& getVertexBuffers()
-        const noexcept override
+        const override
     {
         return m_vertexBuffers;
     }
 
-    inline virtual const ref<IndexBuffer>& getIndexBuffer()
-        const noexcept override
+    inline virtual const ref<IndexBuffer>& getIndexBuffer() const override
     {
         return m_indexBuffer;
     }
 
-    inline virtual uint32_t getExpectedVertexCount() noexcept override
+    inline virtual uint32_t getExpectedVertexCount() override
     {
         return m_expectedVboVertexCount;
     }

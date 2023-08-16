@@ -7,35 +7,35 @@ namespace nimbus
 class GlGraphicsApi : public GraphicsApi
 {
    public:
-    static void init() noexcept;
+    static void init();
 
-    static void clear() noexcept;
+    static void clear();
 
-    static void clearColor(glm::vec4 color) noexcept;
+    static void clearColor(glm::vec4 color);
 
     static void drawElements(ref<VertexArray> p_vertexArray,
-                             uint32_t         vertexCount = 0) noexcept;
+                             uint32_t         vertexCount = 0);
 
     static void drawArrays(ref<VertexArray> p_vertexArray,
-                           uint32_t         vertexCount = 0) noexcept;
+                           uint32_t         vertexCount = 0);
 
     static void drawElementsInstanced(ref<VertexArray> p_vertexArray,
                                       uint32_t         instanceCount,
-                                      uint32_t vertexCount = 0) noexcept;
+                                      uint32_t         vertexCount = 0);
 
     static void drawArraysInstanced(ref<VertexArray> p_vertexArray,
                                     uint32_t         instanceCount,
-                                    uint32_t         vertexCount = 0) noexcept;
+                                    uint32_t         vertexCount = 0);
 
-    static void setViewportSize(int x, int y, int w, int h) noexcept;
+    static void setViewportSize(int x, int y, int w, int h);
 
-    static void setWireframe(bool on) noexcept;
+    static void setWireframe(bool on);
 
-    static void setDepthTest(bool on) noexcept;
+    static void setDepthTest(bool on);
 
-    static void setBlendingMode(GraphicsApi::BlendingMode) noexcept;
+    static void setBlendingMode(GraphicsApi::BlendingMode);
 
    private:
-    static void _enableGlErrPrint() noexcept;
+    static void _enableGlErrPrint();
 };
 }  // namespace nimbus

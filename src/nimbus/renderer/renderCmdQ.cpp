@@ -3,24 +3,22 @@
 
 #include "nimbus/renderer/renderCmdQ.hpp"
 
-
-
 namespace nimbus
 {
 
-RenderCmdQ::RenderCmdQ() noexcept
+RenderCmdQ::RenderCmdQ()
 {
     mp_cmdBuf = static_cast<uint8_t*>(calloc(k_cmdBufSize, sizeof(uint8_t)));
     NM_CORE_ASSERT(mp_cmdBuf, "Failed to allocate command queue!");
     mp_cmdBufPtr = mp_cmdBuf;
 }
 
-RenderCmdQ::~RenderCmdQ() noexcept
+RenderCmdQ::~RenderCmdQ()
 {
     free(mp_cmdBuf);
 }
 
-void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size) noexcept
+void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size)
 {
     // expect this function to be called with mutual exclusion
     *(renderCmdFn*)mp_cmdBufPtr = fn;
@@ -41,13 +39,12 @@ void* RenderCmdQ::slot(renderCmdFn fn, uint32_t size) noexcept
     return slot;
 }
 
-void RenderCmdQ::pump() noexcept
+void RenderCmdQ::pump()
 {
     // exit if there's nothing to process
     if (m_cmdCount > 0)
     {
         uint8_t* ptr = mp_cmdBuf;
-
 
         for (uint32_t i = 0; i < m_cmdCount; i++)
         {
@@ -63,7 +60,6 @@ void RenderCmdQ::pump() noexcept
             fn(ptr);
 
             ptr += size;
-
         }
 
         mp_cmdBufPtr   = mp_cmdBuf;

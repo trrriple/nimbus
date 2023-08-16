@@ -9,7 +9,7 @@
 
 #include "glm.hpp"
 
-namespace nimbus 
+namespace nimbus
 {
 
 class Mesh : public refCounted

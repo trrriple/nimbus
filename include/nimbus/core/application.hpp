@@ -18,87 +18,87 @@ class Application
    public:
     Application(const std::string& name         = "Program",
                 uint32_t           windowWidth  = 1280,
-                uint32_t           windowHeight = 720) noexcept;
+                uint32_t           windowHeight = 720);
 
-    virtual ~Application() noexcept;
+    virtual ~Application();
 
-    inline static Application& s_get() noexcept
+    inline static Application& s_get()
     {
         return *sp_instance;
     }
 
-    virtual void onInit() noexcept
+    virtual void onInit()
     {
     }
 
-    virtual void onExit() noexcept
+    virtual void onExit()
     {
     }
 
-    void shouldQuit(Event& event) noexcept;
+    void shouldQuit(Event& event);
 
     // ironically these could mean the same thing but are totally different :)
-    void execute() noexcept;    // main execution function
-    void terminate() noexcept;  // termination function if desired for testing
+    void execute();    // main execution function
+    void terminate();  // termination function if desired for testing
 
-    void onEvent(Event& event) noexcept;
+    void onEvent(Event& event);
 
     void insertLayer(const ref<Layer> p_layer,
-                     int32_t          location = k_insertLocationHead) noexcept;
+                     int32_t          location = k_insertLocationHead);
 
-    void removeLayer(const ref<Layer>& p_layer) noexcept;
+    void removeLayer(const ref<Layer>& p_layer);
 
-    void guiRender() noexcept;
+    void guiRender();
 
-    void guiSubsystemCaptureEvents(bool capture) noexcept;
+    void guiSubsystemCaptureEvents(bool capture);
 
-    const uint8_t* getKeyboardState() const noexcept;
+    const uint8_t* getKeyboardState() const;
 
-    void setMenuMode(bool mode) noexcept;
+    void setMenuMode(bool mode);
 
-    void setUpdatePeriodLimit(float limit) noexcept;
+    void setUpdatePeriodLimit(float limit);
 
-    void setDrawPeriodLimit(float limit) noexcept;
+    void setDrawPeriodLimit(float limit);
 
-    inline bool getMenuMode() const noexcept
+    inline bool getMenuMode() const
     {
         return m_menuMode;
     }
 
-    inline const LayerDeck& getLayerDeck() noexcept
+    inline const LayerDeck& getLayerDeck()
     {
         return m_layerDeck;
     }
 
-    inline Window& getWindow() noexcept
+    inline Window& getWindow()
     {
         return *mp_window;
     }
 
-    inline ResourceManager& getResourceManager() noexcept
+    inline ResourceManager& getResourceManager()
     {
         return *mp_resourceManager;
     }
 
-    inline float getUpdateLag() const noexcept
+    inline float getUpdateLag() const
     {
         return m_updateLag;
     }
 
-    inline float getDrawLag() const noexcept
+    inline float getDrawLag() const
     {
         return m_drawLag;
     }
 
-    inline double getGameTime() const noexcept
+    inline double getGameTime() const
     {
         return m_gameTime;
     }
 
-    inline StopWatchBank& getSwBank() noexcept
+    inline StopWatchBank& getSwBank()
     {
-       return m_swBank;
-    } 
+        return m_swBank;
+    }
 
    private:
     ///////////////////////////

@@ -65,8 +65,6 @@ class RenderStatsPanel
         }
         m_frameTimes_ms.push_back(mp_appWinRef->m_tFrame_s * 1000.0);
 
-     
-
         ImGui::Separator();
 
         ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
@@ -84,7 +82,6 @@ class RenderStatsPanel
                                  ImVec2(0, 0),
                                  sizeof(float));
 
-                
                 ImGui::PushItemWidth(70.0f);
                 const auto swBank = mp_appRef->getSwBank().getBank();
                 for (const auto& pair : swBank)
@@ -94,7 +91,6 @@ class RenderStatsPanel
                                      pair.second->getLastSavedSplit() * 1000.0);
                 }
                 ImGui::PopItemWidth();
-
 
                 ImGui::EndTabItem();
             }
