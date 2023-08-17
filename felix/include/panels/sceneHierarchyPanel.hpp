@@ -54,7 +54,8 @@ class SceneHeirarchyPanel
 
         if (ImGui::Button(ICON_FA_SQUARE_PLUS))
         {
-            mp_sceneContext->addEntity();
+            selectedEntity = mp_sceneContext->addEntity();
+            m_entitySelectedCallback(selectedEntity);
             mp_sceneContext->sortEntities();
         }
         if (ImGui::IsItemHovered())
@@ -71,7 +72,8 @@ class SceneHeirarchyPanel
 
         if (selectedEntity != m_selectionContext)
         {
-            m_selectionContext     = selectedEntity;
+            m_selectionContext = selectedEntity;
+
             selectionScrollHandled = false;
             filter.Clear();
         }
@@ -194,7 +196,7 @@ class SceneHeirarchyPanel
 
         // reduce default indentation for component panel
         float originalIndent            = ImGui::GetStyle().IndentSpacing;
-        ImGui::GetStyle().IndentSpacing = originalIndent * 0.5f;
+        ImGui::GetStyle().IndentSpacing = originalIndent * 0.25f;
 
         ImGui::Begin("Properties");
         if (m_selectionContext)
@@ -545,6 +547,401 @@ class SceneHeirarchyPanel
         }
     }
 
+    void _drawParticleEmitterCmp(Entity& entity)
+    {
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
+                                          | ImGuiTreeNodeFlags_DefaultOpen;
+
+        auto& pc = entity.getComponent<ParticleEmitterCmp>();
+
+        bool isRuntime = (pc.p_emitter != nullptr);
+
+        if (ImGui::TreeNodeEx("Spawn Options", flags))
+        {
+            ImGui::Indent();
+
+            ImGui::DragInt(
+                "Quantity", (int*)&pc.numParticles, 25.0f, 1, 1000000);
+
+            ImGui::SeparatorText("Spawn Volume");
+            const char* spawnTypes[] = {"Point", "Circle", "Rectangle", "Line"};
+
+            ImGui::Combo("Type",
+                         (int*)&pc.parameters.spawnVolumeType,
+                         spawnTypes,
+                         IM_ARRAYSIZE(spawnTypes));
+
+            if (pc.parameters.spawnVolumeType
+                == ParticleEmitter::SpawnVolumeType::POINT)
+            {
+                // no parameters
+            }
+            else if (pc.parameters.spawnVolumeType
+                     == ParticleEmitter::SpawnVolumeType::CIRCLE)
+            {
+                ImGui::DragFloat(
+                    "Radius", &pc.parameters.circleVolumeParams.radius, 0.01);
+            }
+            else if (pc.parameters.spawnVolumeType
+                     == ParticleEmitter::SpawnVolumeType::RECTANGLE)
+            {
+                ImGui::DragFloat(
+                    "Width", &pc.parameters.rectVolumeParams.width, 0.01);
+                ImGui::DragFloat(
+                    "Height", &pc.parameters.rectVolumeParams.height, 0.01);
+            }
+            else if (pc.parameters.spawnVolumeType
+                     == ParticleEmitter::SpawnVolumeType::LINE)
+            {
+                ImGui::DragFloat(
+                    "Length", &pc.parameters.lineVolumeParams.length, 0.01);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNodeEx("Relative Position", flags))
+        {
+            if (_drawVec3Control(
+                    "Position", pc.parameters.centerPosition, 0.0f, 0.01f))
+            {
+                if (isRuntime)
+                {
+                    pc.p_emitter->setPosition(pc.parameters.centerPosition);
+                }
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNodeEx("Behavior", flags))
+        {
+         
+            if (ImGui::Checkbox("Persist", &pc.parameters.persist))
+            {
+                if (isRuntime)
+                {
+                    pc.p_emitter->setPersist(pc.parameters.persist);
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Checkbox("Shrink", &pc.parameters.shrink))
+            {
+                if (isRuntime)
+                {
+                    pc.p_emitter->setShrink(pc.parameters.shrink);
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Checkbox("StaggerStart", &pc.parameters.staggerStart))
+            {
+                if (isRuntime)
+                {
+                }
+            }
+
+            if (ImGui::DragFloatRange2("Lifetime",
+                                       &pc.parameters.lifetimeMin_s,
+                                       &pc.parameters.lifetimeMax_s,
+                                       0.05f,
+                                       0.0f,
+                                       10000.0f,
+                                       "Min: %.02f",
+                                       "Max: %.02f",
+                                       ImGuiSliderFlags_AlwaysClamp))
+            {
+                if (isRuntime)
+                {
+                    pc.p_emitter->setLifeTime(pc.parameters.lifetimeMin_s,
+                                              pc.parameters.lifetimeMax_s);
+                }
+            }
+
+            if (ImGui::DragFloatRange2("Init Size",
+                                       &pc.parameters.initSizeMin,
+                                       &pc.parameters.initSizeMax,
+                                       0.001f,
+                                       0.0f,
+                                       100.0f,
+                                       "Min: %.03f",
+                                       "Max: %.03f",
+                                       ImGuiSliderFlags_AlwaysClamp))
+            {
+                if (isRuntime)
+                {
+                    pc.p_emitter->setInitSize(pc.parameters.initSizeMin,
+                                              pc.parameters.initSizeMax);
+                }
+            }
+
+            if (ImGui::DragFloatRange2("Init Speed",
+                                       &pc.parameters.initSpeedMin,
+                                       &pc.parameters.initSpeedMax,
+                                       0.05f,
+                                       0.0f,
+                                       10000.0f,
+                                       "Min: %.02f",
+                                       "Max: %.02f",
+                                       ImGuiSliderFlags_AlwaysClamp))
+            {
+                if (isRuntime)
+                {
+                    pc.p_emitter->setInitSpeed(pc.parameters.initSpeedMin,
+                                               pc.parameters.initSpeedMax);
+                }
+            }
+
+            ImGui::SeparatorText("Ejection Angle");
+
+            bool changedBase = false;
+            bool changedSpread = false;
+
+
+            if(ImGui::SliderAngle("Base", &pc.parameters.ejectionBaseAngle_rad))
+            {
+                changedBase = true;
+            }
+
+            if (ImGui::SliderAngle("Spread",
+                                   &pc.parameters.ejectionSpreadAngle_rad,
+                                   0.0f,
+                                   360.0f))
+
+            {
+                changedSpread = true;
+            }
+
+            if (isRuntime && (changedBase || changedSpread))
+            {
+                pc.p_emitter->setEjectionAngle(
+                    pc.parameters.ejectionBaseAngle_rad,
+                    pc.parameters.ejectionSpreadAngle_rad);
+            }
+
+            ImGui::SeparatorText("Acceleration");
+
+            bool changedAccelX = false;
+            bool changedAccelY = false;
+            bool changedAccelZ = false;
+
+            if (ImGui::DragFloatRange2("Accel X",
+                                       &pc.parameters.accelerationMin.x,
+                                       &pc.parameters.accelerationMax.x,
+                                       0.01f,
+                                       -100.0f,
+                                       100.0f,
+                                       "Min: %.02f",
+                                       "Max: %.02f",
+                                       ImGuiSliderFlags_AlwaysClamp))
+            {
+                changedAccelX = true;
+            }
+
+            if (ImGui::DragFloatRange2("Accel Y",
+                                       &pc.parameters.accelerationMin.y,
+                                       &pc.parameters.accelerationMax.y,
+                                       0.01f,
+                                       0.0f,
+                                       0.0f,
+                                       "Min: %.02f",
+                                       "Max: %.02f",
+                                       ImGuiSliderFlags_AlwaysClamp))
+            {
+                changedAccelY = true;
+            }
+
+            if (ImGui::DragFloatRange2("Accel Z",
+                                       &pc.parameters.accelerationMin.z,
+                                       &pc.parameters.accelerationMax.z,
+                                       0.01f,
+                                       0.0f,
+                                       0.0f,
+                                       "Min: %.02f",
+                                       "Max: %.02f",
+                                       ImGuiSliderFlags_AlwaysClamp))
+            {
+                changedAccelZ = true;
+            }
+
+            if (isRuntime && (changedAccelX || changedAccelY || changedAccelZ))
+            {
+                pc.p_emitter->setAcceleration(pc.parameters.accelerationMin,
+                                              pc.parameters.accelerationMax);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNodeEx("Colors", flags))
+        {
+            const char* blendType[] = {"Additive",
+                                       "Subtract",
+                                       "Multiply",
+                                       "Screen",
+                                       "Replace",
+                                       "Alpha Blend",
+                                       "Alpha Premultiplied",
+                                       "Source Alpha"};
+
+            if (ImGui::Combo("Blending",
+                             (int*)&pc.parameters.blendingMode,
+                             blendType,
+                             IM_ARRAYSIZE(blendType)))
+            {
+                if (isRuntime)
+                {
+                    pc.p_emitter->setBlendMode(pc.parameters.blendingMode);
+                }
+            }
+
+            for(uint32_t i =0; i < pc.parameters.colors.size(); i++)
+            {
+                auto& colorSpec = pc.parameters.colors[i];
+
+                bool startChanged = false;
+                bool endChanged   = false;
+
+                std::string startNm = "Start " + std::to_string(i);
+                std::string endNm   = "End " + std::to_string(i);
+
+                if (ImGui::ColorEdit4(startNm.c_str(),
+                                      glm::value_ptr(colorSpec.colorStart),
+                                      ImGuiColorEditFlags_Float
+                                          | ImGuiColorEditFlags_AlphaBar
+                                          | ImGuiColorEditFlags_AlphaPreview))
+                {
+                    startChanged = true;
+                }
+                if (ImGui::ColorEdit4(endNm.c_str(),
+                                      glm::value_ptr(colorSpec.colorEnd),
+                                      ImGuiColorEditFlags_Float
+                                          | ImGuiColorEditFlags_AlphaBar
+                                          | ImGuiColorEditFlags_AlphaPreview))
+                {
+                    endChanged = true;
+                }
+
+                if (isRuntime && (startChanged || endChanged))
+                {
+                    pc.p_emitter->setColor(i, colorSpec);
+                }
+            }
+
+            if(ImGui::Button("Add Color"))
+            {
+                pc.parameters.colors.push_back(
+                    {glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                     glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
+
+                if (isRuntime)
+                {
+                    pc.p_emitter->addColor({glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
+
+                    pc.p_emitter->chooseColors(0,
+                                               pc.parameters.colors.size() - 1);
+                }
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNodeEx("Texture", flags))
+        {
+            // Draw the loaded texture as a button image
+            void* textureId = nullptr;
+            if (pc.p_texture == nullptr)
+            {
+                textureId
+                    = reinterpret_cast<void*>(mp_checkerboardTex->getId());
+            }
+            else
+            {
+                textureId
+                    = reinterpret_cast<void*>(pc.p_texture->getId());
+            }
+
+            ImGui::BeginTable("Textures",
+                              2,
+                              ImGuiTableFlags_SizingStretchSame
+                                  | ImGuiTableFlags_NoHostExtendX);
+            ImGui::TableSetupColumn(
+                "TexImage", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+            ImGui::TableSetupColumn("Options",
+                                    ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            if (ImGui::ImageButton(textureId, {50, 50}))
+            {
+                // open the file dialog
+                auto selection
+                    = util::openFile("Select Texture to open",
+                                     ".",
+                                     {"Image Files",
+                                      "*.png *.jpg *.jpeg *.bmp *.tga "
+                                      "*.psd *.gif *.hdr *.pic *.pnm"},
+                                     false);
+
+                if (selection.size() != 0)
+                {
+                    // single file is selected
+                    auto filePath = selection[0];
+
+                    ref<Texture> texture
+                        = Application::s_get().getResourceManager().loadTexture(
+                            Texture::Type::DIFFUSE, filePath, false);
+
+                    if (texture)
+                    {
+                        pc.p_texture = texture;
+                    }
+                    else
+                    {
+                        Log::warn("Could not load texture %s",
+                                  filePath.c_str());
+                    }
+                }
+            }
+            // tooltip for button
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::Text(
+                    "Drag and drop texture files here, or click to browse");
+                ImGui::EndTooltip();
+            }
+
+            // support drag and drop files onto the image button
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload
+                    = ImGui::AcceptDragDropPayload("DND_FILE"))
+                {
+                    const char*  path = (const char*)payload->Data;
+                    ref<Texture> texture
+                        = Application::s_get().getResourceManager().loadTexture(
+                            Texture::Type::DIFFUSE, path, false);
+
+                    if (texture)
+                    {
+                        pc.p_texture = texture;
+                    }
+                    else
+                    {
+                        Log::warn("Could not load texture %s", path);
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Albedo");
+
+            ImGui::EndTable();
+
+            ImGui::TreePop();
+        }
+    }
+
     void _drawCameraCmp(Entity& entity)
     {
         auto& cameraCmp = entity.getComponent<CameraCmp>();
@@ -609,8 +1006,7 @@ class SceneHeirarchyPanel
 
         auto position = cameraCmp.camera.getPosition();
 
-        bool locked = false;
-        if (_drawVec3Control("Position", position, 0.0f, 0.01f, false, locked))
+        if (_drawVec3Control("Position", position, 0.0f, 0.01f))
         {
             cameraCmp.camera.setPosition(position);
         }
@@ -651,24 +1047,23 @@ class SceneHeirarchyPanel
 
         glm::vec3 translation = transformCmp.getTranslation();
 
-        bool locked = false;
         if (_drawVec3Control(
-                "Translation", translation, 0.0f, 0.01f, false, locked))
+                "Translation", translation, 0.0f, 0.01f))
         {
             transformCmp.setTranslation(translation);
         }
 
         glm::vec3 rotation = glm::degrees(transformCmp.getRotation());
 
-        if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f, false, locked))
+        if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
         {
             transformCmp.setRotation(glm::radians(rotation));
         }
 
         glm::vec3 scale = transformCmp.getScale();
 
-        locked = transformCmp.isScaleLocked();
-        if (_drawVec3Control("Scale", scale, 1.0f, 0.01f, true, locked))
+        bool locked = transformCmp.isScaleLocked();
+        if (_drawVec3Control("Scale", scale, 1.0f, 0.01f, true, &locked))
         {
             transformCmp.setScaleLocked(locked);
 
@@ -733,9 +1128,17 @@ class SceneHeirarchyPanel
                 }
             }
 
+            if (_drawAddComponentEntry<ParticleEmitterCmp>(ICON_FA_EXPLOSION
+                                                           " Particle Emitter"))
+            {
+                if (!entity.hasComponent<TransformCmp>())
+                {
+                    entity.addComponent<TransformCmp>();
+                }
+            }
+
             _drawAddComponentEntry<NativeLogicCmp>(ICON_FA_COMPUTER
                                                    " Native Logic");
-            _drawAddComponentEntry<TransformCmp>(ICON_FA_ATOM " Transform");
             _drawAddComponentEntry<CameraCmp>(ICON_FA_VIDEO " Camera");
 
             ImGui::EndPopup();
@@ -781,7 +1184,27 @@ class SceneHeirarchyPanel
                 entity.removeComponent<TextCmp>();
             }
         }
+        
+        ///////////////////////////
+        // Particle Emitter Component
+        ///////////////////////////
+        if (entity.hasComponent<ParticleEmitterCmp>())
+        {
+            bool open = ImGui::TreeNodeEx(ICON_FA_EXPLOSION " Particle Emitter",
+                                          flags);
+            bool removed = _drawComponentMenu();
 
+            if (open)
+            {
+                _drawParticleEmitterCmp(entity);
+                ImGui::TreePop();
+            }
+
+            if (removed)
+            {
+                entity.removeComponent<ParticleEmitterCmp>();
+            }
+        }
         ///////////////////////////
         // Camera Component
         ///////////////////////////
@@ -828,8 +1251,8 @@ class SceneHeirarchyPanel
                                  glm::vec3&         values,
                                  float              resetValue,
                                  float              speed,
-                                 bool               lockable,
-                                 bool&              lockedStatus)
+                                 bool               lockable     = false,
+                                 bool*              lockedStatus = nullptr)
     {
         // set the size of the dragfloats
         static float itemWidth = ImGui::CalcTextSize("A").x * 6.0;
@@ -939,9 +1362,9 @@ class SceneHeirarchyPanel
         {
             ImGui::SameLine();
 
-            if (ImGui::Button(lockedStatus ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN))
+            if (ImGui::Button(*lockedStatus ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN))
             {
-                lockedStatus = !lockedStatus;
+                *lockedStatus = !*lockedStatus;
                 changedLock  = true;
             }
         }

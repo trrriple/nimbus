@@ -5,6 +5,7 @@
 #include "nimbus/scene/camera.hpp"
 #include "nimbus/core/window.hpp"
 #include "nimbus/core/guid.hpp"
+#include "nimbus/renderer/particleEmitter.hpp"
 
 #include "glm.hpp"
 #include "gtx/quaternion.hpp"
@@ -304,11 +305,33 @@ struct TextCmp
     }
 };
 
+struct ParticleEmitterCmp
+{
+    uint32_t                    numParticles = 1;
+    ParticleEmitter::Parameters parameters;
+    ref<Texture>                p_texture    = nullptr;
+    ref<ParticleEmitter>        p_emitter    = nullptr;
+
+    ParticleEmitterCmp()
+    {
+        parameters.colors.push_back({glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                     glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
+    }
+    ParticleEmitterCmp(uint32_t                           inumParticles,
+                       const ParticleEmitter::Parameters& iparameters,
+                       ref<Texture>                       p_itexture = nullptr)
+        : numParticles(inumParticles),
+          parameters(iparameters),
+          p_texture(p_itexture)
+    {
+    }
+};
+
 struct CameraCmp
 {
     Camera camera;
     bool   primary     = true;
-    bool   fixedAspect = true;
+    bool   fixedAspect = false;
 
     CameraCmp() = default;
 };

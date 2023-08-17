@@ -42,6 +42,7 @@ class Scene : public refCounted
     friend class ViewportPanel;
 
     void _render(Camera* p_camera);
+    void _renderSceneSpecific(Camera* p_camera);
     void _onDrawEditor(Camera* p_editorCamera);
 
     // private addEntity for scene deserialization where these are known

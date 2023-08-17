@@ -5,6 +5,7 @@
 #include "nimbus/renderer/shader.hpp"
 #include "nimbus/renderer/renderCmdQ.hpp"
 #include "nimbus/renderer/renderThread.hpp"
+#include "nimbus/renderer/texture.hpp"
 
 #include "glm.hpp"
 
@@ -14,6 +15,9 @@
 
 namespace nimbus
 {
+
+struct RendererInternalData;
+
 class Renderer : public refCounted
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -22,31 +26,18 @@ class Renderer : public refCounted
    public:
     inline static const int32_t k_detectCountIfPossible = -1;
 
-    static void s_init() ;
-    static void s_destroy() ;
+    static void s_init();
+    static void s_destroy();
 
    private:
-    inline static glm::mat4     m_vpMatrix      = glm::mat4(1.0f);
-    inline static const int32_t k_numRenderCmdQ = 2;  // >= 2
-    inline static const int32_t k_numObjectCmdQ = 2;  // >= 2
-    static RenderCmdQ*          s_renderCmdQ[k_numRenderCmdQ];
-    static RenderCmdQ*          s_objectCmdQ[k_numRenderCmdQ];
-    static uint32_t             s_submitRenderCmdQIdx;
-    static uint32_t             s_processRenderCmdQIdx;
-    static uint32_t             s_submitObjectCmdQIdx;
-    static uint32_t             s_processObjectCmdQIdx;
-
-    ///////////////////////////
-    // Threads
-    ///////////////////////////
-    static RenderThread s_renderThread;
+    static RendererInternalData s_data;
 
     ////////////////////////////////////////////////////////////////////////////
     // Functions
     ////////////////////////////////////////////////////////////////////////////
    public:
     template <typename T>
-    inline static void s_submit(T&& func) 
+    inline static void s_submit(T&& func)
     {
         auto renderCmd = [](void* ptr)
         {
@@ -62,7 +53,7 @@ class Renderer : public refCounted
     }
 
     template <typename T>
-    inline static void s_submitObject(T&& func) 
+    inline static void s_submitObject(T&& func)
     {
         auto objectCmd = [](void* ptr)
         {
@@ -77,7 +68,7 @@ class Renderer : public refCounted
     }
 
     // TODO consider this
-    static void s_setScene(const glm::mat4& vpMatrix) ;
+    static void s_setScene(const glm::mat4& vpMatrix);
 
     static void s_startFrame();
 
@@ -85,45 +76,40 @@ class Renderer : public refCounted
 
     static void s_swapAndStart();
 
-    static void s_waitForRenderThread() ;
+    static void s_waitForRenderThread();
 
-    static void s_pumpCmds() ;
+    static void s_pumpCmds();
+
+    static ref<Texture> getWhiteTexture();
+
+    static ref<Texture> getBlackTexture();
 
     static void s_render(ref<Shader>      p_shader,
                          ref<VertexArray> p_vertexArray,
                          int32_t          vertexCount = k_detectCountIfPossible,
-                         bool             setViewProjection = true) ;
+                         bool             setViewProjection = true);
 
     static void s_renderInstanced(const ref<Shader>&      p_shader,
                                   const ref<VertexArray>& p_vertexArray,
                                   int32_t                 instanceCount,
                                   int32_t vertexCount = k_detectCountIfPossible,
-                                  bool    setViewProjection = true) ;
+                                  bool    setViewProjection = true);
+
 
    private:
-    inline static RenderCmdQ* _s_getSubmitRenderCmdQ() 
-    {
-        return s_renderCmdQ[s_submitRenderCmdQIdx];
-    }
-    inline static RenderCmdQ* _s_getProcessRenderCmdQ() 
-    {
-        return s_renderCmdQ[s_processRenderCmdQIdx];
-    }
+    static RenderCmdQ* _s_getSubmitRenderCmdQ();
+    
+    static RenderCmdQ* _s_getProcessRenderCmdQ();
 
-    inline static RenderCmdQ* _s_getSubmitObjectCmdQ() 
-    {
-        return s_objectCmdQ[s_submitRenderCmdQIdx];
-    }
-    inline static RenderCmdQ* _s_getProcessObjectCmdQ() 
-    {
-        return s_objectCmdQ[s_processRenderCmdQIdx];
-    }
+    static RenderCmdQ* _s_getSubmitObjectCmdQ();
 
-    static void _s_qSwap() ;
+    static RenderCmdQ* _s_getProcessObjectCmdQ();
 
-    static void _s_renderThreadFn() ;
+    static void _s_qSwap();
 
-    static void _s_processObjectQueue() ;
+    static void _s_renderThreadFn();
+
+    static void _s_processObjectQueue();
 
     ///////////////////////////
     // TODO port these
@@ -141,8 +127,6 @@ class Renderer : public refCounted
                                    int32_t                 vertexCount
                                    = k_detectCountIfPossible,
                                    bool setViewProjection = true);
-
-
 
     friend class RenderThread;
 };

@@ -9,7 +9,7 @@ class GraphicsApi
    public:
     enum class BlendingMode
     {
-        ADDITIVE,               // GL_ONE, GL_ONE
+        ADDITIVE = 0,           // GL_ONE, GL_ONE
         SUBTRACT,               // GL_ZERO, GL_ONE_MINUS_SRC_COLOR
         MULTIPLY,               // GL_DST_COLOR, GL_ZERO
         SCREEN,                 // GL_ONE, GL_ONE_MINUS_SRC_COLOR

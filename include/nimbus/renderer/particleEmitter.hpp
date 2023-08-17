@@ -18,61 +18,63 @@ class ParticleEmitter : public refCounted
    public:
     struct colorSpec
     {
-        glm::vec4 colorMin = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);  // 0 to Full
-        glm::vec4 colorMax = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        glm::vec4 colorStart = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        glm::vec4 colorEnd   = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     };
 
     enum class SpawnVolumeType
     {
-        POINT,
+        POINT = 0,
         CIRCLE,
         RECTANGLE,
         LINE
     };
 
-    struct circleVolumeParameters
+    struct CircleVolumeParameters
     {
-        float radius = 1.0f;
+        float radius = 0.1f;
     };
 
-    struct rectVolumeParameters
+    struct RectVolumeParameters
     {
-        float width  = 1.0f;
-        float height = 1.0f;
+        float width  = 0.1f;
+        float height = 0.1f;
     };
 
-    struct lineVolumeParameters
+    struct LineVolumeParameters
     {
-        float length = 1.0f;
+        float length = 0.1f;
     };
 
-    struct parameters
+    struct Parameters
     {
         glm::vec3                 centerPosition  = glm::vec3(0.0f);
         SpawnVolumeType           spawnVolumeType = SpawnVolumeType::POINT;
-        circleVolumeParameters    circleVolumeParams;
-        rectVolumeParameters      rectVolumeParams;
-        lineVolumeParameters      lineVolumeParams;
+        CircleVolumeParameters    circleVolumeParams;
+        RectVolumeParameters      rectVolumeParams;
+        LineVolumeParameters      lineVolumeParams;
         float                     lifetimeMin_s           = 1.0f;
         float                     lifetimeMax_s           = 1.0f;
-        float                     initSpeedMin            = 10.0f;
-        float                     initSpeedMax            = 10.0f;
+        float                     initSpeedMin            = 0.2f;
+        float                     initSpeedMax            = 0.2f;
         glm::vec3                 accelerationMin         = glm::vec3(0.0f);
         glm::vec3                 accelerationMax         = glm::vec3(0.0f);
-        float                     initSizeMin             = 5.0f;
-        float                     initSizeMax             = 5.0f;
+        float                     initSizeMin             = 0.01f;
+        float                     initSizeMax             = 0.01f;
         float                     ejectionBaseAngle_rad   = 0.0f;
         float                     ejectionSpreadAngle_rad = 6.2831f;
         std::vector<colorSpec>    colors;
-        bool                      persist = false;
-        bool                      fade    = false;
-        bool                      shrink  = false;
+        bool                      persist      = false;
+        bool                      staggerStart = true;
+        bool                      shrink       = false;
         GraphicsApi::BlendingMode blendingMode
             = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
     };
 
+    ParticleEmitter() = default;
+
     ParticleEmitter(uint32_t            particleCount,
-                    const parameters&   particleParameters,
+                    const Parameters&   particleParameters,
                     const ref<Texture>& p_texture,
                     const ref<Shader>&  p_customShader = nullptr,
                     bool                is3d           = false);
@@ -81,7 +83,7 @@ class ParticleEmitter : public refCounted
 
     void update(float deltaTime);
 
-    void draw();
+    void draw(const glm::mat4& transform);
 
     bool isDone();
 
@@ -89,16 +91,33 @@ class ParticleEmitter : public refCounted
 
     void reset(bool updateLiving = false);
 
-    void chooseColors(size_t min, size_t max, bool updateLiving = false);
+    void chooseColors(size_t min, size_t max);
+
+    void setColor(uint32_t idx, const colorSpec& color);
+
+    void addColor(const colorSpec& color);
+
+    void removeColor(uint32_t idx);
 
     void setPosition(const glm::vec3& centerPosition,
                      bool             updateLiving = false);
 
-    void setAngle(float ejectionBaseAngle_rad,
-                  float ejectionSpreadAngle_rad,
-                  bool  updateLiving = false);
+    void setEjectionAngle(float ejectionBaseAngle_rad,
+                          float ejectionSpreadAngle_rad);
 
     void setPersist(bool persist);
+
+    void setShrink(bool shrink);
+
+    void setLifeTime(float min, float max);
+
+    void setInitSpeed(float min, float max);
+
+    void setInitSize(float min, float max);
+
+    void setAcceleration(glm::vec3 min, glm::vec3 max);
+
+    void setBlendMode(GraphicsApi::BlendingMode mode);
 
    private:
     ////////////////////////////////////////////////////////////////////////////
@@ -109,12 +128,10 @@ class ParticleEmitter : public refCounted
         glm::vec3 positionOffset = glm::vec3(0.0f);
         glm::vec3 velocity       = glm::vec3(0.0f);
         glm::vec3 acceleration   = glm::vec3(0.0f);
-        glm::vec4 color          = glm::vec4(0.0f);
-        float     size           = 0.0f;
+        uint32_t  colorIdx       = 0;
+        float     startSize      = 0.0f;
         float     startLifetime  = 0.0f;
         float     curLifetime    = 0.0f;
-        bool      updateColor    = false;
-        bool      updateVelocity = false;
 
         void resetLifetime(float newLifetime)
         {
@@ -196,7 +213,7 @@ class ParticleEmitter : public refCounted
     ////////////////////////////////////////////////////////////////////////////
     uint32_t   m_numParticles;
     uint32_t   m_numLiveParticles;
-    parameters m_parameters;
+    Parameters m_parameters;
     bool       m_is3d;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -227,7 +244,7 @@ class ParticleEmitter : public refCounted
     void _respawnParticle(particleAttributes*   p_attrib,
                           particleInstanceData* p_instDat);
 
-    glm::vec4 _getRandomColorInRange();
+    uint32_t _getRandomColorIdx();
 
     glm::vec3 _getRandomPositionInVolume();
 };

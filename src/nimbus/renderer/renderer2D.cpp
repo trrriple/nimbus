@@ -50,16 +50,8 @@ void Renderer2D::s_init()
 
             s_quadData->textures.reserve(Texture::s_getMaxTextures());
 
-            Texture::Spec texSpec;
-            texSpec.width  = 1;
-            texSpec.height = 1;
-            ref<Texture> whiteTexture
-                = Texture::s_create(Texture::Type::DIFFUSE, texSpec);
-
-            // being a 1x1 texture, it's only 4 bytes of data
-            uint32_t whiteData = 0xFFFFFFFF;
-            whiteTexture->setData(&whiteData, sizeof(whiteData));
-            s_quadData->textures.push_back(whiteTexture);
+            
+            s_quadData->textures.push_back(Renderer::getWhiteTexture());
 
             _s_createQuadBuffers();
 

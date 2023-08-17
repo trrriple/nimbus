@@ -143,6 +143,15 @@ class FelixLayer : public Layer
     bool        m_fileDropHandled = true;
     std::string m_fileDropPath;
 
+
+
+    ///////////////////////////
+    // Test
+    //////////////////////////
+    scope<ParticleEmitter> mp_emitter;
+
+
+
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
     }
@@ -190,6 +199,43 @@ class FelixLayer : public Layer
 
         mp_sceneHierarchyPanel->setEntitySelectedCallback(std::bind(
             &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
+
+        ///////////////////////////
+        // Test Emitter
+        ///////////////////////////
+        ParticleEmitter::Parameters particleParameters;
+        particleParameters.centerPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+        particleParameters.spawnVolumeType
+            = ParticleEmitter::SpawnVolumeType::CIRCLE;
+
+        particleParameters.circleVolumeParams.radius = 0.1f;
+        particleParameters.lifetimeMin_s             = 1.00f;
+        particleParameters.lifetimeMax_s             = 4.00f;
+
+        particleParameters.initSpeedMin    = 0.1f;
+        particleParameters.initSpeedMax    = 0.2f;
+        particleParameters.accelerationMin = glm::vec3(-0.5f, -0.5f, 0.0);
+        particleParameters.accelerationMax = glm::vec3(0.5f, 0.5f, 0.0);
+        particleParameters.initSizeMin     = 0.025f;
+        particleParameters.initSizeMax     = 0.03f;
+        particleParameters.ejectionBaseAngle_rad   = glm::radians(0.0f);
+        particleParameters.ejectionSpreadAngle_rad = glm::radians(360.0f);
+        particleParameters.persist                 = true;
+        particleParameters.shrink                  = true;
+        particleParameters.blendingMode
+            = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
+        particleParameters.colors.push_back(
+            {glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+             glm::vec4(0.0f, 0.0f, 1.0f, 0.0f)});
+
+        mp_emitter = genScope<ParticleEmitter>(
+            2000,
+            particleParameters,
+            nullptr,
+            // Application::s_get().getResourceManager().loadTexture(
+            //     Texture::Type::DIFFUSE,
+            //     "../resources/textures/smokeParticle.png"),
+            nullptr);
 
         ///////////////////////////
         // Test Camera
@@ -359,6 +405,9 @@ class FelixLayer : public Layer
             mp_scene->onStop();
         }
 
+        // todo remove
+        // mp_emitter->update(deltaTime);
+
         if (m_sceneState == State::PLAY)
         {
             mp_scene->onUpdate(deltaTime);
@@ -387,6 +436,7 @@ class FelixLayer : public Layer
         if (m_sceneState == State::PAUSE)
         {
             mp_scene->_onDrawEditor(mp_editCamera.raw());
+            // mp_emitter->draw();
         }
         else
         {
@@ -672,7 +722,7 @@ class FelixLayer : public Layer
         ImGuiIO&    io          = ImGui::GetIO();
         ImGuiStyle& style       = ImGui::GetStyle();
         float       minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x   = 315.0f;
+        style.WindowMinSize.x   = 325.0f;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
             ImGuiID dockspaceId = ImGui::GetID("FelixDockSpace");
