@@ -250,7 +250,7 @@ class ViewportPanel
                     = mp_editCamera->getProjection();
 
                 auto&     tc = selectedEntity.getComponent<TransformCmp>();
-                glm::mat4 transform = tc.getTransform();
+                glm::mat4 transform = tc.world.getTransform();
 
                 ImGuizmo::Manipulate(glm::value_ptr(cameraView),
                                      glm::value_ptr(cameraProjection),
@@ -262,7 +262,10 @@ class ViewportPanel
 
                 if (ImGuizmo::IsUsing())
                 {
-                    tc.setTransform(transform);
+                    std::scoped_lock<std::mutex> lock(m_guizmoMtx);
+                    m_guizmoTransform        = transform;
+                    m_operationType          = operation;
+                    m_guizmoTransformChanged = true;
                 }
             }
         }
@@ -270,6 +273,95 @@ class ViewportPanel
         ImGui::PopStyleVar();
 
         ImGui::End();  // viewport
+    }
+
+    void onUpdate(Entity selectedEntity)
+    {
+        if (selectedEntity && selectedEntity.hasComponent<TransformCmp>())
+        {
+            glm::mat4           localT;
+            ImGuizmo::OPERATION localOperationType;
+            bool                doTransform = false;
+            {
+                std::scoped_lock<std::mutex> lock(m_guizmoMtx);
+                if (m_guizmoTransformChanged)
+                {
+                    // grab local copies so we can release mutex quickly
+                    localT             = m_guizmoTransform;
+                    localOperationType = m_operationType;
+                    // mark as handled
+                    m_guizmoTransformChanged = false;
+                    doTransform              = true;
+                }
+            }
+
+            if (!doTransform)
+            {
+                // nothing to do if transform was not changed
+                return;
+            }
+
+            auto& tc = selectedEntity.getComponent<TransformCmp>();
+            auto& ac = selectedEntity.getComponent<AncestryCmp>();
+
+            if (ac.parent)
+            {
+                // this is a child, so we must adjust the  transform
+                // imuizmo gave us to local for this child. For
+                // base level entities (no parents) local = world so this
+                // doesn't need to be done
+                if (ac.parent.hasComponent<TransformCmp>())
+                {
+                    // Remove parent world component by multiplying 
+                    // this world by inverse of parent's world
+                    localT
+                        *= glm::inverse(ac.parent.getComponent<TransformCmp>()
+                                            .world.getTransform());
+                }
+            }
+            // now that we have a modified transform, figure out what changed
+
+            glm::quat orientation;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+            glm::vec3 translation;
+            glm::vec3 rotation;
+            glm::vec3 scale;
+
+            glm::decompose(
+                localT, scale, orientation, translation, skew, perspective);
+
+            rotation = glm::eulerAngles(orientation);
+
+            switch (localOperationType)
+            {
+                case (ImGuizmo::OPERATION::UNIVERSAL):
+                {
+                    tc.local.setTranslation(translation);
+                    tc.local.setRotation(rotation);
+                    tc.local.setScale(scale);
+
+                    break;
+                }
+                case (ImGuizmo::OPERATION::TRANSLATE):
+                {
+                    tc.local.setTranslation(translation);
+                    break;
+                }
+                case (ImGuizmo::OPERATION::ROTATE):
+                {
+                    tc.local.setRotation(rotation);
+                    break;
+                }
+                case (ImGuizmo::OPERATION::SCALE):
+                {
+                    tc.local.setScale(scale);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
     }
 
    private:
@@ -282,6 +374,11 @@ class ViewportPanel
     EntitySelectedCallback_t           m_entitySelectedCallback;
     bool                               m_requestedPixelVal = false;
     Entity                             m_selectionContext;
+
+    std::mutex          m_guizmoMtx;
+    glm::mat4           m_guizmoTransform;
+    bool                m_guizmoTransformChanged = false;
+    ImGuizmo::OPERATION m_operationType;
 };
 
 }  // namespace nimbus

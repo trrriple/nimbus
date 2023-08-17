@@ -175,8 +175,8 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
             = static_cast<const Rectangle*>(fixtureSpec.shape);
 
         b2PolygonShape* shape = new b2PolygonShape();
-        shape->SetAsBox(rect->size.x * transform.scale.x,
-                        rect->size.y * transform.scale.y,
+        shape->SetAsBox(rect->size.x * transform.getScale().x,
+                        rect->size.y * transform.getScale().y,
                         b2Vec2(rect->offset.x, rect->offset.y),
                         0.0f);
 
@@ -187,7 +187,7 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
         const Circle*  circle = static_cast<const Circle*>(fixtureSpec.shape);
         b2CircleShape* shape  = new b2CircleShape();
         shape->m_p.Set(circle->offset.x, circle->offset.y);
-        shape->m_radius  = transform.scale.x * circle->radius;
+        shape->m_radius  = transform.getScale().x * circle->radius;
         fixtureDef.shape = shape;
     }
 
@@ -211,9 +211,9 @@ util::Transform& Physics2D::RigidBody::getTransform()
     NM_CORE_ASSERT(inWorld, "Not in world");
 
     const auto& position    = p_data->p_body->GetPosition();
-    transform.translation.x = position.x;
-    transform.translation.y = position.y;
-    transform.rotation.z    = p_data->p_body->GetAngle();
+    transform.setTranslationX(position.x);
+    transform.setTranslationY(position.y);
+    transform.setRotationZ(p_data->p_body->GetAngle());
     return transform;
 }
 
@@ -234,8 +234,8 @@ void Physics2D::RigidBody::forceTransform()
     NM_CORE_ASSERT(inWorld, "Not in world");
 
     p_data->p_body->SetTransform(
-        b2Vec2(transform.translation.x, transform.translation.y),
-        transform.rotation.z);
+        b2Vec2(transform.getTranslation().x, transform.getTranslation().y),
+        transform.getRotation().z);
 }
 
 void Physics2D::RigidBody::forceVelocity(const glm::vec2& velocity)

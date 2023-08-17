@@ -203,39 +203,39 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Test Emitter
         ///////////////////////////
-        ParticleEmitter::Parameters particleParameters;
-        particleParameters.centerPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-        particleParameters.spawnVolumeType
-            = ParticleEmitter::SpawnVolumeType::CIRCLE;
+        // ParticleEmitter::Parameters particleParameters;
+        // particleParameters.centerPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+        // particleParameters.spawnVolumeType
+        //     = ParticleEmitter::SpawnVolumeType::CIRCLE;
 
-        particleParameters.circleVolumeParams.radius = 0.1f;
-        particleParameters.lifetimeMin_s             = 1.00f;
-        particleParameters.lifetimeMax_s             = 4.00f;
+        // particleParameters.circleVolumeParams.radius = 0.1f;
+        // particleParameters.lifetimeMin_s             = 1.00f;
+        // particleParameters.lifetimeMax_s             = 4.00f;
 
-        particleParameters.initSpeedMin    = 0.1f;
-        particleParameters.initSpeedMax    = 0.2f;
-        particleParameters.accelerationMin = glm::vec3(-0.5f, -0.5f, 0.0);
-        particleParameters.accelerationMax = glm::vec3(0.5f, 0.5f, 0.0);
-        particleParameters.initSizeMin     = 0.025f;
-        particleParameters.initSizeMax     = 0.03f;
-        particleParameters.ejectionBaseAngle_rad   = glm::radians(0.0f);
-        particleParameters.ejectionSpreadAngle_rad = glm::radians(360.0f);
-        particleParameters.persist                 = true;
-        particleParameters.shrink                  = true;
-        particleParameters.blendingMode
-            = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
-        particleParameters.colors.push_back(
-            {glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-             glm::vec4(0.0f, 0.0f, 1.0f, 0.0f)});
+        // particleParameters.initSpeedMin    = 0.1f;
+        // particleParameters.initSpeedMax    = 0.2f;
+        // particleParameters.accelerationMin = glm::vec3(-0.5f, -0.5f, 0.0);
+        // particleParameters.accelerationMax = glm::vec3(0.5f, 0.5f, 0.0);
+        // particleParameters.initSizeMin     = 0.025f;
+        // particleParameters.initSizeMax     = 0.03f;
+        // particleParameters.ejectionBaseAngle_rad   = glm::radians(0.0f);
+        // particleParameters.ejectionSpreadAngle_rad = glm::radians(360.0f);
+        // particleParameters.persist                 = true;
+        // particleParameters.shrink                  = true;
+        // particleParameters.blendingMode
+        //     = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
+        // particleParameters.colors.push_back(
+        //     {glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+        //      glm::vec4(0.0f, 0.0f, 1.0f, 0.0f)});
 
-        mp_emitter = genScope<ParticleEmitter>(
-            2000,
-            particleParameters,
-            nullptr,
-            // Application::s_get().getResourceManager().loadTexture(
-            //     Texture::Type::DIFFUSE,
-            //     "../resources/textures/smokeParticle.png"),
-            nullptr);
+        // mp_emitter = genScope<ParticleEmitter>(
+        //     2000,
+        //     particleParameters,
+        //     nullptr,
+        //     // Application::s_get().getResourceManager().loadTexture(
+        //     //     Texture::Type::DIFFUSE,
+        //     //     "../resources/textures/smokeParticle.png"),
+        //     nullptr);
 
         ///////////////////////////
         // Test Camera
@@ -390,6 +390,10 @@ class FelixLayer : public Layer
 
     virtual void onUpdate(float deltaTime) override
     {
+        
+        ///////////////////////////
+        // Start/Stop Scene
+        ///////////////////////////
         if (mp_sceneControlPanel->getState().runState
                 == SceneControlPanel::RunState::PLAY
             && m_sceneState != State::PLAY)
@@ -407,7 +411,14 @@ class FelixLayer : public Layer
 
         // todo remove
         // mp_emitter->update(deltaTime);
+        ///////////////////////////
+        // Update panels
+        ///////////////////////////
+        mp_viewportPanel->onUpdate(m_selectedEntity);
 
+        ///////////////////////////
+        // Update scene
+        ///////////////////////////
         if (m_sceneState == State::PLAY)
         {
             mp_scene->onUpdate(deltaTime);
@@ -418,6 +429,8 @@ class FelixLayer : public Layer
             {
                 _handleKeyboardInput(deltaTime);
             }
+
+            mp_scene->_onUpdateEditor(deltaTime);
         }
     }
 

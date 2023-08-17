@@ -1,7 +1,7 @@
 #pragma once
 #include "nimbus/core/common.hpp"
-#include "nimbus/scene/component.hpp"
 
+#include "nimbus/scene/camera.hpp"
 #include "entt/entity/registry.hpp"
 
 namespace nimbus
@@ -16,7 +16,11 @@ class Scene : public refCounted
     ~Scene();
 
     Entity addEntity(const std::string& name = std::string());
-    void   removeEntity(Entity entity);
+
+    Entity addChildEntity(Entity             parentEntity,
+                          const std::string& name = std::string());
+
+    void   removeEntity(Entity entity, bool removeChildren = false);
     void   sortEntities();
 
     void onStart();
@@ -26,11 +30,18 @@ class Scene : public refCounted
 
     void onResize(uint32_t width, uint32_t height);
 
+    template <typename Fn>
+    void submitPostUpdateFunc(Fn&& func)
+    {
+        m_postUpdateWorkQueue.emplace_back(func);
+    }
+
    private:
-    entt::registry m_registry;
-    float          m_aspectRatio;
-    std::string    m_name;
-    uint32_t       m_genesisIndex = 0;
+    entt::registry                     m_registry;
+    float                              m_aspectRatio;
+    std::string                        m_name;
+    uint32_t                           m_genesisIndex = 0;
+    std::vector<std::function<void()>> m_postUpdateWorkQueue;
 
     friend class Entity;
     friend class SceneSerializer;
@@ -42,7 +53,11 @@ class Scene : public refCounted
     friend class ViewportPanel;
 
     void _render(Camera* p_camera);
+    
     void _renderSceneSpecific(Camera* p_camera);
+    
+    void _onUpdateEditor(float deltaTime);
+
     void _onDrawEditor(Camera* p_editorCamera);
 
     // private addEntity for scene deserialization where these are known

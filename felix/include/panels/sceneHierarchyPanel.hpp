@@ -131,8 +131,11 @@ class SceneHeirarchyPanel
             Entity entity       = {entityHandle, mp_sceneContext.raw()};
             auto&  name         = entity.getComponent<NameCmp>().name;
 
-            if (filter.PassFilter(name.c_str()))
+            if (filter.PassFilter(name.c_str())
+                && !entity.getComponent<AncestryCmp>().parent)
             {
+                // only draw entities that passed the filter and are
+                // top level entities
                 passedFilterEntities.push_back(entity);
             }
 
@@ -162,14 +165,15 @@ class SceneHeirarchyPanel
         {
             for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
             {
-                Entity& entity   = passedFilterEntities[i];
-                bool    selected = _drawEntity(entity);
+                Entity& entity = passedFilterEntities[i];
 
-                if (selected)
+                Entity selectedEntity = _drawEntity(entity);
+
+                if (selectedEntity) // selection changed
                 {
-                    if (entity != m_selectionContext)
+                    if (selectedEntity != m_selectionContext)
                     {
-                        m_selectionContext = entity;
+                        m_selectionContext = selectedEntity;
                         m_entitySelectedCallback(m_selectionContext);
 
                         if (filterActive)
@@ -224,9 +228,9 @@ class SceneHeirarchyPanel
     ////////////////////////////////////////////////////////////////////////////
     // Private Functions
     ////////////////////////////////////////////////////////////////////////////
-    bool _drawEntity(Entity& entity)
+    Entity _drawEntity(Entity& entity)
     {
-        bool selected = false;
+        Entity selectedEntity;
 
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
                                    | ImGuiTreeNodeFlags_OpenOnDoubleClick
@@ -237,17 +241,34 @@ class SceneHeirarchyPanel
                                                  : 0);
 
         auto& name = entity.getComponent<NameCmp>().name;
+        auto& ac   = entity.getComponent<AncestryCmp>();
+
+        bool isChild = ac.parent;
+
+        auto icon = (isChild ? ICON_FA_CUBE : ICON_FA_CUBES);
+
+        // if the section context is a child of this, force it to be open
+
+        for (auto child : ac.children)
+        {
+            if (m_selectionContext == child)
+            {
+                flags |= ImGuiTreeNodeFlags_DefaultOpen;
+                break;
+            }
+        }
 
         bool open = ImGui::TreeNodeEx(
-            (void*)entity.getId(), flags, ICON_FA_CUBES " %s", name.c_str());
+            (void*)entity.getId(), flags, "%s %s", icon, name.c_str());
 
         // select item as context if it's clicked
         if (ImGui::IsItemClicked(0))
         {
-            selected = true;
+            selectedEntity = entity;
         }
 
-        bool deleted = false;
+        Entity selectedChild;
+        bool   deleted = false;
         // Check for right-click on the node
         if (ImGui::BeginPopupContextItem())
         {
@@ -256,18 +277,34 @@ class SceneHeirarchyPanel
                 deleted = true;
             }
 
+            if (ImGui::MenuItem("Add Child Entity"))
+            {
+                selectedChild = mp_sceneContext->addChildEntity(entity);
+            }
+
             ImGui::EndPopup();
         }
 
         if (open)
         {
-            ImGui::Text("Blah blah blah");
+            // draw children
+            for (uint32_t i = 0; i < ac.children.size(); i++)
+            {
+                Entity selected = _drawEntity(ac.children[i]);
+
+                if (selected)
+                {
+                    selectedChild = selected;
+                }
+            }
+
             ImGui::TreePop();
         }
 
         if (deleted)
         {
-            mp_sceneContext->removeEntity(entity);
+            // if a child, remove all of it's children too
+            mp_sceneContext->removeEntity(entity, isChild);
             if (m_selectionContext == entity)
             {
                 m_selectionContext = {};
@@ -276,7 +313,7 @@ class SceneHeirarchyPanel
             mp_sceneContext->sortEntities();
         }
 
-        return selected;
+        return selectedChild ? selectedChild : selectedEntity;
     }
 
     void _drawNameCmp(Entity& entity)
@@ -656,9 +693,12 @@ class SceneHeirarchyPanel
                 }
             }
 
-            if (ImGui::DragFloatRange2("Init Size",
-                                       &pc.parameters.initSizeMin,
-                                       &pc.parameters.initSizeMax,
+            bool changedSizeX = false;
+            bool changedSizeY = false;
+
+            if (ImGui::DragFloatRange2("Init Size X",
+                                       &pc.parameters.initSizeMin.x,
+                                       &pc.parameters.initSizeMax.x,
                                        0.001f,
                                        0.0f,
                                        100.0f,
@@ -666,11 +706,26 @@ class SceneHeirarchyPanel
                                        "Max: %.03f",
                                        ImGuiSliderFlags_AlwaysClamp))
             {
-                if (isRuntime)
-                {
-                    pc.p_emitter->setInitSize(pc.parameters.initSizeMin,
-                                              pc.parameters.initSizeMax);
-                }
+                changedSizeX = true;
+            }
+
+            if (ImGui::DragFloatRange2("Init Size Y",
+                                       &pc.parameters.initSizeMin.y,
+                                       &pc.parameters.initSizeMax.y,
+                                       0.001f,
+                                       0.0f,
+                                       100.0f,
+                                       "Min: %.03f",
+                                       "Max: %.03f",
+                                       ImGuiSliderFlags_AlwaysClamp))
+            {
+                changedSizeY = true;
+            }
+
+            if (isRuntime && (changedSizeX || changedSizeY))
+            {
+                pc.p_emitter->setInitSize(pc.parameters.initSizeMin,
+                                          pc.parameters.initSizeMax);
             }
 
             if (ImGui::DragFloatRange2("Init Speed",
@@ -694,7 +749,6 @@ class SceneHeirarchyPanel
 
             bool changedBase = false;
             bool changedSpread = false;
-
 
             if(ImGui::SliderAngle("Base", &pc.parameters.ejectionBaseAngle_rad))
             {
@@ -1043,49 +1097,49 @@ class SceneHeirarchyPanel
 
     void _drawTransformCmp(Entity& entity)
     {
-        auto& transformCmp = entity.getComponent<TransformCmp>();
+        auto& tc = entity.getComponent<TransformCmp>();
 
-        glm::vec3 translation = transformCmp.getTranslation();
+        glm::vec3 translation = tc.local.getTranslation();
 
         if (_drawVec3Control(
                 "Translation", translation, 0.0f, 0.01f))
         {
-            transformCmp.setTranslation(translation);
+            tc.local.setTranslation(translation);
         }
 
-        glm::vec3 rotation = glm::degrees(transformCmp.getRotation());
+        glm::vec3 rotation = glm::degrees(tc.local.getRotation());
 
         if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
         {
-            transformCmp.setRotation(glm::radians(rotation));
+            tc.local.setRotation(glm::radians(rotation));
         }
 
-        glm::vec3 scale = transformCmp.getScale();
+        glm::vec3 scale = tc.local.getScale();
 
-        bool locked = transformCmp.isScaleLocked();
+        bool locked = tc.local.isScaleLocked();
         if (_drawVec3Control("Scale", scale, 1.0f, 0.01f, true, &locked))
         {
-            transformCmp.setScaleLocked(locked);
+            tc.local.setScaleLocked(locked);
 
-            if (transformCmp.isScaleLocked())
+            if (tc.local.isScaleLocked())
             {
                 // check what changed
-                if (scale.x != transformCmp.getScale().x)
+                if (scale.x != tc.local.getScale().x)
                 {
-                    transformCmp.setScaleX(scale.x);
+                    tc.local.setScaleX(scale.x);
                 }
-                else if (scale.y != transformCmp.getScale().y)
+                else if (scale.y != tc.local.getScale().y)
                 {
-                    transformCmp.setScaleY(scale.y);
+                    tc.local.setScaleY(scale.y);
                 }
-                else if (scale.z != transformCmp.getScale().z)
+                else if (scale.z != tc.local.getScale().z)
                 {
-                    transformCmp.setScaleZ(scale.z);
+                    tc.local.setScaleZ(scale.z);
                 }
             }
             else
             {
-                transformCmp.setScale(scale);
+                tc.local.setScale(scale);
             }
         }
     }
@@ -1142,6 +1196,29 @@ class SceneHeirarchyPanel
             _drawAddComponentEntry<CameraCmp>(ICON_FA_VIDEO " Camera");
 
             ImGui::EndPopup();
+        }
+
+        ImGui::Separator();
+        ImGui::BeginChild("##Components");
+
+        ///////////////////////////
+        // Transform Component
+        ///////////////////////////
+        if (entity.hasComponent<TransformCmp>())
+        {
+            bool open    = ImGui::TreeNodeEx(ICON_FA_ATOM " Transform", flags);
+            bool removed = _drawComponentMenu();
+
+            if (open)
+            {
+                _drawTransformCmp(entity);
+                ImGui::TreePop();
+            }
+
+            if (removed)
+            {
+                entity.removeComponent<TransformCmp>();
+            }
         }
 
         ///////////////////////////
@@ -1224,26 +1301,9 @@ class SceneHeirarchyPanel
                 entity.removeComponent<CameraCmp>();
             }
         }
+    
+        ImGui::EndChild();
 
-        ///////////////////////////
-        // Transform Component
-        ///////////////////////////
-        if (entity.hasComponent<TransformCmp>())
-        {
-            bool open    = ImGui::TreeNodeEx(ICON_FA_ATOM " Transform", flags);
-            bool removed = _drawComponentMenu();
-
-            if (open)
-            {
-                _drawTransformCmp(entity);
-                ImGui::TreePop();
-            }
-
-            if (removed)
-            {
-                entity.removeComponent<TransformCmp>();
-            }
-        }
     }
 
     // custom stylized 3 input (X,Y,Z) control block

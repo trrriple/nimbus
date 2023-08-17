@@ -43,9 +43,9 @@ static void s_serializeEntity(toml::table& entitiesTbl,
         toml::table   transformTbl;
         TransformCmp& tc = entity.getComponent<TransformCmp>();
 
-        auto& translation = tc.getTranslation();
-        auto& rotation    = tc.getRotation();
-        auto& scale       = tc.getScale();
+        auto& translation = tc.world.getTranslation();
+        auto& rotation    = tc.world.getRotation();
+        auto& scale       = tc.world.getScale();
 
         transformTbl.insert(
             "translation",
@@ -55,7 +55,7 @@ static void s_serializeEntity(toml::table& entitiesTbl,
                             toml::array{rotation.x, rotation.y, rotation.z});
 
         transformTbl.insert("scale", toml::array{scale.x, scale.y, scale.z});
-        transformTbl.insert("scaleLocked", tc.isScaleLocked());
+        transformTbl.insert("scaleLocked", tc.world.isScaleLocked());
 
         entityTbl.insert("TransformCmp", transformTbl);
     }
@@ -227,19 +227,20 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
                     auto& rotation    = *cmpTbl["rotation"].as_array();
                     auto& scale       = *cmpTbl["scale"].as_array();
 
-                    tc.setTranslation({translation[0].ref<double>(),
-                                       translation[1].ref<double>(),
-                                       translation[2].ref<double>()});
+                    tc.world.setTranslation({translation[0].ref<double>(),
+                                                 translation[1].ref<double>(),
+                                                 translation[2].ref<double>()});
 
-                    tc.setRotation({rotation[0].ref<double>(),
-                                    rotation[1].ref<double>(),
-                                    rotation[2].ref<double>()});
+                    tc.world.setRotation({rotation[0].ref<double>(),
+                                              rotation[1].ref<double>(),
+                                              rotation[2].ref<double>()});
 
-                    tc.setScale({scale[0].ref<double>(),
-                                 scale[1].ref<double>(),
-                                 scale[2].ref<double>()});
+                    tc.world.setScale({scale[0].ref<double>(),
+                                           scale[1].ref<double>(),
+                                           scale[2].ref<double>()});
 
-                    tc.setScaleLocked(cmpTbl["scaleLocked"].ref<bool>());
+                    tc.world.setScaleLocked(
+                        cmpTbl["scaleLocked"].ref<bool>());
                 }
 
                 ///////////////////////////

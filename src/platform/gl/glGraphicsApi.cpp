@@ -246,12 +246,9 @@ void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
             NM_CORE_ASSERT_STATIC(0, "Invalid blending mode %i", mode);
     }
 
-    Renderer::s_submit(
-        [sFactor, dFactor, mode]()
-        {
-            glBlendFunc(sFactor, dFactor);
-            s_currBlendingMode = mode;
-        });
+    s_currBlendingMode = mode;
+
+    Renderer::s_submit([sFactor, dFactor]() { glBlendFunc(sFactor, dFactor); });
 }
 
 static void APIENTRY _glDebugOutput(GLenum       source,

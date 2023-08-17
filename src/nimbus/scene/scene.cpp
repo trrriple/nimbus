@@ -11,6 +11,37 @@
 namespace nimbus
 {
 
+////////////////////////////////////////////////////////////////////////////////
+// Static functions
+////////////////////////////////////////////////////////////////////////////////
+static void _s_updateWorldTransform(TransformCmp& tc, AncestryCmp& ac)
+{
+    // if this guy has a parent, update his world transform
+    if (ac.parent && ac.parent.hasComponent<TransformCmp>())
+    {
+        tc.world.setTransform(
+            ac.parent.getComponent<TransformCmp>().world.getTransform()
+            * tc.local.getTransform());
+    }
+    else
+    {
+        tc.world = tc.local;
+    }
+
+    // update his children's transforms, if any
+    for (auto& child : ac.children)
+    {
+        if (child.hasComponent<TransformCmp>())
+        {
+            _s_updateWorldTransform(child.getComponent<TransformCmp>(),
+                                    child.getComponent<AncestryCmp>());
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Functions
+////////////////////////////////////////////////////////////////////////////////
 Scene::Scene(const std::string& name) : m_name(name)
 {
 }
@@ -30,11 +61,63 @@ Entity Scene::addEntity(const std::string& name)
     entity.addComponent<NameCmp>(
         name.empty() ? entity.getComponent<GuidCmp>().guid.toString() : name);
 
+    entity.addComponent<AncestryCmp>();
+
     return entity;
 }
 
-void Scene::removeEntity(Entity entity)
+Entity Scene::addChildEntity(Entity parentEntity, const std::string& name)
 {
+    Entity child = addEntity(name);
+
+    auto& childAc = child.getComponent<AncestryCmp>();
+
+    childAc.parent = parentEntity;
+
+    auto& parentAc = parentEntity.getComponent<AncestryCmp>();
+    parentAc.children.push_back(child);
+
+    return child;
+}
+
+void Scene::removeEntity(Entity entity, bool removeChildren)
+{
+    
+    
+    
+    auto& ac = entity.getComponent<AncestryCmp>();
+
+    if (!removeChildren)
+    {
+        // we want to remove this as the parent of all it's direct children
+        // essentially promoting all the direct children to top level nodes
+        for (auto child : ac.children)
+        {
+            child.getComponent<AncestryCmp>().parent = Entity();
+        }
+    }
+    else
+    {
+        // otherwise we nuke the children recursively xD
+        for (uint32_t i = 0; i < ac.children.size(); i++)
+        {
+            removeEntity(ac.children[i], true);
+        }
+    }
+
+    if (ac.parent)
+    {
+        auto& parentAc = ac.parent.getComponent<AncestryCmp>();
+
+        auto it = std::find(
+            parentAc.children.begin(), parentAc.children.end(), entity);
+
+        if (it != parentAc.children.end())
+        {
+            parentAc.children.erase(it);
+        }
+    }
+
     m_registry.destroy(entity.getId());
 }
 
@@ -114,12 +197,35 @@ void Scene::onUpdate(float deltaTime)
             }
         });
 
+
+    // for all entities that have a transform, we want to update any 
+    // all child transforms accordingly
+    auto tcView = m_registry.view<TransformCmp, AncestryCmp>();
+
+    for (auto [entity, tc, ac] : tcView.each())
+    {
+        // only update top level here
+        if (!ac.parent)
+        {
+            _s_updateWorldTransform(tc, ac);
+        }
+    }
+
     auto peView = m_registry.view<GuidCmp, TransformCmp, ParticleEmitterCmp>();
 
-    for (auto [entity, guid, transform, pec] : peView.each())
+    for (auto [entity, gc, tc, pec] : peView.each())
     {
+        pec.p_emitter->updateSpawnTransform(tc.world.getTranslation(),
+                                            tc.world.getRotation(),
+                                            tc.world.getScale());
         pec.p_emitter->update(deltaTime);
     }
+
+    for (auto&& fn : m_postUpdateWorkQueue)
+    {
+        fn();
+    }
+    m_postUpdateWorkQueue.clear();
 }
 
 void Scene::onDraw()
@@ -186,12 +292,12 @@ void Scene::_render(Camera* p_camera)
     // objects are on top (assuming = Z due to 2D)
     spriteView.use<GuidCmp>();
 
-    for (auto [entity, guid, transform, sprite] : spriteView.each())
+    for (auto [entity, gc, tc, sc] : spriteView.each())
     {
-        Renderer2D::s_drawQuad(transform.getTransform(),
-                               sprite.p_texture,
-                               sprite.color,
-                               sprite.tilingFactor,
+        Renderer2D::s_drawQuad(tc.world.getTransform(),
+                               sc.p_texture,
+                               sc.color,
+                               sc.tilingFactor,
                                static_cast<int>(entity));
     }
 
@@ -204,11 +310,11 @@ void Scene::_render(Camera* p_camera)
     // sprites
     textView.use<GuidCmp>();
 
-    for (auto [entity, guid, transform, text] : textView.each())
+    for (auto [entity, gc, tc, txc] : textView.each())
     {
-        Renderer2D::s_drawText(text.text,
-                               text.format,
-                               transform.getTransform(),
+        Renderer2D::s_drawText(txc.text,
+                               txc.format,
+                               tc.world.getTransform(),
                                static_cast<int>(entity));
     }
 
@@ -222,12 +328,28 @@ void Scene::_renderSceneSpecific(Camera* p_camera)
     ///////////////////////////
     // Particle Emitter
     ///////////////////////////
-    auto peView
-        = m_registry.view<GuidCmp, TransformCmp, ParticleEmitterCmp>();
+    auto peView = m_registry.view<GuidCmp, TransformCmp, ParticleEmitterCmp>();
 
-    for (auto [entity, guid, transform, pec] : peView.each())
+    for (auto [entity, gc, tc, pec] : peView.each())
     {
-        pec.p_emitter->draw(transform.getTransform());
+        pec.p_emitter->draw();
+    }
+}
+
+void Scene::_onUpdateEditor(float deltaTime)
+{
+    NM_UNUSED(deltaTime);
+    // for all entities that have a transform, we want to update any
+    // all child transforms accordingly
+    auto tcView = m_registry.view<TransformCmp, AncestryCmp>();
+
+    for (auto [entity, tc, ac] : tcView.each())
+    {
+        // only update top level here
+        if (!ac.parent)
+        {
+            _s_updateWorldTransform(tc, ac);
+        }
     }
 }
 

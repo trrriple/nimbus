@@ -18,7 +18,7 @@ class Entity
     }
 
     template <typename T>
-    inline bool hasComponent()
+    inline bool hasComponent() const
     {
         return mp_sceneParent->m_registry.all_of<T>(mh_entity);
     }

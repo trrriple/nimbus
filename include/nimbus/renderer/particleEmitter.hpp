@@ -59,8 +59,8 @@ class ParticleEmitter : public refCounted
         float                     initSpeedMax            = 0.2f;
         glm::vec3                 accelerationMin         = glm::vec3(0.0f);
         glm::vec3                 accelerationMax         = glm::vec3(0.0f);
-        float                     initSizeMin             = 0.01f;
-        float                     initSizeMax             = 0.01f;
+        glm::vec2                 initSizeMin             = glm::vec2(0.1f);
+        glm::vec2                 initSizeMax             = glm::vec2(0.1f);
         float                     ejectionBaseAngle_rad   = 0.0f;
         float                     ejectionSpreadAngle_rad = 6.2831f;
         std::vector<colorSpec>    colors;
@@ -81,9 +81,13 @@ class ParticleEmitter : public refCounted
 
     ~ParticleEmitter() = default;
 
+    void updateSpawnTransform(const glm::vec3& spawnTranslation,
+                              const glm::vec3& spawnRotation,
+                              const glm::vec3& spawnScale);
+
     void update(float deltaTime);
 
-    void draw(const glm::mat4& transform);
+    void draw();
 
     bool isDone();
 
@@ -113,7 +117,7 @@ class ParticleEmitter : public refCounted
 
     void setInitSpeed(float min, float max);
 
-    void setInitSize(float min, float max);
+    void setInitSize(glm::vec2 min, glm::vec2 max);
 
     void setAcceleration(glm::vec3 min, glm::vec3 max);
 
@@ -125,13 +129,13 @@ class ParticleEmitter : public refCounted
     ////////////////////////////////////////////////////////////////////////////
     struct particleAttributes
     {
-        glm::vec3 positionOffset = glm::vec3(0.0f);
-        glm::vec3 velocity       = glm::vec3(0.0f);
-        glm::vec3 acceleration   = glm::vec3(0.0f);
-        uint32_t  colorIdx       = 0;
-        float     startSize      = 0.0f;
-        float     startLifetime  = 0.0f;
-        float     curLifetime    = 0.0f;
+        glm::vec3     positionOffset = glm::vec3(0.0f);
+        glm::vec3     velocity       = glm::vec3(0.0f);
+        glm::vec3     acceleration   = glm::vec3(0.0f);
+        glm::vec2     startSize      = glm::vec2(0.0f);
+        uint32_t      colorIdx       = 0;
+        float         startLifetime  = 0.0f;
+        float         curLifetime    = 0.0f;
 
         void resetLifetime(float newLifetime)
         {
@@ -160,17 +164,17 @@ class ParticleEmitter : public refCounted
     inline static const BufferFormat k_instanceVboFormat = {
         {k_shaderVec3, "position", BufferComponent::Type::PER_INSTANCE, 1},
         {k_shaderVec4, "color", BufferComponent::Type::PER_INSTANCE, 1},
-        {k_shaderFloat, "size", BufferComponent::Type::PER_INSTANCE, 1},
+        {k_shaderVec2, "size", BufferComponent::Type::PER_INSTANCE, 1},
 
     };
     struct particleInstanceData
     {
         glm::vec3 position = glm::vec3(0.0f);
         glm::vec4 color    = glm::vec4(0.0f);
-        float     size     = 0.0f;
+        glm::vec2 size     = glm::vec2(0.0f);
 
-        void reset(const glm::vec3  newPosition,
-                   float            newSize,
+        void reset(const glm::vec3& newPosition,
+                   const glm::vec2& newSize,
                    const glm::vec4& newColor)
         {
             position = newPosition;
@@ -215,6 +219,9 @@ class ParticleEmitter : public refCounted
     uint32_t   m_numLiveParticles;
     Parameters m_parameters;
     bool       m_is3d;
+    glm::vec3  m_spawnTranslation;
+    glm::vec3  m_spawnRotation;
+    glm::vec3  m_spawnScale;
 
     ////////////////////////////////////////////////////////////////////////////
     // Cluster State
@@ -234,7 +241,8 @@ class ParticleEmitter : public refCounted
     std::uniform_real_distribution<float>   m_accelDistX;
     std::uniform_real_distribution<float>   m_accelDistY;
     std::uniform_real_distribution<float>   m_accelDistZ;
-    std::uniform_real_distribution<float>   m_sizeDist;
+    std::uniform_real_distribution<float>   m_sizeDistX;
+    std::uniform_real_distribution<float>   m_sizeDistY;
     std::uniform_real_distribution<float>   m_angleDist;
     std::uniform_int_distribution<uint32_t> m_colorIndexDist;
 
