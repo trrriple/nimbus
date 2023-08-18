@@ -131,7 +131,7 @@ struct TextCmp
 
 struct ParticleEmitterCmp
 {
-    uint32_t                    numParticles = 1;
+    uint32_t                    numParticles = 100;
     ParticleEmitter::Parameters parameters;
     ref<Texture>                p_texture    = nullptr;
     ref<ParticleEmitter>        p_emitter    = nullptr;

@@ -155,7 +155,7 @@ class SceneHeirarchyPanel
         // because a. they don't need to be processed by imgui and b. they
         // don't need to be processed by us.
         ImGuiListClipper clipper;
-        clipper.Begin(passedFilterEntities.size());
+        clipper.Begin(passedFilterEntities.size(), 20.0f);
         if (selectedIdx != -1)
         {
             // selected entity must be in list in order to scroll to it
@@ -232,6 +232,12 @@ class SceneHeirarchyPanel
     {
         Entity selectedEntity;
 
+        auto& name = entity.getComponent<NameCmp>().name;
+        auto& ac   = entity.getComponent<AncestryCmp>();
+
+        bool isChild = ac.parent;
+        bool hasChildren = ac.children.size() > 0;
+
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
                                    | ImGuiTreeNodeFlags_OpenOnDoubleClick
                                    | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -240,10 +246,8 @@ class SceneHeirarchyPanel
         flags |= ((m_selectionContext == entity) ? ImGuiTreeNodeFlags_Selected
                                                  : 0);
 
-        auto& name = entity.getComponent<NameCmp>().name;
-        auto& ac   = entity.getComponent<AncestryCmp>();
-
-        bool isChild = ac.parent;
+        // make this a leaf if it doesn't have children
+        flags |= hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf;
 
         auto icon = (isChild ? ICON_FA_CUBE : ICON_FA_CUBES);
 
@@ -253,7 +257,7 @@ class SceneHeirarchyPanel
         {
             if (m_selectionContext == child)
             {
-                flags |= ImGuiTreeNodeFlags_DefaultOpen;
+                ImGui::SetNextItemOpen(true);
                 break;
             }
         }
@@ -668,13 +672,6 @@ class SceneHeirarchyPanel
                     pc.p_emitter->setShrink(pc.parameters.shrink);
                 }
             }
-            ImGui::SameLine();
-            if (ImGui::Checkbox("StaggerStart", &pc.parameters.staggerStart))
-            {
-                if (isRuntime)
-                {
-                }
-            }
 
             if (ImGui::DragFloatRange2("Lifetime",
                                        &pc.parameters.lifetimeMin_s,
@@ -731,11 +728,11 @@ class SceneHeirarchyPanel
             if (ImGui::DragFloatRange2("Init Speed",
                                        &pc.parameters.initSpeedMin,
                                        &pc.parameters.initSpeedMax,
-                                       0.05f,
+                                       0.005f,
                                        0.0f,
-                                       10000.0f,
-                                       "Min: %.02f",
-                                       "Max: %.02f",
+                                       100.0f,
+                                       "Min: %.03f",
+                                       "Max: %.03f",
                                        ImGuiSliderFlags_AlwaysClamp))
             {
                 if (isRuntime)

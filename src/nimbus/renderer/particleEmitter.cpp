@@ -82,7 +82,7 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
                                  const ref<Shader>&  p_customShader,
                                  bool                is3d)
     : m_numParticles(particleCount),
-      m_numLiveParticles(particleCount),
+      m_numLiveParticles(particleCount), // technically not
       m_parameters(particleParameters),
       m_is3d(is3d),
       mp_texture(p_texture),
@@ -137,26 +137,11 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
         // general purpose distribution
         m_gpRandDist = std::uniform_real_distribution<float>(0.0f, 1.0f);
 
-        // if staggering, override
-        float lifetimeMin_s = m_parameters.lifetimeMin_s;
-        float initSpeedMin  = m_parameters.initSpeedMin;
-        if (m_parameters.staggerStart)
-        {
-            // lifetime distribution
-            setLifeTime(0.00f, m_parameters.lifetimeMax_s);
-            // speed ditribution
-            setInitSpeed(0.0f, m_parameters.initSpeedMax);
+        // lifetime distribution
+        setLifeTime(m_parameters.lifetimeMin_s, m_parameters.lifetimeMax_s);
 
-            // these will replace the parameters, so we had to save them off
-            // above
-        }
-        else
-        {
-            // lifetime distribution
-            setLifeTime(m_parameters.lifetimeMin_s, m_parameters.lifetimeMax_s);
-            // speed ditribution
-            setInitSpeed(m_parameters.initSpeedMin, m_parameters.initSpeedMax);
-        }
+        // speed ditribution
+        setInitSpeed(m_parameters.initSpeedMin, m_parameters.initSpeedMax);
 
         // accel distribution
         setAcceleration(m_parameters.accelerationMin,
@@ -190,38 +175,23 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
         m_particleAttributes.reserve(m_numParticles);
         for (uint32_t i = 0; i < m_numParticles; i++)
         {
-            // set CPU data
-            float angle    = -m_angleDist(m_randGen);
-            float speed    = m_speedDist(m_randGen);
-            float lifetime = m_lifetimeDist(m_randGen);
-
-            glm::vec2 startSize(m_sizeDistX(m_randGen), m_sizeDistY(m_randGen));
-
-            glm::vec3 accel(m_accelDistX(m_randGen),
-                            m_accelDistY(m_randGen),
-                            m_accelDistZ(m_randGen));
-
             glm::vec3 positionOffset = _getRandomPositionInVolume();
 
-            glm::vec3 velocity(
-                std::sin(angle) * speed, std::cos(angle) * speed, 0.0f);
-
-            uint32_t  colorIdx = _getRandomColorIdx();
-            glm::vec4 color    = m_parameters.colors[colorIdx].colorStart;
-
             particleAttributes partAtt = {positionOffset,
-                                          velocity,
-                                          accel,
-                                          startSize,
-                                          colorIdx,
-                                          lifetime,
-                                          lifetime};
+                                          {0.0f, 0.0f, 0.0f},
+                                          {0.0f, 0.0f, 0.0f},
+                                          {0.0f, 0.0f},
+                                          0,
+                                          1.0,
+                                          0.0};
 
             m_particleAttributes.push_back(partAtt);
 
             // set GPU data
-            particleInstanceData partInst = {
-                m_parameters.centerPosition + positionOffset, color, startSize};
+            particleInstanceData partInst
+                = {m_parameters.centerPosition + positionOffset,
+                   {0.0f, 0.0f, 0.0f, 0.0f},
+                   {0.0f, 0.0f}};
 
             m_particleInstanceData.push_back(partInst);
         }
@@ -234,15 +204,6 @@ ParticleEmitter::ParticleEmitter(uint32_t            particleCount,
         mp_instanceVbo->setFormat(k_instanceVboFormat);
 
         mp_vao->addVertexBuffer(mp_instanceVbo);
-
-        // if staggering, set these back to expected parameters
-        if (m_parameters.staggerStart)
-        {
-            // lifetime distribution
-            setLifeTime(lifetimeMin_s, m_parameters.lifetimeMax_s);
-            // speed ditribution
-            setInitSpeed(initSpeedMin, m_parameters.initSpeedMax);
-        }
     }
 }
 
@@ -281,46 +242,48 @@ void ParticleEmitter::update(float deltaTime)
                               m_particleInstanceData[m_numLiveParticles - 1]);
                 }
 
-                m_numLiveParticles -= 1;
+                // this is important, we don't want to visit dead particles
+                // during this current loop, so indeed modify the loop
+                // condition
+                m_numLiveParticles--;
+
+                continue;
             }
             else
             {
+                // don't adjust m_numLiveParticles, just respawn this particle
                 _respawnParticle(p_attrib, p_instDat);
             }
         }
-        else
+
+        ////////////////////////////////////////////////////////////////////
+        //  Step living particles
+        ////////////////////////////////////////////////////////////////////
+        float currentLifeLeft = p_attrib->getLifePercent();
+        // calculate velocity based on acceleration and lifetime
+        glm::vec3 velocity
+            = p_attrib->velocity
+              + (p_attrib->acceleration
+                 * (p_attrib->startLifetime - p_attrib->curLifetime));
+
+        // position update
+        p_instDat->updatePosition(velocity, deltaTime);
+
+        // update color
+        p_instDat->color
+            = glm::mix(m_parameters.colors[p_attrib->colorIdx].colorEnd,
+                       m_parameters.colors[p_attrib->colorIdx].colorStart,
+                       currentLifeLeft);
+
+        //  shrink particles as they age if desired
+        if (m_parameters.shrink)
         {
-            ////////////////////////////////////////////////////////////////////
-            //  Step living particles
-            ////////////////////////////////////////////////////////////////////
-            float currentLifeLeft = p_attrib->getLifePercent();
-            // calculate velocity based on acceleration and lifetime
-            glm::vec3 velocity
-                = p_attrib->velocity
-                  + (p_attrib->acceleration
-                     * (p_attrib->startLifetime - p_attrib->curLifetime));
+            // shrink at a slower rate initially then speed up as
+            // particle ages
+            float sizeScalar = std::sqrt(currentLifeLeft);
 
-            // position update
-            p_instDat->updatePosition(velocity, deltaTime);
-
-            // update color
-            p_instDat->color
-                = glm::mix(m_parameters.colors[p_attrib->colorIdx].colorEnd,
-                           m_parameters.colors[p_attrib->colorIdx].colorStart,
-                           currentLifeLeft);
-
-            //  shrink particles as they age if desired
-            if (m_parameters.shrink)
-            {
-                // shrink at a slower rate initially then speed up as
-                // particle ages
-                float sizeScalar = std::sqrt(currentLifeLeft);
-
-                p_instDat->size.x
-                    = sizeScalar * p_attrib->startSize.x;
-                p_instDat->size.y
-                    = sizeScalar * p_attrib->startSize.y;
-            }
+            p_instDat->size.x = sizeScalar * p_attrib->startSize.x;
+            p_instDat->size.y = sizeScalar * p_attrib->startSize.y;
         }
     }
 }
@@ -355,13 +318,6 @@ void ParticleEmitter::draw()
 bool ParticleEmitter::isDone()
 {
     return m_numLiveParticles == 0;
-}
-
-void ParticleEmitter::trigger()
-{
-    // if this is the first time we've been triggered, reset locations on
-    // living particles. If not, don't.
-    reset(!m_beenTriggered);
 }
 
 void ParticleEmitter::reset(bool updateLiving)

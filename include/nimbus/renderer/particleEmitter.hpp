@@ -53,19 +53,18 @@ class ParticleEmitter : public refCounted
         CircleVolumeParameters    circleVolumeParams;
         RectVolumeParameters      rectVolumeParams;
         LineVolumeParameters      lineVolumeParams;
-        float                     lifetimeMin_s           = 1.0f;
+        float                     lifetimeMin_s           = 0.5f;
         float                     lifetimeMax_s           = 1.0f;
-        float                     initSpeedMin            = 0.2f;
-        float                     initSpeedMax            = 0.2f;
+        float                     initSpeedMin            = 0.05f;
+        float                     initSpeedMax            = 0.10f;
         glm::vec3                 accelerationMin         = glm::vec3(0.0f);
         glm::vec3                 accelerationMax         = glm::vec3(0.0f);
-        glm::vec2                 initSizeMin             = glm::vec2(0.1f);
-        glm::vec2                 initSizeMax             = glm::vec2(0.1f);
+        glm::vec2                 initSizeMin             = glm::vec2(0.025f);
+        glm::vec2                 initSizeMax             = glm::vec2(0.025f);
         float                     ejectionBaseAngle_rad   = 0.0f;
         float                     ejectionSpreadAngle_rad = 6.2831f;
         std::vector<colorSpec>    colors;
-        bool                      persist      = false;
-        bool                      staggerStart = true;
+        bool                      persist      = true;
         bool                      shrink       = false;
         GraphicsApi::BlendingMode blendingMode
             = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
@@ -90,8 +89,6 @@ class ParticleEmitter : public refCounted
     void draw();
 
     bool isDone();
-
-    void trigger();
 
     void reset(bool updateLiving = false);
 
@@ -219,14 +216,13 @@ class ParticleEmitter : public refCounted
     uint32_t   m_numLiveParticles;
     Parameters m_parameters;
     bool       m_is3d;
-    glm::vec3  m_spawnTranslation;
-    glm::vec3  m_spawnRotation;
-    glm::vec3  m_spawnScale;
+    glm::vec3  m_spawnTranslation = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3  m_spawnRotation    = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3  m_spawnScale       = glm::vec3(1.0f, 1.0f, 1.0f);
 
     ////////////////////////////////////////////////////////////////////////////
     // Cluster State
     ////////////////////////////////////////////////////////////////////////////
-    bool                              m_beenTriggered = false;
     ref<Shader>                       mp_shader       = nullptr;
     ref<VertexArray>                  mp_vao          = nullptr;
     ref<Texture>                      mp_texture      = nullptr;

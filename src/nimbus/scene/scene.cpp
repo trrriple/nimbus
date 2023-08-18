@@ -151,7 +151,7 @@ void Scene::onStart()
                                                       pec.parameters,
                                                       pec.p_texture,
                                                       nullptr,
-                                                      false);
+                                                      false);            
         });
 }
 

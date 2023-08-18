@@ -1,6 +1,7 @@
 #pragma once
 #include "nimbus/core/common.hpp"
 #include "nimbus/scene/scene.hpp"
+#include "nimbus/scene/entity.hpp"
 
 namespace nimbus
 {
@@ -22,6 +23,11 @@ class SceneSerializer
     void _deserializeEntity(void*             p_entityTbl,
                             Scene*            p_scene,
                             const std::string guidStr);
+
+    void _assembleFamilyTree(void*             p_entityTbl,
+                             const std::string guidStr);
+
+    std::unordered_map<std::string, Entity> m_entityMap;
 };
 
 }  // namespace nimbus

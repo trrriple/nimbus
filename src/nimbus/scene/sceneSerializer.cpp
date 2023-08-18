@@ -36,6 +36,31 @@ static void s_serializeEntity(toml::table& entitiesTbl,
     entityTbl.insert("name", entity.getComponent<NameCmp>().name);
 
     ///////////////////////////
+    // AncestryCmp
+    ///////////////////////////
+    if (entity.hasComponent<AncestryCmp>())
+    {
+        toml::table  ancestryTbl;
+        AncestryCmp& ac = entity.getComponent<AncestryCmp>();
+
+        if (ac.parent)
+        {
+            ancestryTbl.insert(
+                "parent", ac.parent.getComponent<GuidCmp>().guid.toString());
+        }
+
+        toml::array childGuids;
+        for (auto& child : ac.children)
+        {
+            childGuids.push_back(child.getComponent<GuidCmp>().guid.toString());
+        }
+
+        ancestryTbl.insert("children", childGuids);
+
+        entityTbl.insert("AncestryCmp", ancestryTbl);
+    }
+
+    ///////////////////////////
     // TransformCmp
     ///////////////////////////
     if (entity.hasComponent<TransformCmp>())
@@ -43,9 +68,9 @@ static void s_serializeEntity(toml::table& entitiesTbl,
         toml::table   transformTbl;
         TransformCmp& tc = entity.getComponent<TransformCmp>();
 
-        auto& translation = tc.world.getTranslation();
-        auto& rotation    = tc.world.getRotation();
-        auto& scale       = tc.world.getScale();
+        auto& translation = tc.local.getTranslation();
+        auto& rotation    = tc.local.getRotation();
+        auto& scale       = tc.local.getScale();
 
         transformTbl.insert(
             "translation",
@@ -55,7 +80,7 @@ static void s_serializeEntity(toml::table& entitiesTbl,
                             toml::array{rotation.x, rotation.y, rotation.z});
 
         transformTbl.insert("scale", toml::array{scale.x, scale.y, scale.z});
-        transformTbl.insert("scaleLocked", tc.world.isScaleLocked());
+        transformTbl.insert("scaleLocked", tc.local.isScaleLocked());
 
         entityTbl.insert("TransformCmp", transformTbl);
     }
@@ -205,6 +230,9 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
 
     Entity entity = p_scene->_addEntity(name, guidStr, sequenceIndex);
 
+    // put this into our map for later
+    m_entityMap[guidStr] = entity;
+
     p_entityTbl->for_each(
         [&](const toml::key& key, toml::node& node)
         {
@@ -227,19 +255,19 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
                     auto& rotation    = *cmpTbl["rotation"].as_array();
                     auto& scale       = *cmpTbl["scale"].as_array();
 
-                    tc.world.setTranslation({translation[0].ref<double>(),
+                    tc.local.setTranslation({translation[0].ref<double>(),
                                                  translation[1].ref<double>(),
                                                  translation[2].ref<double>()});
 
-                    tc.world.setRotation({rotation[0].ref<double>(),
+                    tc.local.setRotation({rotation[0].ref<double>(),
                                               rotation[1].ref<double>(),
                                               rotation[2].ref<double>()});
 
-                    tc.world.setScale({scale[0].ref<double>(),
-                                           scale[1].ref<double>(),
-                                           scale[2].ref<double>()});
+                    tc.local.setScale({scale[0].ref<double>(),
+                                       scale[1].ref<double>(),
+                                       scale[2].ref<double>()});
 
-                    tc.world.setScaleLocked(
+                    tc.local.setScaleLocked(
                         cmpTbl["scaleLocked"].ref<bool>());
                 }
 
@@ -354,6 +382,51 @@ void SceneSerializer::_deserializeEntity(void*             entityTbl,
         });
 }
 
+void SceneSerializer::_assembleFamilyTree(void*             entityTbl,
+                                          const std::string guidStr)
+{
+    toml::table* p_entityTbl = reinterpret_cast<toml::table*>(entityTbl);
+
+    Entity entity = m_entityMap[guidStr];
+
+    p_entityTbl->for_each(
+        [&](const toml::key& key, toml::node& node)
+        {
+            std::string cmpType(key.data());
+
+            if (node.is_table())
+            {
+                auto& cmpTbl = *node.as_table();
+
+                ///////////////////////////
+                // AncestryCmp
+                ///////////////////////////
+                if (cmpType == "AncestryCmp")
+                {
+                    auto& ac = entity.addComponent<AncestryCmp>();
+
+                    std::optional<std::string> parentGuidStr
+                        = cmpTbl["parent"].value<std::string>();
+
+                    if (parentGuidStr)
+                    {
+                        ac.parent = m_entityMap[parentGuidStr.value()];
+                    }
+
+                    auto childrenGuidStrs = cmpTbl["children"].as_array();
+                    if (childrenGuidStrs)
+                    {
+                        for (auto& childGuidStr : *childrenGuidStrs)
+                        {
+                            ac.children.push_back(
+                                m_entityMap[childGuidStr.ref<std::string>()]);
+                        }
+                    }
+                }
+            }
+        });
+}
+
 bool SceneSerializer::deserialize(const std::string& filepath)
 {
     auto result = toml::parse_file(filepath);
@@ -401,6 +474,19 @@ bool SceneSerializer::deserialize(const std::string& filepath)
             if constexpr (toml::is_table<decltype(entityTbl)>)
             {
                 _deserializeEntity((void*)&entityTbl, mp_scene.raw(), guidStr);
+            }
+        });
+
+    // go through again, but this time do stuff we couldn't do without
+    // the full picture
+    entitiesTbl->for_each(
+        [this](const toml::key& key, auto&& entityTbl)
+        {
+            std::string guidStr(key.data());
+
+            if constexpr (toml::is_table<decltype(entityTbl)>)
+            {
+                _assembleFamilyTree((void*)&entityTbl, guidStr);
             }
         });
 
