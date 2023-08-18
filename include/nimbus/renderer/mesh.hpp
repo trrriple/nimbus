@@ -54,14 +54,10 @@ class Mesh : public refCounted
          bool                      normalize = false);
 
     // with verticies and textures
-    Mesh(std::vector<Vertex>       verticies,
-         std::vector<ref<Texture>> textures,
-         bool                      normalize = false);
+    Mesh(std::vector<Vertex> verticies, std::vector<ref<Texture>> textures, bool normalize = false);
 
     // with verticies and indicies
-    Mesh(std::vector<Vertex>   verticies,
-         std::vector<uint32_t> indicies,
-         bool                  normalize = false);
+    Mesh(std::vector<Vertex> verticies, std::vector<uint32_t> indicies, bool normalize = false);
 
     // with verticies only
     Mesh(std::vector<Vertex> verticies, bool normalize = false);

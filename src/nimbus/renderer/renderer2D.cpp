@@ -21,52 +21,42 @@ Renderer2D::Stats     Renderer2D::s_stats;
 void Renderer2D::s_init()
 {
     static std::once_flag initFlag;
-    std::call_once(
-        initFlag,
-        []()
-        {
-            s_quadData = new QuadData;
-            s_textData = new TextData;
+    std::call_once(initFlag,
+                   []()
+                   {
+                       s_quadData = new QuadData;
+                       s_textData = new TextData;
 
-            ///////////////////////////
-            // General data init
-            ///////////////////////////
-            s_quadData->vertices.push_back(
-                {glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)});
-            s_quadData->vertices.push_back(
-                {glm::vec4(0.5f, -0.5f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)});
-            s_quadData->vertices.push_back(
-                {glm::vec4(0.5f, 0.5f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)});
-            s_quadData->vertices.push_back(
-                {glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)});
+                       ///////////////////////////
+                       // General data init
+                       ///////////////////////////
+                       s_quadData->vertices.push_back({glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)});
+                       s_quadData->vertices.push_back({glm::vec4(0.5f, -0.5f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)});
+                       s_quadData->vertices.push_back({glm::vec4(0.5f, 0.5f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)});
+                       s_quadData->vertices.push_back({glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)});
 
-            ///////////////////////////
-            // Quad data init
-            ///////////////////////////
-            s_quadData->p_shader
-                = Application::s_get().getResourceManager().loadShader(
-                    "../resources/shaders/quad.v.glsl",
-                    "../resources/shaders/quad.f.glsl");
+                       ///////////////////////////
+                       // Quad data init
+                       ///////////////////////////
+                       s_quadData->p_shader = Application::s_get().getResourceManager().loadShader(
+                           "../resources/shaders/quad.v.glsl", "../resources/shaders/quad.f.glsl");
 
-            s_quadData->textures.reserve(Texture::s_getMaxTextures());
+                       s_quadData->textures.reserve(Texture::s_getMaxTextures());
 
-            
-            s_quadData->textures.push_back(Renderer::getWhiteTexture());
+                       s_quadData->textures.push_back(Renderer::getWhiteTexture());
 
-            _s_createQuadBuffers();
+                       _s_createQuadBuffers();
 
-            ///////////////////////////
-            // Text data init
-            ///////////////////////////
-            s_textData->p_shader
-                = Application::s_get().getResourceManager().loadShader(
-                    "../resources/shaders/text.v.glsl",
-                    "../resources/shaders/text.f.glsl");
+                       ///////////////////////////
+                       // Text data init
+                       ///////////////////////////
+                       s_textData->p_shader = Application::s_get().getResourceManager().loadShader(
+                           "../resources/shaders/text.v.glsl", "../resources/shaders/text.f.glsl");
 
-            s_textData->atlases.reserve(Texture::s_getMaxTextures());
+                       s_textData->atlases.reserve(Texture::s_getMaxTextures());
 
-            _s_createTextBuffers();
-        });
+                       _s_createTextBuffers();
+                   });
 }
 
 void Renderer2D::s_destroy()
@@ -81,8 +71,7 @@ void Renderer2D::s_begin(const glm::mat4& vpMatrix)
 
     if (s_inScene)
     {
-        Log::coreError(
-            "Renderer2D::begin called again without  Renderer2D::end!");
+        Log::coreError("Renderer2D::begin called again without  Renderer2D::end!");
         return;
     }
 
@@ -162,19 +151,16 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
         texIdx = 0;  // white texture
     }
 
-    s_quadData->instVertices[s_quadData->quadCount].transform = transform;
-    s_quadData->instVertices[s_quadData->quadCount].color     = color;
-    s_quadData->instVertices[s_quadData->quadCount].texIndex  = texIdx;
-    s_quadData->instVertices[s_quadData->quadCount].texTilingFactor
-        = texTilingFactor;
-    s_quadData->instVertices[s_quadData->quadCount].entityId = entityId;
+    s_quadData->instVertices[s_quadData->quadCount].transform       = transform;
+    s_quadData->instVertices[s_quadData->quadCount].color           = color;
+    s_quadData->instVertices[s_quadData->quadCount].texIndex        = texIdx;
+    s_quadData->instVertices[s_quadData->quadCount].texTilingFactor = texTilingFactor;
+    s_quadData->instVertices[s_quadData->quadCount].entityId        = entityId;
 
     s_quadData->quadCount++;
 }
 
-void Renderer2D::s_drawQuad(const glm::mat4& transform,
-                            const glm::vec4& color,
-                            uint32_t         entityId)
+void Renderer2D::s_drawQuad(const glm::mat4& transform, const glm::vec4& color, uint32_t entityId)
 {
     NM_PROFILE_TRACE();
     s_drawQuad(transform, nullptr, color, 1.0f, entityId);
@@ -223,8 +209,7 @@ void Renderer2D::s_drawText(const std::string&  text,
     // calc data we need
     float     atlasWidth  = p_atlas->getWidth();
     float     atlasHeight = p_atlas->getHeight();
-    glm::vec2 unitRange
-        = glm::vec2(fontData->pixelRange) / glm::vec2(atlasWidth, atlasHeight);
+    glm::vec2 unitRange   = glm::vec2(fontData->pixelRange) / glm::vec2(atlasWidth, atlasHeight);
 
     double incX        = 0.0;  // incremental x position
     double incY        = 0.0;  // incremental y positioncp
@@ -316,16 +301,13 @@ void Renderer2D::s_drawText(const std::string&  text,
         {
             // we didn't find it so use a ? if it's there
             glyph = fontGeometry.getGlyph('?');
-            Log::coreWarn("Glyph %c not found in font %s",
-                          character,
-                          fontFormat.p_font->getPath().c_str());
+            Log::coreWarn("Glyph %c not found in font %s", character, fontFormat.p_font->getPath().c_str());
         }
         // whats the deal with this font?
-        NM_CORE_ASSERT_STATIC(
-            glyph,
-            "Glyph %c not found in font %s (nor was ? for that matter)",
-            character,
-            fontFormat.p_font->getPath().c_str());
+        NM_CORE_ASSERT_STATIC(glyph,
+                              "Glyph %c not found in font %s (nor was ? for that matter)",
+                              character,
+                              fontFormat.p_font->getPath().c_str());
 
         // figure out the bounds of the quad needed for glyph
         double quadLeft;
@@ -352,56 +334,40 @@ void Renderer2D::s_drawText(const std::string&  text,
         texRight *= texelWidth;
         texTop *= texelHeight;
 
-        s_textData->vertices[s_textData->vertexIdx].position
-            = transform * glm::vec4(quadLeft, quadBottom, 0.0f, 1.0f);
-        s_textData->vertices[s_textData->vertexIdx].texCoord
-            = glm::vec2(texLeft, texBottom);
-        s_textData->vertices[s_textData->vertexIdx].fgColor
-            = fontFormat.fgColor;
-        s_textData->vertices[s_textData->vertexIdx].bgColor
-            = fontFormat.bgColor;
+        s_textData->vertices[s_textData->vertexIdx].position  = transform * glm::vec4(quadLeft, quadBottom, 0.0f, 1.0f);
+        s_textData->vertices[s_textData->vertexIdx].texCoord  = glm::vec2(texLeft, texBottom);
+        s_textData->vertices[s_textData->vertexIdx].fgColor   = fontFormat.fgColor;
+        s_textData->vertices[s_textData->vertexIdx].bgColor   = fontFormat.bgColor;
         s_textData->vertices[s_textData->vertexIdx].unitRange = unitRange;
         s_textData->vertices[s_textData->vertexIdx].texIndex  = texIdx;
         s_textData->vertices[s_textData->vertexIdx].entityId  = entityId;
 
         s_textData->vertexIdx++;
 
-        s_textData->vertices[s_textData->vertexIdx].position
-            = transform * glm::vec4(quadLeft, quadTop, 0.0f, 1.0f);
-        s_textData->vertices[s_textData->vertexIdx].texCoord
-            = glm::vec2(texLeft, texTop);
-        s_textData->vertices[s_textData->vertexIdx].fgColor
-            = fontFormat.fgColor;
-        s_textData->vertices[s_textData->vertexIdx].bgColor
-            = fontFormat.bgColor;
+        s_textData->vertices[s_textData->vertexIdx].position  = transform * glm::vec4(quadLeft, quadTop, 0.0f, 1.0f);
+        s_textData->vertices[s_textData->vertexIdx].texCoord  = glm::vec2(texLeft, texTop);
+        s_textData->vertices[s_textData->vertexIdx].fgColor   = fontFormat.fgColor;
+        s_textData->vertices[s_textData->vertexIdx].bgColor   = fontFormat.bgColor;
         s_textData->vertices[s_textData->vertexIdx].unitRange = unitRange;
         s_textData->vertices[s_textData->vertexIdx].texIndex  = texIdx;
         s_textData->vertices[s_textData->vertexIdx].entityId  = entityId;
 
         s_textData->vertexIdx++;
 
-        s_textData->vertices[s_textData->vertexIdx].position
-            = transform * glm::vec4(quadRight, quadTop, 0.0f, 1.0f);
-        s_textData->vertices[s_textData->vertexIdx].texCoord
-            = glm::vec2(texRight, texTop);
-        s_textData->vertices[s_textData->vertexIdx].fgColor
-            = fontFormat.fgColor;
-        s_textData->vertices[s_textData->vertexIdx].bgColor
-            = fontFormat.bgColor;
+        s_textData->vertices[s_textData->vertexIdx].position  = transform * glm::vec4(quadRight, quadTop, 0.0f, 1.0f);
+        s_textData->vertices[s_textData->vertexIdx].texCoord  = glm::vec2(texRight, texTop);
+        s_textData->vertices[s_textData->vertexIdx].fgColor   = fontFormat.fgColor;
+        s_textData->vertices[s_textData->vertexIdx].bgColor   = fontFormat.bgColor;
         s_textData->vertices[s_textData->vertexIdx].unitRange = unitRange;
         s_textData->vertices[s_textData->vertexIdx].texIndex  = texIdx;
         s_textData->vertices[s_textData->vertexIdx].entityId  = entityId;
 
         s_textData->vertexIdx++;
 
-        s_textData->vertices[s_textData->vertexIdx].position
-            = transform * glm::vec4(quadRight, quadBottom, 0.0f, 1.0f);
-        s_textData->vertices[s_textData->vertexIdx].texCoord
-            = glm::vec2(texRight, texBottom);
-        s_textData->vertices[s_textData->vertexIdx].fgColor
-            = fontFormat.fgColor;
-        s_textData->vertices[s_textData->vertexIdx].bgColor
-            = fontFormat.bgColor;
+        s_textData->vertices[s_textData->vertexIdx].position = transform * glm::vec4(quadRight, quadBottom, 0.0f, 1.0f);
+        s_textData->vertices[s_textData->vertexIdx].texCoord = glm::vec2(texRight, texBottom);
+        s_textData->vertices[s_textData->vertexIdx].fgColor  = fontFormat.fgColor;
+        s_textData->vertices[s_textData->vertexIdx].bgColor  = fontFormat.bgColor;
         s_textData->vertices[s_textData->vertexIdx].unitRange = unitRange;
         s_textData->vertices[s_textData->vertexIdx].texIndex  = texIdx;
         s_textData->vertices[s_textData->vertexIdx].entityId  = entityId;
@@ -442,32 +408,27 @@ void Renderer2D::_s_submit()
     ///////////////////////////
     if (s_quadData->quadCount > 0)
     {
-        s_quadData->p_vbo->setData(
-            &s_quadData->instVertices[0],
-            sizeof(QuadInstVertex) * s_quadData->quadCount);
+        s_quadData->p_vbo->setData(&s_quadData->instVertices[0], sizeof(QuadInstVertex) * s_quadData->quadCount);
 
         for (size_t i = 0; i < s_quadData->textures.size(); i++)
         {
             s_quadData->textures[i]->bind(i);
         }
 
-        Renderer::s_renderInstanced(
-            s_quadData->p_shader, s_quadData->p_vao, s_quadData->quadCount);
+        Renderer::s_renderInstanced(s_quadData->p_shader, s_quadData->p_vao, s_quadData->quadCount);
 
         // collect stats
         s_stats.drawCalls++;
         s_stats.quads += s_quadData->quadCount;
         s_stats.quadVertices += s_quadData->quadCount * 4;
         s_stats.totalVertices += s_quadData->quadCount * 4;
-        s_stats.quadVertsAvail
-            = (s_quadData->instVertices.size() * 4) - s_stats.quadVertices;
+        s_stats.quadVertsAvail = (s_quadData->instVertices.size() * 4) - s_stats.quadVertices;
 
         // reset
         s_quadData->quadCount = 0;
 
         // remove all but the first texture (the white one)
-        s_quadData->textures.erase(s_quadData->textures.begin() + 1,
-                                   s_quadData->textures.end());
+        s_quadData->textures.erase(s_quadData->textures.begin() + 1, s_quadData->textures.end());
     }
 
     ///////////////////////////
@@ -475,8 +436,7 @@ void Renderer2D::_s_submit()
     ///////////////////////////
     if (s_textData->charCount > 0)
     {
-        s_textData->p_vbo->setData(&s_textData->vertices[0],
-                                   sizeof(TextVertex) * s_textData->vertexIdx);
+        s_textData->p_vbo->setData(&s_textData->vertices[0], sizeof(TextVertex) * s_textData->vertexIdx);
 
         for (size_t i = 0; i < s_textData->atlases.size(); i++)
         {
@@ -494,8 +454,7 @@ void Renderer2D::_s_submit()
         s_stats.characters += s_textData->charCount;
         s_stats.textVertices += s_textData->charCount * 4;
         s_stats.totalVertices += s_textData->charCount * 4;
-        s_stats.textVertsAvail
-            = s_textData->vertices.size() - s_stats.textVertices;
+        s_stats.textVertsAvail = s_textData->vertices.size() - s_stats.textVertices;
 
         // reset
         s_textData->vertexIdx = 0;
@@ -506,8 +465,7 @@ void Renderer2D::_s_submit()
 }
 
 template <typename IndexType>
-static void s_generateIndicesAndSetBuffer(uint32_t          quads,
-                                          ref<VertexArray>& p_vao)
+static void s_generateIndicesAndSetBuffer(uint32_t quads, ref<VertexArray>& p_vao)
 {
     std::vector<IndexType> quadVertexIndices;
     quadVertexIndices.reserve(6 * quads);
@@ -524,8 +482,7 @@ static void s_generateIndicesAndSetBuffer(uint32_t          quads,
         offset += 4;
     }
 
-    p_vao->setIndexBuffer(
-        IndexBuffer::s_create(&quadVertexIndices[0], quadVertexIndices.size()));
+    p_vao->setIndexBuffer(IndexBuffer::s_create(&quadVertexIndices[0], quadVertexIndices.size()));
 }
 
 void Renderer2D::_s_createQuadBuffers()
@@ -543,8 +500,7 @@ void Renderer2D::_s_createQuadBuffers()
 
         if (newSize >= k_quadMaxCount)
         {
-            Log::coreWarn("Quad buffer size limit (%i) reached.",
-                          k_quadMaxCount);
+            Log::coreWarn("Quad buffer size limit (%i) reached.", k_quadMaxCount);
             return;
         }
     }
@@ -563,9 +519,7 @@ void Renderer2D::_s_createQuadBuffers()
     ///////////////////////////
     // shared, doesn't change after creation so no need to save handle to it
     auto sharedVbo = VertexBuffer::s_create(
-        &s_quadData->vertices[0],
-        s_quadData->vertices.size() * sizeof(QuadVertex),
-        VertexBuffer::Type::STATIC_DRAW);
+        &s_quadData->vertices[0], s_quadData->vertices.size() * sizeof(QuadVertex), VertexBuffer::Type::STATIC_DRAW);
 
     sharedVbo->setFormat(k_quadVertexFormat);
     s_quadData->p_vao->addVertexBuffer(sharedVbo);
@@ -580,10 +534,9 @@ void Renderer2D::_s_createQuadBuffers()
     ///////////////////////////
     s_quadData->instVertices = std::vector<QuadInstVertex>(newSize);
 
-    s_quadData->p_vbo = VertexBuffer::s_create(
-        &s_quadData->instVertices[0],
-        s_quadData->instVertices.size() * sizeof(QuadInstVertex),
-        VertexBuffer::Type::STREAM_DRAW);
+    s_quadData->p_vbo = VertexBuffer::s_create(&s_quadData->instVertices[0],
+                                               s_quadData->instVertices.size() * sizeof(QuadInstVertex),
+                                               VertexBuffer::Type::STREAM_DRAW);
 
     s_quadData->p_vbo->setFormat(k_quadInstVertexFormat);
     s_quadData->p_vao->addVertexBuffer(s_quadData->p_vbo);
@@ -611,8 +564,7 @@ void Renderer2D::_s_createTextBuffers()
 
         if (newSize >= k_textVerticesMaxCount)
         {
-            Log::coreWarn("Text vertex buffer size limit (%i) reached.",
-                          k_textVerticesMaxCount);
+            Log::coreWarn("Text vertex buffer size limit (%i) reached.", k_textVerticesMaxCount);
             return;
         }
     }
@@ -632,9 +584,7 @@ void Renderer2D::_s_createTextBuffers()
     s_textData->vertices = std::vector<TextVertex>(newSize);
 
     s_textData->p_vbo = VertexBuffer::s_create(
-        &s_textData->vertices[0],
-        s_textData->vertices.size() * sizeof(TextVertex),
-        VertexBuffer::Type::DYNAMIC_DRAW);
+        &s_textData->vertices[0], s_textData->vertices.size() * sizeof(TextVertex), VertexBuffer::Type::DYNAMIC_DRAW);
 
     s_textData->p_vbo->setFormat(k_TextVertexFormat);
     s_textData->p_vao->addVertexBuffer(s_textData->p_vbo);

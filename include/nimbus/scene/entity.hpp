@@ -12,8 +12,7 @@ class Entity
     inline static const uint32_t k_nullEntity = entt::null;
 
     Entity() = default;
-    Entity(entt::entity handle, Scene* scene)
-        : mh_entity(handle), mp_sceneParent(scene)
+    Entity(entt::entity handle, Scene* scene) : mh_entity(handle), mp_sceneParent(scene)
     {
     }
 
@@ -36,8 +35,7 @@ class Entity
     {
         NM_ASSERT(!hasComponent<T>(), "Entity already has component!");
 
-        T& component = mp_sceneParent->m_registry.emplace<T>(
-            mh_entity, std::forward<Args>(args)...);
+        T& component = mp_sceneParent->m_registry.emplace<T>(mh_entity, std::forward<Args>(args)...);
         // mp_sceneParent->OnComponentAdded<T>(*this, component);
         return component;
     }
@@ -61,8 +59,7 @@ class Entity
 
     inline bool operator==(const Entity& other) const
     {
-        return (other.mh_entity == mh_entity
-                && other.mp_sceneParent == mp_sceneParent);
+        return (other.mh_entity == mh_entity && other.mp_sceneParent == mp_sceneParent);
     }
 
     inline bool operator!=(const Entity& other) const

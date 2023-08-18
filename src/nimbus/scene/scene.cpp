@@ -19,9 +19,7 @@ static void _s_updateWorldTransform(TransformCmp& tc, AncestryCmp& ac)
     // if this guy has a parent, update his world transform
     if (ac.parent && ac.parent.hasComponent<TransformCmp>())
     {
-        tc.world.setTransform(
-            ac.parent.getComponent<TransformCmp>().world.getTransform()
-            * tc.local.getTransform());
+        tc.world.setTransform(ac.parent.getComponent<TransformCmp>().world.getTransform() * tc.local.getTransform());
     }
     else
     {
@@ -33,8 +31,7 @@ static void _s_updateWorldTransform(TransformCmp& tc, AncestryCmp& ac)
     {
         if (child.hasComponent<TransformCmp>())
         {
-            _s_updateWorldTransform(child.getComponent<TransformCmp>(),
-                                    child.getComponent<AncestryCmp>());
+            _s_updateWorldTransform(child.getComponent<TransformCmp>(), child.getComponent<AncestryCmp>());
         }
     }
 }
@@ -58,8 +55,7 @@ Entity Scene::addEntity(const std::string& name)
     // are added using _addEntity, we account for that.
     entity.addComponent<GuidCmp>(++m_genesisIndex);
 
-    entity.addComponent<NameCmp>(
-        name.empty() ? entity.getComponent<GuidCmp>().guid.toString() : name);
+    entity.addComponent<NameCmp>(name.empty() ? entity.getComponent<GuidCmp>().guid.toString() : name);
 
     entity.addComponent<AncestryCmp>();
 
@@ -82,9 +78,6 @@ Entity Scene::addChildEntity(Entity parentEntity, const std::string& name)
 
 void Scene::removeEntity(Entity entity, bool removeChildren)
 {
-    
-    
-    
     auto& ac = entity.getComponent<AncestryCmp>();
 
     if (!removeChildren)
@@ -109,8 +102,7 @@ void Scene::removeEntity(Entity entity, bool removeChildren)
     {
         auto& parentAc = ac.parent.getComponent<AncestryCmp>();
 
-        auto it = std::find(
-            parentAc.children.begin(), parentAc.children.end(), entity);
+        auto it = std::find(parentAc.children.begin(), parentAc.children.end(), entity);
 
         if (it != parentAc.children.end())
         {
@@ -123,8 +115,7 @@ void Scene::removeEntity(Entity entity, bool removeChildren)
 
 void Scene::sortEntities()
 {
-    m_registry.sort<GuidCmp>([&](const auto lhs, const auto rhs)
-                             { return lhs.sequenceIndex < rhs.sequenceIndex; });
+    m_registry.sort<GuidCmp>([&](const auto lhs, const auto rhs) { return lhs.sequenceIndex < rhs.sequenceIndex; });
 }
 
 void Scene::onStart()
@@ -147,11 +138,7 @@ void Scene::onStart()
         [=](auto entity, auto& pec)
         {
             NM_UNUSED(entity);
-            pec.p_emitter = ref<ParticleEmitter>::gen(pec.numParticles,
-                                                      pec.parameters,
-                                                      pec.p_texture,
-                                                      nullptr,
-                                                      false);            
+            pec.p_emitter = ref<ParticleEmitter>::gen(pec.numParticles, pec.parameters, pec.p_texture, nullptr, false);
         });
 }
 
@@ -197,8 +184,7 @@ void Scene::onUpdate(float deltaTime)
             }
         });
 
-
-    // for all entities that have a transform, we want to update any 
+    // for all entities that have a transform, we want to update any
     // all child transforms accordingly
     auto tcView = m_registry.view<TransformCmp, AncestryCmp>();
 
@@ -215,9 +201,7 @@ void Scene::onUpdate(float deltaTime)
 
     for (auto [entity, gc, tc, pec] : peView.each())
     {
-        pec.p_emitter->updateSpawnTransform(tc.world.getTranslation(),
-                                            tc.world.getRotation(),
-                                            tc.world.getScale());
+        pec.p_emitter->updateSpawnTransform(tc.world.getTranslation(), tc.world.getRotation(), tc.world.getScale());
         pec.p_emitter->update(deltaTime);
     }
 
@@ -294,11 +278,8 @@ void Scene::_render(Camera* p_camera)
 
     for (auto [entity, gc, tc, sc] : spriteView.each())
     {
-        Renderer2D::s_drawQuad(tc.world.getTransform(),
-                               sc.p_texture,
-                               sc.color,
-                               sc.tilingFactor,
-                               static_cast<int>(entity));
+        Renderer2D::s_drawQuad(
+            tc.world.getTransform(), sc.p_texture, sc.color, sc.tilingFactor, static_cast<int>(entity));
     }
 
     ///////////////////////////
@@ -312,12 +293,8 @@ void Scene::_render(Camera* p_camera)
 
     for (auto [entity, gc, tc, txc] : textView.each())
     {
-        Renderer2D::s_drawText(txc.text,
-                               txc.format,
-                               tc.world.getTransform(),
-                               static_cast<int>(entity));
+        Renderer2D::s_drawText(txc.text, txc.format, tc.world.getTransform(), static_cast<int>(entity));
     }
-
 
     Renderer2D::s_end();
 }
@@ -358,9 +335,7 @@ void Scene::_onDrawEditor(Camera* p_editorCamera)
     _render(p_editorCamera);
 }
 
-Entity Scene::_addEntity(const std::string& name,
-                         const std::string& guidStr,
-                         uint32_t           sequenceIndex)
+Entity Scene::_addEntity(const std::string& name, const std::string& guidStr, uint32_t sequenceIndex)
 {
     Entity entity = {m_registry.create(), this};
 

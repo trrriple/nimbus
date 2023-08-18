@@ -10,9 +10,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Buffer
 ////////////////////////////////////////////////////////////////////////////////
-ref<VertexBuffer> VertexBuffer::s_create(const void*        vertices,
-                                         uint32_t           size,
-                                         VertexBuffer::Type type)
+ref<VertexBuffer> VertexBuffer::s_create(const void* vertices, uint32_t size, VertexBuffer::Type type)
 
 {
     return ref<GlVertexBuffer>::gen(vertices, size, type);

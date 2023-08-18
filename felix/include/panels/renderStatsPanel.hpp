@@ -86,9 +86,7 @@ class RenderStatsPanel
                 const auto swBank = mp_appRef->getSwBank().getBank();
                 for (const auto& pair : swBank)
                 {
-                    ImGui::LabelText(pair.first,
-                                     "%05.2f ms",
-                                     pair.second->getLastSavedSplit() * 1000.0);
+                    ImGui::LabelText(pair.first, "%05.2f ms", pair.second->getLastSavedSplit() * 1000.0);
                 }
                 ImGui::PopItemWidth();
 
@@ -105,10 +103,8 @@ class RenderStatsPanel
                 ImGui::LabelText("Characters", "%i", stats.characters);
 
                 ImGui::LabelText("Total Vertices", "%i", stats.totalVertices);
-                ImGui::LabelText(
-                    "Quad Vertices Available", "%i", stats.quadVertsAvail);
-                ImGui::LabelText(
-                    "Text Vertices Available", "%i", stats.textVertsAvail);
+                ImGui::LabelText("Quad Vertices Available", "%i", stats.quadVertsAvail);
+                ImGui::LabelText("Text Vertices Available", "%i", stats.textVertsAvail);
 
                 ImGui::PopItemWidth();
 

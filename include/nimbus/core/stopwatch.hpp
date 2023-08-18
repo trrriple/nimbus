@@ -25,9 +25,7 @@ class Stopwatch : public refCounted
 
     inline double elapsed() const
     {
-        return std::chrono::duration_cast<std::chrono::microseconds>(
-                   std::chrono::steady_clock::now() - m_ts)
-                   .count()
+        return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - m_ts).count()
                * 1E-6;
     }
 

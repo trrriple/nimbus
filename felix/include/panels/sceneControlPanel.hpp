@@ -49,17 +49,13 @@ class SceneControlPanel
     void onDraw()
     {
         // overlay
-        ImGuiWindowFlags windowFlags
-            = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking
-              | ImGuiWindowFlags_AlwaysAutoResize
-              | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking
+                                       | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
+                                       | ImGuiWindowFlags_NoNav;
 
         ImGui::Begin("Scene Control", nullptr, windowFlags);
 
-        ImGui::BeginTable(
-            "##Controls",
-            2,
-            ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_BordersInnerV);
+        ImGui::BeginTable("##Controls", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_BordersInnerV);
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn();

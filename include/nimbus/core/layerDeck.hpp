@@ -18,8 +18,7 @@ class LayerDeck
 
     ~LayerDeck();
 
-    void insertLayer(ref<Layer> p_layer,
-                     int32_t    location = k_insertLocationHead);
+    void insertLayer(ref<Layer> p_layer, int32_t location = k_insertLocationHead);
 
     void removeLayer(ref<Layer> p_layer);
 

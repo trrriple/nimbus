@@ -20,12 +20,9 @@ class SceneSerializer
    private:
     ref<Scene> mp_scene;
 
-    void _deserializeEntity(void*             p_entityTbl,
-                            Scene*            p_scene,
-                            const std::string guidStr);
+    void _deserializeEntity(void* p_entityTbl, Scene* p_scene, const std::string guidStr);
 
-    void _assembleFamilyTree(void*             p_entityTbl,
-                             const std::string guidStr);
+    void _assembleFamilyTree(void* p_entityTbl, const std::string guidStr);
 
     std::unordered_map<std::string, Entity> m_entityMap;
 };

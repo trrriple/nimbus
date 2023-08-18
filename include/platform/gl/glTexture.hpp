@@ -11,69 +11,67 @@ namespace nimbus
 class GlTexture : public Texture
 {
    public:
-    GlTexture(const Type type, Spec& spec, bool submitForMe = true) ;
+    GlTexture(const Type type, Spec& spec, bool submitForMe = true);
 
-    GlTexture(const Type         type,
-              const std::string& path,
-              const bool         flipOnLoad = false) ;
+    GlTexture(const Type type, const std::string& path, const bool flipOnLoad = false);
 
-    ~GlTexture() ;
+    ~GlTexture();
 
-    virtual void bind(const uint32_t glTextureUnit) const  override;
+    virtual void bind(const uint32_t glTextureUnit) const override;
 
-    virtual void unbind() const  override;
+    virtual void unbind() const override;
 
-    virtual void setData(void* data, uint32_t size)  override;
+    virtual void setData(void* data, uint32_t size) override;
 
-    virtual uint32_t getId() const  override
+    virtual uint32_t getId() const override
     {
         return m_id;
     }
 
-    virtual uint32_t getWidth() const  override
+    virtual uint32_t getWidth() const override
     {
         return m_spec.width;
     }
 
-    virtual uint32_t getHeight() const  override
+    virtual uint32_t getHeight() const override
     {
         return m_spec.height;
     }
 
-    virtual Type getType() const  override
+    virtual Type getType() const override
     {
         return m_type;
     }
 
-    virtual const std::string& getPath() const  override
+    virtual const std::string& getPath() const override
     {
         return m_path;
     }
 
-    virtual const Spec& getSpec() const  override
+    virtual const Spec& getSpec() const override
     {
         return m_spec;
     }
 
-    virtual bool operator==(const Texture& other) const  override
+    virtual bool operator==(const Texture& other) const override
     {
         return (m_id == other.getId());
     }
 
-    static uint32_t s_format(Format format) ;
+    static uint32_t s_format(Format format);
 
-    static uint32_t s_formatInternal(FormatInternal format) ;
+    static uint32_t s_formatInternal(FormatInternal format);
 
-    static uint32_t s_dataType(DataType dataType) ;
+    static uint32_t s_dataType(DataType dataType);
 
-    static uint32_t s_filterType(FilterType filterType) ;
+    static uint32_t s_filterType(FilterType filterType);
 
-    static uint32_t s_wrapType(WrapType wrapType) ;
+    static uint32_t s_wrapType(WrapType wrapType);
 
    private:
-    void _storage() ;
+    void _storage();
 
-    static void _s_gen(uint32_t& id, bool multisample = false) ;
+    static void _s_gen(uint32_t& id, bool multisample = false);
 };
 
 }  // namespace nimbus

@@ -20,8 +20,7 @@ Guid::Guid()
     GUID guid;
     CoCreateGuid(&guid);
 
-    __int128_t high = static_cast<__int128_t>(guid.Data1) << 96
-                      | static_cast<__int128_t>(guid.Data2) << 80
+    __int128_t high = static_cast<__int128_t>(guid.Data1) << 96 | static_cast<__int128_t>(guid.Data2) << 80
                       | static_cast<__int128_t>(guid.Data3) << 64;
 
     __int128_t low = *reinterpret_cast<__int128_t*>(guid.Data4);
@@ -64,7 +63,7 @@ void Guid::_toString()
              sizeof(buffer),
              "%08llx-%04llx-%04llx-%04llx-%012llx",
              high >> 32,
-            (high >> 16) & 0xFFFF,
+             (high >> 16) & 0xFFFF,
              high & 0xFFFF,
              low >> 48,
              low & 0xFFFFFFFFFFFF);
@@ -79,16 +78,9 @@ void Guid::_fromString()
     uint16_t b, c, d;
     uint64_t e;
 
-    sscanf_s(m_guidStr.c_str(),
-             "%08lx-%04hx-%04hx-%04hx-%012lx",
-             &a,
-             &b,
-             &c,
-             &d,
-             &e);
+    sscanf_s(m_guidStr.c_str(), "%08lx-%04hx-%04hx-%04hx-%012lx", &a, &b, &c, &d, &e);
 
-    high = (static_cast<uint64_t>(a) << 32) | (static_cast<uint64_t>(b) << 16)
-           | static_cast<uint64_t>(c);
+    high = (static_cast<uint64_t>(a) << 32) | (static_cast<uint64_t>(b) << 16) | static_cast<uint64_t>(c);
 
     low = (static_cast<uint64_t>(d) << 48) | e;
 

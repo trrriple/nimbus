@@ -5,8 +5,7 @@
 
 // because we ripped this from SDL, make sure it actually matches because
 // SDL is going to be provided the data
-NM_CORE_COMPILETIME_ASSERT((sizeof(SDL_Event)
-                            == sizeof(nimbus::Event::EventDetails)),
+NM_CORE_COMPILETIME_ASSERT((sizeof(SDL_Event) == sizeof(nimbus::Event::EventDetails)),
                            "Critical Error: EventDetails size mismatch!");
 
 namespace nimbus

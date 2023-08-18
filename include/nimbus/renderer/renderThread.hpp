@@ -5,7 +5,8 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace nimbus {
+namespace nimbus
+{
 
 class RenderThread
 {
@@ -26,7 +27,7 @@ class RenderThread
     void setState(State state);
     void stop();
 
-    bool isActive() const 
+    bool isActive() const
     {
         return m_active;
     }

@@ -21,8 +21,7 @@ class Framebuffer : public refCounted
         uint32_t samples = 1;
 
         std::vector<Texture::Spec> colorAttachments;
-        Texture::FormatInternal    depthType
-            = Texture::FormatInternal::DEPTH24_STENCIL8;
+        Texture::FormatInternal    depthType = Texture::FormatInternal::DEPTH24_STENCIL8;
     };
 
     enum class Mode
@@ -121,9 +120,7 @@ class Framebuffer : public refCounted
 
     virtual void unbind(Mode mode = Mode::READ_WRITE) const = 0;
 
-    virtual void bindTexture(const uint32_t textureUnit,
-                             const uint32_t attachmentIdx = 0) const
-        = 0;
+    virtual void bindTexture(const uint32_t textureUnit, const uint32_t attachmentIdx = 0) const = 0;
 
     virtual void unbindTexture(const uint32_t attachmentIdx = 0) const = 0;
 
@@ -142,11 +139,10 @@ class Framebuffer : public refCounted
     virtual void requestPixel(ref<PixelReadRequest> p_request) = 0;
 
    protected:
-    Spec     m_spec;
-    uint32_t m_fbo = 0;
-    std::vector<ref<Texture>>
-             m_colorAttachments;  // for texture (color) attachments
-    uint32_t m_rbo = 0;           // for depth/stencil texture
+    Spec                      m_spec;
+    uint32_t                  m_fbo = 0;
+    std::vector<ref<Texture>> m_colorAttachments;  // for texture (color) attachments
+    uint32_t                  m_rbo = 0;           // for depth/stencil texture
 };
 
 }  // namespace nimbus

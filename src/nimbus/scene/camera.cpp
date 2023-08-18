@@ -127,10 +127,8 @@ glm::mat4& Camera::getView()
         }
         else
         {
-            glm::mat4 transform
-                = glm::translate(glm::mat4(1.0f), m_position)
-                  * glm::rotate(
-                      glm::mat4(1.0f), glm::radians(m_yaw), glm::vec3(0, 0, 1));
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_position)
+                                  * glm::rotate(glm::mat4(1.0f), glm::radians(m_yaw), glm::vec3(0, 0, 1));
 
             m_view = glm::inverse(transform);
         }
@@ -149,17 +147,12 @@ glm::mat4& Camera::getProjection()
     {
         if (m_type == Type::PERSPECTIVE)
         {
-            m_projection = glm::perspective(
-                glm::radians(m_fov), m_aspectRatio, m_near, m_far);
+            m_projection = glm::perspective(glm::radians(m_fov), m_aspectRatio, m_near, m_far);
         }
         else
         {
-            m_projection = glm::ortho(-m_aspectRatio * m_zoom,
-                                      m_aspectRatio * m_zoom,
-                                      -m_zoom,
-                                      m_zoom,
-                                      m_orthoNear,
-                                      m_orthoFar);
+            m_projection
+                = glm::ortho(-m_aspectRatio * m_zoom, m_aspectRatio * m_zoom, -m_zoom, m_zoom, m_orthoNear, m_orthoFar);
         }
 
         m_staleProjection = false;
@@ -197,11 +190,10 @@ Camera::Bounds& Camera::getVisibleWorldBounds()
 
         // Transform NDC coordinates to world coordinates using the inverse
         // view-projection matrix
-        m_worldBounds.topLeft    = inverseViewProjectionMatrix * topLeftNDC;
-        m_worldBounds.topRight   = inverseViewProjectionMatrix * topRightNDC;
-        m_worldBounds.bottomLeft = inverseViewProjectionMatrix * bottomLeftNDC;
-        m_worldBounds.bottomRight
-            = inverseViewProjectionMatrix * bottomRightNDC;
+        m_worldBounds.topLeft     = inverseViewProjectionMatrix * topLeftNDC;
+        m_worldBounds.topRight    = inverseViewProjectionMatrix * topRightNDC;
+        m_worldBounds.bottomLeft  = inverseViewProjectionMatrix * bottomLeftNDC;
+        m_worldBounds.bottomRight = inverseViewProjectionMatrix * bottomRightNDC;
 
         // Convert the homogeneous coordinates to 3D coordinates
         m_worldBounds.topLeft /= m_worldBounds.topLeft.w;
@@ -226,11 +218,10 @@ void Camera::_updateCameraVectors()
     front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     m_front = glm::normalize(front);
     // also re-calculate the Right and Up vector
-    m_right = glm::normalize(
-        glm::cross(m_front,
-                   m_worldUp));  // normalize the vectors, because their length
-                                 // gets closer to 0 the more you look up or
-                                 // down which results in slower movement.
+    m_right = glm::normalize(glm::cross(m_front,
+                                        m_worldUp));  // normalize the vectors, because their length
+                                                      // gets closer to 0 the more you look up or
+                                                      // down which results in slower movement.
     m_up = glm::normalize(glm::cross(m_right, m_front));
 }
 

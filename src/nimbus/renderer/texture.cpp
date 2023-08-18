@@ -8,9 +8,7 @@
 
 namespace nimbus
 {
-ref<Texture> Texture::s_create(const Type         type,
-                               const std::string& path,
-                               const bool         flipOnLoad)
+ref<Texture> Texture::s_create(const Type type, const std::string& path, const bool flipOnLoad)
 {
     return ref<GlTexture>::gen(type, path, flipOnLoad);
 }

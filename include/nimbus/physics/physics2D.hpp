@@ -90,8 +90,7 @@ class Physics2D
         ref<RigidBody>  p_collidedWith = nullptr;
         void*           p_userData     = nullptr;
 
-        void addFixture(const FixtureSpec&     fixtureSpec,
-                        const util::Transform& transform);
+        void addFixture(const FixtureSpec& fixtureSpec, const util::Transform& transform);
 
         util::Transform& getTransform();
         glm::vec2        getVelocity();

@@ -26,9 +26,7 @@ class GlVertexBuffer : public VertexBuffer
         STREAM_DRAW,
     };
 
-    GlVertexBuffer(const void*        vertices,
-                   uint32_t           size,
-                   VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
+    GlVertexBuffer(const void* vertices, uint32_t size, VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
 
     virtual ~GlVertexBuffer();
 
@@ -95,8 +93,7 @@ class GlVertexArray : public VertexArray
 
     virtual void setIndexBuffer(ref<IndexBuffer> p_indexBuffer) override;
 
-    inline virtual const std::vector<ref<VertexBuffer>>& getVertexBuffers()
-        const override
+    inline virtual const std::vector<ref<VertexBuffer>>& getVertexBuffers() const override
     {
         return m_vertexBuffers;
     }

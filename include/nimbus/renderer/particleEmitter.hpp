@@ -66,8 +66,7 @@ class ParticleEmitter : public refCounted
         std::vector<colorSpec>    colors;
         bool                      persist      = true;
         bool                      shrink       = false;
-        GraphicsApi::BlendingMode blendingMode
-            = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
+        GraphicsApi::BlendingMode blendingMode = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
     };
 
     ParticleEmitter() = default;
@@ -100,11 +99,9 @@ class ParticleEmitter : public refCounted
 
     void removeColor(uint32_t idx);
 
-    void setPosition(const glm::vec3& centerPosition,
-                     bool             updateLiving = false);
+    void setPosition(const glm::vec3& centerPosition, bool updateLiving = false);
 
-    void setEjectionAngle(float ejectionBaseAngle_rad,
-                          float ejectionSpreadAngle_rad);
+    void setEjectionAngle(float ejectionBaseAngle_rad, float ejectionSpreadAngle_rad);
 
     void setPersist(bool persist);
 
@@ -126,13 +123,13 @@ class ParticleEmitter : public refCounted
     ////////////////////////////////////////////////////////////////////////////
     struct particleAttributes
     {
-        glm::vec3     positionOffset = glm::vec3(0.0f);
-        glm::vec3     velocity       = glm::vec3(0.0f);
-        glm::vec3     acceleration   = glm::vec3(0.0f);
-        glm::vec2     startSize      = glm::vec2(0.0f);
-        uint32_t      colorIdx       = 0;
-        float         startLifetime  = 0.0f;
-        float         curLifetime    = 0.0f;
+        glm::vec3 positionOffset = glm::vec3(0.0f);
+        glm::vec3 velocity       = glm::vec3(0.0f);
+        glm::vec3 acceleration   = glm::vec3(0.0f);
+        glm::vec2 startSize      = glm::vec2(0.0f);
+        uint32_t  colorIdx       = 0;
+        float     startLifetime  = 0.0f;
+        float     curLifetime    = 0.0f;
 
         void resetLifetime(float newLifetime)
         {
@@ -170,9 +167,7 @@ class ParticleEmitter : public refCounted
         glm::vec4 color    = glm::vec4(0.0f);
         glm::vec2 size     = glm::vec2(0.0f);
 
-        void reset(const glm::vec3& newPosition,
-                   const glm::vec2& newSize,
-                   const glm::vec4& newColor)
+        void reset(const glm::vec3& newPosition, const glm::vec2& newSize, const glm::vec4& newColor)
         {
             position = newPosition;
             size     = newSize;
@@ -223,10 +218,10 @@ class ParticleEmitter : public refCounted
     ////////////////////////////////////////////////////////////////////////////
     // Cluster State
     ////////////////////////////////////////////////////////////////////////////
-    ref<Shader>                       mp_shader       = nullptr;
-    ref<VertexArray>                  mp_vao          = nullptr;
-    ref<Texture>                      mp_texture      = nullptr;
-    ref<VertexBuffer>                 mp_instanceVbo  = nullptr;
+    ref<Shader>                       mp_shader      = nullptr;
+    ref<VertexArray>                  mp_vao         = nullptr;
+    ref<Texture>                      mp_texture     = nullptr;
+    ref<VertexBuffer>                 mp_instanceVbo = nullptr;
     std::vector<particleAttributes>   m_particleAttributes;    // CPU data
     std::vector<particleInstanceData> m_particleInstanceData;  // GPU data
 
@@ -245,8 +240,7 @@ class ParticleEmitter : public refCounted
     ////////////////////////////////////////////////////////////////////////////
     // Private helper functions
     ////////////////////////////////////////////////////////////////////////////
-    void _respawnParticle(particleAttributes*   p_attrib,
-                          particleInstanceData* p_instDat);
+    void _respawnParticle(particleAttributes* p_attrib, particleInstanceData* p_instDat);
 
     uint32_t _getRandomColorIdx();
 

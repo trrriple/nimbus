@@ -12,8 +12,7 @@
 namespace nimbus
 {
 
-Model::Model(std::string path, bool flipOnLoad, bool normalize)
-    : m_flipOnLoad(flipOnLoad), m_normalize(normalize)
+Model::Model(std::string path, bool flipOnLoad, bool normalize) : m_flipOnLoad(flipOnLoad), m_normalize(normalize)
 {
     loadModel(path);
 
@@ -36,11 +35,9 @@ void Model::draw(ref<Shader>& shader, const glm::mat4& model)
 void Model::loadModel(std::string path)
 {
     Assimp::Importer import;
-    const aiScene*   scene
-        = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene*   scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE
-        || !scene->mRootNode)
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         Log::coreError("ASSIMP:: %s", import.GetErrorString());
         return;
@@ -49,8 +46,7 @@ void Model::loadModel(std::string path)
     std::filesystem::path filePath(path);
     m_directory = filePath.parent_path().string();
 
-    processNode(static_cast<void*>(scene->mRootNode),
-                static_cast<const void*>(scene));
+    processNode(static_cast<void*>(scene->mRootNode), static_cast<const void*>(scene));
 }
 
 void Model::processNode(void* node, const void* scene)
@@ -152,36 +148,29 @@ scope<Mesh> Model::processMesh(void* mesh, const void* scene)
         aiMaterial* material = aiScene->mMaterials[aimesh->mMaterialIndex];
 
         // 1. diffuse maps
-        std::vector<ref<Texture>> diffuseMaps
-            = loadMaterialTextures(material, Texture::Type::DIFFUSE);
+        std::vector<ref<Texture>> diffuseMaps = loadMaterialTextures(material, Texture::Type::DIFFUSE);
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
         // 2. specular maps
-        std::vector<ref<Texture>> specularMaps
-            = loadMaterialTextures(material, Texture::Type::SPECULAR);
-        textures.insert(
-            textures.end(), specularMaps.begin(), specularMaps.end());
+        std::vector<ref<Texture>> specularMaps = loadMaterialTextures(material, Texture::Type::SPECULAR);
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
         // 3. Ambient maps
-        std::vector<ref<Texture>> ambientMaps
-            = loadMaterialTextures(material, Texture::Type::AMBIENT);
+        std::vector<ref<Texture>> ambientMaps = loadMaterialTextures(material, Texture::Type::AMBIENT);
         textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
 
         // 3. normal maps
-        std::vector<ref<Texture>> normalMaps
-            = loadMaterialTextures(material, Texture::Type::NORMAL);
+        std::vector<ref<Texture>> normalMaps = loadMaterialTextures(material, Texture::Type::NORMAL);
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
         // 4. height maps
-        std::vector<ref<Texture>> heightMaps
-            = loadMaterialTextures(material, Texture::Type::HEIGHT);
+        std::vector<ref<Texture>> heightMaps = loadMaterialTextures(material, Texture::Type::HEIGHT);
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     }
     return genScope<Mesh>(vertices, indices, textures, m_normalize);
 }
 
-std::vector<ref<Texture>> Model::loadMaterialTextures(void*         mat,
-                                                      Texture::Type texType)
+std::vector<ref<Texture>> Model::loadMaterialTextures(void* mat, Texture::Type texType)
 
 {
     aiMaterial* aimat = static_cast<aiMaterial*>(mat);
@@ -234,8 +223,7 @@ std::vector<ref<Texture>> Model::loadMaterialTextures(void*         mat,
         {
             ResourceManager& rm = Application::s_get().getResourceManager();
 
-            ref<Texture> p_texture
-                = rm.loadTexture(texType, path, m_flipOnLoad);
+            ref<Texture> p_texture = rm.loadTexture(texType, path, m_flipOnLoad);
 
             textures.push_back(p_texture);
             m_loadedTextures.emplace(path, p_texture);

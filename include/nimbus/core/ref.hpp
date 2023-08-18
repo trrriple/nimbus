@@ -39,8 +39,7 @@ class ref
 
     ref(T* instance) : m_inst(instance)
     {
-        static_assert(std::is_base_of<refCounted, T>::value,
-                      "Class is not refCounted!");
+        static_assert(std::is_base_of<refCounted, T>::value, "Class is not refCounted!");
 
         incRef();
     }

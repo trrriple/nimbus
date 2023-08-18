@@ -45,31 +45,26 @@ class sceneCameraController : public EntityLogic
 
         if (mp_window->keyPressed(ScanCode::W))
         {
-            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::UP,
-                                                   deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::UP, deltaTime);
         }
         if (mp_window->keyPressed(ScanCode::A))
         {
-            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::BACKWARD,
-                                                   deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::BACKWARD, deltaTime);
         }
         if (mp_window->keyPressed(ScanCode::S))
         {
-            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::DOWN,
-                                                   deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::DOWN, deltaTime);
         }
         if (mp_window->keyPressed(ScanCode::D))
         {
-            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::FORWARD,
-                                                   deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::FORWARD, deltaTime);
         }
 
         float curWheelPos = mp_window->mouseWheelPos();
 
         if (curWheelPos != m_lastWheelPos)
         {
-            mp_cameraCmp->camera.processZoom((curWheelPos - m_lastWheelPos)
-                                             * 0.5);
+            mp_cameraCmp->camera.processZoom((curWheelPos - m_lastWheelPos) * 0.5);
             m_lastWheelPos = curWheelPos;
         }
     }
@@ -143,14 +138,10 @@ class FelixLayer : public Layer
     bool        m_fileDropHandled = true;
     std::string m_fileDropPath;
 
-
-
     ///////////////////////////
     // Test
     //////////////////////////
     scope<ParticleEmitter> mp_emitter;
-
-
 
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
@@ -186,19 +177,17 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Panels
         ///////////////////////////
-        mp_viewportPanel
-            = genScope<ViewportPanel>(mp_editCamera.raw(), mp_scene);
+        mp_viewportPanel       = genScope<ViewportPanel>(mp_editCamera.raw(), mp_scene);
         mp_sceneControlPanel   = genScope<SceneControlPanel>();
         mp_sceneHierarchyPanel = genScope<SceneHeirarchyPanel>(mp_scene);
         mp_renderStatsPanel    = genScope<RenderStatsPanel>();
-        mp_editCameraMenuPanel
-            = genScope<EditCameraMenuPanel>(mp_editCamera.raw());
+        mp_editCameraMenuPanel = genScope<EditCameraMenuPanel>(mp_editCamera.raw());
 
-        mp_viewportPanel->setEntitySelectedCallback(std::bind(
-            &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
+        mp_viewportPanel->setEntitySelectedCallback(
+            std::bind(&FelixLayer::_onEntitySelected, this, std::placeholders::_1));
 
-        mp_sceneHierarchyPanel->setEntitySelectedCallback(std::bind(
-            &FelixLayer::_onEntitySelected, this, std::placeholders::_1));
+        mp_sceneHierarchyPanel->setEntitySelectedCallback(
+            std::bind(&FelixLayer::_onEntitySelected, this, std::placeholders::_1));
 
         ///////////////////////////
         // Test Emitter
@@ -332,8 +321,7 @@ class FelixLayer : public Layer
         fbEntIdTexSpec.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
         fbEntIdTexSpec.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
         fbEntIdTexSpec.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
-        fbEntIdTexSpec.clearColor
-            = std::array<uint32_t, 4>{Entity::k_nullEntity};
+        fbEntIdTexSpec.clearColor     = std::array<uint32_t, 4>{Entity::k_nullEntity};
 
         fbSpec.colorAttachments.push_back(fbEntIdTexSpec);
 
@@ -374,8 +362,7 @@ class FelixLayer : public Layer
         sbEntIdTexSpec.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
         sbEntIdTexSpec.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
         sbEntIdTexSpec.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
-        sbEntIdTexSpec.clearColor
-            = std::array<uint32_t, 4>{Entity::k_nullEntity};
+        sbEntIdTexSpec.clearColor     = std::array<uint32_t, 4>{Entity::k_nullEntity};
 
         screenSpec.colorAttachments.push_back(sbEntIdTexSpec);
 
@@ -390,19 +377,16 @@ class FelixLayer : public Layer
 
     virtual void onUpdate(float deltaTime) override
     {
-        
         ///////////////////////////
         // Start/Stop Scene
         ///////////////////////////
-        if (mp_sceneControlPanel->getState().runState
-                == SceneControlPanel::RunState::PLAY
+        if (mp_sceneControlPanel->getState().runState == SceneControlPanel::RunState::PLAY
             && m_sceneState != State::PLAY)
         {
             m_sceneState = State::PLAY;
             mp_scene->onStart();
         }
-        else if (mp_sceneControlPanel->getState().runState
-                     == SceneControlPanel::RunState::PAUSE
+        else if (mp_sceneControlPanel->getState().runState == SceneControlPanel::RunState::PAUSE
                  && m_sceneState != State::PAUSE)
         {
             m_sceneState = State::PAUSE;
@@ -466,8 +450,7 @@ class FelixLayer : public Layer
 
     void _open()
     {
-        auto selection = util::openFile(
-            "Select Scene to open", ".", {"Scene Files", "*.nmscn"}, false);
+        auto selection = util::openFile("Select Scene to open", ".", {"Scene Files", "*.nmscn"}, false);
 
         if (selection.size() != 0)
         {
@@ -486,8 +469,7 @@ class FelixLayer : public Layer
 
         if (as || m_openedScenePath.empty())
         {
-            auto selection = util::saveFile(
-                "Save scene as", ".", {"Scene Files", "*.nmscn"});
+            auto selection = util::saveFile("Save scene as", ".", {"Scene Files", "*.nmscn"});
 
             if (!selection.empty())
             {
@@ -521,8 +503,7 @@ class FelixLayer : public Layer
                 if (mp_appWinRef->mouseButtonPressed(MouseButton::MIDDLE)
                     && mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
                 {
-                    glm::vec2 delta = {(float)event.getDetails().motion.xrel,
-                                       (float)event.getDetails().motion.yrel};
+                    glm::vec2 delta = {(float)event.getDetails().motion.xrel, (float)event.getDetails().motion.yrel};
 
                     static const float orbitScale = 4.0f;
                     mp_editCamera->processViewUpdate(delta * orbitScale, true);
@@ -575,11 +556,9 @@ class FelixLayer : public Layer
                     {
                         if (m_selectedEntity)
                         {
-                            if (mp_sceneControlPanel->getState().toolState
-                                != SceneControlPanel::ToolState::NONE)
+                            if (mp_sceneControlPanel->getState().toolState != SceneControlPanel::ToolState::NONE)
                             {
-                                mp_sceneControlPanel->getState().toolState
-                                    = SceneControlPanel::ToolState::NONE;
+                                mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::NONE;
                             }
                         }
                     }
@@ -587,32 +566,28 @@ class FelixLayer : public Layer
                     {
                         if (m_selectedEntity)
                         {
-                            mp_sceneControlPanel->getState().toolState
-                                = SceneControlPanel::ToolState::UNIVERSAL;
+                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::UNIVERSAL;
                         }
                     }
                     else if (mp_appWinRef->keyPressed(ScanCode::M))
                     {
                         if (m_selectedEntity)
                         {
-                            mp_sceneControlPanel->getState().toolState
-                                = SceneControlPanel::ToolState::MOVE;
+                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::MOVE;
                         }
                     }
                     else if (mp_appWinRef->keyPressed(ScanCode::R))
                     {
                         if (m_selectedEntity)
                         {
-                            mp_sceneControlPanel->getState().toolState
-                                = SceneControlPanel::ToolState::ROTATE;
+                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::ROTATE;
                         }
                     }
                     else if (mp_appWinRef->keyPressed(ScanCode::E))
                     {
                         if (m_selectedEntity)
                         {
-                            mp_sceneControlPanel->getState().toolState
-                                = SceneControlPanel::ToolState::SCALE;
+                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::SCALE;
                         }
                     }
                 }
@@ -630,56 +605,46 @@ class FelixLayer : public Layer
         {
             if (mp_appWinRef->keyPressed(ScanCode::W))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD, deltaTime);
             }
             if (mp_appWinRef->keyPressed(ScanCode::S))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD, deltaTime);
             }
             if (mp_appWinRef->keyPressed(ScanCode::SPACE))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::UP,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::UP, deltaTime);
             }
             if (mp_appWinRef->keyPressed(ScanCode::C))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::DOWN,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::DOWN, deltaTime);
             }
             if (mp_appWinRef->keyPressed(ScanCode::A))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::LEFT,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::LEFT, deltaTime);
             }
             if (mp_appWinRef->keyPressed(ScanCode::D))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::RIGHT,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::RIGHT, deltaTime);
             }
         }
         else
         {
             if (mp_appWinRef->keyPressed(ScanCode::W))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::UP,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::UP, deltaTime);
             }
             if (mp_appWinRef->keyPressed(ScanCode::A))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD, deltaTime);
             }
             if (mp_appWinRef->keyPressed(ScanCode::S))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::DOWN,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::DOWN, deltaTime);
             }
             if (mp_appWinRef->keyPressed(ScanCode::D))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD,
-                                                 deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD, deltaTime);
             }
         }
     }
@@ -688,14 +653,13 @@ class FelixLayer : public Layer
     {
         static bool               dockspaceOpen           = true;
         static bool               optFullscreenPersistant = true;
-        bool                      optFullscreen  = optFullscreenPersistant;
-        static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+        bool                      optFullscreen           = optFullscreenPersistant;
+        static ImGuiDockNodeFlags dockspaceFlags          = ImGuiDockNodeFlags_None;
 
         // We are using the ImGuiWindowFlags_NoDocking flag to make the parent
         // window not dockable into, because it would be confusing to have two
         // docking targets within each others.
-        ImGuiWindowFlags windowFlags
-            = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
         if (optFullscreen)
         {
             ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -704,11 +668,9 @@ class FelixLayer : public Layer
             ImGui::SetNextWindowViewport(viewport->ID);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            windowFlags
-                |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
-                   | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-            windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus
-                           | ImGuiWindowFlags_NoNavFocus;
+            windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
+                           | ImGuiWindowFlags_NoMove;
+            windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
         }
 
         // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will
@@ -754,9 +716,7 @@ class FelixLayer : public Layer
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceExtern))
             {
                 // For simplicity, handle only one file drop at a time.
-                ImGui::SetDragDropPayload("DND_FILE",
-                                          m_fileDropPath.c_str(),
-                                          m_fileDropPath.length() + 1);
+                ImGui::SetDragDropPayload("DND_FILE", m_fileDropPath.c_str(), m_fileDropPath.length() + 1);
 
                 ImGui::EndDragDropSource();
             }
@@ -839,12 +799,11 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Viewport
         ///////////////////////////
-        mp_viewportPanel->onDraw(
-            mp_screenBuffer,
-            mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC,
-            worldBounds,
-            m_selectedEntity,
-            mp_sceneControlPanel->getState().toolState);
+        mp_viewportPanel->onDraw(mp_screenBuffer,
+                                 mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC,
+                                 worldBounds,
+                                 m_selectedEntity,
+                                 mp_sceneControlPanel->getState().toolState);
 
         m_viewportFocused = mp_viewportPanel->m_viewportFocused;
         m_viewportHovered = mp_viewportPanel->m_viewportHovered;

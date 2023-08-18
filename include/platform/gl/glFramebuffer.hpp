@@ -23,13 +23,11 @@ class GlFramebuffer : public Framebuffer
 
     virtual void unbind(Mode mode = Mode::READ_WRITE) const override;
 
-    virtual void bindTexture(const uint32_t textureUnit,
-                             const uint32_t attachmentIdx = 0) const override;
+    virtual void bindTexture(const uint32_t textureUnit, const uint32_t attachmentIdx = 0) const override;
 
     virtual void unbindTexture(const uint32_t attachmentIdx) const override;
 
-    virtual void clearColorAttachment(const uint32_t attachmentIdx
-                                      = 0) override;
+    virtual void clearColorAttachment(const uint32_t attachmentIdx = 0) override;
 
     virtual void clearDepthAttachment() override;
 
@@ -45,14 +43,11 @@ class GlFramebuffer : public Framebuffer
         return m_spec;
     }
 
-    virtual uint32_t getTextureId(const uint32_t attachmentIdx
-                                  = 0) const override
+    virtual uint32_t getTextureId(const uint32_t attachmentIdx = 0) const override
     {
         if (attachmentIdx >= m_colorAttachments.size())
         {
-            Log::coreWarn("Color attachment Index out of range! (%i >= %i)",
-                          attachmentIdx,
-                          m_colorAttachments.size());
+            Log::coreWarn("Color attachment Index out of range! (%i >= %i)", attachmentIdx, m_colorAttachments.size());
 
             return 0;
         }

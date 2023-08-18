@@ -23,10 +23,10 @@ class ContactListener : public b2ContactListener
 
     void BeginContact(b2Contact* contact) override
     {
-        Physics2D::RigidBody* p_bodyA = reinterpret_cast<Physics2D::RigidBody*>(
-            contact->GetFixtureA()->GetUserData().pointer);
-        Physics2D::RigidBody* p_bodyB = reinterpret_cast<Physics2D::RigidBody*>(
-            contact->GetFixtureB()->GetUserData().pointer);
+        Physics2D::RigidBody* p_bodyA
+            = reinterpret_cast<Physics2D::RigidBody*>(contact->GetFixtureA()->GetUserData().pointer);
+        Physics2D::RigidBody* p_bodyB
+            = reinterpret_cast<Physics2D::RigidBody*>(contact->GetFixtureB()->GetUserData().pointer);
 
         p_bodyA->p_collidedWith = p_bodyB;
         p_bodyB->p_collidedWith = p_bodyA;
@@ -94,8 +94,7 @@ void Physics2D::update(float deltaTime)
 {
     NM_PROFILE();
 
-    mp_worldData->p_world->Step(
-        deltaTime, k_solverVelocityIterations, k_solverPositionIterations);
+    mp_worldData->p_world->Step(deltaTime, k_solverVelocityIterations, k_solverPositionIterations);
 }
 
 ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
@@ -108,10 +107,9 @@ ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
 
     bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&p_rbody);
 
-    bodyDef.position = b2Vec2(spec.position.x, spec.position.y);
-    bodyDef.angle    = spec.angle;
-    bodyDef.linearVelocity
-        = b2Vec2(spec.linearVelocity.x, spec.linearVelocity.y);
+    bodyDef.position        = b2Vec2(spec.position.x, spec.position.y);
+    bodyDef.angle           = spec.angle;
+    bodyDef.linearVelocity  = b2Vec2(spec.linearVelocity.x, spec.linearVelocity.y);
     bodyDef.angularVelocity = spec.angularVelocity;
     bodyDef.linearDamping   = spec.linearDamping;
     bodyDef.angularDamping  = spec.angularDamping;
@@ -155,8 +153,7 @@ Physics2D::RigidBody::~RigidBody()
     delete p_data;
 }
 
-void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
-                                      const util::Transform& transform)
+void Physics2D::RigidBody::addFixture(const FixtureSpec& fixtureSpec, const util::Transform& transform)
 {
     NM_PROFILE_DETAIL();
 
@@ -171,8 +168,7 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec&     fixtureSpec,
 
     if (fixtureSpec.shape->type == ShapeType::RECTANGLE)
     {
-        const Rectangle* rect
-            = static_cast<const Rectangle*>(fixtureSpec.shape);
+        const Rectangle* rect = static_cast<const Rectangle*>(fixtureSpec.shape);
 
         b2PolygonShape* shape = new b2PolygonShape();
         shape->SetAsBox(rect->size.x * transform.getScale().x,
@@ -210,7 +206,7 @@ util::Transform& Physics2D::RigidBody::getTransform()
 
     NM_CORE_ASSERT(inWorld, "Not in world");
 
-    const auto& position    = p_data->p_body->GetPosition();
+    const auto& position = p_data->p_body->GetPosition();
     transform.setTranslationX(position.x);
     transform.setTranslationY(position.y);
     transform.setRotationZ(p_data->p_body->GetAngle());
@@ -233,9 +229,8 @@ void Physics2D::RigidBody::forceTransform()
 
     NM_CORE_ASSERT(inWorld, "Not in world");
 
-    p_data->p_body->SetTransform(
-        b2Vec2(transform.getTranslation().x, transform.getTranslation().y),
-        transform.getRotation().z);
+    p_data->p_body->SetTransform(b2Vec2(transform.getTranslation().x, transform.getTranslation().y),
+                                 transform.getRotation().z);
 }
 
 void Physics2D::RigidBody::forceVelocity(const glm::vec2& velocity)

@@ -31,34 +31,32 @@ class Renderer2D : public refCounted
 
     static void s_destroy();
 
-    static void s_begin(const glm::mat4& vpMatrix) ;
+    static void s_begin(const glm::mat4& vpMatrix);
 
-    static void s_end() ;
+    static void s_end();
 
     static void s_drawQuad(const glm::mat4&    transform,
                            const ref<Texture>& p_texture,
                            const glm::vec4&    color,
                            float               texTilingFactor = 1.0f,
-                           uint32_t            entityId        = 0) ;
+                           uint32_t            entityId        = 0);
 
-    static void s_drawQuad(const glm::mat4& transform,
-                           const glm::vec4& color,
-                           uint32_t         entityId = 0) ;
+    static void s_drawQuad(const glm::mat4& transform, const glm::vec4& color, uint32_t entityId = 0);
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::vec3&    position,
                            const glm::vec2&    size,
-                           uint32_t            entityId = 0) ;
+                           uint32_t            entityId = 0);
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::mat4&    transform,
-                           uint32_t            entityId = 0) ;
+                           uint32_t            entityId = 0);
 
-    static void s_resetStats() ;
+    static void s_resetStats();
 
-    inline static Stats s_getStats() 
+    inline static Stats s_getStats()
     {
         return s_stats;
     }
@@ -91,10 +89,7 @@ class Renderer2D : public refCounted
         {k_shaderMat4, "transform", BufferComponent::Type::PER_INSTANCE, 1},
         {k_shaderVec4, "color", BufferComponent::Type::PER_INSTANCE, 1},
         {k_shaderInt, "texIndex", BufferComponent::Type::PER_INSTANCE, 1},
-        {k_shaderFloat,
-         "texTilingFactor",
-         BufferComponent::Type::PER_INSTANCE,
-         1},
+        {k_shaderFloat, "texTilingFactor", BufferComponent::Type::PER_INSTANCE, 1},
         {k_shaderUInt, "entityId", BufferComponent::Type::PER_INSTANCE, 1},
     };
 
@@ -168,8 +163,8 @@ class Renderer2D : public refCounted
     ///////////////////////////
     // Private functions
     ///////////////////////////
-    static void _s_submit() ;
-    static void _s_createTextBuffers() ;
-    static void _s_createQuadBuffers() ;
+    static void _s_submit();
+    static void _s_createTextBuffers();
+    static void _s_createQuadBuffers();
 };
 }  // namespace nimbus

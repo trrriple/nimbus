@@ -11,9 +11,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Buffer
 ////////////////////////////////////////////////////////////////////////////////
-GlVertexBuffer::GlVertexBuffer(const void*        vertices,
-                               uint32_t           size,
-                               VertexBuffer::Type type)
+GlVertexBuffer::GlVertexBuffer(const void* vertices, uint32_t size, VertexBuffer::Type type)
 {
     m_size = size;
     m_type = type;
@@ -31,8 +29,7 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
                 [p_this, localCpy]() mutable
                 {
                     glCreateBuffers(1, &p_this->m_id);
-                    glNamedBufferStorage(
-                        p_this->m_id, p_this->m_size, localCpy, 0);
+                    glNamedBufferStorage(p_this->m_id, p_this->m_size, localCpy, 0);
 
                     free(localCpy);
                 });
@@ -47,12 +44,9 @@ GlVertexBuffer::GlVertexBuffer(const void*        vertices,
                 {
                     glCreateBuffers(1, &p_this->m_id);
 
-                    GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT
-                                       | GL_MAP_COHERENT_BIT;
-                    glNamedBufferStorage(
-                        p_this->m_id, p_this->m_size, localCpy, flags);
-                    p_this->mp_memory = glMapNamedBufferRange(
-                        p_this->m_id, 0, p_this->m_size, flags);
+                    GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+                    glNamedBufferStorage(p_this->m_id, p_this->m_size, localCpy, flags);
+                    p_this->mp_memory = glMapNamedBufferRange(p_this->m_id, 0, p_this->m_size, flags);
 
                     p_this->m_mapped = true;
 
@@ -88,8 +82,7 @@ void GlVertexBuffer::bind() const
 {
     ref<GlVertexBuffer> p_this = const_cast<GlVertexBuffer*>(this);
 
-    Renderer::s_submit([p_this]()
-                       { glBindBuffer(GL_ARRAY_BUFFER, p_this->m_id); });
+    Renderer::s_submit([p_this]() { glBindBuffer(GL_ARRAY_BUFFER, p_this->m_id); });
 }
 
 void GlVertexBuffer::unbind() const
@@ -99,13 +92,9 @@ void GlVertexBuffer::unbind() const
 
 void GlVertexBuffer::setData(const void* data, uint32_t size)
 {
-    NM_CORE_ASSERT(size <= m_size,
-                   "Size (%i) must be <= preallocated size (%i)",
-                   size,
-                   m_size);
+    NM_CORE_ASSERT(size <= m_size, "Size (%i) must be <= preallocated size (%i)", size, m_size);
 
-    NM_CORE_ASSERT(m_type != VertexBuffer::Type::STATIC_DRAW,
-                   "Cannot set data in a static buffer!");
+    NM_CORE_ASSERT(m_type != VertexBuffer::Type::STATIC_DRAW, "Cannot set data in a static buffer!");
 
     if (m_mapped)
     {
@@ -130,8 +119,7 @@ GlIndexBuffer::GlIndexBuffer(uint32_t* indices, uint32_t count)
         [p_this, localCpy]() mutable
         {
             glCreateBuffers(1, &p_this->m_id);
-            glNamedBufferStorage(
-                p_this->m_id, p_this->m_count * sizeof(uint32_t), localCpy, 0);
+            glNamedBufferStorage(p_this->m_id, p_this->m_count * sizeof(uint32_t), localCpy, 0);
 
             free(localCpy);
         });
@@ -151,8 +139,7 @@ GlIndexBuffer::GlIndexBuffer(uint16_t* indices, uint32_t count)
         [p_this, localCpy]() mutable
         {
             glCreateBuffers(1, &p_this->m_id);
-            glNamedBufferStorage(
-                p_this->m_id, p_this->m_count * sizeof(uint16_t), localCpy, 0);
+            glNamedBufferStorage(p_this->m_id, p_this->m_count * sizeof(uint16_t), localCpy, 0);
 
             free(localCpy);
         });
@@ -172,8 +159,7 @@ GlIndexBuffer::GlIndexBuffer(uint8_t* indices, uint32_t count)
         [p_this, localCpy]() mutable
         {
             glCreateBuffers(1, &p_this->m_id);
-            glNamedBufferStorage(
-                p_this->m_id, p_this->m_count * sizeof(uint8_t), localCpy, 0);
+            glNamedBufferStorage(p_this->m_id, p_this->m_count * sizeof(uint8_t), localCpy, 0);
 
             free(localCpy);
         });
@@ -189,8 +175,7 @@ void GlIndexBuffer::bind() const
 {
     ref<GlIndexBuffer> p_this = const_cast<GlIndexBuffer*>(this);
 
-    Renderer::s_submit(
-        [p_this]() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_this->m_id); });
+    Renderer::s_submit([p_this]() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, p_this->m_id); });
 }
 
 void GlIndexBuffer::unbind() const
@@ -205,8 +190,7 @@ GlVertexArray::GlVertexArray()
 {
     ref<GlVertexArray> p_this = this;
 
-    Renderer::s_submitObject([p_this]() mutable
-                             { glCreateVertexArrays(1, &p_this->m_id); });
+    Renderer::s_submitObject([p_this]() mutable { glCreateVertexArrays(1, &p_this->m_id); });
 }
 
 GlVertexArray::~GlVertexArray()
@@ -229,8 +213,7 @@ void GlVertexArray::unbind() const
 
 void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
 {
-    NM_CORE_ASSERT(p_vertexBuffer->getFormat().getComponents().size(),
-                   "VBO format is required to create VBA");
+    NM_CORE_ASSERT(p_vertexBuffer->getFormat().getComponents().size(), "VBO format is required to create VBA");
 
     ref<GlVertexArray> p_this = this;
 
@@ -244,11 +227,9 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
             const auto& format = p_vertexBuffer->getFormat();
             for (const auto& component : format)
             {
-                uint32_t glType
-                    = Shader::s_getShaderType(std::get<0>(component.dataType));
+                uint32_t glType = Shader::s_getShaderType(std::get<0>(component.dataType));
 
-                if (glType == GL_INT || glType == GL_UNSIGNED_INT
-                    || glType == GL_BOOL)
+                if (glType == GL_INT || glType == GL_UNSIGNED_INT || glType == GL_BOOL)
                 {
                     glEnableVertexAttribArray(p_this->m_vertexBufferIndex);
 
@@ -262,8 +243,7 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
 
                     if (component.type == BufferComponent::Type::PER_INSTANCE)
                     {
-                        glVertexAttribDivisor(p_this->m_vertexBufferIndex,
-                                              component.perInstance);
+                        glVertexAttribDivisor(p_this->m_vertexBufferIndex, component.perInstance);
                     }
                     p_this->m_vertexBufferIndex++;
                 }
@@ -277,32 +257,25 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
                     {
                         // This is a matrix we must add a pointer for each
                         // column of the matrix
-                        columns
-                            = static_cast<uint32_t>(std::sqrt(numOfComponent));
-                        numOfComponentsPerColumn
-                            = columns;  // matrix will always be square
+                        columns                  = static_cast<uint32_t>(std::sqrt(numOfComponent));
+                        numOfComponentsPerColumn = columns;  // matrix will always be square
                     }
 
                     for (uint32_t i = 0; i < columns; i++)
                     {
-                        uint64_t offset
-                            = component.offset
-                              + (sizeof(float) * numOfComponentsPerColumn * i);
+                        uint64_t offset = component.offset + (sizeof(float) * numOfComponentsPerColumn * i);
 
                         glEnableVertexAttribArray(p_this->m_vertexBufferIndex);
-                        glVertexAttribPointer(
-                            p_this->m_vertexBufferIndex,
-                            numOfComponentsPerColumn,
-                            glType,
-                            component.normalized ? GL_TRUE : GL_FALSE,
-                            format.getStride(),
-                            (const void*)offset);
+                        glVertexAttribPointer(p_this->m_vertexBufferIndex,
+                                              numOfComponentsPerColumn,
+                                              glType,
+                                              component.normalized ? GL_TRUE : GL_FALSE,
+                                              format.getStride(),
+                                              (const void*)offset);
 
-                        if (component.type
-                            == BufferComponent::Type::PER_INSTANCE)
+                        if (component.type == BufferComponent::Type::PER_INSTANCE)
                         {
-                            glVertexAttribDivisor(p_this->m_vertexBufferIndex,
-                                                  component.perInstance);
+                            glVertexAttribDivisor(p_this->m_vertexBufferIndex, component.perInstance);
                         }
                         p_this->m_vertexBufferIndex++;
                     }
@@ -316,8 +289,7 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
             glBindVertexArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            uint32_t thisVboVertexCount
-                = p_vertexBuffer->getSize() / format.getStride();
+            uint32_t thisVboVertexCount = p_vertexBuffer->getSize() / format.getStride();
 
             // accumulate the size of the vertex
             p_this->m_vertexSize += format.getStride();

@@ -16,9 +16,7 @@ namespace nimbus
 class Application
 {
    public:
-    Application(const std::string& name         = "Program",
-                uint32_t           windowWidth  = 1280,
-                uint32_t           windowHeight = 720);
+    Application(const std::string& name = "Program", uint32_t windowWidth = 1280, uint32_t windowHeight = 720);
 
     virtual ~Application();
 
@@ -43,8 +41,7 @@ class Application
 
     void onEvent(Event& event);
 
-    void insertLayer(const ref<Layer> p_layer,
-                     int32_t          location = k_insertLocationHead);
+    void insertLayer(const ref<Layer> p_layer, int32_t location = k_insertLocationHead);
 
     void removeLayer(const ref<Layer>& p_layer);
 

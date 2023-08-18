@@ -20,8 +20,7 @@ void LayerDeck::insertLayer(ref<Layer> p_layer, int32_t location)
 
     if (p_layer->m_type == Layer::Type::REGULAR)
     {
-        if (location == k_insertLocationHead
-            || location > m_lastRegularLayerIdx)
+        if (location == k_insertLocationHead || location > m_lastRegularLayerIdx)
         {
             // location is outside of the current range, so load it at the
             // end of the Regular layer portion of the deck

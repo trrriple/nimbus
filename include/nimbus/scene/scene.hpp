@@ -17,11 +17,10 @@ class Scene : public refCounted
 
     Entity addEntity(const std::string& name = std::string());
 
-    Entity addChildEntity(Entity             parentEntity,
-                          const std::string& name = std::string());
+    Entity addChildEntity(Entity parentEntity, const std::string& name = std::string());
 
-    void   removeEntity(Entity entity, bool removeChildren = false);
-    void   sortEntities();
+    void removeEntity(Entity entity, bool removeChildren = false);
+    void sortEntities();
 
     void onStart();
     void onUpdate(float deltaTime);
@@ -53,17 +52,15 @@ class Scene : public refCounted
     friend class ViewportPanel;
 
     void _render(Camera* p_camera);
-    
+
     void _renderSceneSpecific(Camera* p_camera);
-    
+
     void _onUpdateEditor(float deltaTime);
 
     void _onDrawEditor(Camera* p_editorCamera);
 
     // private addEntity for scene deserialization where these are known
-    Entity _addEntity(const std::string& name,
-                      const std::string& guidStr,
-                      uint32_t           sequenceIndex);
+    Entity _addEntity(const std::string& name, const std::string& guidStr, uint32_t sequenceIndex);
 };
 
 }  // namespace nimbus

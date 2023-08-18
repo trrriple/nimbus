@@ -18,8 +18,7 @@ Mesh::Mesh(std::vector<Vertex>       verticies,
 
     if (textures.size() > Texture::s_getMaxTextures())
     {
-        NM_CORE_ASSERT(
-            0, "Too many textures. Did you call Texture::s_setMaxTextures?");
+        NM_CORE_ASSERT(0, "Too many textures. Did you call Texture::s_setMaxTextures?");
     }
 
     m_textures = textures;
@@ -28,17 +27,14 @@ Mesh::Mesh(std::vector<Vertex>       verticies,
     _setupTextureUniforms();
 }
 
-Mesh::Mesh(std::vector<Vertex>       verticies,
-           std::vector<ref<Texture>> textures,
-           bool                      normalize)
+Mesh::Mesh(std::vector<Vertex> verticies, std::vector<ref<Texture>> textures, bool normalize)
     : m_vertices(verticies), m_normalize(normalize)
 {
     NM_PROFILE_DETAIL();
 
     if (textures.size() > Texture::s_getMaxTextures())
     {
-        NM_CORE_ASSERT(
-            0, "Too many textures. Did you call Texture::s_setMaxTextures?");
+        NM_CORE_ASSERT(0, "Too many textures. Did you call Texture::s_setMaxTextures?");
     }
 
     m_textures = textures;
@@ -47,9 +43,7 @@ Mesh::Mesh(std::vector<Vertex>       verticies,
     _setupTextureUniforms();
 }
 
-Mesh::Mesh(std::vector<Vertex>   verticies,
-           std::vector<uint32_t> indicies,
-           bool                  normalize)
+Mesh::Mesh(std::vector<Vertex> verticies, std::vector<uint32_t> indicies, bool normalize)
     : m_vertices(verticies), m_indices(indicies), m_normalize(normalize)
 {
     NM_PROFILE_DETAIL();
@@ -57,8 +51,7 @@ Mesh::Mesh(std::vector<Vertex>   verticies,
     _setupMesh();
 }
 
-Mesh::Mesh(std::vector<Vertex> verticies, bool normalize)
-    : m_vertices(verticies), m_normalize(normalize)
+Mesh::Mesh(std::vector<Vertex> verticies, bool normalize) : m_vertices(verticies), m_normalize(normalize)
 {
     NM_PROFILE_DETAIL();
 
@@ -138,8 +131,7 @@ void Mesh::draw(const glm::mat4& model) const
 
 void Mesh::_setupMesh()
 {
-    ref<VertexBuffer> p_vbo = VertexBuffer::s_create(
-        &m_vertices[0], m_vertices.size() * sizeof(Vertex));
+    ref<VertexBuffer> p_vbo = VertexBuffer::s_create(&m_vertices[0], m_vertices.size() * sizeof(Vertex));
 
     if (!m_normalize)
     {
@@ -156,8 +148,7 @@ void Mesh::_setupMesh()
 
     {
         // determine type to use for indicies
-        uint32_t maxIndex
-            = *std::max_element(m_indices.begin(), m_indices.end());
+        uint32_t maxIndex = *std::max_element(m_indices.begin(), m_indices.end());
 
         if (maxIndex < std::numeric_limits<uint8_t>::max())
         {
@@ -169,8 +160,7 @@ void Mesh::_setupMesh()
                 indices8.push_back(static_cast<uint8_t>(index));
             }
 
-            mp_vao->setIndexBuffer(
-                IndexBuffer::s_create(&indices8[0], indices8.size()));
+            mp_vao->setIndexBuffer(IndexBuffer::s_create(&indices8[0], indices8.size()));
         }
         else if (maxIndex < std::numeric_limits<uint16_t>::max())
         {
@@ -182,8 +172,7 @@ void Mesh::_setupMesh()
                 indices16.push_back(static_cast<uint16_t>(index));
             }
 
-            mp_vao->setIndexBuffer(
-                IndexBuffer::s_create(&indices16[0], indices16.size()));
+            mp_vao->setIndexBuffer(IndexBuffer::s_create(&indices16[0], indices16.size()));
         }
         else  // we pass in uint32_t so it can't be bigger then that
         {
@@ -195,8 +184,7 @@ void Mesh::_setupMesh()
                 indices32.push_back(static_cast<uint32_t>(index));
             }
 
-            mp_vao->setIndexBuffer(
-                IndexBuffer::s_create(&indices32[0], indices32.size()));
+            mp_vao->setIndexBuffer(IndexBuffer::s_create(&indices32[0], indices32.size()));
         }
     }
 }
@@ -215,36 +203,31 @@ void Mesh::_setupTextureUniforms()
         {
             case (Texture::Type::DIFFUSE):
             {
-                std::string name
-                    = k_texDiffNm + "_" + std::to_string(diffIndex++);
+                std::string name = k_texDiffNm + "_" + std::to_string(diffIndex++);
                 m_texDiffUniformNms.push_back(name);
                 break;
             }
             case (Texture::Type::SPECULAR):
             {
-                std::string name
-                    = k_texSpecNm + "_" + std::to_string(specIndex++);
+                std::string name = k_texSpecNm + "_" + std::to_string(specIndex++);
                 m_texSpecUniformNms.push_back(name);
                 break;
             }
             case (Texture::Type::AMBIENT):
             {
-                std::string name
-                    = k_texAmbiNm + "_" + std::to_string(ambIndex++);
+                std::string name = k_texAmbiNm + "_" + std::to_string(ambIndex++);
                 m_texAmbiUniformNms.push_back(name);
                 break;
             }
             case (Texture::Type::NORMAL):
             {
-                std::string name
-                    = k_texNormNm + "_" + std::to_string(normalIndex++);
+                std::string name = k_texNormNm + "_" + std::to_string(normalIndex++);
                 m_texNormUniformNms.push_back(name);
                 break;
             }
             case (Texture::Type::HEIGHT):
             {
-                std::string name
-                    = k_texHghtNm + "_" + std::to_string(heightIndex++);
+                std::string name = k_texHghtNm + "_" + std::to_string(heightIndex++);
                 m_texHghtUniformNms.push_back(name);
                 break;
             }

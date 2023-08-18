@@ -33,7 +33,6 @@ class Model : public refCounted
 
     scope<Mesh> processMesh(void* mesh, const void* scene);
 
-    std::vector<ref<Texture>> loadMaterialTextures(void*         mat,
-                                                   Texture::Type texType);
+    std::vector<ref<Texture>> loadMaterialTextures(void* mat, Texture::Type texType);
 };
 }  // namespace nimbus

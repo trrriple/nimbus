@@ -87,8 +87,8 @@ enum class ScanCode : int32_t
     PRINTSCREEN = 70,
     SCROLLLOCK  = 71,
     PAUSE       = 72,
-    INSERT = 73,  // insert on PC, help on some Mac keyboards (but does send
-                  // code 73, not 117)
+    INSERT      = 73,  // insert on PC, help on some Mac keyboards (but does send
+                       // code 73, not 117)
     HOME     = 74,
     PAGEUP   = 75,
     DELETE   = 76,
@@ -267,8 +267,7 @@ enum class ScanCode : int32_t
 
     BRIGHTNESSDOWN = 275,
     BRIGHTNESSUP   = 276,
-    DISPLAYSWITCH
-    = 277,  // display mirroring/dual display switch, video mode switch
+    DISPLAYSWITCH  = 277,  // display mirroring/dual display switch, video mode switch
     KBDILLUMTOGGLE = 278,
     KBDILLUMDOWN   = 279,
     KBDILLUMUP     = 280,
@@ -287,19 +286,16 @@ enum class ScanCode : int32_t
     // Mobile keys
     // These are values that are often used on mobile phones.
 
-    SOFTLEFT
-    = 287,  // Usually situated below the display on phones and used as a
-            // multi-function feature key for selecting a software defined
-            // function shown on the bottom left of the display.
-    SOFTRIGHT
-    = 288,  // Usually situated below the display on phones and used as a
-            // multi-function feature key for selecting a software defined
-            // function shown on the bottom right of the display.
-    CALL    = 289,  // Used for accepting phone calls.
-    ENDCALL = 290,  // Used for rejecting phone calls.
+    SOFTLEFT = 287,   // Usually situated below the display on phones and used as a
+                      // multi-function feature key for selecting a software defined
+                      // function shown on the bottom left of the display.
+    SOFTRIGHT = 288,  // Usually situated below the display on phones and used as a
+                      // multi-function feature key for selecting a software defined
+                      // function shown on the bottom right of the display.
+    CALL    = 289,    // Used for accepting phone calls.
+    ENDCALL = 290,    // Used for rejecting phone calls.
 
-    NUM_SCANCODES
-    = 512  // not a key, just marks the number of scancodes for array bounds
+    NUM_SCANCODES = 512  // not a key, just marks the number of scancodes for array bounds
 };
 
 #define NM_SCANCODE_MASK (1 << 30)
@@ -596,8 +592,7 @@ enum class KeyMod : int32_t
     ALT   = LALT | RALT,
     GUI   = LGUI | RGUI,
 
-    RESERVED
-    = SCROLL /* This is for source-level compatibility with SDL 2.0.0. */
+    RESERVED = SCROLL /* This is for source-level compatibility with SDL 2.0.0. */
 };
 
 /**

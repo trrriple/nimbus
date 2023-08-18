@@ -21,9 +21,7 @@ ResourceManager::~ResourceManager()
     m_loadedTextures.clear();
 }
 
-ref<Texture> ResourceManager::loadTexture(const Texture::Type type,
-                                          const std::string&  path,
-                                          const bool          flipOnLoad)
+ref<Texture> ResourceManager::loadTexture(const Texture::Type type, const std::string& path, const bool flipOnLoad)
 {
     NM_PROFILE_DETAIL();
 
@@ -49,8 +47,7 @@ ref<Texture> ResourceManager::loadTexture(const Texture::Type type,
     }
     else
     {
-        ref<Texture> texture
-            = Texture::s_create(type, relativePath, flipOnLoad);
+        ref<Texture> texture = Texture::s_create(type, relativePath, flipOnLoad);
 
         if (texture != nullptr)
         {
@@ -83,21 +80,17 @@ ref<Shader> ResourceManager::loadShader(const std::string& name,
     }
     else
     {
-        ref<Shader> p_shader
-            = Shader::s_create(name, vertexSource, fragmentSource);
+        ref<Shader> p_shader = Shader::s_create(name, vertexSource, fragmentSource);
 
-        auto shaderPair
-            = m_loadedShaders.emplace(p_shader->getName(), p_shader);
+        auto shaderPair = m_loadedShaders.emplace(p_shader->getName(), p_shader);
 
-        Log::coreInfo("ResourceManager::Shader %s Compiled",
-                      shaderPair.first->second->getName().c_str());
+        Log::coreInfo("ResourceManager::Shader %s Compiled", shaderPair.first->second->getName().c_str());
 
         return shaderPair.first->second;
     }
 }
 
-ref<Shader> ResourceManager::loadShader(const std::string& vertexPath,
-                                        const std::string& fragmentPath)
+ref<Shader> ResourceManager::loadShader(const std::string& vertexPath, const std::string& fragmentPath)
 {
     NM_PROFILE_DETAIL();
 
@@ -137,8 +130,7 @@ ref<Shader> ResourceManager::loadShader(const std::string& vertexPath,
     }
     else
     {
-        auto shaderPair = m_loadedShaders.emplace(
-            name, Shader::s_create(vRelativePath, fRelativePath));
+        auto shaderPair = m_loadedShaders.emplace(name, Shader::s_create(vRelativePath, fRelativePath));
 
         Log::coreInfo(
             "ResourceManager::Shader Compiled from: \n\tVertex:   %s "
@@ -169,8 +161,7 @@ ref<Font> ResourceManager::loadFont(const std::string& path)
 
         auto fontPair = m_loadedFonts.emplace(path, font);
 
-        Log::coreInfo("ResourceManager::Font loaded %s",
-                      fontPair.first->second->getPath().c_str());
+        Log::coreInfo("ResourceManager::Font loaded %s", fontPair.first->second->getPath().c_str());
 
         return fontPair.first->second;
     }

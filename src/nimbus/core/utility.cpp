@@ -10,9 +10,7 @@
 namespace nimbus::util
 {
 
-glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos,
-                              float     screenWidth,
-                              float     screenHeight)
+glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos, float screenWidth, float screenHeight)
 {
     glm::vec2 screenPos;
     float     aspectRatio = screenWidth / screenHeight;
@@ -23,9 +21,7 @@ glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos,
     return screenPos;
 }
 
-glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize,
-                                float     screenWidth,
-                                float     screenHeight)
+glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize, float screenWidth, float screenHeight)
 {
     glm::vec2 screenSize;
     float     aspectRatio = screenWidth / screenHeight;
@@ -36,9 +32,7 @@ glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize,
     return screenSize;
 }
 
-glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity,
-                                        float     screenWidth,
-                                        float     screenHeight)
+glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity, float screenWidth, float screenHeight)
 {
     glm::vec2 screenVelocity;
     float     aspectRatio = screenWidth / screenHeight;
@@ -74,16 +68,10 @@ std::vector<std::string> openFile(const std::string&              prompt,
                                   const std::vector<std::string>& filters,
                                   bool                            multiSelect)
 {
-    return pfd::open_file(prompt,
-                          startPath,
-                          filters,
-                          multiSelect ? pfd::opt::multiselect : pfd::opt::none)
-        .result();
+    return pfd::open_file(prompt, startPath, filters, multiSelect ? pfd::opt::multiselect : pfd::opt::none).result();
 }
 
-std::string saveFile(const std::string&              prompt,
-                     const std::string&              startPath,
-                     const std::vector<std::string>& filters)
+std::string saveFile(const std::string& prompt, const std::string& startPath, const std::vector<std::string>& filters)
 {
     return pfd::save_file(prompt, startPath, filters, pfd::opt::none).result();
 }

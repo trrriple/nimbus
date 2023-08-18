@@ -29,10 +29,8 @@ class SceneHeirarchyPanel
 
         mp_sceneContext = p_scene;
 
-        mp_checkerboardTex
-            = Application::s_get().getResourceManager().loadTexture(
-                Texture::Type::DIFFUSE,
-                "../resources/textures/checkerboard.png");
+        mp_checkerboardTex = Application::s_get().getResourceManager().loadTexture(
+            Texture::Type::DIFFUSE, "../resources/textures/checkerboard.png");
     }
     ~SceneHeirarchyPanel()
     {
@@ -131,8 +129,7 @@ class SceneHeirarchyPanel
             Entity entity       = {entityHandle, mp_sceneContext.raw()};
             auto&  name         = entity.getComponent<NameCmp>().name;
 
-            if (filter.PassFilter(name.c_str())
-                && !entity.getComponent<AncestryCmp>().parent)
+            if (filter.PassFilter(name.c_str()) && !entity.getComponent<AncestryCmp>().parent)
             {
                 // only draw entities that passed the filter and are
                 // top level entities
@@ -169,7 +166,7 @@ class SceneHeirarchyPanel
 
                 Entity selectedEntity = _drawEntity(entity);
 
-                if (selectedEntity) // selection changed
+                if (selectedEntity)  // selection changed
                 {
                     if (selectedEntity != m_selectionContext)
                     {
@@ -235,16 +232,14 @@ class SceneHeirarchyPanel
         auto& name = entity.getComponent<NameCmp>().name;
         auto& ac   = entity.getComponent<AncestryCmp>();
 
-        bool isChild = ac.parent;
+        bool isChild     = ac.parent;
         bool hasChildren = ac.children.size() > 0;
 
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
-                                   | ImGuiTreeNodeFlags_OpenOnDoubleClick
-                                   | ImGuiTreeNodeFlags_SpanAvailWidth;
+        ImGuiTreeNodeFlags flags
+            = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
         // highlight the node if we've selected it
-        flags |= ((m_selectionContext == entity) ? ImGuiTreeNodeFlags_Selected
-                                                 : 0);
+        flags |= ((m_selectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 
         // make this a leaf if it doesn't have children
         flags |= hasChildren ? 0 : ImGuiTreeNodeFlags_Leaf;
@@ -262,8 +257,7 @@ class SceneHeirarchyPanel
             }
         }
 
-        bool open = ImGui::TreeNodeEx(
-            (void*)entity.getId(), flags, "%s %s", icon, name.c_str());
+        bool open = ImGui::TreeNodeEx((void*)entity.getId(), flags, "%s %s", icon, name.c_str());
 
         // select item as context if it's clicked
         if (ImGui::IsItemClicked(0))
@@ -342,18 +336,16 @@ class SceneHeirarchyPanel
 
     void _drawSpriteCmp(Entity& entity)
     {
-        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                          | ImGuiTreeNodeFlags_DefaultOpen;
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
         auto& spriteCmp = entity.getComponent<SpriteCmp>();
 
         if (ImGui::TreeNodeEx("Color", flags))
         {
-            ImGui::ColorEdit4("Color",
-                              glm::value_ptr(spriteCmp.color),
-                              ImGuiColorEditFlags_Float
-                                  | ImGuiColorEditFlags_AlphaBar
-                                  | ImGuiColorEditFlags_AlphaPreview);
+            ImGui::ColorEdit4(
+                "Color",
+                glm::value_ptr(spriteCmp.color),
+                ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview);
 
             ImGui::TreePop();
         }
@@ -364,44 +356,35 @@ class SceneHeirarchyPanel
             void* textureId = nullptr;
             if (spriteCmp.p_texture == nullptr)
             {
-                textureId
-                    = reinterpret_cast<void*>(mp_checkerboardTex->getId());
+                textureId = reinterpret_cast<void*>(mp_checkerboardTex->getId());
             }
             else
             {
-                textureId
-                    = reinterpret_cast<void*>(spriteCmp.p_texture->getId());
+                textureId = reinterpret_cast<void*>(spriteCmp.p_texture->getId());
             }
 
-            ImGui::BeginTable("Textures",
-                              2,
-                              ImGuiTableFlags_SizingStretchSame
-                                  | ImGuiTableFlags_NoHostExtendX);
-            ImGui::TableSetupColumn(
-                "TexImage", ImGuiTableColumnFlags_WidthFixed, 60.0f);
-            ImGui::TableSetupColumn("Options",
-                                    ImGuiTableColumnFlags_WidthStretch);
+            ImGui::BeginTable("Textures", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_NoHostExtendX);
+            ImGui::TableSetupColumn("TexImage", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+            ImGui::TableSetupColumn("Options", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             if (ImGui::ImageButton(textureId, {50, 50}))
             {
                 // open the file dialog
-                auto selection
-                    = util::openFile("Select Texture to open",
-                                     ".",
-                                     {"Image Files",
-                                      "*.png *.jpg *.jpeg *.bmp *.tga "
-                                      "*.psd *.gif *.hdr *.pic *.pnm"},
-                                     false);
+                auto selection = util::openFile("Select Texture to open",
+                                                ".",
+                                                {"Image Files",
+                                                 "*.png *.jpg *.jpeg *.bmp *.tga "
+                                                 "*.psd *.gif *.hdr *.pic *.pnm"},
+                                                false);
 
                 if (selection.size() != 0)
                 {
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture
-                        = Application::s_get().getResourceManager().loadTexture(
-                            Texture::Type::DIFFUSE, filePath, false);
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
+                        Texture::Type::DIFFUSE, filePath, false);
 
                     if (texture)
                     {
@@ -409,8 +392,7 @@ class SceneHeirarchyPanel
                     }
                     else
                     {
-                        Log::warn("Could not load texture %s",
-                                  filePath.c_str());
+                        Log::warn("Could not load texture %s", filePath.c_str());
                     }
                 }
             }
@@ -418,21 +400,18 @@ class SceneHeirarchyPanel
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
-                ImGui::Text(
-                    "Drag and drop texture files here, or click to browse");
+                ImGui::Text("Drag and drop texture files here, or click to browse");
                 ImGui::EndTooltip();
             }
 
             // support drag and drop files onto the image button
             if (ImGui::BeginDragDropTarget())
             {
-                if (const ImGuiPayload* payload
-                    = ImGui::AcceptDragDropPayload("DND_FILE"))
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_FILE"))
                 {
                     const char*  path = (const char*)payload->Data;
                     ref<Texture> texture
-                        = Application::s_get().getResourceManager().loadTexture(
-                            Texture::Type::DIFFUSE, path, false);
+                        = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE, path, false);
 
                     if (texture)
                     {
@@ -448,8 +427,7 @@ class SceneHeirarchyPanel
 
             ImGui::TableNextColumn();
             ImGui::Text("Albedo");
-            ImGui::DragFloat(
-                "Tiling Factor", &spriteCmp.tilingFactor, 0.01f, 0.0f);
+            ImGui::DragFloat("Tiling Factor", &spriteCmp.tilingFactor, 0.01f, 0.0f);
 
             ImGui::EndTable();
 
@@ -459,8 +437,7 @@ class SceneHeirarchyPanel
 
     void _drawTextCmp(Entity& entity)
     {
-        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                          | ImGuiTreeNodeFlags_DefaultOpen;
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
         auto& textCmp = entity.getComponent<TextCmp>();
 
@@ -468,8 +445,7 @@ class SceneHeirarchyPanel
         {
             strncpy_s(m_scratch, textCmp.text.c_str(), textCmp.text.length());
 
-            if (ImGui::InputTextMultiline(
-                    "##Text", m_scratch, sizeof(m_scratch)))
+            if (ImGui::InputTextMultiline("##Text", m_scratch, sizeof(m_scratch)))
             {
                 textCmp.text = std::string(m_scratch);
             }
@@ -491,28 +467,22 @@ class SceneHeirarchyPanel
             }
 
             // this const cast is safe because of the readonly flag
-            ImGui::InputText("Font",
-                             const_cast<char*>(fontName.c_str()),
-                             fontName.length(),
-                             ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputText(
+                "Font", const_cast<char*>(fontName.c_str()), fontName.length(), ImGuiInputTextFlags_ReadOnly);
 
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
-                ImGui::Text(
-                    "Drag and drop text files here, or double-click to browse");
+                ImGui::Text("Drag and drop text files here, or double-click to browse");
                 ImGui::EndTooltip();
             }
             // support drag and drop files onto the image button
             if (ImGui::BeginDragDropTarget())
             {
-                if (const ImGuiPayload* payload
-                    = ImGui::AcceptDragDropPayload("DND_FILE"))
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_FILE"))
                 {
                     const char* filePath = (const char*)payload->Data;
-                    ref<Font>   font
-                        = Application::s_get().getResourceManager().loadFont(
-                            filePath);
+                    ref<Font>   font     = Application::s_get().getResourceManager().loadFont(filePath);
 
                     if (font)
                     {
@@ -528,18 +498,13 @@ class SceneHeirarchyPanel
 
             if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0))
             {
-                auto selection = util::openFile("Select Font to open",
-                                                ".",
-                                                {"Font Files", "*.ttf *.otf"},
-                                                false);
+                auto selection = util::openFile("Select Font to open", ".", {"Font Files", "*.ttf *.otf"}, false);
                 if (selection.size() != 0)
                 {
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Font> font
-                        = Application::s_get().getResourceManager().loadFont(
-                            filePath);
+                    ref<Font> font = Application::s_get().getResourceManager().loadFont(filePath);
 
                     if (font)
                     {
@@ -563,23 +528,19 @@ class SceneHeirarchyPanel
                         "..",
                         "...",
                     };
-                    ImGui::Text(
-                        "Generating Font Atlas%s",
-                        anim[(int)(ImGui::GetTime() / 0.25f) & 3].c_str());
+                    ImGui::Text("Generating Font Atlas%s", anim[(int)(ImGui::GetTime() / 0.25f) & 3].c_str());
                 }
             }
 
-            ImGui::ColorEdit4("Fg Color",
-                              glm::value_ptr(textCmp.format.fgColor),
-                              ImGuiColorEditFlags_Float
-                                  | ImGuiColorEditFlags_AlphaBar
-                                  | ImGuiColorEditFlags_AlphaPreview);
+            ImGui::ColorEdit4(
+                "Fg Color",
+                glm::value_ptr(textCmp.format.fgColor),
+                ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview);
 
-            ImGui::ColorEdit4("Bg Color",
-                              glm::value_ptr(textCmp.format.bgColor),
-                              ImGuiColorEditFlags_Float
-                                  | ImGuiColorEditFlags_AlphaBar
-                                  | ImGuiColorEditFlags_AlphaPreview);
+            ImGui::ColorEdit4(
+                "Bg Color",
+                glm::value_ptr(textCmp.format.bgColor),
+                ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview);
 
             ImGui::DragFloat("Kerning", &textCmp.format.kerning, 0.01f);
             ImGui::DragFloat("Leading", &textCmp.format.leading, 0.01f);
@@ -590,8 +551,7 @@ class SceneHeirarchyPanel
 
     void _drawParticleEmitterCmp(Entity& entity)
     {
-        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth
-                                          | ImGuiTreeNodeFlags_DefaultOpen;
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
         auto& pc = entity.getComponent<ParticleEmitterCmp>();
 
@@ -601,41 +561,29 @@ class SceneHeirarchyPanel
         {
             ImGui::Indent();
 
-            ImGui::DragInt(
-                "Quantity", (int*)&pc.numParticles, 25.0f, 1, 1000000);
+            ImGui::DragInt("Quantity", (int*)&pc.numParticles, 25.0f, 1, 1000000);
 
             ImGui::SeparatorText("Spawn Volume");
             const char* spawnTypes[] = {"Point", "Circle", "Rectangle", "Line"};
 
-            ImGui::Combo("Type",
-                         (int*)&pc.parameters.spawnVolumeType,
-                         spawnTypes,
-                         IM_ARRAYSIZE(spawnTypes));
+            ImGui::Combo("Type", (int*)&pc.parameters.spawnVolumeType, spawnTypes, IM_ARRAYSIZE(spawnTypes));
 
-            if (pc.parameters.spawnVolumeType
-                == ParticleEmitter::SpawnVolumeType::POINT)
+            if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::POINT)
             {
                 // no parameters
             }
-            else if (pc.parameters.spawnVolumeType
-                     == ParticleEmitter::SpawnVolumeType::CIRCLE)
+            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::CIRCLE)
             {
-                ImGui::DragFloat(
-                    "Radius", &pc.parameters.circleVolumeParams.radius, 0.01);
+                ImGui::DragFloat("Radius", &pc.parameters.circleVolumeParams.radius, 0.01);
             }
-            else if (pc.parameters.spawnVolumeType
-                     == ParticleEmitter::SpawnVolumeType::RECTANGLE)
+            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::RECTANGLE)
             {
-                ImGui::DragFloat(
-                    "Width", &pc.parameters.rectVolumeParams.width, 0.01);
-                ImGui::DragFloat(
-                    "Height", &pc.parameters.rectVolumeParams.height, 0.01);
+                ImGui::DragFloat("Width", &pc.parameters.rectVolumeParams.width, 0.01);
+                ImGui::DragFloat("Height", &pc.parameters.rectVolumeParams.height, 0.01);
             }
-            else if (pc.parameters.spawnVolumeType
-                     == ParticleEmitter::SpawnVolumeType::LINE)
+            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::LINE)
             {
-                ImGui::DragFloat(
-                    "Length", &pc.parameters.lineVolumeParams.length, 0.01);
+                ImGui::DragFloat("Length", &pc.parameters.lineVolumeParams.length, 0.01);
             }
 
             ImGui::TreePop();
@@ -643,8 +591,7 @@ class SceneHeirarchyPanel
 
         if (ImGui::TreeNodeEx("Relative Position", flags))
         {
-            if (_drawVec3Control(
-                    "Position", pc.parameters.centerPosition, 0.0f, 0.01f))
+            if (_drawVec3Control("Position", pc.parameters.centerPosition, 0.0f, 0.01f))
             {
                 if (isRuntime)
                 {
@@ -656,7 +603,6 @@ class SceneHeirarchyPanel
 
         if (ImGui::TreeNodeEx("Behavior", flags))
         {
-         
             if (ImGui::Checkbox("Persist", &pc.parameters.persist))
             {
                 if (isRuntime)
@@ -685,8 +631,7 @@ class SceneHeirarchyPanel
             {
                 if (isRuntime)
                 {
-                    pc.p_emitter->setLifeTime(pc.parameters.lifetimeMin_s,
-                                              pc.parameters.lifetimeMax_s);
+                    pc.p_emitter->setLifeTime(pc.parameters.lifetimeMin_s, pc.parameters.lifetimeMax_s);
                 }
             }
 
@@ -721,8 +666,7 @@ class SceneHeirarchyPanel
 
             if (isRuntime && (changedSizeX || changedSizeY))
             {
-                pc.p_emitter->setInitSize(pc.parameters.initSizeMin,
-                                          pc.parameters.initSizeMax);
+                pc.p_emitter->setInitSize(pc.parameters.initSizeMin, pc.parameters.initSizeMax);
             }
 
             if (ImGui::DragFloatRange2("Init Speed",
@@ -737,25 +681,21 @@ class SceneHeirarchyPanel
             {
                 if (isRuntime)
                 {
-                    pc.p_emitter->setInitSpeed(pc.parameters.initSpeedMin,
-                                               pc.parameters.initSpeedMax);
+                    pc.p_emitter->setInitSpeed(pc.parameters.initSpeedMin, pc.parameters.initSpeedMax);
                 }
             }
 
             ImGui::SeparatorText("Ejection Angle");
 
-            bool changedBase = false;
+            bool changedBase   = false;
             bool changedSpread = false;
 
-            if(ImGui::SliderAngle("Base", &pc.parameters.ejectionBaseAngle_rad))
+            if (ImGui::SliderAngle("Base", &pc.parameters.ejectionBaseAngle_rad))
             {
                 changedBase = true;
             }
 
-            if (ImGui::SliderAngle("Spread",
-                                   &pc.parameters.ejectionSpreadAngle_rad,
-                                   0.0f,
-                                   360.0f))
+            if (ImGui::SliderAngle("Spread", &pc.parameters.ejectionSpreadAngle_rad, 0.0f, 360.0f))
 
             {
                 changedSpread = true;
@@ -763,9 +703,8 @@ class SceneHeirarchyPanel
 
             if (isRuntime && (changedBase || changedSpread))
             {
-                pc.p_emitter->setEjectionAngle(
-                    pc.parameters.ejectionBaseAngle_rad,
-                    pc.parameters.ejectionSpreadAngle_rad);
+                pc.p_emitter->setEjectionAngle(pc.parameters.ejectionBaseAngle_rad,
+                                               pc.parameters.ejectionSpreadAngle_rad);
             }
 
             ImGui::SeparatorText("Acceleration");
@@ -815,8 +754,7 @@ class SceneHeirarchyPanel
 
             if (isRuntime && (changedAccelX || changedAccelY || changedAccelZ))
             {
-                pc.p_emitter->setAcceleration(pc.parameters.accelerationMin,
-                                              pc.parameters.accelerationMax);
+                pc.p_emitter->setAcceleration(pc.parameters.accelerationMin, pc.parameters.accelerationMax);
             }
 
             ImGui::TreePop();
@@ -833,10 +771,7 @@ class SceneHeirarchyPanel
                                        "Alpha Premultiplied",
                                        "Source Alpha"};
 
-            if (ImGui::Combo("Blending",
-                             (int*)&pc.parameters.blendingMode,
-                             blendType,
-                             IM_ARRAYSIZE(blendType)))
+            if (ImGui::Combo("Blending", (int*)&pc.parameters.blendingMode, blendType, IM_ARRAYSIZE(blendType)))
             {
                 if (isRuntime)
                 {
@@ -844,7 +779,7 @@ class SceneHeirarchyPanel
                 }
             }
 
-            for(uint32_t i =0; i < pc.parameters.colors.size(); i++)
+            for (uint32_t i = 0; i < pc.parameters.colors.size(); i++)
             {
                 auto& colorSpec = pc.parameters.colors[i];
 
@@ -854,19 +789,17 @@ class SceneHeirarchyPanel
                 std::string startNm = "Start " + std::to_string(i);
                 std::string endNm   = "End " + std::to_string(i);
 
-                if (ImGui::ColorEdit4(startNm.c_str(),
-                                      glm::value_ptr(colorSpec.colorStart),
-                                      ImGuiColorEditFlags_Float
-                                          | ImGuiColorEditFlags_AlphaBar
-                                          | ImGuiColorEditFlags_AlphaPreview))
+                if (ImGui::ColorEdit4(
+                        startNm.c_str(),
+                        glm::value_ptr(colorSpec.colorStart),
+                        ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
                 {
                     startChanged = true;
                 }
-                if (ImGui::ColorEdit4(endNm.c_str(),
-                                      glm::value_ptr(colorSpec.colorEnd),
-                                      ImGuiColorEditFlags_Float
-                                          | ImGuiColorEditFlags_AlphaBar
-                                          | ImGuiColorEditFlags_AlphaPreview))
+                if (ImGui::ColorEdit4(
+                        endNm.c_str(),
+                        glm::value_ptr(colorSpec.colorEnd),
+                        ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
                 {
                     endChanged = true;
                 }
@@ -877,19 +810,15 @@ class SceneHeirarchyPanel
                 }
             }
 
-            if(ImGui::Button("Add Color"))
+            if (ImGui::Button("Add Color"))
             {
-                pc.parameters.colors.push_back(
-                    {glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                     glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
+                pc.parameters.colors.push_back({glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
 
                 if (isRuntime)
                 {
-                    pc.p_emitter->addColor({glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
+                    pc.p_emitter->addColor({glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
 
-                    pc.p_emitter->chooseColors(0,
-                                               pc.parameters.colors.size() - 1);
+                    pc.p_emitter->chooseColors(0, pc.parameters.colors.size() - 1);
                 }
             }
 
@@ -902,44 +831,35 @@ class SceneHeirarchyPanel
             void* textureId = nullptr;
             if (pc.p_texture == nullptr)
             {
-                textureId
-                    = reinterpret_cast<void*>(mp_checkerboardTex->getId());
+                textureId = reinterpret_cast<void*>(mp_checkerboardTex->getId());
             }
             else
             {
-                textureId
-                    = reinterpret_cast<void*>(pc.p_texture->getId());
+                textureId = reinterpret_cast<void*>(pc.p_texture->getId());
             }
 
-            ImGui::BeginTable("Textures",
-                              2,
-                              ImGuiTableFlags_SizingStretchSame
-                                  | ImGuiTableFlags_NoHostExtendX);
-            ImGui::TableSetupColumn(
-                "TexImage", ImGuiTableColumnFlags_WidthFixed, 60.0f);
-            ImGui::TableSetupColumn("Options",
-                                    ImGuiTableColumnFlags_WidthStretch);
+            ImGui::BeginTable("Textures", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_NoHostExtendX);
+            ImGui::TableSetupColumn("TexImage", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+            ImGui::TableSetupColumn("Options", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             if (ImGui::ImageButton(textureId, {50, 50}))
             {
                 // open the file dialog
-                auto selection
-                    = util::openFile("Select Texture to open",
-                                     ".",
-                                     {"Image Files",
-                                      "*.png *.jpg *.jpeg *.bmp *.tga "
-                                      "*.psd *.gif *.hdr *.pic *.pnm"},
-                                     false);
+                auto selection = util::openFile("Select Texture to open",
+                                                ".",
+                                                {"Image Files",
+                                                 "*.png *.jpg *.jpeg *.bmp *.tga "
+                                                 "*.psd *.gif *.hdr *.pic *.pnm"},
+                                                false);
 
                 if (selection.size() != 0)
                 {
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture
-                        = Application::s_get().getResourceManager().loadTexture(
-                            Texture::Type::DIFFUSE, filePath, false);
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
+                        Texture::Type::DIFFUSE, filePath, false);
 
                     if (texture)
                     {
@@ -947,8 +867,7 @@ class SceneHeirarchyPanel
                     }
                     else
                     {
-                        Log::warn("Could not load texture %s",
-                                  filePath.c_str());
+                        Log::warn("Could not load texture %s", filePath.c_str());
                     }
                 }
             }
@@ -956,21 +875,18 @@ class SceneHeirarchyPanel
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
-                ImGui::Text(
-                    "Drag and drop texture files here, or click to browse");
+                ImGui::Text("Drag and drop texture files here, or click to browse");
                 ImGui::EndTooltip();
             }
 
             // support drag and drop files onto the image button
             if (ImGui::BeginDragDropTarget())
             {
-                if (const ImGuiPayload* payload
-                    = ImGui::AcceptDragDropPayload("DND_FILE"))
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_FILE"))
                 {
                     const char*  path = (const char*)payload->Data;
                     ref<Texture> texture
-                        = Application::s_get().getResourceManager().loadTexture(
-                            Texture::Type::DIFFUSE, path, false);
+                        = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE, path, false);
 
                     if (texture)
                     {
@@ -1000,8 +916,7 @@ class SceneHeirarchyPanel
         const char* cameraTypes[] = {"Orthographic", "Perspective"};
 
         int currentType = static_cast<int>(cameraCmp.camera.getType());
-        if (ImGui::Combo(
-                "Type", &currentType, cameraTypes, IM_ARRAYSIZE(cameraTypes)))
+        if (ImGui::Combo("Type", &currentType, cameraTypes, IM_ARRAYSIZE(cameraTypes)))
         {
             if (currentType == 0)
             {
@@ -1098,8 +1013,7 @@ class SceneHeirarchyPanel
 
         glm::vec3 translation = tc.local.getTranslation();
 
-        if (_drawVec3Control(
-                "Translation", translation, 0.0f, 0.01f))
+        if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
         {
             tc.local.setTranslation(translation);
         }
@@ -1143,9 +1057,8 @@ class SceneHeirarchyPanel
 
     void _drawComponents(Entity& entity)
     {
-        static ImGuiTreeNodeFlags flags
-            = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen
-              | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap;
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen
+                                          | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_AllowItemOverlap;
 
         ///////////////////////////
         // Name  Component
@@ -1179,8 +1092,7 @@ class SceneHeirarchyPanel
                 }
             }
 
-            if (_drawAddComponentEntry<ParticleEmitterCmp>(ICON_FA_EXPLOSION
-                                                           " Particle Emitter"))
+            if (_drawAddComponentEntry<ParticleEmitterCmp>(ICON_FA_EXPLOSION " Particle Emitter"))
             {
                 if (!entity.hasComponent<TransformCmp>())
                 {
@@ -1188,8 +1100,7 @@ class SceneHeirarchyPanel
                 }
             }
 
-            _drawAddComponentEntry<NativeLogicCmp>(ICON_FA_COMPUTER
-                                                   " Native Logic");
+            _drawAddComponentEntry<NativeLogicCmp>(ICON_FA_COMPUTER " Native Logic");
             _drawAddComponentEntry<CameraCmp>(ICON_FA_VIDEO " Camera");
 
             ImGui::EndPopup();
@@ -1258,14 +1169,13 @@ class SceneHeirarchyPanel
                 entity.removeComponent<TextCmp>();
             }
         }
-        
+
         ///////////////////////////
         // Particle Emitter Component
         ///////////////////////////
         if (entity.hasComponent<ParticleEmitterCmp>())
         {
-            bool open = ImGui::TreeNodeEx(ICON_FA_EXPLOSION " Particle Emitter",
-                                          flags);
+            bool open    = ImGui::TreeNodeEx(ICON_FA_EXPLOSION " Particle Emitter", flags);
             bool removed = _drawComponentMenu();
 
             if (open)
@@ -1298,9 +1208,8 @@ class SceneHeirarchyPanel
                 entity.removeComponent<CameraCmp>();
             }
         }
-    
-        ImGui::EndChild();
 
+        ImGui::EndChild();
     }
 
     // custom stylized 3 input (X,Y,Z) control block
@@ -1314,8 +1223,7 @@ class SceneHeirarchyPanel
         // set the size of the dragfloats
         static float itemWidth = ImGui::CalcTextSize("A").x * 6.0;
 
-        static float lineHeight
-            = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+        static float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 
         static ImVec2 buttonSize = {lineHeight - 3, lineHeight};
 
@@ -1328,9 +1236,7 @@ class SceneHeirarchyPanel
         bool changedZ = false;
 
         ImGui::BeginTable("table", 2, ImGuiTableFlags_SizingFixedFit);
-        ImGui::TableSetupColumn("Data",
-                                ImGuiTableColumnFlags_WidthFixed,
-                                (itemWidth * 3 + buttonSize.x * 3));
+        ImGui::TableSetupColumn("Data", ImGuiTableColumnFlags_WidthFixed, (itemWidth * 3 + buttonSize.x * 3));
         ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch);
 
         ImGui::TableNextRow();
@@ -1338,10 +1244,8 @@ class SceneHeirarchyPanel
 
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
 
         ImGui::PushFont(boldfont);
         if (ImGui::Button("X", buttonSize))
@@ -1354,8 +1258,7 @@ class SceneHeirarchyPanel
 
         ImGui::SameLine();
         ImGui::PushItemWidth(itemWidth);
-        bool changed
-            = ImGui::DragFloat("##X", &values.x, speed, 0.0f, 0.0f, "%.2f");
+        bool changed = ImGui::DragFloat("##X", &values.x, speed, 0.0f, 0.0f, "%.2f");
         if (changed)
             changedX = true;
 
@@ -1363,10 +1266,8 @@ class SceneHeirarchyPanel
         ImGui::SameLine();
 
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              ImVec4{0.3f, 0.8f, 0.3f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.3f, 0.8f, 0.3f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
 
         ImGui::PushFont(boldfont);
         if (ImGui::Button("Y", buttonSize))
@@ -1387,10 +1288,8 @@ class SceneHeirarchyPanel
         ImGui::SameLine();
 
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                              ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                              ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
 
         ImGui::PushFont(boldfont);
         if (ImGui::Button("Z", buttonSize))
@@ -1422,7 +1321,7 @@ class SceneHeirarchyPanel
             if (ImGui::Button(*lockedStatus ? ICON_FA_LOCK : ICON_FA_LOCK_OPEN))
             {
                 *lockedStatus = !*lockedStatus;
-                changedLock  = true;
+                changedLock   = true;
             }
         }
 

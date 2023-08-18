@@ -19,14 +19,11 @@
 namespace nimbus
 {
 
-static const std::string k_defaultFontPath
-    = "../resources/fonts/Roboto/Roboto-Regular.ttf";
+static const std::string k_defaultFontPath = "../resources/fonts/Roboto/Roboto-Regular.ttf";
 
-static const std::string k_defaultBoldFontPath
-    = "../resources/fonts/Roboto/Roboto-Black.ttf";
+static const std::string k_defaultBoldFontPath = "../resources/fonts/Roboto/Roboto-Black.ttf";
 
-static const std::string k_defaultIconFontPath
-    = "../resources/fonts/FontAwesome6/" FONT_ICON_FILE_NAME_FAS;
+static const std::string k_defaultIconFontPath = "../resources/fonts/FontAwesome6/" FONT_ICON_FILE_NAME_FAS;
 
 GuiSubsystem::GuiSubsystem() : Layer(Layer::Type::OVERLAY, "guiSubsystem")
 {
@@ -48,8 +45,7 @@ void GuiSubsystem::onInsert()
     // Change font
     ///////////////////////////
     float   fontSize = 15.0f;
-    ImFont* p_roboto
-        = io.Fonts->AddFontFromFileTTF(k_defaultFontPath.c_str(), fontSize);
+    ImFont* p_roboto = io.Fonts->AddFontFromFileTTF(k_defaultFontPath.c_str(), fontSize);
 
     if (p_roboto != nullptr)
     {
@@ -57,8 +53,7 @@ void GuiSubsystem::onInsert()
     }
     else
     {
-        Log::coreCritical("Could not load GUI font: %s\n",
-                          k_defaultFontPath.c_str());
+        Log::coreCritical("Could not load GUI font: %s\n", k_defaultFontPath.c_str());
     }
 
     ///////////////////////////
@@ -77,27 +72,21 @@ void GuiSubsystem::onInsert()
     icons_config.PixelSnapH       = true;
     icons_config.GlyphMinAdvanceX = iconFontSize;
     ImFont* p_iconFont
-        = io.Fonts->AddFontFromFileTTF(k_defaultIconFontPath.c_str(),
-                                       iconFontSize,
-                                       &icons_config,
-                                       icons_ranges);
+        = io.Fonts->AddFontFromFileTTF(k_defaultIconFontPath.c_str(), iconFontSize, &icons_config, icons_ranges);
 
     if (p_iconFont == nullptr)
     {
-        Log::coreCritical("Could not load GUI Icon font: %s\n",
-                          k_defaultIconFontPath.c_str());
+        Log::coreCritical("Could not load GUI Icon font: %s\n", k_defaultIconFontPath.c_str());
     }
 
     ///////////////////////////
     // Bold font
     ///////////////////////////
-    ImFont* p_robotoBold
-        = io.Fonts->AddFontFromFileTTF(k_defaultBoldFontPath.c_str(), fontSize);
+    ImFont* p_robotoBold = io.Fonts->AddFontFromFileTTF(k_defaultBoldFontPath.c_str(), fontSize);
 
     if (p_robotoBold == nullptr)
     {
-        Log::coreCritical("Could not load GUI font: %s\n",
-                          k_defaultFontPath.c_str());
+        Log::coreCritical("Could not load GUI font: %s\n", k_defaultFontPath.c_str());
     }
 
     // Setup Dear ImGui style
@@ -110,8 +99,7 @@ void GuiSubsystem::onInsert()
     // window is the SDL_Window*
     // context is the SDL_GLContext
 
-    auto p_window = static_cast<SDL_Window*>(
-        Application::s_get().getWindow().getOsWindow());
+    auto p_window = static_cast<SDL_Window*>(Application::s_get().getWindow().getOsWindow());
 
     auto context = Application::s_get().getWindow().getContext();
 
@@ -146,24 +134,19 @@ void GuiSubsystem::onEvent(Event& event)
 
         // mark mouse events as handled
         if (io.WantCaptureMouse
-            && (eventType == Event::Type::MOUSEMOTION
-                || eventType == Event::Type::MOUSEBUTTONUP
-                || eventType == Event::Type::MOUSEBUTTONDOWN
-                || eventType == Event::Type::MOUSEWHEEL))
+            && (eventType == Event::Type::MOUSEMOTION || eventType == Event::Type::MOUSEBUTTONUP
+                || eventType == Event::Type::MOUSEBUTTONDOWN || eventType == Event::Type::MOUSEWHEEL))
         {
             event.markAsHandled();
         }
         // mark keyboard events as handled
         else if (io.WantCaptureKeyboard
-                 && (eventType == Event::Type::KEYDOWN
-                     || eventType == Event::Type::KEYUP
-                     || eventType == Event::Type::TEXTEDITING
-                     || eventType == Event::Type::TEXTINPUT))
+                 && (eventType == Event::Type::KEYDOWN || eventType == Event::Type::KEYUP
+                     || eventType == Event::Type::TEXTEDITING || eventType == Event::Type::TEXTINPUT))
         {
             event.markAsHandled();
         }
-        else if (!io.WantCaptureMouse
-                 && eventType == Event::Type::MOUSEBUTTONDOWN)
+        else if (!io.WantCaptureMouse && eventType == Event::Type::MOUSEBUTTONDOWN)
         {
             p_appRef->setMenuMode(false);
         }
@@ -186,9 +169,8 @@ void GuiSubsystem::end()
 
     static Window* p_window = &Application::s_get().getWindow();
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize
-        = ImVec2((float)p_window->getWidth(), (float)p_window->getHeight());
+    ImGuiIO& io    = ImGui::GetIO();
+    io.DisplaySize = ImVec2((float)p_window->getWidth(), (float)p_window->getHeight());
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

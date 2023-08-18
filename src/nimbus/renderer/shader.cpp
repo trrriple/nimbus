@@ -15,8 +15,7 @@ ref<Shader> Shader::s_create(const std::string& name,
     return ref<GlShader>::gen(name, vertexSource, fragmentSource);
 }
 
-ref<Shader> Shader::s_create(const std::string& vertexPath,
-                             const std::string& fragmentPath)
+ref<Shader> Shader::s_create(const std::string& vertexPath, const std::string& fragmentPath)
 {
     return ref<GlShader>::gen(vertexPath, fragmentPath);
 }

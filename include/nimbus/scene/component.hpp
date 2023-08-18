@@ -27,8 +27,7 @@ struct GuidCmp
     ////////////////////////////////////////////////////////////////////////////
     // For use by Scene::_addEntity only
     ////////////////////////////////////////////////////////////////////////////
-    GuidCmp(uint32_t icreationOrder, const std::string& guidStr)
-        : sequenceIndex(icreationOrder)
+    GuidCmp(uint32_t icreationOrder, const std::string& guidStr) : sequenceIndex(icreationOrder)
     {
         guid = Guid(guidStr);
     }
@@ -88,15 +87,12 @@ struct TransformCmp
     {
         local.setTranslation(itranslation);
     }
-    TransformCmp(const glm::vec3& itranslation,
-                 const glm::vec3& irotation,
-                 const glm::vec3& iscale)
+    TransformCmp(const glm::vec3& itranslation, const glm::vec3& irotation, const glm::vec3& iscale)
     {
         local.setTranslation(itranslation);
         local.setRotation(irotation);
         local.setScale(iscale);
     }
-
 };
 
 struct SpriteCmp
@@ -109,9 +105,7 @@ struct SpriteCmp
     SpriteCmp(const glm::vec4& icolor) : color(icolor)
     {
     }
-    SpriteCmp(const glm::vec4& icolor,
-              ref<Texture>     p_itexture,
-              float            itilingFactor = 1.0f)
+    SpriteCmp(const glm::vec4& icolor, ref<Texture> p_itexture, float itilingFactor = 1.0f)
         : color(icolor), p_texture(p_itexture), tilingFactor(itilingFactor)
     {
     }
@@ -123,8 +117,7 @@ struct TextCmp
     Font::Format format;
 
     TextCmp() = default;
-    TextCmp(const std::string& itext, const Font::Format& iformat)
-        : text(itext), format(iformat)
+    TextCmp(const std::string& itext, const Font::Format& iformat) : text(itext), format(iformat)
     {
     }
 };
@@ -133,20 +126,17 @@ struct ParticleEmitterCmp
 {
     uint32_t                    numParticles = 100;
     ParticleEmitter::Parameters parameters;
-    ref<Texture>                p_texture    = nullptr;
-    ref<ParticleEmitter>        p_emitter    = nullptr;
+    ref<Texture>                p_texture = nullptr;
+    ref<ParticleEmitter>        p_emitter = nullptr;
 
     ParticleEmitterCmp()
     {
-        parameters.colors.push_back({glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                     glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
+        parameters.colors.push_back({glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
     }
     ParticleEmitterCmp(uint32_t                           inumParticles,
                        const ParticleEmitter::Parameters& iparameters,
                        ref<Texture>                       p_itexture = nullptr)
-        : numParticles(inumParticles),
-          parameters(iparameters),
-          p_texture(p_itexture)
+        : numParticles(inumParticles), parameters(iparameters), p_texture(p_itexture)
     {
     }
 };
@@ -181,13 +171,7 @@ struct ComponentGroup
 {
 };
 
-using AllComponents = ComponentGroup<NativeLogicCmp,
-                                     NameCmp,
-                                     TransformCmp,
-                                     SpriteCmp,
-                                     TextCmp,
-                                     CameraCmp,
-                                     RefCmp,
-                                     WindowRefCmp>;
+using AllComponents
+    = ComponentGroup<NativeLogicCmp, NameCmp, TransformCmp, SpriteCmp, TextCmp, CameraCmp, RefCmp, WindowRefCmp>;
 
 }  // namespace nimbus

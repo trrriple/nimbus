@@ -18,36 +18,21 @@ namespace nimbus
 //                    Type             sizeof      # of Components
 typedef std::tuple<Shader::ShaderType, uint32_t, uint32_t> ShaderDataType;
 
-const ShaderDataType k_shaderFloat
-    = std::make_tuple(Shader::ShaderType::FLOAT, 4, 1);
-const ShaderDataType k_shaderVec2
-    = std::make_tuple(Shader::ShaderType::FLOAT, 8, 2);
-const ShaderDataType k_shaderVec3
-    = std::make_tuple(Shader::ShaderType::FLOAT, 12, 3);
-const ShaderDataType k_shaderVec4
-    = std::make_tuple(Shader::ShaderType::FLOAT, 16, 4);
-const ShaderDataType k_shaderMat3
-    = std::make_tuple(Shader::ShaderType::FLOAT, 36, 9);
-const ShaderDataType k_shaderMat4
-    = std::make_tuple(Shader::ShaderType::FLOAT, 64, 16);
-const ShaderDataType k_shaderInt
-    = std::make_tuple(Shader::ShaderType::INT, 4, 1);
-const ShaderDataType k_shaderInt2
-    = std::make_tuple(Shader::ShaderType::INT, 8, 2);
-const ShaderDataType k_shaderInt3
-    = std::make_tuple(Shader::ShaderType::INT, 12, 3);
-const ShaderDataType k_shaderInt4
-    = std::make_tuple(Shader::ShaderType::INT, 16, 4);
-const ShaderDataType k_shaderUInt
-    = std::make_tuple(Shader::ShaderType::UINT, 4, 1);
-const ShaderDataType k_shaderUInt2
-    = std::make_tuple(Shader::ShaderType::UINT, 8, 2);
-const ShaderDataType k_shaderUInt3
-    = std::make_tuple(Shader::ShaderType::UINT, 12, 3);
-const ShaderDataType k_shaderUInt4
-    = std::make_tuple(Shader::ShaderType::UINT, 16, 4);
-const ShaderDataType k_shaderBool
-    = std::make_tuple(Shader::ShaderType::BOOL, 1, 1);
+const ShaderDataType k_shaderFloat = std::make_tuple(Shader::ShaderType::FLOAT, 4, 1);
+const ShaderDataType k_shaderVec2  = std::make_tuple(Shader::ShaderType::FLOAT, 8, 2);
+const ShaderDataType k_shaderVec3  = std::make_tuple(Shader::ShaderType::FLOAT, 12, 3);
+const ShaderDataType k_shaderVec4  = std::make_tuple(Shader::ShaderType::FLOAT, 16, 4);
+const ShaderDataType k_shaderMat3  = std::make_tuple(Shader::ShaderType::FLOAT, 36, 9);
+const ShaderDataType k_shaderMat4  = std::make_tuple(Shader::ShaderType::FLOAT, 64, 16);
+const ShaderDataType k_shaderInt   = std::make_tuple(Shader::ShaderType::INT, 4, 1);
+const ShaderDataType k_shaderInt2  = std::make_tuple(Shader::ShaderType::INT, 8, 2);
+const ShaderDataType k_shaderInt3  = std::make_tuple(Shader::ShaderType::INT, 12, 3);
+const ShaderDataType k_shaderInt4  = std::make_tuple(Shader::ShaderType::INT, 16, 4);
+const ShaderDataType k_shaderUInt  = std::make_tuple(Shader::ShaderType::UINT, 4, 1);
+const ShaderDataType k_shaderUInt2 = std::make_tuple(Shader::ShaderType::UINT, 8, 2);
+const ShaderDataType k_shaderUInt3 = std::make_tuple(Shader::ShaderType::UINT, 12, 3);
+const ShaderDataType k_shaderUInt4 = std::make_tuple(Shader::ShaderType::UINT, 16, 4);
+const ShaderDataType k_shaderBool  = std::make_tuple(Shader::ShaderType::BOOL, 1, 1);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Description of component in a buffer
@@ -69,9 +54,7 @@ struct BufferComponent
 
     BufferComponent() = default;
 
-    BufferComponent(ShaderDataType     dataType,
-                    const std::string& name,
-                    bool               normalized = false)
+    BufferComponent(ShaderDataType dataType, const std::string& name, bool normalized = false)
         : dataType(dataType),
           name(name),
           type(BufferComponent::Type::PER_VERTEX),
@@ -86,12 +69,7 @@ struct BufferComponent
                     BufferComponent::Type type,
                     uint32_t              perInstance,
                     bool                  normalized = false)
-        : dataType(dataType),
-          name(name),
-          type(type),
-          perInstance(perInstance),
-          normalized(normalized),
-          offset(0)
+        : dataType(dataType), name(name), type(type), perInstance(perInstance), normalized(normalized), offset(0)
     {
     }
 };
@@ -106,8 +84,7 @@ class BufferFormat
     {
     }
 
-    BufferFormat(std::initializer_list<BufferComponent> components)
-        : m_components(components)
+    BufferFormat(std::initializer_list<BufferComponent> components) : m_components(components)
     {
         _genOffsetsAndStride();
     }
@@ -170,8 +147,7 @@ class VertexBuffer : public refCounted
 
     static ref<VertexBuffer> s_create(const void*        vertices,
                                       uint32_t           size,
-                                      VertexBuffer::Type type
-                                      = VertexBuffer::Type::STATIC_DRAW);
+                                      VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
 
     virtual ~VertexBuffer() = default;
 

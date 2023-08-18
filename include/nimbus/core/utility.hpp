@@ -11,17 +11,11 @@
 namespace nimbus::util
 {
 
-glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos,
-                              float     screenWidth,
-                              float     screenHeight);
+glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos, float screenWidth, float screenHeight);
 
-glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize,
-                                float     screenWidth,
-                                float     screenHeight);
+glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize, float screenWidth, float screenHeight);
 
-glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity,
-                                        float     screenWidth,
-                                        float     screenHeight);
+glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity, float screenWidth, float screenHeight);
 
 glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                          float     screenMinX,
@@ -31,16 +25,14 @@ glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                          int       imgWidth,
                          int       imgHeight);
 
-std::vector<std::string> openFile(const std::string& prompt    = "",
-                                  const std::string& startPath = ".",
-                                  const std::vector<std::string>& filters
-                                  = {"All Files", "*"},
-                                  bool multiSelect = false);
+std::vector<std::string> openFile(const std::string&              prompt      = "",
+                                  const std::string&              startPath   = ".",
+                                  const std::vector<std::string>& filters     = {"All Files", "*"},
+                                  bool                            multiSelect = false);
 
 std::string saveFile(const std::string&              prompt    = "",
                      const std::string&              startPath = ".",
-                     const std::vector<std::string>& filters
-                     = {"All Files", "*"});
+                     const std::vector<std::string>& filters   = {"All Files", "*"});
 
 class Transform
 {
@@ -49,9 +41,7 @@ class Transform
     Transform(const glm::vec3& itranslation) : translation(itranslation)
     {
     }
-    Transform(const glm::vec3& itranslation,
-              const glm::vec3& irotation,
-              const glm::vec3& iscale)
+    Transform(const glm::vec3& itranslation, const glm::vec3& irotation, const glm::vec3& iscale)
         : translation(itranslation), rotation(irotation), scale(iscale)
     {
     }
@@ -72,9 +62,7 @@ class Transform
         return transform;
     }
 
-    void setTransform(const glm::vec3& itranslation,
-                      const glm::vec3& irotation,
-                      const glm::vec3& iscale)
+    void setTransform(const glm::vec3& itranslation, const glm::vec3& irotation, const glm::vec3& iscale)
     {
         translation    = itranslation;
         rotation       = irotation;
@@ -88,8 +76,7 @@ class Transform
         glm::vec3 skew;
         glm::vec4 perspective;
 
-        glm::decompose(
-            itransform, scale, orientation, translation, skew, perspective);
+        glm::decompose(itransform, scale, orientation, translation, skew, perspective);
 
         rotation = glm::eulerAngles(orientation);
 

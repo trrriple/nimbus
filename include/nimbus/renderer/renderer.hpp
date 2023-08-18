@@ -86,19 +86,18 @@ class Renderer : public refCounted
 
     static void s_render(ref<Shader>      p_shader,
                          ref<VertexArray> p_vertexArray,
-                         int32_t          vertexCount = k_detectCountIfPossible,
+                         int32_t          vertexCount       = k_detectCountIfPossible,
                          bool             setViewProjection = true);
 
     static void s_renderInstanced(const ref<Shader>&      p_shader,
                                   const ref<VertexArray>& p_vertexArray,
                                   int32_t                 instanceCount,
-                                  int32_t vertexCount = k_detectCountIfPossible,
-                                  bool    setViewProjection = true);
-
+                                  int32_t                 vertexCount       = k_detectCountIfPossible,
+                                  bool                    setViewProjection = true);
 
    private:
     static RenderCmdQ* _s_getSubmitRenderCmdQ();
-    
+
     static RenderCmdQ* _s_getProcessRenderCmdQ();
 
     static RenderCmdQ* _s_getSubmitObjectCmdQ();
@@ -117,16 +116,15 @@ class Renderer : public refCounted
     static void _s_submit(const ref<Shader>&      p_shader,
                           const ref<VertexArray>& p_vertexArray,
                           const glm::mat4&        model,
-                          int32_t vertexCount       = k_detectCountIfPossible,
-                          bool    setViewProjection = true);
+                          int32_t                 vertexCount       = k_detectCountIfPossible,
+                          bool                    setViewProjection = true);
 
     static void _s_submitInstanced(const ref<Shader>&      p_shader,
                                    const ref<VertexArray>& p_vertexArray,
                                    int32_t                 instanceCount,
                                    const glm::mat4&        model,
-                                   int32_t                 vertexCount
-                                   = k_detectCountIfPossible,
-                                   bool setViewProjection = true);
+                                   int32_t                 vertexCount       = k_detectCountIfPossible,
+                                   bool                    setViewProjection = true);
 
     friend class RenderThread;
 };

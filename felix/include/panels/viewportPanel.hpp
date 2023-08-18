@@ -61,8 +61,7 @@ class ViewportPanel
                 Entity                       selectedEntity,
                 SceneControlPanel::ToolState toolState)
     {
-        ImGui::SetNextWindowSize({m_viewportSize.x, m_viewportSize.y},
-                                 ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize({m_viewportSize.x, m_viewportSize.y}, ImGuiCond_FirstUseEver);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
         ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
 
@@ -70,10 +69,8 @@ class ViewportPanel
         auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
         auto viewportOffset    = ImGui::GetWindowPos();
 
-        m_viewportRegion[0] = {viewportMinRegion.x + viewportOffset.x,
-                               viewportMinRegion.y + viewportOffset.y};
-        m_viewportRegion[1] = {viewportMaxRegion.x + viewportOffset.x,
-                               viewportMaxRegion.y + viewportOffset.y};
+        m_viewportRegion[0] = {viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y};
+        m_viewportRegion[1] = {viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y};
 
         m_viewportFocused = ImGui::IsWindowFocused();
         m_viewportHovered = ImGui::IsWindowHovered();
@@ -82,8 +79,7 @@ class ViewportPanel
 
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
-        if (viewportPanelSize.x != m_viewportSize.x
-            || viewportPanelSize.y != m_viewportSize.y)
+        if (viewportPanelSize.x != m_viewportSize.x || viewportPanelSize.y != m_viewportSize.y)
         {
             // we need to resize
             m_viewportSize = {viewportPanelSize.x, viewportPanelSize.y};
@@ -116,8 +112,7 @@ class ViewportPanel
                  (int)m_viewportSize.y,
                  m_viewportSize.x / m_viewportSize.y);
 
-        ImVec2 dimLoc
-            = {m_viewportRegion[1].x - 115.0f, m_viewportRegion[1].y - 17.0f};
+        ImVec2 dimLoc = {m_viewportRegion[1].x - 115.0f, m_viewportRegion[1].y - 17.0f};
 
         // Draw the text on the draw list
         drawList->AddText(dimLoc, IM_COL32(255, 255, 255, 255), dimString);
@@ -129,9 +124,7 @@ class ViewportPanel
         {
             ImVec2 mousePos = ImGui::GetMousePos();
 
-            glm::vec2 mousePosInViewportPix
-                = {mousePos.x - m_viewportRegion[0].x,
-                   mousePos.y - m_viewportRegion[0].y};
+            glm::vec2 mousePosInViewportPix = {mousePos.x - m_viewportRegion[0].x, mousePos.y - m_viewportRegion[0].y};
 
             if (m_requestedPixelVal)
             {
@@ -145,8 +138,7 @@ class ViewportPanel
                 {
                     m_requestedPixelVal = false;
 
-                    entt::entity id = static_cast<entt::entity>(
-                        std::get<uint32_t>(pv.value));
+                    entt::entity id = static_cast<entt::entity>(std::get<uint32_t>(pv.value));
 
                     if (mp_sceneContext->m_registry.valid((id)))
                     {
@@ -160,11 +152,9 @@ class ViewportPanel
             if (ImGui::IsMouseClicked(0) && !ImGuizmo::IsOver())
             {
                 uint32_t framebufPosInPixX = mousePosInViewportPix.x;
-                uint32_t framebufPosInPixY
-                    = m_viewportSize.y - mousePosInViewportPix.y;
+                uint32_t framebufPosInPixY = m_viewportSize.y - mousePosInViewportPix.y;
 
-                mp_pixelRequest->updateRequest(
-                    1, framebufPosInPixX, framebufPosInPixY);
+                mp_pixelRequest->updateRequest(1, framebufPosInPixX, framebufPosInPixY);
 
                 p_screenBuffer->requestPixel(mp_pixelRequest);
                 m_requestedPixelVal = true;
@@ -174,32 +164,26 @@ class ViewportPanel
             {
                 // if we're orthographic we can map where the curosr is in
                 // the world easily
-                glm::vec2 mousePosInViewport = util::mapPixToScreen(
-                    {mousePosInViewportPix.x, mousePosInViewportPix.y},
-                    bounds.topLeft.x,
-                    bounds.topRight.x,
-                    bounds.topLeft.y,
-                    bounds.bottomLeft.y,
-                    m_viewportSize.x,
-                    m_viewportSize.y);
+                glm::vec2 mousePosInViewport = util::mapPixToScreen({mousePosInViewportPix.x, mousePosInViewportPix.y},
+                                                                    bounds.topLeft.x,
+                                                                    bounds.topRight.x,
+                                                                    bounds.topLeft.y,
+                                                                    bounds.bottomLeft.y,
+                                                                    m_viewportSize.x,
+                                                                    m_viewportSize.y);
 
                 // draw mouse position over image
                 ImDrawList* drawList = ImGui::GetWindowDrawList();
 
                 char posString[32];
 
-                snprintf(posString,
-                         sizeof(posString),
-                         "X:%+.04f, Y:%+.04f",
-                         mousePosInViewport.x,
-                         mousePosInViewport.y);
+                snprintf(
+                    posString, sizeof(posString), "X:%+.04f, Y:%+.04f", mousePosInViewport.x, mousePosInViewport.y);
 
-                ImVec2 posLoc = {m_viewportRegion[0].x + 5.0f,
-                                 m_viewportRegion[1].y - 17.0f};
+                ImVec2 posLoc = {m_viewportRegion[0].x + 5.0f, m_viewportRegion[1].y - 17.0f};
 
                 // Draw the text on the draw list
-                drawList->AddText(
-                    posLoc, IM_COL32(255, 255, 255, 255), posString);
+                drawList->AddText(posLoc, IM_COL32(255, 255, 255, 255), posString);
             }
         }
 
@@ -239,17 +223,15 @@ class ViewportPanel
                 ImGuizmo::SetOrthographic(orthographic);
                 ImGuizmo::SetDrawlist();
 
-                ImGuizmo::SetRect(
-                    m_viewportRegion[0].x,
-                    m_viewportRegion[0].y,
-                    m_viewportRegion[1].x - m_viewportRegion[0].x,
-                    m_viewportRegion[1].y - m_viewportRegion[0].y);
+                ImGuizmo::SetRect(m_viewportRegion[0].x,
+                                  m_viewportRegion[0].y,
+                                  m_viewportRegion[1].x - m_viewportRegion[0].x,
+                                  m_viewportRegion[1].y - m_viewportRegion[0].y);
 
-                const glm::mat4& cameraView = mp_editCamera->getView();
-                const glm::mat4& cameraProjection
-                    = mp_editCamera->getProjection();
+                const glm::mat4& cameraView       = mp_editCamera->getView();
+                const glm::mat4& cameraProjection = mp_editCamera->getProjection();
 
-                auto&     tc = selectedEntity.getComponent<TransformCmp>();
+                auto&     tc        = selectedEntity.getComponent<TransformCmp>();
                 glm::mat4 transform = tc.world.getTransform();
 
                 ImGuizmo::Manipulate(glm::value_ptr(cameraView),
@@ -312,11 +294,9 @@ class ViewportPanel
                 // doesn't need to be done
                 if (ac.parent.hasComponent<TransformCmp>())
                 {
-                    // Remove parent world component by multiplying 
+                    // Remove parent world component by multiplying
                     // this world by inverse of parent's world
-                    localT
-                        *= glm::inverse(ac.parent.getComponent<TransformCmp>()
-                                            .world.getTransform());
+                    localT *= glm::inverse(ac.parent.getComponent<TransformCmp>().world.getTransform());
                 }
             }
             // now that we have a modified transform, figure out what changed
@@ -328,8 +308,7 @@ class ViewportPanel
             glm::vec3 rotation;
             glm::vec3 scale;
 
-            glm::decompose(
-                localT, scale, orientation, translation, skew, perspective);
+            glm::decompose(localT, scale, orientation, translation, skew, perspective);
 
             rotation = glm::eulerAngles(orientation);
 

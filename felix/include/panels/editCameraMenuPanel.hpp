@@ -51,8 +51,7 @@ class EditCameraMenuPanel
 
         int currentType = static_cast<int>(mp_editCamera->getType());
 
-        if (ImGui::Combo(
-                "Type", &currentType, cameraTypes, IM_ARRAYSIZE(cameraTypes)))
+        if (ImGui::Combo("Type", &currentType, cameraTypes, IM_ARRAYSIZE(cameraTypes)))
         {
             if (currentType == 0)
             {
@@ -94,15 +93,12 @@ class EditCameraMenuPanel
 
         ImGui::Spacing();
 
-        if (ImGui::BeginTable("Camera Attributes",
-                              4,
-                              ImGuiTableFlags_SizingStretchSame
-                                  | ImGuiTableFlags_NoHostExtendX))
+        if (ImGui::BeginTable(
+                "Camera Attributes", 4, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_NoHostExtendX))
 
         {
             ImGui::TableSetupColumn("Yaw", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("Pitch",
-                                    ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Pitch", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("Zoom", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableSetupColumn("FOV", ImGuiTableColumnFlags_WidthStretch);
             ImGui::TableHeadersRow();
@@ -124,8 +120,7 @@ class EditCameraMenuPanel
         {
             if (ImGui::CollapsingHeader("Visible World Bounds"))
             {
-                ImGui::BeginTable(
-                    "Visible World Bounds", 2, ImGuiTableFlags_Borders);
+                ImGui::BeginTable("Visible World Bounds", 2, ImGuiTableFlags_Borders);
 
                 ImGui::SetNextItemWidth(m_textBaseWidth * 30);
 
@@ -134,17 +129,13 @@ class EditCameraMenuPanel
 
                 // Column 1, Row 1
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text("%+.02f, %+.02f, %+.02f",
-                            worldBounds.topLeft.x,
-                            worldBounds.topLeft.y,
-                            worldBounds.topLeft.z);
+                ImGui::Text(
+                    "%+.02f, %+.02f, %+.02f", worldBounds.topLeft.x, worldBounds.topLeft.y, worldBounds.topLeft.z);
 
                 // Column 2, Row 1
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%+.02f, %+.02f, %+.02f",
-                            worldBounds.topRight.x,
-                            worldBounds.topRight.y,
-                            worldBounds.topRight.z);
+                ImGui::Text(
+                    "%+.02f, %+.02f, %+.02f", worldBounds.topRight.x, worldBounds.topRight.y, worldBounds.topRight.z);
 
                 // Row 2
                 ImGui::TableNextRow();

@@ -11,12 +11,8 @@
 namespace nimbus
 {
 
-Window::Window(const std::string& windowCaption,
-               uint32_t           width,
-               uint32_t           height)
-    : m_width(width),
-      m_height(height),
-      m_aspectRatio(static_cast<float>(width) / static_cast<float>(height))
+Window::Window(const std::string& windowCaption, uint32_t width, uint32_t height)
+    : m_width(width), m_height(height), m_aspectRatio(static_cast<float>(width) / static_cast<float>(height))
 {
     NM_PROFILE_DETAIL();
 
@@ -28,18 +24,16 @@ Window::Window(const std::string& windowCaption,
     // relative mouse
     SDL_SetRelativeMouseMode(SDL_FALSE);
 
-    mp_window = static_cast<void*>(SDL_CreateWindow(
-        windowCaption.c_str(),
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
-        m_width,
-        m_height,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL));
+    mp_window = static_cast<void*>(SDL_CreateWindow(windowCaption.c_str(),
+                                                    SDL_WINDOWPOS_UNDEFINED,
+                                                    SDL_WINDOWPOS_UNDEFINED,
+                                                    m_width,
+                                                    m_height,
+                                                    SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL));
 
     m_windowId = SDL_GetWindowID(static_cast<SDL_Window*>(mp_window));
 
-    NM_CORE_ASSERT(
-        mp_window, "Window could not be created. sdl error %s", SDL_GetError());
+    NM_CORE_ASSERT(mp_window, "Window could not be created. sdl error %s", SDL_GetError());
 }
 
 Window::~Window()
@@ -75,10 +69,8 @@ void Window::graphicsContextInit()
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    mp_context = static_cast<void*>(
-        SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
-    NM_CORE_ASSERT(
-        mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
+    mp_context = static_cast<void*>(SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
+    NM_CORE_ASSERT(mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
 
     // Set V-sync
     SDL_GL_SetSwapInterval(m_VSyncOn);
@@ -219,8 +211,7 @@ void Window::_handleWindowEvents()
             m_width  = m_event.getDetails().window.data1;
             m_height = m_event.getDetails().window.data2;
 
-            m_aspectRatio
-                = static_cast<float>(m_width) / static_cast<float>(m_height);
+            m_aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
 
             GraphicsApi::setViewportSize(0, 0, m_width, m_height);
 

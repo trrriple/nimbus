@@ -137,8 +137,7 @@ void Renderer::s_destroy()
     {
         if (s_data.renderCmdQ[i]->getCmdCount() != 0)
         {
-            Log::coreWarn("Unprocessed commands (%i) let on queue",
-                          s_data.renderCmdQ[i]->getCmdCount());
+            Log::coreWarn("Unprocessed commands (%i) let on queue", s_data.renderCmdQ[i]->getCmdCount());
         }
         delete s_data.renderCmdQ[i];
     }
@@ -258,8 +257,7 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
         }
         else
         {
-            GraphicsApi::drawElementsInstanced(
-                p_vertexArray, instanceCount, vertexCount);
+            GraphicsApi::drawElementsInstanced(p_vertexArray, instanceCount, vertexCount);
         }
     }
     else
@@ -271,8 +269,7 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
         }
         else
         {
-            GraphicsApi::drawArraysInstanced(
-                p_vertexArray, instanceCount, vertexCount);
+            GraphicsApi::drawArraysInstanced(p_vertexArray, instanceCount, vertexCount);
         }
     }
 }
@@ -301,27 +298,21 @@ RenderCmdQ* Renderer::_s_getProcessObjectCmdQ()
 void Renderer::_s_qSwap()
 // Private Functions
 {
-    s_data.submitRenderCmdQIdx
-        = (s_data.submitRenderCmdQIdx + 1) % k_numRenderCmdQ;
-    s_data.processRenderCmdQIdx
-        = (s_data.processRenderCmdQIdx + 1) % k_numRenderCmdQ;
+    s_data.submitRenderCmdQIdx  = (s_data.submitRenderCmdQIdx + 1) % k_numRenderCmdQ;
+    s_data.processRenderCmdQIdx = (s_data.processRenderCmdQIdx + 1) % k_numRenderCmdQ;
 
-    s_data.submitObjectCmdQIdx
-        = (s_data.submitObjectCmdQIdx + 1) % k_numObjectCmdQ;
-    s_data.processObjectCmdQIdx
-        = (s_data.processObjectCmdQIdx + 1) % k_numObjectCmdQ;
+    s_data.submitObjectCmdQIdx  = (s_data.submitObjectCmdQIdx + 1) % k_numObjectCmdQ;
+    s_data.processObjectCmdQIdx = (s_data.processObjectCmdQIdx + 1) % k_numObjectCmdQ;
 }
 
 void Renderer::_s_renderThreadFn()
 {
-    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(
-                           Application::s_get().getWindow().getOsWindow()),
+    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(Application::s_get().getWindow().getOsWindow()),
                        Application::s_get().getWindow().getContext());
 
     auto pendSw = Application::s_get().getSwBank().newSw("RenderThread Pend");
 
-    auto processSw
-        = Application::s_get().getSwBank().newSw("RenderThread Process");
+    auto processSw = Application::s_get().getSwBank().newSw("RenderThread Process");
 
     while (s_data.renderThread.isActive())
     {
@@ -416,8 +407,7 @@ void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
         }
         else
         {
-            GraphicsApi::drawElementsInstanced(
-                p_vertexArray, instanceCount, vertexCount);
+            GraphicsApi::drawElementsInstanced(p_vertexArray, instanceCount, vertexCount);
         }
     }
     else
@@ -429,8 +419,7 @@ void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
         }
         else
         {
-            GraphicsApi::drawArraysInstanced(
-                p_vertexArray, instanceCount, vertexCount);
+            GraphicsApi::drawArraysInstanced(p_vertexArray, instanceCount, vertexCount);
         }
     }
 }

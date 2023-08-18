@@ -98,15 +98,11 @@ class Texture : public refCounted
         WrapType       wrapTypeS      = WrapType::CLAMP_TO_EDGE;
         WrapType       wrapTypeT      = WrapType::CLAMP_TO_EDGE;
         WrapType       wrapTypeR      = WrapType::CLAMP_TO_EDGE;
-        std::variant<std::array<float, 4>,
-                     std::array<int32_t, 4>,
-                     std::array<uint32_t, 4>>
-            clearColor = std::array<float, 4>{0.0f, 0.0f, 0.0f, 0.0f};
+        std::variant<std::array<float, 4>, std::array<int32_t, 4>, std::array<uint32_t, 4>> clearColor
+            = std::array<float, 4>{0.0f, 0.0f, 0.0f, 0.0f};
     };
 
-    static ref<Texture> s_create(const Type type,
-                                 Spec&      spec,
-                                 bool       submitForMe = true);
+    static ref<Texture> s_create(const Type type, Spec& spec, bool submitForMe = true);
 
     virtual ~Texture() = default;
 
@@ -164,9 +160,7 @@ class Texture : public refCounted
 
    private:
     // ensure only Resource manager can call this
-    static ref<Texture> s_create(const Type         type,
-                                 const std::string& path,
-                                 const bool         flipOnLoad);
+    static ref<Texture> s_create(const Type type, const std::string& path, const bool flipOnLoad);
 
     friend class ResourceManager;
 };

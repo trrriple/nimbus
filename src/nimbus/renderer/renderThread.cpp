@@ -21,9 +21,7 @@ RenderThread::~RenderThread()
 }
 void RenderThread::run(void (*fn)())
 {
-    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(
-                           Application::s_get().getWindow().getOsWindow()),
-                       nullptr);
+    SDL_GL_MakeCurrent(static_cast<SDL_Window*>(Application::s_get().getWindow().getOsWindow()), nullptr);
     m_active = true;
     m_state  = State::BUSY;
     m_thread = std::thread(fn);

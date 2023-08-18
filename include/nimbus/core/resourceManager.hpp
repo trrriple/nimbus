@@ -19,16 +19,11 @@ class ResourceManager
 
     // Other member functions and variables...
 
-    ref<Texture> loadTexture(const Texture::Type type,
-                             const std::string&  path,
-                             const bool          flipOnLoad = false);
+    ref<Texture> loadTexture(const Texture::Type type, const std::string& path, const bool flipOnLoad = false);
 
-    ref<Shader> loadShader(const std::string& name,
-                           const std::string& vertexSource,
-                           const std::string& fragmentSource);
+    ref<Shader> loadShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource);
 
-    ref<Shader> loadShader(const std::string& vertexPath,
-                           const std::string& fragmentPath);
+    ref<Shader> loadShader(const std::string& vertexPath, const std::string& fragmentPath);
 
     ref<Font> loadFont(const std::string& path);
 

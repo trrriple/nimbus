@@ -16,10 +16,7 @@
 namespace nimbus
 {
 
-Application::Application(const std::string& name,
-                         uint32_t           windowWidth,
-                         uint32_t           windowHeight)
-    : m_name(name)
+Application::Application(const std::string& name, uint32_t windowWidth, uint32_t windowHeight) : m_name(name)
 {
     NM_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
 
@@ -36,11 +33,9 @@ Application::Application(const std::string& name,
 
     mp_window->graphicsContextInit();
 
-    mp_window->setEventCallback(
-        std::bind(&Application::onEvent, this, std::placeholders::_1));
+    mp_window->setEventCallback(std::bind(&Application::onEvent, this, std::placeholders::_1));
 
-    mp_window->setExitCallback(
-        std::bind(&Application::shouldQuit, this, std::placeholders::_1));
+    mp_window->setExitCallback(std::bind(&Application::shouldQuit, this, std::placeholders::_1));
 
     mp_guiSubsystemLayer = ref<GuiSubsystem>::gen();
 
@@ -89,8 +84,7 @@ void Application::execute()
 
     auto mainThreadProcessSw = m_swBank.newSw("MainThread Process");
 
-    auto mainThreadPendRenderThreadSw
-        = m_swBank.newSw("MainThread Pend on RenderThread");
+    auto mainThreadPendRenderThreadSw = m_swBank.newSw("MainThread Pend on RenderThread");
 
     double currentTime = core::getTime_s();
     bool   didDraw     = false;
@@ -127,8 +121,7 @@ void Application::execute()
             updatesRequired = m_updateLag / m_updatePeriodLimit;
 
             // calculate how much time we're about to process
-            float gameTimeProgression
-                = (float)updatesRequired * m_updatePeriodLimit;
+            float gameTimeProgression = (float)updatesRequired * m_updatePeriodLimit;
 
             // remove the lag we're about to update through
             m_updateLag -= gameTimeProgression;
@@ -215,8 +208,7 @@ void Application::execute()
             // Call all gui updates
             ///////////////////////////
             bool mouseButtonsDown
-                = mp_window->mouseButtonPressed(MouseButton::LEFT)
-                  || mp_window->mouseButtonPressed(MouseButton::RIGHT);
+                = mp_window->mouseButtonPressed(MouseButton::LEFT) || mp_window->mouseButtonPressed(MouseButton::RIGHT);
 
             SDL_CaptureMouse((mouseButtonsDown != 0) ? SDL_TRUE : SDL_FALSE);
 
@@ -240,8 +232,7 @@ void Application::execute()
         }
 
         float postPendCpuProcessTime_s = mainThreadProcessSw->split();
-        mainThreadProcessSw->saveSplitOverride(prePendCpuProcessTime_s
-                                               + postPendCpuProcessTime_s);
+        mainThreadProcessSw->saveSplitOverride(prePendCpuProcessTime_s + postPendCpuProcessTime_s);
 
         mainLoopSw->splitAndSave();
     }
