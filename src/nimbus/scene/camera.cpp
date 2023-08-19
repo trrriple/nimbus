@@ -93,7 +93,7 @@ void Camera::processViewUpdate(const glm::vec2& offset, bool constrainPitch)
 void Camera::processZoom(float offset)
 {
     NM_PROFILE_TRACE();
-    const float zoomScale = 0.1;
+    const float zoomScale = m_orthoWidth / 50;
 
     if (m_type == Type::PERSPECTIVE)
     {
@@ -106,9 +106,9 @@ void Camera::processZoom(float offset)
     else
     {
         m_zoom -= offset * zoomScale;
-        if (m_zoom <= 0.1)
+        if (m_zoom <= zoomScale)
         {
-            m_zoom = 0.1;
+            m_zoom = zoomScale;
         }
     }
 
@@ -151,8 +151,12 @@ glm::mat4& Camera::getProjection()
         }
         else
         {
-            m_projection
-                = glm::ortho(-m_aspectRatio * m_zoom, m_aspectRatio * m_zoom, -m_zoom, m_zoom, m_orthoNear, m_orthoFar);
+            m_projection = glm::ortho(-m_aspectRatio * m_zoom * m_orthoWidth,
+                                      m_aspectRatio * m_zoom * m_orthoWidth,
+                                      -m_zoom * m_orthoHeight,
+                                      m_zoom * m_orthoHeight,
+                                      m_orthoNear,
+                                      m_orthoFar);
         }
 
         m_staleProjection = false;
@@ -301,6 +305,20 @@ void Camera::setPitch(float pitch)
 void Camera::setSensitivity(float sensitivity)
 {
     m_sensitivity = sensitivity;
+}
+
+void Camera::setOrthoWidth(float width)
+{
+    m_orthoWidth = width;
+
+    m_staleProjection = true;
+}
+
+void Camera::setOrthoHeight(float height)
+{
+    m_orthoHeight = height;
+
+    m_staleProjection = true;
 }
 
 }  // namespace nimbus

@@ -2,6 +2,7 @@
 #include "nimbus/core/common.hpp"
 
 #include "nimbus/scene/camera.hpp"
+#include "nimbus/physics/physics2D.hpp"
 #include "entt/entity/registry.hpp"
 
 namespace nimbus
@@ -22,10 +23,10 @@ class Scene : public refCounted
     void removeEntity(Entity entity, bool removeChildren = false);
     void sortEntities();
 
-    void onStart();
-    void onUpdate(float deltaTime);
-    void onDraw();
-    void onStop();
+    void onStartRuntime();
+    void onUpdateRuntime(float deltaTime);
+    void onDrawRuntime();
+    void onStopRuntime();
 
     void onResize(uint32_t width, uint32_t height);
 
@@ -40,6 +41,12 @@ class Scene : public refCounted
     float                              m_aspectRatio;
     std::string                        m_name;
     uint32_t                           m_genesisIndex = 0;
+
+    ///////////////////////////
+    // 2D Physics World
+    ///////////////////////////
+    ref<Physics2D> mp_world2D;
+
     std::vector<std::function<void()>> m_postUpdateWorkQueue;
 
     friend class Entity;

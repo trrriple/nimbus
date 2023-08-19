@@ -14,7 +14,7 @@ class SceneControlPanel
    public:
     enum class RunState
     {
-        PAUSE,
+        STOP,
         PLAY
     };
 
@@ -29,7 +29,7 @@ class SceneControlPanel
 
     struct State
     {
-        RunState  runState  = RunState::PAUSE;
+        RunState  runState  = RunState::STOP;
         ToolState toolState = ToolState::NONE;
     };
 
@@ -40,7 +40,7 @@ class SceneControlPanel
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
 
-        m_state.runState = RunState::PAUSE;
+        m_state.runState = RunState::STOP;
     }
     ~SceneControlPanel()
     {
@@ -69,7 +69,7 @@ class SceneControlPanel
         ///////////////////////////
         if (play)
         {
-            snprintf(icon, 5, ICON_FA_PAUSE);
+            snprintf(icon, 5, ICON_FA_STOP);
         }
         else
         {
@@ -78,7 +78,7 @@ class SceneControlPanel
 
         if (ImGui::Button(icon))
         {
-            m_state.runState = play ? RunState::PAUSE : RunState::PLAY;
+            m_state.runState = play ? RunState::STOP : RunState::PLAY;
         }
 
         ///////////////////////////
@@ -164,6 +164,11 @@ class SceneControlPanel
     State& getState()
     {
         return m_state;
+    }
+
+    void setRunState(RunState runState)
+    {
+        m_state.runState = runState;
     }
 
    private:

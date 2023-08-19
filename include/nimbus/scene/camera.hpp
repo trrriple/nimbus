@@ -61,21 +61,21 @@ class Camera : public refCounted
 
     void setAspectRatio(float aspectRatio);
 
-    float getAspectRatio() const
+    inline float getAspectRatio() const
     {
         return m_aspectRatio;
     }
 
     void setNearClip(float near);
 
-    float getNearClip()
+    inline float getNearClip()
     {
         return m_type == Type::ORTHOGRAPHIC ? m_orthoNear : m_near;
     }
 
     void setFarClip(float far);
 
-    float getFarClip()
+    inline float getFarClip()
     {
         return m_type == Type::ORTHOGRAPHIC ? m_orthoFar : m_far;
     }
@@ -84,7 +84,7 @@ class Camera : public refCounted
 
     void setZoom(float zoom);
 
-    float getZoom()
+    inline float getZoom()
     {
         return m_zoom;
     }
@@ -96,37 +96,51 @@ class Camera : public refCounted
         return m_fov;
     }
 
-    const glm::vec3& getPosition() const
+    inline const glm::vec3& getPosition() const
     {
         return m_position;
     }
 
     void setSpeed(float speed);
 
-    float getSpeed() const
+    inline float getSpeed() const
     {
         return m_speed;
     }
 
     void setSensitivity(float sensitivity);
 
-    float getSensitivity() const
+    inline float getSensitivity() const
     {
         return m_sensitivity;
     }
 
     void setYaw(float yaw);
 
-    float getYaw() const
+    inline float getYaw() const
     {
         return m_yaw;
     }
 
     void setPitch(float pitch);
 
-    float getPitch() const
+    inline float getPitch() const
     {
         return m_pitch;
+    }
+
+    void setOrthoWidth(float width);
+
+    inline float getOrthoWidth() const
+    {
+        return m_orthoWidth;
+    }
+
+    void setOrthoHeight(float height);
+
+    inline float getOrthoHeight() const
+    {
+        return m_orthoHeight;
     }
 
    private:
@@ -160,8 +174,10 @@ class Camera : public refCounted
     float m_near = 0.1f;
     float m_far  = 300.0f;
 
-    float m_orthoNear = -1.0f;
-    float m_orthoFar  = 1.0f;
+    float m_orthoNear   = -1.0f;
+    float m_orthoFar    = 1.0f;
+    float m_orthoWidth  = 10.0f;  // always additionally scaled by aspect ratio
+    float m_orthoHeight = 10.0f;
 
     Type m_type;
 

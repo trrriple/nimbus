@@ -55,12 +55,12 @@ class ParticleEmitter : public refCounted
         LineVolumeParameters      lineVolumeParams;
         float                     lifetimeMin_s           = 0.5f;
         float                     lifetimeMax_s           = 1.0f;
-        float                     initSpeedMin            = 0.05f;
-        float                     initSpeedMax            = 0.10f;
+        float                     initSpeedMin            = 0.25f;
+        float                     initSpeedMax            = 0.5f;
         glm::vec3                 accelerationMin         = glm::vec3(0.0f);
         glm::vec3                 accelerationMax         = glm::vec3(0.0f);
-        glm::vec2                 initSizeMin             = glm::vec2(0.025f);
-        glm::vec2                 initSizeMax             = glm::vec2(0.025f);
+        glm::vec2                 initSizeMin             = glm::vec2(0.2f);
+        glm::vec2                 initSizeMax             = glm::vec2(0.2f);
         float                     ejectionBaseAngle_rad   = 0.0f;
         float                     ejectionSpreadAngle_rad = 6.2831f;
         std::vector<colorSpec>    colors;

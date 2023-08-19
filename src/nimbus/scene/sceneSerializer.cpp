@@ -14,9 +14,9 @@
 #include <fstream>
 #include <filesystem>
 
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // YAML Decoding type overloads
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace nimbus
 {
 
@@ -131,7 +131,7 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
     }
 
     ///////////////////////////
-    // ParticleEmitter
+    // ParticleEmitterCmp
     ///////////////////////////
     if (entity.hasComponent<ParticleEmitterCmp>())
     {
@@ -207,7 +207,49 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
     }
 
     ///////////////////////////
-    // Camera
+    // RigidBody2DCmp
+    ///////////////////////////
+    if (entity.hasComponent<RigidBody2DCmp>())
+    {
+        toml::table rbcTbl;
+
+        auto& rbc = entity.getComponent<RigidBody2DCmp>();
+
+        // technically part of spec but helpful to see it outside of spec
+        rbcTbl.insert("type", static_cast<int>(rbc.spec.type));
+
+        toml::table spec;
+        spec.insert("linearVelocity", toml::array{rbc.spec.linearVelocity.x, rbc.spec.linearVelocity.y});
+        spec.insert("angularVelociy", rbc.spec.angularVelocity);
+        spec.insert("linearDamping", rbc.spec.linearDamping);
+        spec.insert("angularDamping", rbc.spec.angularDamping);
+        spec.insert("allowSleep", rbc.spec.allowSleep);
+        spec.insert("awake", rbc.spec.awake);
+        spec.insert("bullet", rbc.spec.bullet);
+        spec.insert("enabled", rbc.spec.enabled);
+        spec.insert("gravityScale", rbc.spec.gravityScale);
+        rbcTbl.insert("spec", spec);
+
+        Physics2D::ShapeType shapeType = Physics2D::ShapeType::NONE;
+        if (rbc.fixSpec.shape != nullptr)
+        {
+            shapeType = rbc.fixSpec.shape->type;
+        }
+
+        toml::table fixSpec;
+        fixSpec.insert("shape", static_cast<int>(shapeType));
+        fixSpec.insert("friction", rbc.fixSpec.friction);
+        fixSpec.insert("restitution", rbc.fixSpec.restitution);
+        fixSpec.insert("restitutionThreshold", rbc.fixSpec.restitutionThreshold);
+        fixSpec.insert("density", rbc.fixSpec.density);
+        fixSpec.insert("isSensor", rbc.fixSpec.isSensor);
+        rbcTbl.insert("fixSpec", fixSpec);
+
+        entityTbl.insert("RigidBody2DCmp", rbcTbl);
+    }
+
+    ///////////////////////////
+    // CameraCmp
     ///////////////////////////
     if (entity.hasComponent<CameraCmp>())
     {
@@ -238,9 +280,9 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
     entitiesTbl.insert(guidCmp.guid.toString(), entityTbl);
 }
 
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // YAML Encoding type overloads
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SceneSerializer::SceneSerializer(const ref<Scene>& p_scene) : mp_scene(p_scene)
 {
 }
@@ -368,36 +410,50 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
     {
         auto& pe = entity.addComponent<ParticleEmitterCmp>();
 
+        pe.numParticles = cmpTbl["numParticles"].ref<int64_t>();
+
+        auto texture = cmpTbl["texture"].as_table();
+
+        if (texture)
+        {
+            pe.p_texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+                                                                                 (*texture)["path"].ref<std::string>());
+        }
+
         ParticleEmitter::Parameters params;
 
-        params.centerPosition = glm::vec3(cmpTbl["centerPosition"][0].ref<double>(),
-                                          cmpTbl["centerPosition"][1].ref<double>(),
-                                          cmpTbl["centerPosition"][2].ref<double>());
+        auto paramTbl = *cmpTbl["parameters"].as_table();
+
+        params.centerPosition = glm::vec3(paramTbl["centerPosition"][0].ref<double>(),
+                                          paramTbl["centerPosition"][1].ref<double>(),
+                                          paramTbl["centerPosition"][2].ref<double>());
 
         params.spawnVolumeType
-            = static_cast<ParticleEmitter::SpawnVolumeType>(cmpTbl["spawnVolumeType"].ref<int64_t>());
+            = static_cast<ParticleEmitter::SpawnVolumeType>(paramTbl["spawnVolumeType"].ref<int64_t>());
 
-        params.lifetimeMin_s = cmpTbl["lifetimeMin_s"].ref<double>();
-        params.lifetimeMax_s = cmpTbl["lifetimeMax_s"].ref<double>();
-        params.initSpeedMin  = cmpTbl["initSpeedMin"].ref<double>();
-        params.initSpeedMax  = cmpTbl["initSpeedMax"].ref<double>();
+        params.lifetimeMin_s = paramTbl["lifetimeMin_s"].ref<double>();
+        params.lifetimeMax_s = paramTbl["lifetimeMax_s"].ref<double>();
+        params.initSpeedMin  = paramTbl["initSpeedMin"].ref<double>();
+        params.initSpeedMax  = paramTbl["initSpeedMax"].ref<double>();
 
-        params.accelerationMin = glm::vec3(cmpTbl["accelerationMin"][0].ref<double>(),
-                                           cmpTbl["accelerationMin"][1].ref<double>(),
-                                           cmpTbl["accelerationMin"][2].ref<double>());
+        params.accelerationMin = glm::vec3(paramTbl["accelerationMin"][0].ref<double>(),
+                                           paramTbl["accelerationMin"][1].ref<double>(),
+                                           paramTbl["accelerationMin"][2].ref<double>());
 
-        params.accelerationMax = glm::vec3(cmpTbl["accelerationMax"][0].ref<double>(),
-                                           cmpTbl["accelerationMax"][1].ref<double>(),
-                                           cmpTbl["accelerationMax"][2].ref<double>());
+        params.accelerationMax = glm::vec3(paramTbl["accelerationMax"][0].ref<double>(),
+                                           paramTbl["accelerationMax"][1].ref<double>(),
+                                           paramTbl["accelerationMax"][2].ref<double>());
 
-        params.initSizeMin = glm::vec2(cmpTbl["initSizeMin"][0].ref<double>(), cmpTbl["initSizeMin"][1].ref<double>());
+        params.initSizeMin
+            = glm::vec2(paramTbl["initSizeMin"][0].ref<double>(), paramTbl["initSizeMin"][1].ref<double>());
 
-        params.initSizeMax = glm::vec2(cmpTbl["initSizeMax"][0].ref<double>(), cmpTbl["initSizeMax"][1].ref<double>());
+        params.initSizeMax
+            = glm::vec2(paramTbl["initSizeMax"][0].ref<double>(), paramTbl["initSizeMax"][1].ref<double>());
 
-        params.ejectionBaseAngle_rad   = cmpTbl["ejectionBaseAngle_rad"].ref<double>();
-        params.ejectionSpreadAngle_rad = cmpTbl["ejectionSpreadAngle_rad"].ref<double>();
+        params.ejectionBaseAngle_rad   = paramTbl["ejectionBaseAngle_rad"].ref<double>();
+        params.ejectionSpreadAngle_rad = paramTbl["ejectionSpreadAngle_rad"].ref<double>();
 
-        for (const auto& colorNode : *cmpTbl["colors"].as_array())
+        for (const auto& colorNode : *paramTbl["colors"].as_array())
         {
             auto& colorTbl = *colorNode.as_table();
 
@@ -416,29 +472,20 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
             params.colors.push_back(color);
         }
 
-        params.circleVolumeParams.radius = cmpTbl["circleVolumeParams"]["radius"].ref<double>();
+        params.circleVolumeParams.radius = paramTbl["circleVolumeParams"]["radius"].ref<double>();
 
-        params.rectVolumeParams.width = cmpTbl["rectVolumeParams"]["width"].ref<double>();
+        params.rectVolumeParams.width = paramTbl["rectVolumeParams"]["width"].ref<double>();
 
-        params.rectVolumeParams.height = cmpTbl["rectVolumeParams"]["height"].ref<double>();
+        params.rectVolumeParams.height = paramTbl["rectVolumeParams"]["height"].ref<double>();
 
-        params.lineVolumeParams.length = cmpTbl["lineVolumeParams"]["length"].ref<double>();
+        params.lineVolumeParams.length = paramTbl["lineVolumeParams"]["length"].ref<double>();
 
-        params.persist = cmpTbl["persist"].as_boolean();
-        params.shrink  = cmpTbl["shrink"].as_boolean();
+        params.persist = paramTbl["persist"].as_boolean();
+        params.shrink  = paramTbl["shrink"].as_boolean();
 
-        params.blendingMode = static_cast<GraphicsApi::BlendingMode>(cmpTbl["blendingMode"].ref<int64_t>());
+        params.blendingMode = static_cast<GraphicsApi::BlendingMode>(paramTbl["blendingMode"].ref<int64_t>());
 
-        pe.parameters   = params;
-        pe.numParticles = cmpTbl["numParticles"].ref<int64_t>();
-
-        auto texture = cmpTbl["texture"].as_table();
-
-        if (texture)
-        {
-            pe.p_texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
-                                                                                 (*texture)["path"].ref<std::string>());
-        }
+        pe.parameters = params;
     }
 
     ///////////////////////////
@@ -490,7 +537,7 @@ void SceneSerializer::_deserializeEntity(void* entityTbl, Scene* p_scene, const 
         {
             std::string cmpType(key.data());
 
-            Log::coreInfo("Component Type %s", cmpType.c_str());
+            Log::coreTrace("Component Type %s", cmpType.c_str());
 
             if (node.is_table())
             {
@@ -571,6 +618,7 @@ bool SceneSerializer::deserialize(const std::string& filepath)
     }
 
     Log::coreInfo("Deserialzing scene %s", sceneNm.value().c_str());
+    mp_scene->m_name = sceneNm.value();
 
     auto entitiesTbl = sceneTbl["Entities"].as_table();
 

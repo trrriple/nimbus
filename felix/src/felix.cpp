@@ -75,15 +75,15 @@ class sceneCameraController : public EntityLogic
     float      m_lastWheelPos;
 };
 
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Main application implementation is in this layer
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class FelixLayer : public Layer
 {
    public:
     enum class State
     {
-        PAUSE,
+        STOP,
         PLAY
     };
 
@@ -97,7 +97,7 @@ class FelixLayer : public Layer
     // Scene
     ///////////////////////////
     ref<Scene>  mp_scene;
-    State       m_sceneState      = State::PAUSE;
+    State       m_sceneState      = State::STOP;
     std::string m_openedScenePath = "";
     Entity      m_selectedEntity  = {};
 
@@ -138,10 +138,6 @@ class FelixLayer : public Layer
     bool        m_fileDropHandled = true;
     std::string m_fileDropPath;
 
-    ///////////////////////////
-    // Test
-    //////////////////////////
-    scope<ParticleEmitter> mp_emitter;
 
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
@@ -167,9 +163,9 @@ class FelixLayer : public Layer
         mp_editCamera = ref<Camera>::gen(Camera::Type::PERSPECTIVE);
         mp_editCamera->setAspectRatio(m_aspectRatio);
 #if IMGUIZO_SCALE_FIXED
-        mp_editCamera->setPosition({0.00f, 0.00f, 2.4125f});
+        mp_editCamera->setPosition({0.00f, 0.00f, 10 * 2.4125f});
 #else
-        mp_editCamera->setPosition({0.05f, -0.05f, 2.4125f});
+        mp_editCamera->setPosition({0.01f, -0.01f, 10 * 2.4125f});
 #endif
         mp_editCamera->setYaw(-90.0f);
         mp_editCamera->setSpeed(5.0f);
@@ -189,42 +185,6 @@ class FelixLayer : public Layer
         mp_sceneHierarchyPanel->setEntitySelectedCallback(
             std::bind(&FelixLayer::_onEntitySelected, this, std::placeholders::_1));
 
-        ///////////////////////////
-        // Test Emitter
-        ///////////////////////////
-        // ParticleEmitter::Parameters particleParameters;
-        // particleParameters.centerPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-        // particleParameters.spawnVolumeType
-        //     = ParticleEmitter::SpawnVolumeType::CIRCLE;
-
-        // particleParameters.circleVolumeParams.radius = 0.1f;
-        // particleParameters.lifetimeMin_s             = 1.00f;
-        // particleParameters.lifetimeMax_s             = 4.00f;
-
-        // particleParameters.initSpeedMin    = 0.1f;
-        // particleParameters.initSpeedMax    = 0.2f;
-        // particleParameters.accelerationMin = glm::vec3(-0.5f, -0.5f, 0.0);
-        // particleParameters.accelerationMax = glm::vec3(0.5f, 0.5f, 0.0);
-        // particleParameters.initSizeMin     = 0.025f;
-        // particleParameters.initSizeMax     = 0.03f;
-        // particleParameters.ejectionBaseAngle_rad   = glm::radians(0.0f);
-        // particleParameters.ejectionSpreadAngle_rad = glm::radians(360.0f);
-        // particleParameters.persist                 = true;
-        // particleParameters.shrink                  = true;
-        // particleParameters.blendingMode
-        //     = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
-        // particleParameters.colors.push_back(
-        //     {glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-        //      glm::vec4(0.0f, 0.0f, 1.0f, 0.0f)});
-
-        // mp_emitter = genScope<ParticleEmitter>(
-        //     2000,
-        //     particleParameters,
-        //     nullptr,
-        //     // Application::s_get().getResourceManager().loadTexture(
-        //     //     Texture::Type::DIFFUSE,
-        //     //     "../resources/textures/smokeParticle.png"),
-        //     nullptr);
 
         ///////////////////////////
         // Test Camera
@@ -240,18 +200,17 @@ class FelixLayer : public Layer
         // ///////////////////////////
         // // Test Sprite
         // ///////////////////////////
-        // uint32_t sz = 5;
+        // uint32_t sz = 50;
         // for (uint32_t i = 0; i < sz; i++)
         // {
         //     for (uint32_t j = 0; j < sz; j++)
         //     {
-        //         auto spriteEntity1 = mp_scene->addEntity(
-        //             "Test Sprite " + std::to_string((i * sz) + j));
-        //         auto& transformCmp1
-        //             = spriteEntity1.addComponent<TransformCmp>();
-        //         transformCmp1.setScale({0.1f, 0.1f, 1.0f});
-        //         transformCmp1.setTranslationX(0.12 * i);
-        //         transformCmp1.setTranslationY(0.12 * j);
+        //         auto  spriteEntity1 = mp_scene->addEntity("Test Sprite " + std::to_string((i * sz) + j));
+        //         auto& transformCmp1 = spriteEntity1.addComponent<TransformCmp>();
+        //         transformCmp1.local.setScale({0.1f, 0.1f, 1.0f});
+        //         transformCmp1.local.setTranslationX(0.13 * i);
+        //         transformCmp1.local.setTranslationY(0.13 * j);
+        //         transformCmp1.local.setRotationZ(glm::radians(45.0f));
         //         auto& spriteCmp1 = spriteEntity1.addComponent<SpriteCmp>();
         //         spriteCmp1.color = {0.0f, 0.02f * i, 0.02f * j, 1.0f};
         //     }
@@ -259,15 +218,15 @@ class FelixLayer : public Layer
 
         // auto  spriteEntity2 = mp_scene->addEntity("Test Sprite 2");
         // auto& transformCmp2 = spriteEntity2.addComponent<TransformCmp>();
-        // transformCmp2.setScale({0.75f, 0.75f, 1.0f});
+        // transformCmp2.local.setScale({0.75f, 0.75f, 1.0f});
         // auto& spriteCmp2 = spriteEntity2.addComponent<SpriteCmp>();
         // spriteCmp2.color = {0.1f, 0.9f, 0.2f, 1.0f};
 
-        // ///////////////////////////
-        // // Text text
-        // ///////////////////////////
-        // mp_generalFont = Application::s_get().getResourceManager().loadFont(
-        //     "../resources/fonts/Roboto/Roboto-Regular.ttf");
+        ///////////////////////////
+        // Text text
+        ///////////////////////////
+        // mp_generalFont
+        //     = Application::s_get().getResourceManager().loadFont("../resources/fonts/Roboto/Roboto-Regular.ttf");
 
         // Font::Format format;
         // format.p_font  = mp_generalFont;
@@ -277,10 +236,10 @@ class FelixLayer : public Layer
 
         // auto  textEntity    = mp_scene->addEntity("Test Text");
         // auto& transformCmp3 = textEntity.addComponent<TransformCmp>();
-        // transformCmp3.setScale({0.25f, 0.25f, 1.0f});
-        // transformCmp3.setTranslationX(-0.4f);
-        // transformCmp3.setTranslationY(0.30f);
-        // auto textCmp = textEntity.addComponent<TextCmp>("Bumbus", format);
+        // transformCmp3.local.setScale({0.25f, 0.25f, 1.0f});
+        // transformCmp3.local.setTranslationX(-0.4f);
+        // transformCmp3.local.setTranslationY(0.30f);
+        // auto textCmp = textEntity.addComponent<TextCmp>("Yuge File", format);
 
         // mp_scene->sortEntities();
 
@@ -384,17 +343,15 @@ class FelixLayer : public Layer
             && m_sceneState != State::PLAY)
         {
             m_sceneState = State::PLAY;
-            mp_scene->onStart();
+            mp_scene->onStartRuntime();
         }
-        else if (mp_sceneControlPanel->getState().runState == SceneControlPanel::RunState::PAUSE
-                 && m_sceneState != State::PAUSE)
+        else if (mp_sceneControlPanel->getState().runState == SceneControlPanel::RunState::STOP
+                 && m_sceneState != State::STOP)
         {
-            m_sceneState = State::PAUSE;
-            mp_scene->onStop();
+            m_sceneState = State::STOP;
+            mp_scene->onStopRuntime();
         }
 
-        // todo remove
-        // mp_emitter->update(deltaTime);
         ///////////////////////////
         // Update panels
         ///////////////////////////
@@ -405,9 +362,9 @@ class FelixLayer : public Layer
         ///////////////////////////
         if (m_sceneState == State::PLAY)
         {
-            mp_scene->onUpdate(deltaTime);
+            mp_scene->onUpdateRuntime(deltaTime);
         }
-        else if (m_sceneState == State::PAUSE)
+        else if (m_sceneState == State::STOP)
         {
             if (m_viewportHovered)
             {
@@ -430,14 +387,13 @@ class FelixLayer : public Layer
 
         Renderer2D::s_resetStats();
 
-        if (m_sceneState == State::PAUSE)
+        if (m_sceneState == State::STOP)
         {
             mp_scene->_onDrawEditor(mp_editCamera.raw());
-            // mp_emitter->draw();
         }
         else
         {
-            mp_scene->onDraw();
+            mp_scene->onDrawRuntime();
         }
 
         mp_frameBuffer->blit(mp_screenBuffer, 0, 0);
@@ -455,6 +411,19 @@ class FelixLayer : public Layer
         if (selection.size() != 0)
         {
             auto filePath = selection[0];
+
+            // stop old scene
+            if (m_sceneState == State::PLAY)
+            {
+                mp_scene->onStopRuntime();
+                mp_sceneControlPanel->setRunState(SceneControlPanel::RunState::STOP);
+            }
+
+            // throw away old scene (should probably be in a new scene func)
+            mp_scene = ref<Scene>::gen("Loading scene");
+            mp_sceneHierarchyPanel->setSceneContext(mp_scene);
+            mp_viewportPanel->setSceneContext(mp_scene);
+            m_selectedEntity = {};
 
             SceneSerializer ss = SceneSerializer(mp_scene);
             ss.deserialize(filePath);
@@ -496,7 +465,7 @@ class FelixLayer : public Layer
         Event::Type eventType = event.getEventType();
 
         // We only care about these events if we're paused
-        if (m_sceneState == State::PAUSE)
+        if (m_sceneState == State::STOP)
         {
             if (eventType == Event::Type::MOUSEMOTION)
             {
@@ -845,9 +814,9 @@ class FelixLayer : public Layer
     }
 };
 
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Make the application and start it
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Felix : public Application
 {
    public:

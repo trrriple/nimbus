@@ -43,7 +43,8 @@ class SceneHeirarchyPanel
 
     void setSceneContext(ref<Scene>& p_scene)
     {
-        mp_sceneContext = p_scene;
+        mp_sceneContext    = p_scene;
+        m_selectionContext = {};
     }
 
     void onDraw(Entity selectedEntity)
@@ -635,34 +636,25 @@ class SceneHeirarchyPanel
                 }
             }
 
-            bool changedSizeX = false;
-            bool changedSizeY = false;
+            bool changedSizeX = ImGui::DragFloatRange2("Init Size X",
+                                                       &pc.parameters.initSizeMin.x,
+                                                       &pc.parameters.initSizeMax.x,
+                                                       0.001f,
+                                                       0.0f,
+                                                       100.0f,
+                                                       "Min: %.03f",
+                                                       "Max: %.03f",
+                                                       ImGuiSliderFlags_AlwaysClamp);
 
-            if (ImGui::DragFloatRange2("Init Size X",
-                                       &pc.parameters.initSizeMin.x,
-                                       &pc.parameters.initSizeMax.x,
-                                       0.001f,
-                                       0.0f,
-                                       100.0f,
-                                       "Min: %.03f",
-                                       "Max: %.03f",
-                                       ImGuiSliderFlags_AlwaysClamp))
-            {
-                changedSizeX = true;
-            }
-
-            if (ImGui::DragFloatRange2("Init Size Y",
-                                       &pc.parameters.initSizeMin.y,
-                                       &pc.parameters.initSizeMax.y,
-                                       0.001f,
-                                       0.0f,
-                                       100.0f,
-                                       "Min: %.03f",
-                                       "Max: %.03f",
-                                       ImGuiSliderFlags_AlwaysClamp))
-            {
-                changedSizeY = true;
-            }
+            bool changedSizeY = ImGui::DragFloatRange2("Init Size Y",
+                                                       &pc.parameters.initSizeMin.y,
+                                                       &pc.parameters.initSizeMax.y,
+                                                       0.001f,
+                                                       0.0f,
+                                                       100.0f,
+                                                       "Min: %.03f",
+                                                       "Max: %.03f",
+                                                       ImGuiSliderFlags_AlwaysClamp);
 
             if (isRuntime && (changedSizeX || changedSizeY))
             {
@@ -687,19 +679,9 @@ class SceneHeirarchyPanel
 
             ImGui::SeparatorText("Ejection Angle");
 
-            bool changedBase   = false;
-            bool changedSpread = false;
+            bool changedBase = ImGui::SliderAngle("Base", &pc.parameters.ejectionBaseAngle_rad);
 
-            if (ImGui::SliderAngle("Base", &pc.parameters.ejectionBaseAngle_rad))
-            {
-                changedBase = true;
-            }
-
-            if (ImGui::SliderAngle("Spread", &pc.parameters.ejectionSpreadAngle_rad, 0.0f, 360.0f))
-
-            {
-                changedSpread = true;
-            }
+            bool changedSpread = ImGui::SliderAngle("Spread", &pc.parameters.ejectionSpreadAngle_rad, 0.0f, 360.0f);
 
             if (isRuntime && (changedBase || changedSpread))
             {
@@ -709,48 +691,35 @@ class SceneHeirarchyPanel
 
             ImGui::SeparatorText("Acceleration");
 
-            bool changedAccelX = false;
-            bool changedAccelY = false;
-            bool changedAccelZ = false;
+            bool changedAccelX = ImGui::DragFloatRange2("Accel X",
+                                                        &pc.parameters.accelerationMin.x,
+                                                        &pc.parameters.accelerationMax.x,
+                                                        0.01f,
+                                                        -100.0f,
+                                                        100.0f,
+                                                        "Min: %.02f",
+                                                        "Max: %.02f",
+                                                        ImGuiSliderFlags_AlwaysClamp);
 
-            if (ImGui::DragFloatRange2("Accel X",
-                                       &pc.parameters.accelerationMin.x,
-                                       &pc.parameters.accelerationMax.x,
-                                       0.01f,
-                                       -100.0f,
-                                       100.0f,
-                                       "Min: %.02f",
-                                       "Max: %.02f",
-                                       ImGuiSliderFlags_AlwaysClamp))
-            {
-                changedAccelX = true;
-            }
+            bool changedAccelY = ImGui::DragFloatRange2("Accel Y",
+                                                        &pc.parameters.accelerationMin.y,
+                                                        &pc.parameters.accelerationMax.y,
+                                                        0.01f,
+                                                        0.0f,
+                                                        0.0f,
+                                                        "Min: %.02f",
+                                                        "Max: %.02f",
+                                                        ImGuiSliderFlags_AlwaysClamp);
 
-            if (ImGui::DragFloatRange2("Accel Y",
-                                       &pc.parameters.accelerationMin.y,
-                                       &pc.parameters.accelerationMax.y,
-                                       0.01f,
-                                       0.0f,
-                                       0.0f,
-                                       "Min: %.02f",
-                                       "Max: %.02f",
-                                       ImGuiSliderFlags_AlwaysClamp))
-            {
-                changedAccelY = true;
-            }
-
-            if (ImGui::DragFloatRange2("Accel Z",
-                                       &pc.parameters.accelerationMin.z,
-                                       &pc.parameters.accelerationMax.z,
-                                       0.01f,
-                                       0.0f,
-                                       0.0f,
-                                       "Min: %.02f",
-                                       "Max: %.02f",
-                                       ImGuiSliderFlags_AlwaysClamp))
-            {
-                changedAccelZ = true;
-            }
+            bool changedAccelZ = ImGui::DragFloatRange2("Accel Z",
+                                                        &pc.parameters.accelerationMin.z,
+                                                        &pc.parameters.accelerationMax.z,
+                                                        0.01f,
+                                                        0.0f,
+                                                        0.0f,
+                                                        "Min: %.02f",
+                                                        "Max: %.02f",
+                                                        ImGuiSliderFlags_AlwaysClamp);
 
             if (isRuntime && (changedAccelX || changedAccelY || changedAccelZ))
             {
@@ -783,26 +752,17 @@ class SceneHeirarchyPanel
             {
                 auto& colorSpec = pc.parameters.colors[i];
 
-                bool startChanged = false;
-                bool endChanged   = false;
-
                 std::string startNm = "Start " + std::to_string(i);
                 std::string endNm   = "End " + std::to_string(i);
 
-                if (ImGui::ColorEdit4(
-                        startNm.c_str(),
-                        glm::value_ptr(colorSpec.colorStart),
-                        ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
-                {
-                    startChanged = true;
-                }
-                if (ImGui::ColorEdit4(
-                        endNm.c_str(),
-                        glm::value_ptr(colorSpec.colorEnd),
-                        ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
-                {
-                    endChanged = true;
-                }
+                bool startChanged = ImGui::ColorEdit4(
+                    startNm.c_str(),
+                    glm::value_ptr(colorSpec.colorStart),
+                    ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview);
+                bool endChanged = ImGui::ColorEdit4(
+                    endNm.c_str(),
+                    glm::value_ptr(colorSpec.colorEnd),
+                    ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview);
 
                 if (isRuntime && (startChanged || endChanged))
                 {
@@ -909,6 +869,98 @@ class SceneHeirarchyPanel
         }
     }
 
+    void _drawRigidBody2DCmp(Entity& entity)
+    {
+        static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+
+        auto& rbc = entity.getComponent<RigidBody2DCmp>();
+
+        if (ImGui::TreeNodeEx("Body", flags))
+        {
+            const char* bodyTypes[] = {"Static", "Kinematic", "Dynamic"};
+
+            int currentType = static_cast<int>(rbc.spec.type);
+            if (ImGui::Combo("Type", &currentType, bodyTypes, IM_ARRAYSIZE(bodyTypes)))
+            {
+                if (currentType == 0)
+                {
+                    rbc.spec.type = Physics2D::BodyType::STATIC;
+                }
+                else if (currentType == 1)
+                {
+                    rbc.spec.type = Physics2D::BodyType::KINEMATIC;
+                }
+                else
+                {
+                    rbc.spec.type = Physics2D::BodyType::DYNAMIC;
+                }
+            }
+
+            if (rbc.spec.type != Physics2D::BodyType::STATIC)
+            {
+                ImGui::DragFloat("Gravity Scale", &rbc.spec.gravityScale, 0.01f, 0.0f, 1000.0f);
+                ImGui::DragFloat2("Linear Velocity", glm::value_ptr(rbc.spec.linearVelocity), 0.01f);
+                ImGui::DragFloat("Angular Velocity", &rbc.spec.angularVelocity, 0.01f);
+                ImGui::DragFloat("Linear Damping", &rbc.spec.linearDamping, 0.01f, 0.0f, 1000.0f);
+                ImGui::DragFloat("Angular Damping", &rbc.spec.angularDamping, 0.01f, 0.0f, 1000.0f);
+                ImGui::Checkbox("Fixed Rotation", &rbc.spec.fixedRotation);
+                ImGui::SameLine();
+                ImGui::Checkbox("Bullet", &rbc.spec.bullet);
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNodeEx("Fixture", flags))
+        {
+            const char* shapeTypes[] = {"None", "Rectangle", "Circle"};
+
+            int currentType = 0;
+
+            if (rbc.fixSpec.shape != nullptr)
+            {
+                if (rbc.fixSpec.shape->type == Physics2D::ShapeType::RECTANGLE)
+                {
+                    currentType = 1;
+                }
+                else if (rbc.fixSpec.shape->type == Physics2D::ShapeType::CIRCLE)
+                {
+                    currentType = 2;
+                }
+                else
+                {
+                    NM_ASSERT(false, "Unknown Shape Type %i", rbc.fixSpec.shape->type);
+                }
+            }
+
+            if (ImGui::Combo("Fixture Shape", &currentType, shapeTypes, IM_ARRAYSIZE(shapeTypes)))
+            {
+                if (currentType == 0)
+                {
+                    rbc.fixSpec.shape = nullptr;
+                }
+                else if (currentType == 1)
+                {
+                    rbc.fixSpec.shape = &rbc.rectShape;
+                }
+                else if (currentType == 2)
+                {
+                    rbc.fixSpec.shape = &rbc.circShape;
+                }
+            }
+
+            if (rbc.fixSpec.shape != nullptr)
+            {
+                ImGui::DragFloat("Friction", &rbc.fixSpec.friction, 0.01f, 0.0f, 100.0f);
+                ImGui::DragFloat("Restitution", &rbc.fixSpec.restitution, 0.01f, 0.0f, 100.0f);
+                ImGui::DragFloat("Restitution Thresh", &rbc.fixSpec.restitutionThreshold, 0.01f, 0.0f, 100.0f);
+                ImGui::DragFloat("Density", &rbc.fixSpec.density, 0.01f, 0.0f, 100.0f);
+                ImGui::Checkbox("Sensor", &rbc.fixSpec.isSensor);
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
     void _drawCameraCmp(Entity& entity)
     {
         auto& cameraCmp = entity.getComponent<CameraCmp>();
@@ -975,6 +1027,18 @@ class SceneHeirarchyPanel
         if (_drawVec3Control("Position", position, 0.0f, 0.01f))
         {
             cameraCmp.camera.setPosition(position);
+        }
+
+        if (cameraCmp.camera.getType() == Camera::Type::ORTHOGRAPHIC)
+        {
+            float orthoWidth = cameraCmp.camera.getOrthoWidth();
+
+            if (ImGui::DragFloat("Ortho Size", &orthoWidth, 0.01f, 1.0f, 1000.0f, "%.2f"))
+            {
+                // no reason right now to make this different
+                cameraCmp.camera.setOrthoWidth(orthoWidth);
+                cameraCmp.camera.setOrthoHeight(orthoWidth);
+            }
         }
 
         if (currentType == 0)
@@ -1100,6 +1164,14 @@ class SceneHeirarchyPanel
                 }
             }
 
+            if (_drawAddComponentEntry<RigidBody2DCmp>(ICON_FA_COMPRESS " Rigid Body 2D"))
+            {
+                if (!entity.hasComponent<TransformCmp>())
+                {
+                    entity.addComponent<TransformCmp>();
+                }
+            }
+
             _drawAddComponentEntry<NativeLogicCmp>(ICON_FA_COMPUTER " Native Logic");
             _drawAddComponentEntry<CameraCmp>(ICON_FA_VIDEO " Camera");
 
@@ -1189,6 +1261,27 @@ class SceneHeirarchyPanel
                 entity.removeComponent<ParticleEmitterCmp>();
             }
         }
+
+        ///////////////////////////
+        // Ridgid Body 2D Component
+        ///////////////////////////
+        if (entity.hasComponent<RigidBody2DCmp>())
+        {
+            bool open    = ImGui::TreeNodeEx(ICON_FA_COMPRESS " Rigid Body 2D", flags);
+            bool removed = _drawComponentMenu();
+
+            if (open)
+            {
+                _drawRigidBody2DCmp(entity);
+                ImGui::TreePop();
+            }
+
+            if (removed)
+            {
+                entity.removeComponent<RigidBody2DCmp>();
+            }
+        }
+
         ///////////////////////////
         // Camera Component
         ///////////////////////////
@@ -1349,7 +1442,7 @@ class SceneHeirarchyPanel
     bool _drawComponentMenu()
     {
         bool removed = false;
-        ImGui::SameLine(ImGui::GetWindowWidth() - 25.0f);
+        ImGui::SameLine(ImGui::GetContentRegionAvail().x - 15.0f);
 
         if (ImGui::Button(ICON_FA_BARS))
         {

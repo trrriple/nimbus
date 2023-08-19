@@ -18,7 +18,7 @@ class Shader : public refCounted
     {
         INT,
         UINT,
-        FLOAT,
+        FLOAT,  
         BOOL
     };
     /// Destructor for Shader.

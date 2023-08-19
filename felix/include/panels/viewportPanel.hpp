@@ -37,6 +37,12 @@ class ViewportPanel
     {
     }
 
+    void setSceneContext(ref<Scene>& p_scene)
+    {
+        mp_sceneContext    = p_scene;
+        m_selectionContext = {};
+    }
+
     bool wasResized()
     {
         if (m_wasResized)

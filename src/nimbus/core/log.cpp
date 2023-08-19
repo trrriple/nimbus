@@ -21,7 +21,7 @@ static const std::string k_clear         = "\033[0m";
 
 void Log::init()
 {
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
 }
 
 void Log::info(const char* format, ...)

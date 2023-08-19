@@ -7,12 +7,12 @@ namespace nimbus
 
 typedef void* Body2D;
 
-class Physics2D
+class Physics2D : public refCounted
 {
    public:
     enum class BodyType
     {
-        STATIC,
+        STATIC = 0,
         KINEMATIC,
         DYNAMIC
     };
@@ -36,6 +36,7 @@ class Physics2D
 
     enum class ShapeType
     {
+        NONE,
         RECTANGLE,
         CIRCLE,
     };
@@ -74,7 +75,7 @@ class Physics2D
         float  friction             = 0.2f;
         float  restitution          = 0.0f;
         float  restitutionThreshold = 1.0f;
-        float  density              = 0.0f;
+        float  density              = 1.0f;
         bool   isSensor             = false;
     };
 

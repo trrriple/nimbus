@@ -8,6 +8,7 @@
 #include "nimbus/renderer/particleEmitter.hpp"
 #include "nimbus/scene/entity.hpp"
 #include "nimbus/core/utility.hpp"
+#include "nimbus/physics/physics2D.hpp"
 
 #include "glm.hpp"
 
@@ -137,6 +138,27 @@ struct ParticleEmitterCmp
                        const ParticleEmitter::Parameters& iparameters,
                        ref<Texture>                       p_itexture = nullptr)
         : numParticles(inumParticles), parameters(iparameters), p_texture(p_itexture)
+    {
+    }
+};
+
+struct RigidBody2DCmp
+{
+    Physics2D::RigidBodySpec spec;
+    Physics2D::FixtureSpec   fixSpec;
+
+    // fixSpec will point to one of these if fixture (collider) is desired
+    Physics2D::Rectangle rectShape;
+    Physics2D::Circle    circShape;
+
+    ref<Physics2D::RigidBody> p_body;
+
+    // TODO: temporary hack until scene duplication is done
+    util::Transform preSimTransform;
+
+    RigidBody2DCmp() = default;
+    RigidBody2DCmp(const Physics2D::RigidBodySpec& ispec, const Physics2D::FixtureSpec& ifixSpec)
+        : spec(ispec), fixSpec(ifixSpec)
     {
     }
 };

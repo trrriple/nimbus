@@ -65,6 +65,18 @@ class EditCameraMenuPanel
             _resetCamera();
         }
 
+        if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
+        {
+            float orthoWidth = mp_editCamera->getOrthoWidth();
+
+            if (ImGui::DragFloat("Ortho Size", &orthoWidth, 0.01f, 1.0f, 1000.0f, "%.2f"))
+            {
+                // no reason right now to make this different
+                mp_editCamera->setOrthoWidth(orthoWidth);
+                mp_editCamera->setOrthoHeight(orthoWidth);
+            }
+        }
+
         glm::vec3 cameraPos = mp_editCamera->getPosition();
 
         if (ImGui::DragFloat3("Position", glm::value_ptr(cameraPos), 0.1f))
@@ -118,6 +130,7 @@ class EditCameraMenuPanel
 
         if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
         {
+
             if (ImGui::CollapsingHeader("Visible World Bounds"))
             {
                 ImGui::BeginTable("Visible World Bounds", 2, ImGuiTableFlags_Borders);
@@ -176,9 +189,9 @@ class EditCameraMenuPanel
         if (mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
         {
 #if IMGUIZO_SCALE_FIXED
-            mp_editCamera->setPosition({0.00f, 0.00f, 2.4125f});
+            mp_editCamera->setPosition({0.00f, 0.00f, 10 * 2.4125f});
 #else
-            mp_editCamera->setPosition({0.05f, -0.05f, 2.4125f});
+            mp_editCamera->setPosition({0.01f, -0.01f, 10 * 2.4125f});
 #endif
             mp_editCamera->setYaw(-90.0f);
             mp_editCamera->setPitch(0.0f);

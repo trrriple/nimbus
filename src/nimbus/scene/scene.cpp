@@ -11,9 +11,9 @@
 namespace nimbus
 {
 
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Static functions
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static void _s_updateWorldTransform(TransformCmp& tc, AncestryCmp& ac)
 {
     // if this guy has a parent, update his world transform
@@ -36,9 +36,41 @@ static void _s_updateWorldTransform(TransformCmp& tc, AncestryCmp& ac)
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// same as above, but accounts for physics behavior changes
+static void _s_updateWorldTransformRuntime(TransformCmp& tc, AncestryCmp& ac, bool hasFixture)
+{
+    // if this guy has no fixture and a parent, update his world transform
+    if (!hasFixture && ac.parent && ac.parent.hasComponent<TransformCmp>())
+    {
+        tc.world.setTransform(ac.parent.getComponent<TransformCmp>().world.getTransform() * tc.local.getTransform());
+    }
+    else
+    {
+        tc.world = tc.local;
+    }
+
+    // update his children's transforms, if any
+    for (auto& child : ac.children)
+    {
+        if (child.hasComponent<TransformCmp>())
+        {
+            bool hasFixture = false;
+            if (child.hasComponent<RigidBody2DCmp>())
+            {
+                if (child.getComponent<RigidBody2DCmp>().fixSpec.shape != nullptr)
+                {
+                    hasFixture = true;
+                }
+            }
+            _s_updateWorldTransformRuntime(
+                child.getComponent<TransformCmp>(), child.getComponent<AncestryCmp>(), hasFixture);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Public Functions
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Scene::Scene(const std::string& name) : m_name(name)
 {
 }
@@ -118,7 +150,7 @@ void Scene::sortEntities()
     m_registry.sort<GuidCmp>([&](const auto lhs, const auto rhs) { return lhs.sequenceIndex < rhs.sequenceIndex; });
 }
 
-void Scene::onStart()
+void Scene::onStartRuntime()
 {
     ///////////////////////////
     // Initialize Logic
@@ -140,9 +172,39 @@ void Scene::onStart()
             NM_UNUSED(entity);
             pec.p_emitter = ref<ParticleEmitter>::gen(pec.numParticles, pec.parameters, pec.p_texture, nullptr, false);
         });
+
+    ///////////////////////////
+    // Make 2D Physics world
+    ///////////////////////////
+    mp_world2D = ref<Physics2D>::gen();
+
+    m_registry.view<TransformCmp, RigidBody2DCmp, NameCmp>().each(
+        [=](auto entity, auto& tc, auto& rbc, auto& nc)
+        {
+            NM_UNUSED(entity);
+
+            // update the spec with transform information
+            rbc.spec.position.x = tc.world.getTranslation().x;
+            rbc.spec.position.y = tc.world.getTranslation().y;
+            rbc.spec.angle      = tc.world.getRotation().z;
+
+            // save off transform pre-sim to restore after
+            rbc.preSimTransform = tc.local;
+
+            // other parameters are configured in place and are accessable by the SHP
+            rbc.p_body       = mp_world2D->addRigidBody(rbc.spec);
+            rbc.p_body->name = nc.name;
+            rbc.p_body->p_userData = (void*)entity;
+
+            // add fixture if so inclined
+            if (rbc.fixSpec.shape != nullptr)
+            {
+                rbc.p_body->addFixture(rbc.fixSpec, tc.world);
+            }
+        });
 }
 
-void Scene::onStop()
+void Scene::onStopRuntime()
 {
     ///////////////////////////
     // Destruct Logic
@@ -165,11 +227,44 @@ void Scene::onStop()
             NM_UNUSED(entity);
             pec.p_emitter = nullptr;
         });
+
+    ///////////////////////////
+    // Destory Physics World
+    ///////////////////////////
+    // remove all body refs
+    m_registry.view<TransformCmp, RigidBody2DCmp>().each(
+        [=](auto entity, auto& tc, auto& rbc)
+        {
+            NM_UNUSED(entity);
+            rbc.p_body = nullptr;
+
+            tc.local = rbc.preSimTransform;
+
+        });
+
+    // remove world
+    mp_world2D = nullptr;
 }
 
-void Scene::onUpdate(float deltaTime)
+void Scene::onUpdateRuntime(float deltaTime)
 {
-    NM_UNUSED(deltaTime);
+
+    ///////////////////////////
+    // Update Physics
+    ///////////////////////////
+    mp_world2D->update(deltaTime);
+
+    m_registry.view<TransformCmp, RigidBody2DCmp>().each(
+        [=](auto entity, auto& tc, auto& rbc)
+        {
+            NM_UNUSED(entity);
+
+            // we only want to update the XY translation and z rotation when using 2D physics
+            util::Transform& transform = rbc.p_body->getTransform();
+            tc.local.setTranslationX(transform.getTranslation().x);
+            tc.local.setTranslationY(transform.getTranslation().y);
+            tc.local.setRotationZ(transform.getRotation().z);
+        });
 
     ///////////////////////////
     // Update Logic
@@ -192,8 +287,8 @@ void Scene::onUpdate(float deltaTime)
     {
         // only update top level here
         if (!ac.parent)
-        {
-            _s_updateWorldTransform(tc, ac);
+        {                                          // this parameter only matters for children
+            _s_updateWorldTransformRuntime(tc, ac, false);
         }
     }
 
@@ -212,7 +307,7 @@ void Scene::onUpdate(float deltaTime)
     m_postUpdateWorkQueue.clear();
 }
 
-void Scene::onDraw()
+void Scene::onDrawRuntime()
 {
     ///////////////////////////
     // Get Camera
