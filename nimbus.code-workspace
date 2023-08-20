@@ -5,11 +5,15 @@
 		}
 	],
 	"settings": {
-		"cmake.configureArgs": [
-			"-G Unix Makefiles",
-			"-DCMAKE_TOOLCHAIN_FILE=../nimbus/vendor/vcpkg/scripts/buildsystems/vcpkg.cmake",
-			"-DVCPKG_TARGET_TRIPLET=x64-windows-static"
-		],
+		"cmake.generator": "Unix Makefiles",
+
+		"cmake.configureSettings": {
+			"CMAKE_TOOLCHAIN_FILE" : "../nimbus/vendor/vcpkg/scripts/buildsystems/vcpkg.cmake",
+			"VCPKG_TARGET_TRIPLET" : "x64-windows-static"
+		},
+
+		"cmake.parallelJobs": 16,
+
 		"files.associations": {
 			"type_traits": "cpp",
 			"fstream": "cpp",
