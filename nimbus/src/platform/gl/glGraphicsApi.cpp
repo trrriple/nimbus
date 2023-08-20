@@ -1,7 +1,7 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
 
-#include "platform/gl/glGraphicsApi.hpp"
+#include "nimbus/platform/gl/glGraphicsApi.hpp"
 #include "nimbus/renderer/renderer.hpp"
 
 #include "nimbus/renderer/texture.hpp"

@@ -27,6 +27,7 @@
 #include "nimbus/scene/entity.hpp"
 #include "nimbus/scene/entityLogic.hpp"
 #include "nimbus/scene/component.hpp"
+#include "nimbus/scene/sceneSerializer.hpp"
 
 ///////////////////////
 // Dear Imgui stuff

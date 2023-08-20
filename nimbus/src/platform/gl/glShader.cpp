@@ -1,7 +1,7 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
 
-#include "platform/gl/glShader.hpp"
+#include "nimbus/platform/gl/glShader.hpp"
 #include "nimbus/renderer/renderer.hpp"
 
 #include <fstream>

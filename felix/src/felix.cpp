@@ -1,10 +1,15 @@
 #include "nimbus.hpp"
+
+//////////////////////////////////////////////////////
+// ENTRY POINT
+//////////////////////////////////////////////////////
 #include "nimbus/core/entry.hpp"
+//////////////////////////////////////////////////////
+
 #include "panels/viewportPanel.hpp"
 #include "panels/sceneControlPanel.hpp"
 #include "panels/sceneHierarchyPanel.hpp"
 #include "panels/renderStatsPanel.hpp"
-#include "nimbus/scene/sceneSerializer.hpp"
 
 #include <filesystem>
 

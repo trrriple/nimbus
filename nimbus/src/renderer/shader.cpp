@@ -3,7 +3,7 @@
 
 #include "nimbus/renderer/shader.hpp"
 
-#include "platform/gl/glShader.hpp"
+#include "nimbus/platform/gl/glShader.hpp"
 
 namespace nimbus
 {

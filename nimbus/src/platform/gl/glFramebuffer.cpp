@@ -2,7 +2,7 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
 
-#include "platform/gl/glFramebuffer.hpp"
+#include "nimbus/platform/gl/glFramebuffer.hpp"
 
 #include "nimbus/renderer/texture.hpp"
 #include "nimbus/renderer/graphicsApi.hpp"

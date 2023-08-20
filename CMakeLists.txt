@@ -259,12 +259,12 @@ target_compile_options(TracyClient PRIVATE -Wno-format)
 # Self: Nimbus
 # #########################
 file(GLOB_RECURSE NIMBUS_LIB_SRC 
-    "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
+    "${CMAKE_CURRENT_LIST_DIR}/nimbus/*.cpp")
 
 add_library(nimbus STATIC ${NIMBUS_LIB_SRC})
 
 set(CMAKE_USE_PCH ON)
-target_precompile_headers(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include/nimbus/core/nmpch.hpp")
+target_precompile_headers(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/nimbus/include/nimbus/core/nmpch.hpp")
 
 target_link_libraries(nimbus PRIVATE SDL2-static)
 target_link_libraries(nimbus PRIVATE assimp)
@@ -289,7 +289,7 @@ endif()
 # #########################
 
 # self
-target_include_directories(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
+target_include_directories(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/nimbus/include")
 
 #sdl
 target_include_directories(nimbus PRIVATE "${sdl2_SOURCE_DIR}/include")
@@ -399,7 +399,7 @@ if(NIMBUS_BUILD_FELIX)
 
     target_link_libraries(felix PRIVATE nimbus)
 
-    target_include_directories(felix PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
+    target_include_directories(felix PRIVATE "${CMAKE_CURRENT_LIST_DIR}/nimbus/include")
     target_include_directories(felix PRIVATE "${CMAKE_CURRENT_LIST_DIR}/felix/include")
 
 

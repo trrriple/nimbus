@@ -3,7 +3,7 @@
 
 #include "nimbus/renderer/buffer.hpp"
 
-#include "platform/gl/glBuffer.hpp"
+#include "nimbus/platform/gl/glBuffer.hpp"
 
 namespace nimbus
 {

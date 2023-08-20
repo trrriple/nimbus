@@ -1,7 +1,7 @@
 #include "nimbus/core/nmpch.hpp"
 #include "nimbus/core/core.hpp"
 
-#include "platform/gl/glTexture.hpp"
+#include "nimbus/platform/gl/glTexture.hpp"
 #include "nimbus/renderer/renderer.hpp"
 
 #include "stb_image.h"

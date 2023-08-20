@@ -3,7 +3,7 @@
 
 #include "nimbus/renderer/texture.hpp"
 
-#include "platform/gl/glTexture.hpp"
+#include "nimbus/platform/gl/glTexture.hpp"
 
 namespace nimbus
 {

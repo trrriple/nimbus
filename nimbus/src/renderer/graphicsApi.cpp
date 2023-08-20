@@ -5,7 +5,7 @@
 
 #include "nimbus/renderer/texture.hpp"
 
-#include "platform/gl/glGraphicsApi.hpp"
+#include "nimbus/platform/gl/glGraphicsApi.hpp"
 
 namespace nimbus
 {

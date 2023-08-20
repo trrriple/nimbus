@@ -18,8 +18,13 @@ struct ScriptEngineInternalData
     ///////////////////////////
     // Domain
     ///////////////////////////
-    MonoDomain* rootDomain;
-    MonoDomain* appDomain;
+    MonoDomain* rootDomain = nullptr;
+    MonoDomain* appDomain  = nullptr;
+
+    ///////////////////////////
+    // Assembly
+    ///////////////////////////
+    MonoAssembly* coreAssembly = nullptr;
 };
 
 ScriptEngineInternalData ScriptEngine::s_data;
@@ -106,7 +111,8 @@ void ScriptEngine::s_init(const std::string& installPath)
     mono_domain_set(s_data.appDomain, true);
 
     // test loading
-    s_printAssemblyTypes(s_loadCSharpAssembly("CSharpTesting/bin/debug/net7.0/CSharpTesting.dll"));
+    s_data.coreAssembly = s_loadCSharpAssembly("CSharpTesting/bin/debug/net7.0/CSharpTesting.dll");
+    s_printAssemblyTypes(s_data.coreAssembly);
 }
 
 void ScriptEngine::s_destroy()
