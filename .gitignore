@@ -20,6 +20,9 @@ vendor/toml*
 
 *.nmscn
 
+# script core stuff
+resources/scriptCore/obj*
+resources/scriptCore/bin*
 # cmake stuff
 CMakeFiles/
 CMakeCache.txt

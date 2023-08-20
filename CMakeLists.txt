@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.8)
 
 # #########################
 # General Setup
@@ -277,11 +277,11 @@ target_link_libraries(nimbus PRIVATE box2d)
 target_link_libraries(nimbus PUBLIC TracyClient)
 
 # Mono
-# TODO : Not just windows release 
-target_link_libraries(nimbus PRIVATE "${VENDOR_PATH}/mono/win64/lib/Release/libmono-static-sgen.lib")
+# TODO : Not just windows release
 if(WIN32)
-  target_link_libraries(nimbus PRIVATE ws2_32)
-  target_link_libraries(nimbus PRIVATE Bcrypt.lib)
+    target_link_libraries(nimbus PRIVATE "${VENDOR_PATH}/mono/win64/lib/Release/libmono-static-sgen.lib")
+    target_link_libraries(nimbus PRIVATE ws2_32)
+    target_link_libraries(nimbus PRIVATE Bcrypt.lib)
 endif()
 
 # #########################
@@ -345,8 +345,6 @@ target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/portable-file-dialogs"
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/mono/include")
 
 
-
-
 # #########################
 # Self Compiler/Linker flags
 # #########################
@@ -386,6 +384,21 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_compile_options(nimbus PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
     target_link_options(nimbus PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
 endif()
+
+
+# #########################
+# ScriptCore
+# #########################
+set(SCRIPTCORE_PRJ_PATH "${CMAKE_SOURCE_DIR}/resources/scriptCore/scriptCore.csproj")
+
+# Custom target to build the C# project
+add_custom_target(scriptCore
+  COMMAND dotnet build ${SCRIPTCORE_PRJ_PATH} -c Release -o "${CMAKE_SOURCE_DIR}/resources/scriptCore/bin"
+  COMMENT "Building C# project ${SCRIPTCORE_PRJ_PATH}"
+)
+
+# make nimbus dependent on scriptCore so it builds with nimbus
+add_dependencies(nimbus scriptCore)
 
 if(NIMBUS_BUILD_FELIX)
     # #########################

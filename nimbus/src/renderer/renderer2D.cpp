@@ -23,43 +23,41 @@ void Renderer2D::s_init()
     //clang-format off
     static std::once_flag initFlag;
     std::call_once(initFlag,
-                   []()
-                   {
-                       s_quadData = new QuadData;
-                       s_textData = new TextData;
+    []()
+    {
+        s_quadData = new QuadData;
+        s_textData = new TextData;
 
-                       ///////////////////////////
-                       // General data init
-                       ///////////////////////////
-                       s_quadData->vertices.push_back({glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)});
-                       s_quadData->vertices.push_back({glm::vec4(0.5f, -0.5f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)});
-                       s_quadData->vertices.push_back({glm::vec4(0.5f, 0.5f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)});
-                       s_quadData->vertices.push_back({glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)});
+        ///////////////////////////
+        // General data init
+        ///////////////////////////
+        s_quadData->vertices.push_back({glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), glm::vec2(0.0f, 1.0f)});
+        s_quadData->vertices.push_back({glm::vec4(0.5f, -0.5f, 0.0f, 1.0f), glm::vec2(1.0f, 1.0f)});
+        s_quadData->vertices.push_back({glm::vec4(0.5f, 0.5f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)});
+        s_quadData->vertices.push_back({glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)});
 
-                       ///////////////////////////
-                       // Quad data init
-                       ///////////////////////////
-                       s_quadData->p_shader
-                           = Application::s_get().getResourceManager().loadShader("../resources/shaders/quad.v.glsl",
-                                                                                  "../resources/shaders/quad.f.glsl");
+        ///////////////////////////
+        // Quad data init
+        ///////////////////////////
+        s_quadData->p_shader = Application::s_get().getResourceManager().loadShader(
+            "../resources/shaders/quad.v.glsl", "../resources/shaders/quad.f.glsl");
 
-                       s_quadData->textures.reserve(Texture::s_getMaxTextures());
+        s_quadData->textures.reserve(Texture::s_getMaxTextures());
 
-                       s_quadData->textures.push_back(Renderer::getWhiteTexture());
+        s_quadData->textures.push_back(Renderer::getWhiteTexture());
 
-                       _s_createQuadBuffers();
+        _s_createQuadBuffers();
 
-                       ///////////////////////////
-                       // Text data init
-                       ///////////////////////////
-                       s_textData->p_shader
-                           = Application::s_get().getResourceManager().loadShader("../resources/shaders/text.v.glsl",
-                                                                                  "../resources/shaders/text.f.glsl");
+        ///////////////////////////
+        // Text data init
+        ///////////////////////////
+        s_textData->p_shader = Application::s_get().getResourceManager().loadShader(
+            "../resources/shaders/text.v.glsl", "../resources/shaders/text.f.glsl");
 
-                       s_textData->atlases.reserve(Texture::s_getMaxTextures());
+        s_textData->atlases.reserve(Texture::s_getMaxTextures());
 
-                       _s_createTextBuffers();
-                   });
+        _s_createTextBuffers();
+    });
     //clang-format on
 }
 
@@ -522,9 +520,8 @@ void Renderer2D::_s_createQuadBuffers()
     // (Re)make Shared VBO
     ///////////////////////////
     // shared, doesn't change after creation so no need to save handle to it
-    auto sharedVbo = VertexBuffer::s_create(&s_quadData->vertices[0],
-                                            s_quadData->vertices.size() * sizeof(QuadVertex),
-                                            VertexBuffer::Type::STATIC_DRAW);
+    auto sharedVbo = VertexBuffer::s_create(
+        &s_quadData->vertices[0], s_quadData->vertices.size() * sizeof(QuadVertex), VertexBuffer::Type::STATIC_DRAW);
 
     sharedVbo->setFormat(k_quadVertexFormat);
     s_quadData->p_vao->addVertexBuffer(sharedVbo);
@@ -588,9 +585,8 @@ void Renderer2D::_s_createTextBuffers()
     ///////////////////////////
     s_textData->vertices = std::vector<TextVertex>(newSize);
 
-    s_textData->p_vbo = VertexBuffer::s_create(&s_textData->vertices[0],
-                                               s_textData->vertices.size() * sizeof(TextVertex),
-                                               VertexBuffer::Type::DYNAMIC_DRAW);
+    s_textData->p_vbo = VertexBuffer::s_create(
+        &s_textData->vertices[0], s_textData->vertices.size() * sizeof(TextVertex), VertexBuffer::Type::DYNAMIC_DRAW);
 
     s_textData->p_vbo->setFormat(k_TextVertexFormat);
     s_textData->p_vao->addVertexBuffer(s_textData->p_vbo);

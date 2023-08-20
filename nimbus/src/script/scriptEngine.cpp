@@ -27,7 +27,7 @@ struct ScriptEngineInternalData
     MonoAssembly* coreAssembly = nullptr;
 };
 
-ScriptEngineInternalData ScriptEngine::s_data;
+ScriptEngineInternalData* ScriptEngine::s_data;
 
 static MonoAssembly* s_loadCSharpAssembly(const std::string& assemblyPath)
 {
@@ -95,29 +95,81 @@ static void s_printAssemblyTypes(MonoAssembly* assembly)
     }
 }
 
+MonoClass* s_getClassInAssembly(MonoAssembly* assembly, const char* namespaceName, const char* className)
+{
+    MonoImage* image = mono_assembly_get_image(assembly);
+    MonoClass* klass = mono_class_from_name(image, namespaceName, className);
+
+    if (klass == nullptr)
+    {
+        Log::coreError("Could not get class %s in namespace %s in assembly", className, namespaceName);
+        return nullptr;
+    }
+
+    return klass;
+}
+
 void ScriptEngine::s_init(const std::string& installPath)
 {
-    std::filesystem::path libPath(installPath);
-    libPath /= "lib";
-    std::filesystem::path etcPath(installPath);
-    etcPath /= "etc";
+    // clang-format off
+    static std::once_flag initFlag;
+    std::call_once(initFlag,
+    [=]()
+    {
+        s_data = new ScriptEngineInternalData();
 
-    mono_set_dirs(libPath.generic_string().c_str(), etcPath.generic_string().c_str());
-    s_data.rootDomain = mono_jit_init("nbMonoRuntime");
+        std::filesystem::path libPath(installPath);
+        libPath /= "lib";
+        std::filesystem::path etcPath(installPath);
+        etcPath /= "etc";
 
-    NB_CORE_ASSERT_STATIC(s_data.rootDomain, "Mono Jit failed to load!");
+        mono_set_dirs(libPath.generic_string().c_str(), etcPath.generic_string().c_str());
+        s_data->rootDomain = mono_jit_init("nbMonoRuntime");
 
-    s_data.appDomain = mono_domain_create_appdomain((char*)"nbAppDomain", nullptr);
-    mono_domain_set(s_data.appDomain, true);
+        NB_CORE_ASSERT_STATIC(s_data->rootDomain, "Mono Jit failed to load!");
 
-    // test loading
-    s_data.coreAssembly = s_loadCSharpAssembly("CSharpTesting/bin/debug/net7.0/CSharpTesting.dll");
-    s_printAssemblyTypes(s_data.coreAssembly);
+        s_data->appDomain = mono_domain_create_appdomain((char*)"nbAppDomain", nullptr);
+        mono_domain_set(s_data->appDomain, true);
+
+        // test loading
+        s_data->coreAssembly = s_loadCSharpAssembly("../resources/scriptCore/bin/scriptCore.dll");
+        s_printAssemblyTypes(s_data->coreAssembly);
+
+        MonoClass* testingClass = s_getClassInAssembly(s_data->coreAssembly, "nimbus", "ScriptCore");
+
+        // Allocate an instance of our class
+        MonoObject* classInstance = mono_object_new(s_data->appDomain, testingClass);
+
+        if (classInstance == nullptr)
+        {
+            Log::coreError("Ripperoni Pizza");
+            return;
+        }
+
+        // Call the parameterless (default) constructor
+        mono_runtime_object_init(classInstance);
+
+        // Get a reference to the method in the class
+        MonoMethod* method = mono_class_get_method_from_name(testingClass, "PrintFloatVar", 0);
+
+        if (method == nullptr)
+        {
+            // No method called "PrintFloatVar" with 0 parameters in the class, log error or something
+            return;
+        }
+
+        // Call the C# method on the objectInstance instance, and get any potential exceptions
+        MonoObject* exception = nullptr;
+        mono_runtime_invoke(method, classInstance, nullptr, &exception);
+    });
+    // clang-format on
 }
 
 void ScriptEngine::s_destroy()
 {
-    mono_jit_cleanup(s_data.rootDomain);
+    mono_jit_cleanup(s_data->rootDomain);
+
+    delete s_data;
 }
 
 }  // namespace nimbus
