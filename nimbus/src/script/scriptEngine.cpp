@@ -161,6 +161,17 @@ void ScriptEngine::s_init(const std::string& installPath)
         // Call the C# method on the objectInstance instance, and get any potential exceptions
         MonoObject* exception = nullptr;
         mono_runtime_invoke(method, classInstance, nullptr, &exception);
+
+
+        MonoMethod* method2 = mono_class_get_method_from_name(testingClass, "IncrementFloatVar", 1);
+
+        f32_t value = 5;
+        void* param = &value;
+        mono_runtime_invoke(method2, classInstance, &param, &exception);
+
+        mono_runtime_invoke(method, classInstance, nullptr, &exception);
+
+
     });
     // clang-format on
 }

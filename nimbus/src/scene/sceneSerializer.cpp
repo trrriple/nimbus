@@ -220,7 +220,7 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
 
         toml::table spec;
         spec.insert("linearVelocity", toml::array{rbc.spec.linearVelocity.x, rbc.spec.linearVelocity.y});
-        spec.insert("angularVelociy", rbc.spec.angularVelocity);
+        spec.insert("angularVelocity", rbc.spec.angularVelocity);
         spec.insert("linearDamping", rbc.spec.linearDamping);
         spec.insert("angularDamping", rbc.spec.angularDamping);
         spec.insert("allowSleep", rbc.spec.allowSleep);
@@ -483,7 +483,54 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
     }
 
     ///////////////////////////
-    // Camera
+    // RigidBody2DCmp
+    ///////////////////////////
+    if (cmpType == "RigidBody2DCmp")
+    {
+        auto& rbc = entity.addComponent<RigidBody2DCmp>();
+
+        rbc.spec.type = static_cast<Physics2D::BodyType>(cmpTbl["type"].ref<i64_t>());
+
+        auto specTbl = *cmpTbl["spec"].as_table();
+
+        rbc.spec.linearVelocity
+            = glm::vec2(specTbl["linearVelocity"][0].ref<f64_t>(), specTbl["linearVelocity"][1].ref<f64_t>());
+
+        rbc.spec.angularVelocity = specTbl["angularVelocity"].ref<f64_t>();
+        rbc.spec.linearDamping   = specTbl["linearDamping"].ref<f64_t>();
+        rbc.spec.angularDamping  = specTbl["angularDamping"].ref<f64_t>();
+        rbc.spec.allowSleep      = specTbl["allowSleep"].ref<bool>();
+        rbc.spec.awake           = specTbl["awake"].ref<bool>();
+        rbc.spec.bullet          = specTbl["bullet"].ref<bool>();
+        rbc.spec.enabled         = specTbl["enabled"].ref<bool>();
+        rbc.spec.gravityScale    = specTbl["gravityScale"].ref<f64_t>();
+
+        auto fixSpecTbl = *cmpTbl["fixSpec"].as_table();
+
+        Physics2D::ShapeType shapeType = static_cast<Physics2D::ShapeType>(fixSpecTbl["shape"].ref<i64_t>());
+
+        if (shapeType == Physics2D::ShapeType::NONE)
+        {
+            rbc.fixSpec.shape = nullptr;
+        }
+        else if (shapeType == Physics2D::ShapeType::RECTANGLE)
+        {
+            rbc.fixSpec.shape = &rbc.rectShape;
+        }
+        else if (shapeType == Physics2D::ShapeType::CIRCLE)
+        {
+            rbc.fixSpec.shape = &rbc.circShape;
+        }
+
+        rbc.fixSpec.friction             = fixSpecTbl["friction"].ref<f64_t>();
+        rbc.fixSpec.restitution          = fixSpecTbl["restitution"].ref<f64_t>();
+        rbc.fixSpec.restitutionThreshold = fixSpecTbl["restitutionThreshold"].ref<f64_t>();
+        rbc.fixSpec.density              = fixSpecTbl["density"].ref<f64_t>();
+        rbc.fixSpec.isSensor             = fixSpecTbl["isSensor"].ref<bool>();
+    }
+
+    ///////////////////////////
+    // CameraCmp
     ///////////////////////////
     if (cmpType == "CameraCmp")
     {
