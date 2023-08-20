@@ -16,22 +16,22 @@ void GraphicsApi::init()
     std::call_once(initFlag, []() { GlGraphicsApi::init(); });
 }
 
-void GraphicsApi::drawElements(ref<VertexArray> p_vertexArray, uint32_t vertexCount)
+void GraphicsApi::drawElements(ref<VertexArray> p_vertexArray, u32_t vertexCount)
 {
     GlGraphicsApi::drawElements(p_vertexArray, vertexCount);
 }
 
-void GraphicsApi::drawArrays(ref<VertexArray> p_vertexArray, uint32_t vertexCount)
+void GraphicsApi::drawArrays(ref<VertexArray> p_vertexArray, u32_t vertexCount)
 {
     GlGraphicsApi::drawArrays(p_vertexArray, vertexCount);
 }
 
-void GraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray, uint32_t instanceCount, uint32_t vertexCount)
+void GraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray, u32_t instanceCount, u32_t vertexCount)
 {
     GlGraphicsApi::drawElementsInstanced(p_vertexArray, instanceCount, vertexCount);
 }
 
-void GraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray, uint32_t instanceCount, uint32_t vertexCount)
+void GraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray, u32_t instanceCount, u32_t vertexCount)
 {
     GlGraphicsApi::drawArraysInstanced(p_vertexArray, instanceCount, vertexCount);
 }

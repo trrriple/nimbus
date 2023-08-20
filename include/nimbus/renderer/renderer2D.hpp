@@ -16,15 +16,15 @@ class Renderer2D : public refCounted
    public:
     struct Stats
     {
-        uint32_t drawCalls     = 0;
-        uint32_t quads         = 0;
-        uint32_t characters    = 0;
-        uint32_t quadVertices  = 0;
-        uint32_t textVertices  = 0;
-        uint32_t totalVertices = 0;
+        u32_t drawCalls     = 0;
+        u32_t quads         = 0;
+        u32_t characters    = 0;
+        u32_t quadVertices  = 0;
+        u32_t textVertices  = 0;
+        u32_t totalVertices = 0;
 
-        uint32_t quadVertsAvail = 0;
-        uint32_t textVertsAvail = 0;
+        u32_t quadVertsAvail = 0;
+        u32_t textVertsAvail = 0;
     };
 
     static void s_init();
@@ -38,21 +38,21 @@ class Renderer2D : public refCounted
     static void s_drawQuad(const glm::mat4&    transform,
                            const ref<Texture>& p_texture,
                            const glm::vec4&    color,
-                           float               texTilingFactor = 1.0f,
-                           uint32_t            entityId        = 0);
+                           f32_t               texTilingFactor = 1.0f,
+                           u32_t               entityId        = 0);
 
-    static void s_drawQuad(const glm::mat4& transform, const glm::vec4& color, uint32_t entityId = 0);
+    static void s_drawQuad(const glm::mat4& transform, const glm::vec4& color, u32_t entityId = 0);
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::vec3&    position,
                            const glm::vec2&    size,
-                           uint32_t            entityId = 0);
+                           u32_t               entityId = 0);
 
     static void s_drawText(const std::string&  text,
                            const Font::Format& fontFormat,
                            const glm::mat4&    transform,
-                           uint32_t            entityId = 0);
+                           u32_t               entityId = 0);
 
     static void s_resetStats();
 
@@ -70,9 +70,9 @@ class Renderer2D : public refCounted
     ///////////////////////////
     //  Quad layout and data
     ///////////////////////////
-    inline static const uint32_t k_quadInitCount = 25000;
-    inline static const uint32_t k_quadGrowCount = 5000;
-    inline static const uint32_t k_quadMaxCount  = 100000;
+    inline static const u32_t k_quadInitCount = 25000;
+    inline static const u32_t k_quadGrowCount = 5000;
+    inline static const u32_t k_quadMaxCount  = 100000;
 
     inline static const BufferFormat k_quadVertexFormat = {
         {k_shaderVec4, "position"},
@@ -97,9 +97,9 @@ class Renderer2D : public refCounted
     {
         glm::mat4 transform;
         glm::vec4 color;
-        int32_t   texIndex;
-        float     texTilingFactor;
-        uint32_t  entityId;
+        i32_t     texIndex;
+        f32_t     texTilingFactor;
+        u32_t     entityId;
     };
 
     struct QuadData
@@ -109,7 +109,7 @@ class Renderer2D : public refCounted
         ref<VertexBuffer>           p_vbo     = nullptr;
         ref<VertexArray>            p_vao     = nullptr;
         ref<Shader>                 p_shader  = nullptr;
-        uint32_t                    quadCount = 0;
+        u32_t                       quadCount = 0;
         std::vector<ref<Texture>>   textures;
         bool                        needsResize = false;
     };
@@ -119,9 +119,9 @@ class Renderer2D : public refCounted
     ///////////////////////////
     //  Text layout and data
     ///////////////////////////
-    inline static const uint32_t k_textVerticesInitCount = 500;
-    inline static const uint32_t k_textVerticesGrowCount = 500;
-    inline static const uint32_t k_textVerticesMaxCount  = 10000;
+    inline static const u32_t k_textVerticesInitCount = 500;
+    inline static const u32_t k_textVerticesGrowCount = 500;
+    inline static const u32_t k_textVerticesMaxCount  = 10000;
 
     inline static const BufferFormat k_TextVertexFormat = {
         {k_shaderVec4, "position"},
@@ -140,18 +140,18 @@ class Renderer2D : public refCounted
         glm::vec4 fgColor;
         glm::vec4 bgColor;
         glm::vec2 unitRange;
-        int32_t   texIndex;
-        uint32_t  entityId;
+        i32_t     texIndex;
+        u32_t     entityId;
     };
 
     struct TextData
     {
         std::vector<TextVertex>   vertices;
-        uint32_t                  vertexIdx = 0;
+        u32_t                     vertexIdx = 0;
         ref<VertexBuffer>         p_vbo     = nullptr;
         ref<VertexArray>          p_vao     = nullptr;
         ref<Shader>               p_shader  = nullptr;
-        uint32_t                  charCount = 0;
+        u32_t                     charCount = 0;
         std::vector<ref<Texture>> atlases;
         bool                      needsResize = false;
     };

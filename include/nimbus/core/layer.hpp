@@ -33,19 +33,19 @@ class Layer : public refCounted
     // IMPORTANT: DO NOT perform any Graphics API or renderer calls in onUpdate.
     // It wont be deterministed because render thread, which handles those
     // updates only runs after onDraw!
-    virtual void onUpdate(float deltaTime)
+    virtual void onUpdate(f32_t deltaTime)
     {
-        NM_UNUSED(deltaTime);
+        NB_UNUSED(deltaTime);
     }
 
-    virtual void onDraw(float deltaTime)
+    virtual void onDraw(f32_t deltaTime)
     {
-        NM_UNUSED(deltaTime);
+        NB_UNUSED(deltaTime);
     }
 
-    virtual void onGuiDraw(float deltaTime)
+    virtual void onGuiDraw(f32_t deltaTime)
     {
-        NM_UNUSED(deltaTime);
+        NB_UNUSED(deltaTime);
     }
 
     // IMPORTANT: DO NOT perform any Graphics API or renderer calls in onEvent.
@@ -53,7 +53,7 @@ class Layer : public refCounted
     // updates only runs after onDraw!
     virtual void onEvent(Event& event)
     {
-        NM_UNUSED(event);
+        NB_UNUSED(event);
     }
 };
 }  // namespace nimbus

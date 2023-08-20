@@ -44,12 +44,12 @@ class Camera : public refCounted
     // processes input received from any position movement input system.
     // Accepts input parameter in the form of camera defined ENUM
     // (to abstract it from windowing systems)
-    void processPosiUpdate(Movement direction, float deltaTime);
+    void processPosiUpdate(Movement direction, f32_t deltaTime);
 
     // processes input received from a view update.
     void processViewUpdate(const glm::vec2& offset, bool constrainPitch = true);
 
-    void processZoom(float offset);
+    void processZoom(f32_t offset);
 
     glm::mat4& getView();
 
@@ -59,39 +59,39 @@ class Camera : public refCounted
 
     Bounds& getVisibleWorldBounds();
 
-    void setAspectRatio(float aspectRatio);
+    void setAspectRatio(f32_t aspectRatio);
 
-    inline float getAspectRatio() const
+    inline f32_t getAspectRatio() const
     {
         return m_aspectRatio;
     }
 
-    void setNearClip(float near);
+    void setNearClip(f32_t near);
 
-    inline float getNearClip()
+    inline f32_t getNearClip()
     {
         return m_type == Type::ORTHOGRAPHIC ? m_orthoNear : m_near;
     }
 
-    void setFarClip(float far);
+    void setFarClip(f32_t far);
 
-    inline float getFarClip()
+    inline f32_t getFarClip()
     {
         return m_type == Type::ORTHOGRAPHIC ? m_orthoFar : m_far;
     }
 
     void setPosition(const glm::vec3& position);
 
-    void setZoom(float zoom);
+    void setZoom(f32_t zoom);
 
-    inline float getZoom()
+    inline f32_t getZoom()
     {
         return m_zoom;
     }
 
-    void setFov(float fov);
+    void setFov(f32_t fov);
 
-    float getFov()
+    f32_t getFov()
     {
         return m_fov;
     }
@@ -101,44 +101,44 @@ class Camera : public refCounted
         return m_position;
     }
 
-    void setSpeed(float speed);
+    void setSpeed(f32_t speed);
 
-    inline float getSpeed() const
+    inline f32_t getSpeed() const
     {
         return m_speed;
     }
 
-    void setSensitivity(float sensitivity);
+    void setSensitivity(f32_t sensitivity);
 
-    inline float getSensitivity() const
+    inline f32_t getSensitivity() const
     {
         return m_sensitivity;
     }
 
-    void setYaw(float yaw);
+    void setYaw(f32_t yaw);
 
-    inline float getYaw() const
+    inline f32_t getYaw() const
     {
         return m_yaw;
     }
 
-    void setPitch(float pitch);
+    void setPitch(f32_t pitch);
 
-    inline float getPitch() const
+    inline f32_t getPitch() const
     {
         return m_pitch;
     }
 
-    void setOrthoWidth(float width);
+    void setOrthoWidth(f32_t width);
 
-    inline float getOrthoWidth() const
+    inline f32_t getOrthoWidth() const
     {
         return m_orthoWidth;
     }
 
-    void setOrthoHeight(float height);
+    void setOrthoHeight(f32_t height);
 
-    inline float getOrthoHeight() const
+    inline f32_t getOrthoHeight() const
     {
         return m_orthoHeight;
     }
@@ -161,29 +161,29 @@ class Camera : public refCounted
     glm::vec3 m_right;
 
     // euler angles
-    float m_yaw   = 0.0f;
-    float m_pitch = 0.0f;
+    f32_t m_yaw   = 0.0f;
+    f32_t m_pitch = 0.0f;
 
     // tuning values
-    float m_speed       = 10.0f;
-    float m_sensitivity = 0.05f;
-    float m_fov         = 45.0f;
-    float m_zoom        = 1.0f;
-    float m_aspectRatio = 1.0;
+    f32_t m_speed       = 10.0f;
+    f32_t m_sensitivity = 0.05f;
+    f32_t m_fov         = 45.0f;
+    f32_t m_zoom        = 1.0f;
+    f32_t m_aspectRatio = 1.0;
 
-    float m_near = 0.1f;
-    float m_far  = 300.0f;
+    f32_t m_near = 0.1f;
+    f32_t m_far  = 300.0f;
 
-    float m_orthoNear   = -1.0f;
-    float m_orthoFar    = 1.0f;
-    float m_orthoWidth  = 10.0f;  // always additionally scaled by aspect ratio
-    float m_orthoHeight = 10.0f;
+    f32_t m_orthoNear   = -1.0f;
+    f32_t m_orthoFar    = 1.0f;
+    f32_t m_orthoWidth  = 10.0f;  // always additionally scaled by aspect ratio
+    f32_t m_orthoHeight = 10.0f;
 
     Type m_type;
 
     // calculates the front vector from the Camera's (updated) Euler Angles
     void  _updateCameraVectors();
-    float _getAspectRatio();
+    f32_t _getAspectRatio();
 };
 
 }  // namespace nimbus

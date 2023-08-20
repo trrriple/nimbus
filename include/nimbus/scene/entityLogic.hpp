@@ -26,9 +26,9 @@ class EntityLogic
     virtual void onDestroy()
     {
     }
-    virtual void onUpdate(float deltaTime)
+    virtual void onUpdate(f32_t deltaTime)
     {
-        NM_UNUSED(deltaTime);
+        NB_UNUSED(deltaTime);
     }
 
    private:

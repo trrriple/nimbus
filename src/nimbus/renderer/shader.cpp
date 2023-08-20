@@ -20,7 +20,7 @@ ref<Shader> Shader::s_create(const std::string& vertexPath, const std::string& f
     return ref<GlShader>::gen(vertexPath, fragmentPath);
 }
 
-uint32_t Shader::s_getShaderType(Shader::ShaderType type)
+u32_t Shader::s_getShaderType(Shader::ShaderType type)
 {
     return GlShader::s_getShaderType(type);
 }

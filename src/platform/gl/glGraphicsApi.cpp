@@ -13,11 +13,11 @@ namespace nimbus
 
 void GlGraphicsApi::init()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
     {
-        NM_CORE_ASSERT_STATIC(0, "Failed to initialize Glad %s");
+        NB_CORE_ASSERT_STATIC(0, "Failed to initialize Glad %s");
     }
 
     Log::coreInfo("Vendor:   %s", glGetString(GL_VENDOR));
@@ -58,42 +58,42 @@ void GlGraphicsApi::init()
     Log::coreInfo("Max number of Texture Units: supported: %i", Texture::s_getMaxTextures());
 }
 
-void GlGraphicsApi::drawElements(ref<VertexArray> p_vertexArray, uint32_t vertexCount)
+void GlGraphicsApi::drawElements(ref<VertexArray> p_vertexArray, u32_t vertexCount)
 {
-    NM_PROFILE_DETAIL();
-    uint32_t count = vertexCount ? vertexCount : p_vertexArray->getIndexBuffer()->getCount();
+    NB_PROFILE_DETAIL();
+    u32_t count = vertexCount ? vertexCount : p_vertexArray->getIndexBuffer()->getCount();
 
     p_vertexArray->bind();
-    uint32_t type = p_vertexArray->getIndexBuffer()->getType();
+    u32_t type = p_vertexArray->getIndexBuffer()->getType();
 
     Renderer::s_submit([count, type]() { glDrawElements(GL_TRIANGLES, count, type, nullptr); });
 }
 
-void GlGraphicsApi::drawArrays(ref<VertexArray> p_vertexArray, uint32_t vertexCount)
+void GlGraphicsApi::drawArrays(ref<VertexArray> p_vertexArray, u32_t vertexCount)
 {
-    NM_PROFILE_DETAIL();
-    uint32_t count = vertexCount ? vertexCount : p_vertexArray->getExpectedVertexCount();
+    NB_PROFILE_DETAIL();
+    u32_t count = vertexCount ? vertexCount : p_vertexArray->getExpectedVertexCount();
 
     p_vertexArray->bind();
     Renderer::s_submit([count]() { glDrawArrays(GL_TRIANGLES, 0, count); });
 }
 
-void GlGraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray, uint32_t instanceCount, uint32_t vertexCount)
+void GlGraphicsApi::drawElementsInstanced(ref<VertexArray> p_vertexArray, u32_t instanceCount, u32_t vertexCount)
 {
-    NM_PROFILE_DETAIL();
-    uint32_t count = vertexCount ? vertexCount : p_vertexArray->getIndexBuffer()->getCount();
+    NB_PROFILE_DETAIL();
+    u32_t count = vertexCount ? vertexCount : p_vertexArray->getIndexBuffer()->getCount();
 
     p_vertexArray->bind();
-    uint32_t type = p_vertexArray->getIndexBuffer()->getType();
+    u32_t type = p_vertexArray->getIndexBuffer()->getType();
 
     Renderer::s_submit([count, instanceCount, type]()
                        { glDrawElementsInstanced(GL_TRIANGLES, count, type, nullptr, instanceCount); });
 }
 
-void GlGraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray, uint32_t instanceCount, uint32_t vertexCount)
+void GlGraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray, u32_t instanceCount, u32_t vertexCount)
 {
-    NM_PROFILE_DETAIL();
-    uint32_t count = vertexCount ? vertexCount : p_vertexArray->getExpectedVertexCount();
+    NB_PROFILE_DETAIL();
+    u32_t count = vertexCount ? vertexCount : p_vertexArray->getExpectedVertexCount();
 
     p_vertexArray->bind();
 
@@ -102,9 +102,9 @@ void GlGraphicsApi::drawArraysInstanced(ref<VertexArray> p_vertexArray, uint32_t
 
 void GlGraphicsApi::clear()
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    uint32_t bits = getDepthTest() ? (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) : GL_COLOR_BUFFER_BIT;
+    u32_t bits = getDepthTest() ? (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) : GL_COLOR_BUFFER_BIT;
 
     Renderer::s_submit([bits]() { glClear(bits); });
 }
@@ -121,7 +121,7 @@ void GlGraphicsApi::setViewportSize(int x, int y, int w, int h)
 
 void GlGraphicsApi::setWireframe(bool on)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     if (on == s_wireframe)
     {
@@ -150,7 +150,7 @@ void GlGraphicsApi::setWireframe(bool on)
 
 void GlGraphicsApi::setDepthTest(bool on)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     if (on == s_depthTest)
     {
@@ -185,8 +185,8 @@ void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
         return;
     }
 
-    uint32_t sFactor = GL_NONE;
-    uint32_t dFactor = GL_NONE;
+    u32_t sFactor = GL_NONE;
+    u32_t dFactor = GL_NONE;
     switch (mode)
     {
         case BlendingMode::ADDITIVE:
@@ -222,7 +222,7 @@ void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
             dFactor = GL_ONE;
             break;
         default:
-            NM_CORE_ASSERT_STATIC(0, "Invalid blending mode %i", mode);
+            NB_CORE_ASSERT_STATIC(0, "Invalid blending mode %i", mode);
     }
 
     s_currBlendingMode = mode;
@@ -238,8 +238,8 @@ static void APIENTRY _glDebugOutput(GLenum       source,
                                     const char*  message,
                                     const void*  userParam)
 {
-    NM_UNUSED(length);
-    NM_UNUSED(userParam);
+    NB_UNUSED(length);
+    NB_UNUSED(userParam);
 
     // ignore non-significant error/warning codes
     if (id == 131169 || id == 131185 || id == 131218 || id == 131204 || id == 131140

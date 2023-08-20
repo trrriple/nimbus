@@ -16,7 +16,7 @@ namespace nimbus
 // Shader Types MetaData
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                    Type             sizeof      # of Components
-typedef std::tuple<Shader::ShaderType, uint32_t, uint32_t> ShaderDataType;
+typedef std::tuple<Shader::ShaderType, u32_t, u32_t> ShaderDataType;
 
 const ShaderDataType k_shaderFloat = std::make_tuple(Shader::ShaderType::FLOAT, 4, 1);
 const ShaderDataType k_shaderVec2  = std::make_tuple(Shader::ShaderType::FLOAT, 8, 2);
@@ -48,7 +48,7 @@ struct BufferComponent
     ShaderDataType        dataType;
     std::string           name;
     BufferComponent::Type type;
-    uint32_t              perInstance;
+    u32_t                 perInstance;
     bool                  normalized;
     size_t                offset;  // calculated
 
@@ -67,7 +67,7 @@ struct BufferComponent
     BufferComponent(ShaderDataType        dataType,
                     const std::string&    name,
                     BufferComponent::Type type,
-                    uint32_t              perInstance,
+                    u32_t                 perInstance,
                     bool                  normalized = false)
         : dataType(dataType), name(name), type(type), perInstance(perInstance), normalized(normalized), offset(0)
     {
@@ -89,7 +89,7 @@ class BufferFormat
         _genOffsetsAndStride();
     }
 
-    uint32_t getStride() const
+    u32_t getStride() const
     {
         return m_stride;
     }
@@ -117,7 +117,7 @@ class BufferFormat
 
    private:
     std::vector<BufferComponent> m_components;
-    uint32_t                     m_stride = 0;
+    u32_t                        m_stride = 0;
 
     inline void _genOffsetsAndStride()
     {
@@ -146,7 +146,7 @@ class VertexBuffer : public refCounted
     };
 
     static ref<VertexBuffer> s_create(const void*        vertices,
-                                      uint32_t           size,
+                                      u32_t              size,
                                       VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
 
     virtual ~VertexBuffer() = default;
@@ -155,26 +155,26 @@ class VertexBuffer : public refCounted
 
     virtual void unbind() const = 0;
 
-    virtual void setData(const void* data, uint32_t size) = 0;
+    virtual void setData(const void* data, u32_t size) = 0;
 
     virtual const BufferFormat& getFormat() const = 0;
 
     virtual void setFormat(const BufferFormat& format) = 0;
 
-    inline virtual uint32_t getSize() const
+    inline virtual u32_t getSize() const
     {
         return m_size;
     }
 
-    inline virtual uint32_t getId() const
+    inline virtual u32_t getId() const
     {
         return m_id;
     }
 
    protected:
-    uint32_t           m_id;
+    u32_t              m_id;
     void*              mp_memory;
-    uint32_t           m_size;  // in bytes
+    u32_t              m_size;  // in bytes
     VertexBuffer::Type m_type;
     BufferFormat       m_format;
 };
@@ -185,9 +185,9 @@ class VertexBuffer : public refCounted
 class IndexBuffer : public refCounted
 {
    public:
-    static ref<IndexBuffer> s_create(uint32_t* indices, uint32_t count);
-    static ref<IndexBuffer> s_create(uint16_t* indices, uint32_t count);
-    static ref<IndexBuffer> s_create(uint8_t* indices, uint32_t count);
+    static ref<IndexBuffer> s_create(u32_t* indices, u32_t count);
+    static ref<IndexBuffer> s_create(u16_t* indices, u32_t count);
+    static ref<IndexBuffer> s_create(u8_t* indices, u32_t count);
 
     virtual ~IndexBuffer() = default;
 
@@ -195,19 +195,19 @@ class IndexBuffer : public refCounted
 
     virtual void unbind() const = 0;
 
-    virtual uint32_t getCount() const = 0;
+    virtual u32_t getCount() const = 0;
 
-    virtual uint32_t getType() const = 0;
+    virtual u32_t getType() const = 0;
 
-    inline virtual uint32_t getId() const
+    inline virtual u32_t getId() const
     {
         return m_id;
     }
 
    protected:
-    uint32_t m_id;
-    uint32_t m_count;
-    uint32_t m_type;
+    u32_t m_id;
+    u32_t m_count;
+    u32_t m_type;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -232,15 +232,15 @@ class VertexArray : public refCounted
 
     virtual const ref<IndexBuffer>& getIndexBuffer() const = 0;
 
-    virtual uint32_t getExpectedVertexCount() = 0;
+    virtual u32_t getExpectedVertexCount() = 0;
 
    protected:
-    uint32_t                       m_id;
-    uint32_t                       m_vertexBufferIndex = 0;
+    u32_t                          m_id;
+    u32_t                          m_vertexBufferIndex = 0;
     std::vector<ref<VertexBuffer>> m_vertexBuffers;
     ref<IndexBuffer>               m_indexBuffer            = nullptr;
-    uint32_t                       m_expectedVboVertexCount = 0;
-    uint32_t                       m_vertexSize             = 0;
+    u32_t                          m_expectedVboVertexCount = 0;
+    u32_t                          m_vertexSize             = 0;
 };
 
 }  // namespace nimbus

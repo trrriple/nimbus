@@ -144,7 +144,7 @@ class ViewportPanel
                 {
                     m_requestedPixelVal = false;
 
-                    entt::entity id = static_cast<entt::entity>(std::get<uint32_t>(pv.value));
+                    entt::entity id = static_cast<entt::entity>(std::get<u32_t>(pv.value));
 
                     if (mp_sceneContext->m_registry.valid((id)))
                     {
@@ -157,8 +157,8 @@ class ViewportPanel
 
             if (ImGui::IsMouseClicked(0) && !ImGuizmo::IsOver())
             {
-                uint32_t framebufPosInPixX = mousePosInViewportPix.x;
-                uint32_t framebufPosInPixY = m_viewportSize.y - mousePosInViewportPix.y;
+                u32_t framebufPosInPixX = mousePosInViewportPix.x;
+                u32_t framebufPosInPixY = m_viewportSize.y - mousePosInViewportPix.y;
 
                 mp_pixelRequest->updateRequest(1, framebufPosInPixX, framebufPosInPixY);
 
@@ -183,8 +183,11 @@ class ViewportPanel
 
                 char posString[32];
 
-                snprintf(
-                    posString, sizeof(posString), "X:%+.04f, Y:%+.04f", mousePosInViewport.x, mousePosInViewport.y);
+                snprintf(posString,
+                         sizeof(posString),
+                         "X:%+.04f, Y:%+.04f",
+                         mousePosInViewport.x,
+                         mousePosInViewport.y);
 
                 ImVec2 posLoc = {m_viewportRegion[0].x + 5.0f, m_viewportRegion[1].y - 17.0f};
 
@@ -222,7 +225,7 @@ class ViewportPanel
                     }
                     default:
                     {
-                        NM_ASSERT(false, "Unkown tool state %i", toolState);
+                        NB_ASSERT(false, "Unkown tool state %i", toolState);
                     }
                 }
 

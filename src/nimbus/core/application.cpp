@@ -3,6 +3,8 @@
 
 #include "nimbus/core/application.hpp"
 
+#include "nimbus/script/scriptEngine.hpp"
+
 #include "nimbus/guiSubsystem/guiSubsystem.hpp"
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/renderer/renderer2D.hpp"
@@ -16,9 +18,9 @@
 namespace nimbus
 {
 
-Application::Application(const std::string& name, uint32_t windowWidth, uint32_t windowHeight) : m_name(name)
+Application::Application(const std::string& name, u32_t windowWidth, u32_t windowHeight) : m_name(name)
 {
-    NM_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
+    NB_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
 
     sp_instance = this;
 
@@ -44,10 +46,15 @@ Application::Application(const std::string& name, uint32_t windowWidth, uint32_t
     Renderer::s_init();
 
     Renderer2D::s_init();
+
+    // TODO configurable parameter
+    ScriptEngine::s_init("C:\\Program Files\\Mono");
 }
 
 Application::~Application()
 {
+    ScriptEngine::s_destroy();
+
     // pump all the commands out before we clear layers as we odn't want
     // pending draw commands to use deleted resources
     Renderer::s_pumpCmds();
@@ -68,7 +75,7 @@ Application::~Application()
 
 void Application::shouldQuit(Event& event)
 {
-    NM_UNUSED(event);
+    NB_UNUSED(event);
     m_active = false;
 }
 
@@ -86,20 +93,20 @@ void Application::execute()
 
     auto mainThreadPendRenderThreadSw = m_swBank.newSw("MainThread Pend on RenderThread");
 
-    double currentTime = core::getTime_s();
-    bool   didDraw     = false;
+    f64_t currentTime = core::getTime_s();
+    bool  didDraw     = false;
     while (m_active)
     {
-        NM_PROFILE();
+        NB_PROFILE();
 
         mainLoopSw->split();
         mainThreadProcessSw->split();
         ///////////////////////////
         // Loop time handling
         ///////////////////////////
-        double newTime  = core::getTime_s();
-        float  loopTime = newTime - currentTime;
-        currentTime     = newTime;
+        f64_t newTime  = core::getTime_s();
+        f32_t loopTime = newTime - currentTime;
+        currentTime    = newTime;
 
         // prevent spiral of death if we're running really slow
         if (loopTime >= 0.1f)
@@ -113,15 +120,15 @@ void Application::execute()
         ///////////////////////////
         // Updates are fixed step
         ///////////////////////////
-        bool     doUpdate        = m_updateLag >= m_updatePeriodLimit;
-        uint32_t updatesRequired = 0;
+        bool  doUpdate        = m_updateLag >= m_updatePeriodLimit;
+        u32_t updatesRequired = 0;
         if (doUpdate)
         {
             // we can run multiple updates if we're behind
             updatesRequired = m_updateLag / m_updatePeriodLimit;
 
             // calculate how much time we're about to process
-            float gameTimeProgression = (float)updatesRequired * m_updatePeriodLimit;
+            f32_t gameTimeProgression = (f32_t)updatesRequired * m_updatePeriodLimit;
 
             // remove the lag we're about to update through
             m_updateLag -= gameTimeProgression;
@@ -138,7 +145,7 @@ void Application::execute()
         ///////////////////////////
         // Render thread
         ///////////////////////////
-        float prePendCpuProcessTime_s = mainThreadProcessSw->split();
+        f32_t prePendCpuProcessTime_s = mainThreadProcessSw->split();
         mainThreadPendRenderThreadSw->split();
         Renderer::s_waitForRenderThread();
         mainThreadPendRenderThreadSw->splitAndSave();
@@ -179,7 +186,7 @@ void Application::execute()
         ////////////////////////////////////////////////////////////////////////
         // Call layer update functions
         ////////////////////////////////////////////////////////////////////////
-        for (uint32_t i = 0; i < updatesRequired; i++)
+        for (u32_t i = 0; i < updatesRequired; i++)
         {
             for (auto it = m_layerDeck.begin(); it != m_layerDeck.end(); it++)
             {
@@ -231,7 +238,7 @@ void Application::execute()
             didDraw = false;
         }
 
-        float postPendCpuProcessTime_s = mainThreadProcessSw->split();
+        f32_t postPendCpuProcessTime_s = mainThreadProcessSw->split();
         mainThreadProcessSw->saveSplitOverride(prePendCpuProcessTime_s + postPendCpuProcessTime_s);
 
         mainLoopSw->splitAndSave();
@@ -277,7 +284,7 @@ void Application::onEvent(Event& event)
     }
 }
 
-void Application::insertLayer(const ref<Layer> p_layer, int32_t location)
+void Application::insertLayer(const ref<Layer> p_layer, i32_t location)
 {
     m_layerDeck.insertLayer(p_layer, location);
 }
@@ -302,7 +309,7 @@ void Application::guiRender()
     }
 }
 
-const uint8_t* Application::getKeyboardState() const
+const u8_t* Application::getKeyboardState() const
 {
     return SDL_GetKeyboardState(nullptr);
 }
@@ -328,7 +335,7 @@ void Application::setMenuMode(bool mode)
     m_menuMode = mode;
 }
 
-void Application::setUpdatePeriodLimit(float limit)
+void Application::setUpdatePeriodLimit(f32_t limit)
 {
     if (limit < 0.0f)
     {
@@ -339,7 +346,7 @@ void Application::setUpdatePeriodLimit(float limit)
     m_updatePeriodLimit = limit;
 }
 
-void Application::setDrawPeriodLimit(float limit)
+void Application::setDrawPeriodLimit(f32_t limit)
 {
     if (limit < 0.0f)
     {

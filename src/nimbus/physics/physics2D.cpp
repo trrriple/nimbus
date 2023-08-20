@@ -34,19 +34,19 @@ class ContactListener : public b2ContactListener
 
     void EndContact(b2Contact* contact) override
     {
-        NM_UNUSED(contact);
+        NB_UNUSED(contact);
     }
 
     void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override
     {
-        NM_UNUSED(contact);
-        NM_UNUSED(oldManifold);
+        NB_UNUSED(contact);
+        NB_UNUSED(oldManifold);
     }
 
     void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override
     {
-        NM_UNUSED(contact);
-        NM_UNUSED(impulse);
+        NB_UNUSED(contact);
+        NB_UNUSED(impulse);
     }
 
     void registerSave()
@@ -75,7 +75,7 @@ struct Physics2D::RigidBody::RigidBodyData
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Physics2D::Physics2D() : mp_worldData(new Physics2D::WorldData())
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     mp_worldData->p_world = std::make_shared<b2World>(b2Vec2(0.0f, -9.81f));
 
@@ -85,21 +85,21 @@ Physics2D::Physics2D() : mp_worldData(new Physics2D::WorldData())
 }
 Physics2D::~Physics2D()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     delete mp_worldData;
 }
 
-void Physics2D::update(float deltaTime)
+void Physics2D::update(f32_t deltaTime)
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     mp_worldData->p_world->Step(deltaTime, k_solverVelocityIterations, k_solverPositionIterations);
 }
 
 ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     ref<Physics2D::RigidBody> p_rbody = ref<Physics2D::RigidBody>::gen();
 
@@ -129,9 +129,9 @@ ref<Physics2D::RigidBody> Physics2D::addRigidBody(const RigidBodySpec& spec)
 
 void Physics2D::removeRigidBody(ref<Physics2D::RigidBody>& p_body)
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
-    NM_CORE_ASSERT(p_body->inWorld, "Not in world");
+    NB_CORE_ASSERT(p_body->inWorld, "Not in world");
 
     mp_worldData->p_world->DestroyBody(p_body->p_data->p_body);
 
@@ -143,19 +143,19 @@ void Physics2D::removeRigidBody(ref<Physics2D::RigidBody>& p_body)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Physics2D::RigidBody::RigidBody() : p_data(new RigidBodyData())
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 }
 
 Physics2D::RigidBody::~RigidBody()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     delete p_data;
 }
 
 void Physics2D::RigidBody::addFixture(const FixtureSpec& fixtureSpec, const util::Transform& transform)
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     b2FixtureDef fixtureDef;
 
@@ -164,7 +164,7 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec& fixtureSpec, const util
     ///////////////////////////
     // Set Shape specifics
     ///////////////////////////
-    NM_CORE_ASSERT(fixtureSpec.shape, "Fixture Shape cannot be null!");
+    NB_CORE_ASSERT(fixtureSpec.shape, "Fixture Shape cannot be null!");
 
     if (fixtureSpec.shape->type == ShapeType::RECTANGLE)
     {
@@ -202,9 +202,9 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec& fixtureSpec, const util
 
 util::Transform& Physics2D::RigidBody::getTransform()
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    NM_CORE_ASSERT(inWorld, "Not in world");
+    NB_CORE_ASSERT(inWorld, "Not in world");
 
     const auto& position = p_data->p_body->GetPosition();
     transform.setTranslationX(position.x);
@@ -215,9 +215,9 @@ util::Transform& Physics2D::RigidBody::getTransform()
 
 glm::vec2 Physics2D::RigidBody::getVelocity()
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    NM_CORE_ASSERT(inWorld, "Not in world");
+    NB_CORE_ASSERT(inWorld, "Not in world");
 
     auto velocity = p_data->p_body->GetLinearVelocity();
     return {velocity.x, velocity.y};
@@ -225,9 +225,9 @@ glm::vec2 Physics2D::RigidBody::getVelocity()
 
 void Physics2D::RigidBody::forceTransform()
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    NM_CORE_ASSERT(inWorld, "Not in world");
+    NB_CORE_ASSERT(inWorld, "Not in world");
 
     p_data->p_body->SetTransform(b2Vec2(transform.getTranslation().x, transform.getTranslation().y),
                                  transform.getRotation().z);
@@ -235,27 +235,27 @@ void Physics2D::RigidBody::forceTransform()
 
 void Physics2D::RigidBody::forceVelocity(const glm::vec2& velocity)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    NM_CORE_ASSERT(inWorld, "Not in world");
+    NB_CORE_ASSERT(inWorld, "Not in world");
 
     p_data->p_body->SetLinearVelocity({velocity.x, velocity.y});
 }
 
 void Physics2D::RigidBody::impulse(const glm::vec2& impulse)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    NM_CORE_ASSERT(inWorld, "Not in world");
+    NB_CORE_ASSERT(inWorld, "Not in world");
 
     p_data->p_body->ApplyLinearImpulseToCenter({impulse.x, impulse.y}, true);
 }
 
 void Physics2D::RigidBody::halt()
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    NM_CORE_ASSERT(inWorld, "Not in world");
+    NB_CORE_ASSERT(inWorld, "Not in world");
 
     if (p_data->p_body->GetType() != b2_staticBody)
     {
@@ -266,9 +266,9 @@ void Physics2D::RigidBody::halt()
 
 void Physics2D::RigidBody::removeFromWorld()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
-    NM_CORE_ASSERT(inWorld, "Not in world");
+    NB_CORE_ASSERT(inWorld, "Not in world");
 
     b2World* p_world = p_data->p_body->GetWorld();
 
@@ -280,7 +280,7 @@ void Physics2D::RigidBody::removeFromWorld()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Private
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32_t Physics2D::_bodyType(BodyType bodyType) const
+u32_t Physics2D::_bodyType(BodyType bodyType) const
 {
     switch (bodyType)
     {
@@ -298,7 +298,7 @@ uint32_t Physics2D::_bodyType(BodyType bodyType) const
         }
         default:
         {
-            NM_CORE_ASSERT(false, "Unkown body type %i", bodyType);
+            NB_CORE_ASSERT(false, "Unkown body type %i", bodyType);
             return b2_staticBody;
         }
     }

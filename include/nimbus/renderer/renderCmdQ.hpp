@@ -8,7 +8,7 @@ namespace nimbus
 
 class RenderCmdQ
 {
-    const uint32_t k_cmdBufSize = (2 << 16);
+    const u32_t k_cmdBufSize = (2 << 16);
 
    public:
     typedef void (*renderCmdFn)(void*);
@@ -16,9 +16,9 @@ class RenderCmdQ
     RenderCmdQ();
     ~RenderCmdQ();
 
-    void* slot(renderCmdFn fn, uint32_t size);
+    void* slot(renderCmdFn fn, u32_t size);
 
-    inline uint32_t getCmdCount()
+    inline u32_t getCmdCount()
     {
         return m_cmdCount;
     }
@@ -26,10 +26,10 @@ class RenderCmdQ
     void pump();
 
    private:
-    uint8_t* mp_cmdBuf;
-    uint8_t* mp_cmdBufPtr;
-    uint32_t m_cmdCount     = 0;
-    uint32_t m_cmdBufUsedSz = 0;
+    u8_t* mp_cmdBuf;
+    u8_t* mp_cmdBufPtr;
+    u32_t m_cmdCount     = 0;
+    u32_t m_cmdBufUsedSz = 0;
 };
 
 }  // namespace nimbus

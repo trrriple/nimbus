@@ -26,14 +26,14 @@ class GlVertexBuffer : public VertexBuffer
         STREAM_DRAW,
     };
 
-    GlVertexBuffer(const void* vertices, uint32_t size, VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
+    GlVertexBuffer(const void* vertices, u32_t size, VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
 
     virtual ~GlVertexBuffer();
 
     virtual void bind() const override;
     virtual void unbind() const override;
 
-    virtual void setData(const void* data, uint32_t size) override;
+    virtual void setData(const void* data, u32_t size) override;
 
     inline virtual const BufferFormat& getFormat() const override
     {
@@ -55,9 +55,9 @@ class GlVertexBuffer : public VertexBuffer
 class GlIndexBuffer : public IndexBuffer
 {
    public:
-    GlIndexBuffer(uint32_t* indices, uint32_t count);
-    GlIndexBuffer(uint16_t* indices, uint32_t count);
-    GlIndexBuffer(uint8_t* indices, uint32_t count);
+    GlIndexBuffer(u32_t* indices, u32_t count);
+    GlIndexBuffer(u16_t* indices, u32_t count);
+    GlIndexBuffer(u8_t* indices, u32_t count);
 
     virtual ~GlIndexBuffer();
 
@@ -65,12 +65,12 @@ class GlIndexBuffer : public IndexBuffer
 
     virtual void unbind() const override;
 
-    inline uint32_t getCount() const override
+    inline u32_t getCount() const override
     {
         return m_count;
     }
 
-    inline uint32_t getType() const override
+    inline u32_t getType() const override
     {
         return m_type;
     }
@@ -103,7 +103,7 @@ class GlVertexArray : public VertexArray
         return m_indexBuffer;
     }
 
-    inline virtual uint32_t getExpectedVertexCount() override
+    inline virtual u32_t getExpectedVertexCount() override
     {
         return m_expectedVboVertexCount;
     }

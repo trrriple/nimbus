@@ -21,9 +21,9 @@ void Camera::setType(Type type)
     m_staleWorldBounds = true;
 }
 
-void Camera::processPosiUpdate(Movement direction, float deltaTime)
+void Camera::processPosiUpdate(Movement direction, f32_t deltaTime)
 {
-    float velocity = m_speed * deltaTime;
+    f32_t velocity = m_speed * deltaTime;
     switch (direction)
     {
         case (Movement::FORWARD):
@@ -90,10 +90,10 @@ void Camera::processViewUpdate(const glm::vec2& offset, bool constrainPitch)
     m_staleView = true;
 }
 
-void Camera::processZoom(float offset)
+void Camera::processZoom(f32_t offset)
 {
-    NM_PROFILE_TRACE();
-    const float zoomScale = m_orthoWidth / 50;
+    NB_PROFILE_TRACE();
+    const f32_t zoomScale = m_orthoWidth / 50;
 
     if (m_type == Type::PERSPECTIVE)
     {
@@ -117,7 +117,7 @@ void Camera::processZoom(float offset)
 
 glm::mat4& Camera::getView()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     if (m_staleView)
     {
@@ -141,7 +141,7 @@ glm::mat4& Camera::getView()
 
 glm::mat4& Camera::getProjection()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     if (m_staleProjection)
     {
@@ -167,7 +167,7 @@ glm::mat4& Camera::getProjection()
 
 glm::mat4& Camera::getViewProjection()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     if (m_staleView || m_staleProjection)
     {
@@ -213,7 +213,7 @@ Camera::Bounds& Camera::getVisibleWorldBounds()
 
 void Camera::_updateCameraVectors()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     // calculate the new Front vector
     glm::vec3 front;
@@ -229,13 +229,13 @@ void Camera::_updateCameraVectors()
     m_up = glm::normalize(glm::cross(m_right, m_front));
 }
 
-void Camera::setAspectRatio(float aspectRatio)
+void Camera::setAspectRatio(f32_t aspectRatio)
 {
     m_aspectRatio     = aspectRatio;
     m_staleProjection = true;
 }
 
-void Camera::setNearClip(float near)
+void Camera::setNearClip(f32_t near)
 {
     if (m_type == Type::PERSPECTIVE)
     {
@@ -249,7 +249,7 @@ void Camera::setNearClip(float near)
     m_staleProjection = true;
 }
 
-void Camera::setFarClip(float far)
+void Camera::setFarClip(f32_t far)
 {
     if (m_type == Type::PERSPECTIVE)
     {
@@ -269,24 +269,24 @@ void Camera::setPosition(const glm::vec3& position)
     m_staleView = true;
 }
 
-void Camera::setZoom(float zoom)
+void Camera::setZoom(f32_t zoom)
 {
     m_zoom            = zoom;
     m_staleProjection = true;
 }
 
-void Camera::setFov(float fov)
+void Camera::setFov(f32_t fov)
 {
     m_fov             = fov;
     m_staleProjection = true;
 }
 
-void Camera::setSpeed(float speed)
+void Camera::setSpeed(f32_t speed)
 {
     m_speed = speed;
 }
 
-void Camera::setYaw(float yaw)
+void Camera::setYaw(f32_t yaw)
 {
     m_yaw = yaw;
     _updateCameraVectors();
@@ -294,7 +294,7 @@ void Camera::setYaw(float yaw)
     m_staleView = true;
 }
 
-void Camera::setPitch(float pitch)
+void Camera::setPitch(f32_t pitch)
 {
     m_pitch = pitch;
     _updateCameraVectors();
@@ -302,19 +302,19 @@ void Camera::setPitch(float pitch)
     m_staleView = true;
 }
 
-void Camera::setSensitivity(float sensitivity)
+void Camera::setSensitivity(f32_t sensitivity)
 {
     m_sensitivity = sensitivity;
 }
 
-void Camera::setOrthoWidth(float width)
+void Camera::setOrthoWidth(f32_t width)
 {
     m_orthoWidth = width;
 
     m_staleProjection = true;
 }
 
-void Camera::setOrthoHeight(float height)
+void Camera::setOrthoHeight(f32_t height)
 {
     m_orthoHeight = height;
 

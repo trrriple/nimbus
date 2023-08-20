@@ -4,7 +4,7 @@
 
 namespace nimbus
 {
-enum class MouseButton : int32_t
+enum class MouseButton : i32_t
 {
     LEFT = 1,
     MIDDLE,

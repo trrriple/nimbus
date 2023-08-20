@@ -5,7 +5,7 @@
 
 // because we ripped this from SDL, make sure it actually matches because
 // SDL is going to be provided the data
-NM_CORE_COMPILETIME_ASSERT((sizeof(SDL_Event) == sizeof(nimbus::Event::EventDetails)),
+NB_CORE_COMPILETIME_ASSERT((sizeof(SDL_Event) == sizeof(nimbus::Event::EventDetails)),
                            "Critical Error: EventDetails size mismatch!");
 
 namespace nimbus
@@ -131,7 +131,7 @@ const std::string Event::toString() const
         case Type::LASTEVENT:
             return "LASTEVENT";
         default:
-            return "Unknown event: " + std::to_string((int32_t)m_details.type);
+            return "Unknown event: " + std::to_string((i32_t)m_details.type);
     }
 }
 

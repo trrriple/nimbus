@@ -23,7 +23,7 @@ ResourceManager::~ResourceManager()
 
 ref<Texture> ResourceManager::loadTexture(const Texture::Type type, const std::string& path, const bool flipOnLoad)
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     std::filesystem::path filePath(path);
 
@@ -70,7 +70,7 @@ ref<Shader> ResourceManager::loadShader(const std::string& name,
                                         const std::string& vertexSource,
                                         const std::string& fragmentSource)
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     // check to see if it was already loaded
     auto p_shaderEntry = m_loadedShaders.find(name);
@@ -92,7 +92,7 @@ ref<Shader> ResourceManager::loadShader(const std::string& name,
 
 ref<Shader> ResourceManager::loadShader(const std::string& vertexPath, const std::string& fragmentPath)
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     // check to see if it was already loaded
     std::filesystem::path vFilePath(vertexPath);
@@ -145,7 +145,7 @@ ref<Shader> ResourceManager::loadShader(const std::string& vertexPath, const std
 
 ref<Font> ResourceManager::loadFont(const std::string& path)
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     // check to see if it was already loaded
     auto p_fontEntry = m_loadedFonts.find(path);

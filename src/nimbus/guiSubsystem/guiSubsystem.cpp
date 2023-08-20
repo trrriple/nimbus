@@ -44,7 +44,7 @@ void GuiSubsystem::onInsert()
     ///////////////////////////
     // Change font
     ///////////////////////////
-    float   fontSize = 15.0f;
+    f32_t   fontSize = 15.0f;
     ImFont* p_roboto = io.Fonts->AddFontFromFileTTF(k_defaultFontPath.c_str(), fontSize);
 
     if (p_roboto != nullptr)
@@ -59,11 +59,11 @@ void GuiSubsystem::onInsert()
     ///////////////////////////
     // Add icons to font
     ///////////////////////////
-    float baseFontSize = fontSize;
+    f32_t baseFontSize = fontSize;
 
     // FontAwesome fonts need to have their sizes reduced
     // by 2.0f/3.0f in order to align correctly
-    float iconFontSize = baseFontSize;
+    f32_t iconFontSize = baseFontSize;
 
     // merge in icons from Font Awesome
     static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
@@ -107,7 +107,7 @@ void GuiSubsystem::onInsert()
 
     bool imguiInit = ImGui_ImplOpenGL3_Init();
 
-    NM_CORE_ASSERT(imguiInit, "Failed to initialize Imgui!");
+    NB_CORE_ASSERT(imguiInit, "Failed to initialize Imgui!");
 }
 
 void GuiSubsystem::onRemove()
@@ -155,7 +155,7 @@ void GuiSubsystem::onEvent(Event& event)
 
 void GuiSubsystem::begin()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -165,12 +165,12 @@ void GuiSubsystem::begin()
 
 void GuiSubsystem::end()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     static Window* p_window = &Application::s_get().getWindow();
 
     ImGuiIO& io    = ImGui::GetIO();
-    io.DisplaySize = ImVec2((float)p_window->getWidth(), (float)p_window->getHeight());
+    io.DisplaySize = ImVec2((f32_t)p_window->getWidth(), (f32_t)p_window->getHeight());
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

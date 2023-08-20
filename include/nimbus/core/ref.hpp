@@ -15,13 +15,13 @@ class refCounted
     {
         ++m_refCount;
     }
-    inline uint32_t decRefCount() const
+    inline u32_t decRefCount() const
     {
         return --m_refCount;
     }
 
    private:
-    mutable std::atomic<uint32_t> m_refCount = 0;
+    mutable std::atomic<u32_t> m_refCount = 0;
 };
 
 template <typename T>

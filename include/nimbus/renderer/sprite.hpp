@@ -16,7 +16,7 @@ class Sprite : public refCounted
    public:
     Sprite(ref<Texture>& p_texture);
 
-    void draw(const glm::vec2& pos, const glm::vec2& size, const glm::vec4& color, const float rotation);
+    void draw(const glm::vec2& pos, const glm::vec2& size, const glm::vec4& color, const f32_t rotation);
 
    private:
     ref<Texture> mp_texture;

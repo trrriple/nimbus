@@ -20,18 +20,18 @@ class Physics2D : public refCounted
     struct RigidBodySpec
     {
         glm::vec2 position        = {0.0f, 0.0f};
-        float     angle           = 0.0f;
+        f32_t     angle           = 0.0f;
         glm::vec2 linearVelocity  = {0.0f, 0.0f};
-        float     angularVelocity = 0.0f;
-        float     linearDamping   = 0.0f;
-        float     angularDamping  = 0.0f;
+        f32_t     angularVelocity = 0.0f;
+        f32_t     linearDamping   = 0.0f;
+        f32_t     angularDamping  = 0.0f;
         bool      allowSleep      = true;
         bool      awake           = true;
         bool      fixedRotation   = false;
         bool      bullet          = false;
         BodyType  type            = BodyType::STATIC;
         bool      enabled         = true;
-        float     gravityScale    = 1.0f;
+        f32_t     gravityScale    = 1.0f;
     };
 
     enum class ShapeType
@@ -62,7 +62,7 @@ class Physics2D : public refCounted
 
     struct Circle : Shape
     {
-        float radius = 0.5f;
+        f32_t radius = 0.5f;
 
         Circle() : Shape(ShapeType::CIRCLE)
         {
@@ -72,10 +72,10 @@ class Physics2D : public refCounted
     struct FixtureSpec
     {
         Shape* shape                = nullptr;
-        float  friction             = 0.2f;
-        float  restitution          = 0.0f;
-        float  restitutionThreshold = 1.0f;
-        float  density              = 1.0f;
+        f32_t  friction             = 0.2f;
+        f32_t  restitution          = 0.0f;
+        f32_t  restitutionThreshold = 1.0f;
+        f32_t  density              = 1.0f;
         bool   isSensor             = false;
     };
 
@@ -108,19 +108,19 @@ class Physics2D : public refCounted
     Physics2D();
     ~Physics2D();
 
-    void update(float deltaTime);
+    void update(f32_t deltaTime);
 
     ref<RigidBody> addRigidBody(const RigidBodySpec& spec);
     void           removeRigidBody(ref<RigidBody>& p_body);
 
    private:
-    const int32_t k_solverVelocityIterations = 6;
-    const int32_t k_solverPositionIterations = 2;
+    const i32_t k_solverVelocityIterations = 6;
+    const i32_t k_solverPositionIterations = 2;
 
     struct WorldData;
     WorldData* mp_worldData;
 
-    uint32_t _bodyType(BodyType bodyType) const;
+    u32_t _bodyType(BodyType bodyType) const;
 };
 
 }  // namespace nimbus

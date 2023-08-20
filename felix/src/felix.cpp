@@ -35,7 +35,7 @@ class sceneCameraController : public EntityLogic
     {
     }
 
-    virtual void onUpdate(float deltaTime)
+    virtual void onUpdate(f32_t deltaTime)
     {
         // don't update this camera if we aren't using it
         if (!mp_cameraCmp->primary)
@@ -60,7 +60,7 @@ class sceneCameraController : public EntityLogic
             mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::FORWARD, deltaTime);
         }
 
-        float curWheelPos = mp_window->mouseWheelPos();
+        f32_t curWheelPos = mp_window->mouseWheelPos();
 
         if (curWheelPos != m_lastWheelPos)
         {
@@ -72,7 +72,7 @@ class sceneCameraController : public EntityLogic
    private:
     CameraCmp* mp_cameraCmp;
     Window*    mp_window;
-    float      m_lastWheelPos;
+    f32_t      m_lastWheelPos;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ class FelixLayer : public Layer
     ///////////////////////////
     glm::vec2 m_viewportSize = {800, 600};
 
-    float m_aspectRatio     = 800 / 600;
+    f32_t m_aspectRatio     = 800 / 600;
     bool  m_viewportFocused = false;
     bool  m_viewportHovered = false;
 
@@ -137,7 +137,6 @@ class FelixLayer : public Layer
     ///////////////////////////
     bool        m_fileDropHandled = true;
     std::string m_fileDropPath;
-
 
     FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
     {
@@ -185,7 +184,6 @@ class FelixLayer : public Layer
         mp_sceneHierarchyPanel->setEntitySelectedCallback(
             std::bind(&FelixLayer::_onEntitySelected, this, std::placeholders::_1));
 
-
         ///////////////////////////
         // Test Camera
         ///////////////////////////
@@ -200,10 +198,10 @@ class FelixLayer : public Layer
         // ///////////////////////////
         // // Test Sprite
         // ///////////////////////////
-        // uint32_t sz = 50;
-        // for (uint32_t i = 0; i < sz; i++)
+        // u32_t sz = 50;
+        // for (u32_t i = 0; i < sz; i++)
         // {
-        //     for (uint32_t j = 0; j < sz; j++)
+        //     for (u32_t j = 0; j < sz; j++)
         //     {
         //         auto  spriteEntity1 = mp_scene->addEntity("Test Sprite " + std::to_string((i * sz) + j));
         //         auto& transformCmp1 = spriteEntity1.addComponent<TransformCmp>();
@@ -264,7 +262,7 @@ class FelixLayer : public Layer
         fbMainTex.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
         fbMainTex.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
         fbMainTex.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
-        fbMainTex.clearColor     = std::array<float, 4>{0.1f, 0.1f, 0.1f, 1.0f};
+        fbMainTex.clearColor     = std::array<f32_t, 4>{0.1f, 0.1f, 0.1f, 1.0f};
 
         fbSpec.colorAttachments.push_back(fbMainTex);
 
@@ -280,7 +278,7 @@ class FelixLayer : public Layer
         fbEntIdTexSpec.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
         fbEntIdTexSpec.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
         fbEntIdTexSpec.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
-        fbEntIdTexSpec.clearColor     = std::array<uint32_t, 4>{Entity::k_nullEntity};
+        fbEntIdTexSpec.clearColor     = std::array<u32_t, 4>{Entity::k_nullEntity};
 
         fbSpec.colorAttachments.push_back(fbEntIdTexSpec);
 
@@ -305,7 +303,7 @@ class FelixLayer : public Layer
         sbMainTex.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
         sbMainTex.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
         sbMainTex.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
-        sbMainTex.clearColor     = std::array<float, 4>{0.1f, 0.1f, 0.1f, 1.0f};
+        sbMainTex.clearColor     = std::array<f32_t, 4>{0.1f, 0.1f, 0.1f, 1.0f};
 
         screenSpec.colorAttachments.push_back(sbMainTex);
 
@@ -321,7 +319,7 @@ class FelixLayer : public Layer
         sbEntIdTexSpec.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
         sbEntIdTexSpec.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
         sbEntIdTexSpec.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
-        sbEntIdTexSpec.clearColor     = std::array<uint32_t, 4>{Entity::k_nullEntity};
+        sbEntIdTexSpec.clearColor     = std::array<u32_t, 4>{Entity::k_nullEntity};
 
         screenSpec.colorAttachments.push_back(sbEntIdTexSpec);
 
@@ -334,7 +332,7 @@ class FelixLayer : public Layer
     {
     }
 
-    virtual void onUpdate(float deltaTime) override
+    virtual void onUpdate(f32_t deltaTime) override
     {
         ///////////////////////////
         // Start/Stop Scene
@@ -375,7 +373,7 @@ class FelixLayer : public Layer
         }
     }
 
-    virtual void onDraw(float deltaTime) override
+    virtual void onDraw(f32_t deltaTime) override
     {
         mp_frameBuffer->bind();
         mp_frameBuffer->clearAllAttachments();
@@ -401,7 +399,7 @@ class FelixLayer : public Layer
 
         mp_frameBuffer->unbind();
 
-        NM_UNUSED(deltaTime);
+        NB_UNUSED(deltaTime);
     }
 
     void _open()
@@ -472,9 +470,9 @@ class FelixLayer : public Layer
                 if (mp_appWinRef->mouseButtonPressed(MouseButton::MIDDLE)
                     && mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
                 {
-                    glm::vec2 delta = {(float)event.getDetails().motion.xrel, (float)event.getDetails().motion.yrel};
+                    glm::vec2 delta = {(f32_t)event.getDetails().motion.xrel, (f32_t)event.getDetails().motion.yrel};
 
-                    static const float orbitScale = 4.0f;
+                    static const f32_t orbitScale = 4.0f;
                     mp_editCamera->processViewUpdate(delta * orbitScale, true);
                 }
 
@@ -482,7 +480,7 @@ class FelixLayer : public Layer
             }
             else if (eventType == Event::Type::MOUSEWHEEL)
             {
-                float zoomAmount = event.getDetails().wheel.preciseY;
+                f32_t zoomAmount = event.getDetails().wheel.preciseY;
 
                 mp_editCamera->processZoom(zoomAmount);
 
@@ -564,7 +562,7 @@ class FelixLayer : public Layer
         }
     }
 
-    void _handleKeyboardInput(float deltaTime)
+    void _handleKeyboardInput(f32_t deltaTime)
     {
         ///////////////////////////
         // Camera Controls
@@ -665,7 +663,7 @@ class FelixLayer : public Layer
 
         ImGuiIO&    io          = ImGui::GetIO();
         ImGuiStyle& style       = ImGui::GetStyle();
-        float       minWinSizeX = style.WindowMinSize.x;
+        f32_t       minWinSizeX = style.WindowMinSize.x;
         style.WindowMinSize.x   = 325.0f;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
@@ -675,7 +673,7 @@ class FelixLayer : public Layer
         style.WindowMinSize.x = minWinSizeX;
     }
 
-    virtual void onGuiDraw(float deltaTime) override
+    virtual void onGuiDraw(f32_t deltaTime) override
     {
         ///////////////////////////
         // Allow external file drops

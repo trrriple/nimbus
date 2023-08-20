@@ -9,7 +9,7 @@ namespace nimbus
 class Entity
 {
    public:
-    inline static const uint32_t k_nullEntity = entt::null;
+    inline static const u32_t k_nullEntity = entt::null;
 
     Entity() = default;
     Entity(entt::entity handle, Scene* scene) : mh_entity(handle), mp_sceneParent(scene)
@@ -25,7 +25,7 @@ class Entity
     template <typename T>
     inline T& getComponent()
     {
-        NM_ASSERT(hasComponent<T>(), "Entity does not have component!");
+        NB_ASSERT(hasComponent<T>(), "Entity does not have component!");
 
         return mp_sceneParent->m_registry.get<T>(mh_entity);
     }
@@ -33,7 +33,7 @@ class Entity
     template <typename T, typename... Args>
     inline T& addComponent(Args&&... args)
     {
-        NM_ASSERT(!hasComponent<T>(), "Entity already has component!");
+        NB_ASSERT(!hasComponent<T>(), "Entity already has component!");
 
         T& component = mp_sceneParent->m_registry.emplace<T>(mh_entity, std::forward<Args>(args)...);
         // mp_sceneParent->OnComponentAdded<T>(*this, component);
@@ -43,7 +43,7 @@ class Entity
     template <typename T, typename... Args>
     inline void removeComponent()
     {
-        NM_ASSERT(hasComponent<T>(), "Entity does not have component!");
+        NB_ASSERT(hasComponent<T>(), "Entity does not have component!");
         mp_sceneParent->m_registry.remove<T>(mh_entity);
     }
 

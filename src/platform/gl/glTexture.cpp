@@ -15,21 +15,21 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 GlTexture::GlTexture(const Type type, const std::string& path, const bool flipOnLoad)
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     m_type       = type;
     m_path       = path;
     m_flipOnLoad = flipOnLoad;
 
-    NM_CORE_ASSERT(!(s_maxTextures == k_maxTexturesUninit),
+    NB_CORE_ASSERT(!(s_maxTextures == k_maxTexturesUninit),
                    "s_maxTextures not initialized. Did you call "
                    "Texture::s_setMaxTextures?");
 
     stbi_set_flip_vertically_on_load(m_flipOnLoad);
 
-    int32_t numComponents;
+    i32_t numComponents;
 
-    uint8_t* data = stbi_load(m_path.c_str(), (int*)&m_spec.width, (int*)&m_spec.height, &numComponents, 0);
+    u8_t* data = stbi_load(m_path.c_str(), (int*)&m_spec.width, (int*)&m_spec.height, &numComponents, 0);
 
     if (data)
     {
@@ -50,7 +50,7 @@ GlTexture::GlTexture(const Type type, const std::string& path, const bool flipOn
         }
         else
         {
-            NM_CORE_ASSERT(0, "Unknown image format has %i components", numComponents);
+            NB_CORE_ASSERT(0, "Unknown image format has %i components", numComponents);
         }
 
         ref<GlTexture> p_this = this;
@@ -112,7 +112,7 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
     m_type = type;
     m_spec = spec;
 
-    NM_CORE_ASSERT(m_spec.samples, "Textures samples must be >= 1!");
+    NB_CORE_ASSERT(m_spec.samples, "Textures samples must be >= 1!");
 
     if (submitForMe)
     {
@@ -127,13 +127,13 @@ GlTexture::GlTexture(const Type type, Spec& spec, bool submitForMe)
 
 GlTexture::~GlTexture()
 {
-    uint32_t id = m_id;
+    u32_t id = m_id;
     Renderer::s_submitObject([id]() { glDeleteTextures(1, &id); });
 }
 
-void GlTexture::bind(const uint32_t glTextureUnit) const
+void GlTexture::bind(const u32_t glTextureUnit) const
 {
-    NM_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
+    NB_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
                           "glTextureUnit > s_setMaxTextures. Did you call "
                           "Texture::s_setMaxTextures?");
 
@@ -155,14 +155,14 @@ void GlTexture::bind(const uint32_t glTextureUnit) const
 
 void GlTexture::unbind() const
 {
-    uint32_t samples = m_spec.samples;
+    u32_t samples = m_spec.samples;
     Renderer::s_submit([samples]() { glBindTexture(samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 0); });
 }
 
-void GlTexture::setData(void* data, uint32_t size)
+void GlTexture::setData(void* data, u32_t size)
 {
-    uint32_t elements        = 0;
-    uint32_t bytesPerElement = 0;
+    u32_t elements        = 0;
+    u32_t bytesPerElement = 0;
     switch (m_spec.format)
     {
         case (Format::RGBA):
@@ -186,7 +186,7 @@ void GlTexture::setData(void* data, uint32_t size)
             break;
         }
         default:
-            NM_CORE_ASSERT(false, "Unknown texture format %i\n", m_spec.format);
+            NB_CORE_ASSERT(false, "Unknown texture format %i\n", m_spec.format);
     }
 
     switch (m_spec.dataType)
@@ -212,12 +212,12 @@ void GlTexture::setData(void* data, uint32_t size)
             break;
         }
         default:
-            NM_CORE_ASSERT(false, "Unknown texture data type %i\n", m_spec.dataType);
+            NB_CORE_ASSERT(false, "Unknown texture data type %i\n", m_spec.dataType);
     }
 
-    uint32_t bytesPerPixel = elements * bytesPerElement;
+    u32_t bytesPerPixel = elements * bytesPerElement;
 
-    NM_CORE_ASSERT((size == m_spec.width * m_spec.height * bytesPerPixel),
+    NB_CORE_ASSERT((size == m_spec.width * m_spec.height * bytesPerPixel),
                    "Data size (%i) must be equal to texture Size (W:%i * H:%i "
                    "* Bpp:%i = %i)",
                    size,
@@ -251,7 +251,7 @@ void GlTexture::setData(void* data, uint32_t size)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Static functions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32_t GlTexture::s_format(Format format)
+u32_t GlTexture::s_format(Format format)
 {
     switch (format)
     {
@@ -269,13 +269,13 @@ uint32_t GlTexture::s_format(Format format)
             return GL_RED_INTEGER;
         default:
         {
-            NM_CORE_ASSERT_STATIC(false, "Unsupported texture format %i", format);
+            NB_CORE_ASSERT_STATIC(false, "Unsupported texture format %i", format);
             return 0;
         }
     }
 }
 
-uint32_t GlTexture::s_formatInternal(FormatInternal format)
+u32_t GlTexture::s_formatInternal(FormatInternal format)
 {
     switch (format)
     {
@@ -327,13 +327,13 @@ uint32_t GlTexture::s_formatInternal(FormatInternal format)
             return GL_DEPTH24_STENCIL8;
         default:
         {
-            NM_CORE_ASSERT_STATIC(false, "Unsupported internal texture format %i", format);
+            NB_CORE_ASSERT_STATIC(false, "Unsupported internal texture format %i", format);
             return 0;
         }
     }
 }
 
-uint32_t GlTexture::s_dataType(DataType dataType)
+u32_t GlTexture::s_dataType(DataType dataType)
 {
     switch (dataType)
     {
@@ -356,13 +356,13 @@ uint32_t GlTexture::s_dataType(DataType dataType)
         // Add more conversions as needed
         default:
         {
-            NM_CORE_ASSERT_STATIC(false, "Unsupported texture data type %i", dataType);
+            NB_CORE_ASSERT_STATIC(false, "Unsupported texture data type %i", dataType);
             return 0;
         }
     }
 }
 
-uint32_t GlTexture::s_filterType(FilterType filterType)
+u32_t GlTexture::s_filterType(FilterType filterType)
 {
     switch (filterType)
     {
@@ -374,13 +374,13 @@ uint32_t GlTexture::s_filterType(FilterType filterType)
             return GL_NEAREST;
         default:
         {
-            NM_CORE_ASSERT_STATIC(false, "Unknown Texture Filter Type %i", filterType);
+            NB_CORE_ASSERT_STATIC(false, "Unknown Texture Filter Type %i", filterType);
             return 0;
         }
     }
 }
 
-uint32_t GlTexture::s_wrapType(WrapType wrapType)
+u32_t GlTexture::s_wrapType(WrapType wrapType)
 {
     switch (wrapType)
     {
@@ -390,7 +390,7 @@ uint32_t GlTexture::s_wrapType(WrapType wrapType)
             return GL_REPEAT;
         default:
         {
-            NM_CORE_ASSERT_STATIC(false, "Unknown Texture Wrap Type %i", wrapType);
+            NB_CORE_ASSERT_STATIC(false, "Unknown Texture Wrap Type %i", wrapType);
             return 0;
         }
     }
@@ -399,7 +399,7 @@ uint32_t GlTexture::s_wrapType(WrapType wrapType)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Private functions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void GlTexture::_s_gen(uint32_t& id, bool multisample)
+void GlTexture::_s_gen(u32_t& id, bool multisample)
 {
     glCreateTextures(multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &id);
 }

@@ -14,9 +14,9 @@ LayerDeck::~LayerDeck()
     }
 }
 
-void LayerDeck::insertLayer(ref<Layer> p_layer, int32_t location)
+void LayerDeck::insertLayer(ref<Layer> p_layer, i32_t location)
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     if (p_layer->m_type == Layer::Type::REGULAR)
     {
@@ -42,7 +42,7 @@ void LayerDeck::insertLayer(ref<Layer> p_layer, int32_t location)
 
 void LayerDeck::removeLayer(ref<Layer> p_layer)
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     auto it = std::find(m_deck.begin(), m_deck.end(), p_layer);
     if (it != m_deck.end())
@@ -54,7 +54,7 @@ void LayerDeck::removeLayer(ref<Layer> p_layer)
 
 void LayerDeck::clear()
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     for (auto p_layer : m_deck)
     {
@@ -66,7 +66,7 @@ void LayerDeck::clear()
 
 const std::vector<std::string> LayerDeck::getLayerNames() const
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     std::vector<std::string> layerNames;
 

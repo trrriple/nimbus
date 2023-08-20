@@ -19,16 +19,16 @@ class EntityLogic;  // forward decl
 
 struct GuidCmp
 {
-    Guid     guid;
-    uint32_t sequenceIndex;
-    GuidCmp(uint32_t icreationOrder) : sequenceIndex(icreationOrder)
+    Guid  guid;
+    u32_t sequenceIndex;
+    GuidCmp(u32_t icreationOrder) : sequenceIndex(icreationOrder)
     {
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // For use by Scene::_addEntity only
     ////////////////////////////////////////////////////////////////////////////
-    GuidCmp(uint32_t icreationOrder, const std::string& guidStr) : sequenceIndex(icreationOrder)
+    GuidCmp(u32_t icreationOrder, const std::string& guidStr) : sequenceIndex(icreationOrder)
     {
         guid = Guid(guidStr);
     }
@@ -100,13 +100,13 @@ struct SpriteCmp
 {
     glm::vec4    color{1.0f};
     ref<Texture> p_texture;
-    float        tilingFactor = 1.0f;
+    f32_t        tilingFactor = 1.0f;
 
     SpriteCmp() = default;
     SpriteCmp(const glm::vec4& icolor) : color(icolor)
     {
     }
-    SpriteCmp(const glm::vec4& icolor, ref<Texture> p_itexture, float itilingFactor = 1.0f)
+    SpriteCmp(const glm::vec4& icolor, ref<Texture> p_itexture, f32_t itilingFactor = 1.0f)
         : color(icolor), p_texture(p_itexture), tilingFactor(itilingFactor)
     {
     }
@@ -125,7 +125,7 @@ struct TextCmp
 
 struct ParticleEmitterCmp
 {
-    uint32_t                    numParticles = 100;
+    u32_t                       numParticles = 100;
     ParticleEmitter::Parameters parameters;
     ref<Texture>                p_texture = nullptr;
     ref<ParticleEmitter>        p_emitter = nullptr;
@@ -134,7 +134,7 @@ struct ParticleEmitterCmp
     {
         parameters.colors.push_back({glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)});
     }
-    ParticleEmitterCmp(uint32_t                           inumParticles,
+    ParticleEmitterCmp(u32_t                              inumParticles,
                        const ParticleEmitter::Parameters& iparameters,
                        ref<Texture>                       p_itexture = nullptr)
         : numParticles(inumParticles), parameters(iparameters), p_texture(p_itexture)

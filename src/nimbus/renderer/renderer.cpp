@@ -17,8 +17,8 @@
 namespace nimbus
 {
 
-inline static const int32_t k_numRenderCmdQ = 2;  // >= 2
-inline static const int32_t k_numObjectCmdQ = 2;  // >= 2
+inline static const i32_t k_numRenderCmdQ = 2;  // >= 2
+inline static const i32_t k_numObjectCmdQ = 2;  // >= 2
 
 struct RendererInternalData
 {
@@ -36,10 +36,10 @@ struct RendererInternalData
     ///////////////////////////
     // State
     ///////////////////////////
-    uint32_t  submitRenderCmdQIdx;
-    uint32_t  processRenderCmdQIdx;
-    uint32_t  submitObjectCmdQIdx;
-    uint32_t  processObjectCmdQIdx;
+    u32_t     submitRenderCmdQIdx;
+    u32_t     processRenderCmdQIdx;
+    u32_t     submitObjectCmdQIdx;
+    u32_t     processObjectCmdQIdx;
     glm::mat4 vpMatrix = glm::mat4(1.0f);
 
     ///////////////////////////
@@ -92,13 +92,13 @@ void Renderer::s_init()
             = Texture::s_create(Texture::Type::DIFFUSE, texSpec);
 
         // being a 1x1 texture, it's only 4 bytes of data
-        uint32_t whiteData = 0xFFFFFFFF;
+        u32_t whiteData = 0xFFFFFFFF;
         s_data.p_whiteTexture->setData(&whiteData, sizeof(whiteData));
 
         s_data.p_blackTexture
             = Texture::s_create(Texture::Type::DIFFUSE, texSpec);
         
-        uint32_t blackData = 0xFF000000;
+        u32_t blackData = 0xFF000000;
         s_data.p_blackTexture->setData(&blackData, sizeof(blackData));
 
 
@@ -117,14 +117,14 @@ void Renderer::s_destroy()
     // objects are processed first.
     // TODO think about: is this potentially a crash point on close if objects
     // are being used that technically haven't been created yet.
-    for (uint32_t i = 0; i < k_numRenderCmdQ; i++)
+    for (u32_t i = 0; i < k_numRenderCmdQ; i++)
     {
         s_swapAndStart();
         s_waitForRenderThread();
     }
 
     // render command queues should now be empty
-    for (uint32_t i = 0; i < k_numObjectCmdQ; i++)
+    for (u32_t i = 0; i < k_numObjectCmdQ; i++)
     {
         _s_processObjectQueue();
         s_swapAndStart();
@@ -171,9 +171,9 @@ void Renderer::s_waitForRenderThread()
 
 void Renderer::s_pumpCmds()
 {
-    uint32_t queuesToPump = std::max({k_numRenderCmdQ, k_numObjectCmdQ});
+    u32_t queuesToPump = std::max({k_numRenderCmdQ, k_numObjectCmdQ});
 
-    for (uint32_t i = 0; i < queuesToPump; i++)
+    for (u32_t i = 0; i < queuesToPump; i++)
     {
         _s_processObjectQueue();
         s_swapAndStart();
@@ -191,12 +191,9 @@ ref<Texture> Renderer::getBlackTexture()
     return s_data.p_blackTexture;
 }
 
-void Renderer::s_render(ref<Shader>      p_shader,
-                        ref<VertexArray> p_vertexArray,
-                        int32_t          vertexCount,
-                        bool             setViewProjection)
+void Renderer::s_render(ref<Shader> p_shader, ref<VertexArray> p_vertexArray, i32_t vertexCount, bool setViewProjection)
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     p_shader->bind();
 
@@ -234,11 +231,11 @@ void Renderer::s_render(ref<Shader>      p_shader,
 
 void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
                                  const ref<VertexArray>& p_vertexArray,
-                                 int32_t                 instanceCount,
-                                 int32_t                 vertexCount,
+                                 i32_t                   instanceCount,
+                                 i32_t                   vertexCount,
                                  bool                    setViewProjection)
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     p_shader->bind();
 
@@ -340,10 +337,10 @@ void Renderer::_s_processObjectQueue()
 void Renderer::_s_submit(const ref<Shader>&      p_shader,
                          const ref<VertexArray>& p_vertexArray,
                          const glm::mat4&        model,
-                         int32_t                 vertexCount,
+                         i32_t                   vertexCount,
                          bool                    setViewProjection)
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     p_shader->bind();
     p_shader->setMat4("u_model", model);
@@ -382,12 +379,12 @@ void Renderer::_s_submit(const ref<Shader>&      p_shader,
 
 void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
                                   const ref<VertexArray>& p_vertexArray,
-                                  int32_t                 instanceCount,
+                                  i32_t                   instanceCount,
                                   const glm::mat4&        model,
-                                  int32_t                 vertexCount,
+                                  i32_t                   vertexCount,
                                   bool                    setViewProjection)
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     p_shader->bind();
     p_shader->setMat4("u_model", model);

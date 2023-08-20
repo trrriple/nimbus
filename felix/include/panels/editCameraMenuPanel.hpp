@@ -67,7 +67,7 @@ class EditCameraMenuPanel
 
         if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
         {
-            float orthoWidth = mp_editCamera->getOrthoWidth();
+            f32_t orthoWidth = mp_editCamera->getOrthoWidth();
 
             if (ImGui::DragFloat("Ortho Size", &orthoWidth, 0.01f, 1.0f, 1000.0f, "%.2f"))
             {
@@ -84,20 +84,20 @@ class EditCameraMenuPanel
             mp_editCamera->setPosition(cameraPos);
         }
 
-        float cameraSpeed = mp_editCamera->getSpeed();
+        f32_t cameraSpeed = mp_editCamera->getSpeed();
 
         if (ImGui::DragFloat("Speed", &cameraSpeed, 0.1f, 0.0f, 50.0f))
         {
             mp_editCamera->setSpeed(cameraSpeed);
         }
 
-        float farClip = mp_editCamera->getFarClip();
+        f32_t farClip = mp_editCamera->getFarClip();
         if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
         {
             mp_editCamera->setFarClip(farClip);
         }
 
-        float nearClip = mp_editCamera->getNearClip();
+        f32_t nearClip = mp_editCamera->getNearClip();
         if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f))
         {
             mp_editCamera->setNearClip(nearClip);
@@ -105,8 +105,9 @@ class EditCameraMenuPanel
 
         ImGui::Spacing();
 
-        if (ImGui::BeginTable(
-                "Camera Attributes", 4, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_NoHostExtendX))
+        if (ImGui::BeginTable("Camera Attributes",
+                              4,
+                              ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_NoHostExtendX))
 
         {
             ImGui::TableSetupColumn("Yaw", ImGuiTableColumnFlags_WidthStretch);
@@ -130,7 +131,6 @@ class EditCameraMenuPanel
 
         if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
         {
-
             if (ImGui::CollapsingHeader("Visible World Bounds"))
             {
                 ImGui::BeginTable("Visible World Bounds", 2, ImGuiTableFlags_Borders);
@@ -142,13 +142,17 @@ class EditCameraMenuPanel
 
                 // Column 1, Row 1
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text(
-                    "%+.02f, %+.02f, %+.02f", worldBounds.topLeft.x, worldBounds.topLeft.y, worldBounds.topLeft.z);
+                ImGui::Text("%+.02f, %+.02f, %+.02f",
+                            worldBounds.topLeft.x,
+                            worldBounds.topLeft.y,
+                            worldBounds.topLeft.z);
 
                 // Column 2, Row 1
                 ImGui::TableSetColumnIndex(1);
-                ImGui::Text(
-                    "%+.02f, %+.02f, %+.02f", worldBounds.topRight.x, worldBounds.topRight.y, worldBounds.topRight.z);
+                ImGui::Text("%+.02f, %+.02f, %+.02f",
+                            worldBounds.topRight.x,
+                            worldBounds.topRight.y,
+                            worldBounds.topRight.z);
 
                 // Row 2
                 ImGui::TableNextRow();
@@ -179,8 +183,8 @@ class EditCameraMenuPanel
     Application* mp_appRef;
     Window*      mp_appWinRef;
 
-    float m_textBaseWidth;
-    float m_textBaseHeight;
+    f32_t m_textBaseWidth;
+    f32_t m_textBaseHeight;
 
     Camera* mp_editCamera;
 

@@ -18,10 +18,10 @@ class Window : public refCounted
     typedef std::function<void(Event&)> WindowEventCallback_t;
 
    public:
-    float m_tFrame_s = 0.0;
-    float m_fps      = 0.0;
+    f32_t m_tFrame_s = 0.0;
+    f32_t m_fps      = 0.0;
 
-    Window(const std::string& windowCaption, uint32_t width, uint32_t height);
+    Window(const std::string& windowCaption, u32_t width, u32_t height);
 
     ~Window();
 
@@ -43,18 +43,18 @@ class Window : public refCounted
 
     glm::vec2 mousePos() const;
 
-    float mouseWheelPos() const;
+    f32_t mouseWheelPos() const;
 
-    inline uint32_t getHeight() const
+    inline u32_t getHeight() const
     {
         return m_height;
     }
-    inline uint32_t getWidth() const
+    inline u32_t getWidth() const
     {
         return m_width;
     }
 
-    inline float getAspectRatio() const
+    inline f32_t getAspectRatio() const
     {
         return m_aspectRatio;
     }
@@ -90,13 +90,13 @@ class Window : public refCounted
 
     Event m_event;
 
-    uint32_t m_windowId;
-    uint32_t m_width;
-    uint32_t m_height;
-    float    m_aspectRatio;
-    bool     m_VSyncOn       = true;
-    float    m_mouseWheelPos = 0.0f;
-    bool     m_minimized     = false;
+    u32_t m_windowId;
+    u32_t m_width;
+    u32_t m_height;
+    f32_t m_aspectRatio;
+    bool  m_VSyncOn       = true;
+    f32_t m_mouseWheelPos = 0.0f;
+    bool  m_minimized     = false;
 
     void _handleWindowEvents();
 

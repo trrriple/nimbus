@@ -17,23 +17,23 @@ class GlTexture : public Texture
 
     ~GlTexture();
 
-    virtual void bind(const uint32_t glTextureUnit) const override;
+    virtual void bind(const u32_t glTextureUnit) const override;
 
     virtual void unbind() const override;
 
-    virtual void setData(void* data, uint32_t size) override;
+    virtual void setData(void* data, u32_t size) override;
 
-    virtual uint32_t getId() const override
+    virtual u32_t getId() const override
     {
         return m_id;
     }
 
-    virtual uint32_t getWidth() const override
+    virtual u32_t getWidth() const override
     {
         return m_spec.width;
     }
 
-    virtual uint32_t getHeight() const override
+    virtual u32_t getHeight() const override
     {
         return m_spec.height;
     }
@@ -58,20 +58,20 @@ class GlTexture : public Texture
         return (m_id == other.getId());
     }
 
-    static uint32_t s_format(Format format);
+    static u32_t s_format(Format format);
 
-    static uint32_t s_formatInternal(FormatInternal format);
+    static u32_t s_formatInternal(FormatInternal format);
 
-    static uint32_t s_dataType(DataType dataType);
+    static u32_t s_dataType(DataType dataType);
 
-    static uint32_t s_filterType(FilterType filterType);
+    static u32_t s_filterType(FilterType filterType);
 
-    static uint32_t s_wrapType(WrapType wrapType);
+    static u32_t s_wrapType(WrapType wrapType);
 
    private:
     void _storage();
 
-    static void _s_gen(uint32_t& id, bool multisample = false);
+    static void _s_gen(u32_t& id, bool multisample = false);
 };
 
 }  // namespace nimbus

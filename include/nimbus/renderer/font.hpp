@@ -17,8 +17,8 @@ class Font : public refCounted
         ref<Font> p_font  = nullptr;
         glm::vec4 fgColor = glm::vec4(1.0f);
         glm::vec4 bgColor = glm::vec4(0.0f);
-        float     kerning = 0.0f;
-        float     leading = 0.0f;
+        f32_t     kerning = 0.0f;
+        f32_t     leading = 0.0f;
     };
 
     ~Font();

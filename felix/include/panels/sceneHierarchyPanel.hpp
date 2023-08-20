@@ -29,8 +29,9 @@ class SceneHeirarchyPanel
 
         mp_sceneContext = p_scene;
 
-        mp_checkerboardTex = Application::s_get().getResourceManager().loadTexture(
-            Texture::Type::DIFFUSE, "../resources/textures/checkerboard.png");
+        mp_checkerboardTex
+            = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+                                                                    "../resources/textures/checkerboard.png");
     }
     ~SceneHeirarchyPanel()
     {
@@ -99,7 +100,7 @@ class SceneHeirarchyPanel
         ImGui::Separator();
         ImGui::BeginChild("##ScrollRegion");
 
-        static float preFilterScrollPos = 0.0f;
+        static f32_t preFilterScrollPos = 0.0f;
         static bool  scrollResetHandled = true;
         if (!filterActive && scrollResetHandled)
         {
@@ -197,7 +198,7 @@ class SceneHeirarchyPanel
         ImGui::EndChild();
 
         // reduce default indentation for component panel
-        float originalIndent            = ImGui::GetStyle().IndentSpacing;
+        f32_t originalIndent            = ImGui::GetStyle().IndentSpacing;
         ImGui::GetStyle().IndentSpacing = originalIndent * 0.25f;
 
         ImGui::Begin("Properties");
@@ -287,7 +288,7 @@ class SceneHeirarchyPanel
         if (open)
         {
             // draw children
-            for (uint32_t i = 0; i < ac.children.size(); i++)
+            for (u32_t i = 0; i < ac.children.size(); i++)
             {
                 Entity selected = _drawEntity(ac.children[i]);
 
@@ -384,8 +385,9 @@ class SceneHeirarchyPanel
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
-                        Texture::Type::DIFFUSE, filePath, false);
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+                                                                                                 filePath,
+                                                                                                 false);
 
                     if (texture)
                     {
@@ -468,13 +470,15 @@ class SceneHeirarchyPanel
             }
 
             // this const cast is safe because of the readonly flag
-            ImGui::InputText(
-                "Font", const_cast<char*>(fontName.c_str()), fontName.length(), ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputText("Font",
+                             const_cast<char*>(fontName.c_str()),
+                             fontName.length(),
+                             ImGuiInputTextFlags_ReadOnly);
 
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
-                ImGui::Text("Drag and drop text files here, or double-click to browse");
+                ImGui::Text("Drag and drop text files here, or f64_t-click to browse");
                 ImGui::EndTooltip();
             }
             // support drag and drop files onto the image button
@@ -748,7 +752,7 @@ class SceneHeirarchyPanel
                 }
             }
 
-            for (uint32_t i = 0; i < pc.parameters.colors.size(); i++)
+            for (u32_t i = 0; i < pc.parameters.colors.size(); i++)
             {
                 auto& colorSpec = pc.parameters.colors[i];
 
@@ -818,8 +822,9 @@ class SceneHeirarchyPanel
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
-                        Texture::Type::DIFFUSE, filePath, false);
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+                                                                                                 filePath,
+                                                                                                 false);
 
                     if (texture)
                     {
@@ -928,7 +933,7 @@ class SceneHeirarchyPanel
                 }
                 else
                 {
-                    NM_ASSERT(false, "Unknown Shape Type %i", rbc.fixSpec.shape->type);
+                    NB_ASSERT(false, "Unknown Shape Type %i", rbc.fixSpec.shape->type);
                 }
             }
 
@@ -1013,7 +1018,7 @@ class SceneHeirarchyPanel
 
         if (cameraCmp.fixedAspect)
         {
-            float aspect = cameraCmp.camera.getAspectRatio();
+            f32_t aspect = cameraCmp.camera.getAspectRatio();
             ImGui::SameLine();
             ImGui::SetNextItemWidth(100.0f);
             if (ImGui::DragFloat("##Aspect", &aspect, .001f))
@@ -1031,7 +1036,7 @@ class SceneHeirarchyPanel
 
         if (cameraCmp.camera.getType() == Camera::Type::ORTHOGRAPHIC)
         {
-            float orthoWidth = cameraCmp.camera.getOrthoWidth();
+            f32_t orthoWidth = cameraCmp.camera.getOrthoWidth();
 
             if (ImGui::DragFloat("Ortho Size", &orthoWidth, 0.01f, 1.0f, 1000.0f, "%.2f"))
             {
@@ -1043,7 +1048,7 @@ class SceneHeirarchyPanel
 
         if (currentType == 0)
         {
-            float zoom = cameraCmp.camera.getZoom();
+            f32_t zoom = cameraCmp.camera.getZoom();
             if (ImGui::DragFloat("Zoom", &zoom, 0.005f))
             {
                 cameraCmp.camera.setZoom(zoom);
@@ -1051,20 +1056,20 @@ class SceneHeirarchyPanel
         }
         else
         {
-            float fov = cameraCmp.camera.getFov();
+            f32_t fov = cameraCmp.camera.getFov();
             if (ImGui::DragFloat("FOV", &fov, 0.1f))
             {
                 cameraCmp.camera.setZoom(fov);
             }
         }
 
-        float farClip = cameraCmp.camera.getFarClip();
+        f32_t farClip = cameraCmp.camera.getFarClip();
         if (ImGui::DragFloat("Far Clip", &farClip, 0.1f))
         {
             cameraCmp.camera.setFarClip(farClip);
         }
 
-        float nearClip = cameraCmp.camera.getNearClip();
+        f32_t nearClip = cameraCmp.camera.getNearClip();
         if (ImGui::DragFloat("Near Clip", &nearClip, 0.1f))
         {
             cameraCmp.camera.setNearClip(nearClip);
@@ -1308,15 +1313,15 @@ class SceneHeirarchyPanel
     // custom stylized 3 input (X,Y,Z) control block
     static bool _drawVec3Control(const std::string& label,
                                  glm::vec3&         values,
-                                 float              resetValue,
-                                 float              speed,
+                                 f32_t              resetValue,
+                                 f32_t              speed,
                                  bool               lockable     = false,
                                  bool*              lockedStatus = nullptr)
     {
         // set the size of the dragfloats
-        static float itemWidth = ImGui::CalcTextSize("A").x * 6.0;
+        static f32_t itemWidth = ImGui::CalcTextSize("A").x * 6.0;
 
-        static float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+        static f32_t lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 
         static ImVec2 buttonSize = {lineHeight - 3, lineHeight};
 

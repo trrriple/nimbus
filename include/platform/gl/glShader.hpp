@@ -34,7 +34,7 @@ class GlShader : public Shader
 
     void bind() const override;
 
-    std::uint32_t getId() const override
+    u32_t getId() const override
     {
         return m_id;
     }
@@ -46,45 +46,45 @@ class GlShader : public Shader
 
     void setBool(const std::string& name, bool value) const override;
 
-    void setInt(const std::string& name, const std::vector<int32_t>& value, uint32_t count) const override;
+    void setInt(const std::string& name, const std::vector<i32_t>& value, u32_t count) const override;
 
-    void setInt(const std::string& name, int32_t value) const override;
+    void setInt(const std::string& name, i32_t value) const override;
 
-    void setFloat(const std::string& name, const std::vector<float>& value, uint32_t count) const override;
+    void setFloat(const std::string& name, const std::vector<f32_t>& value, u32_t count) const override;
 
-    void setFloat(const std::string& name, float value) const override;
+    void setFloat(const std::string& name, f32_t value) const override;
 
-    void setVec2(const std::string& name, const std::vector<glm::vec2>& value, uint32_t count = 1) const override;
+    void setVec2(const std::string& name, const std::vector<glm::vec2>& value, u32_t count = 1) const override;
 
     void setVec2(const std::string& name, const glm::vec2& value) const override;
 
-    void setVec2(const std::string& name, float x, float y) const override;
+    void setVec2(const std::string& name, f32_t x, f32_t y) const override;
 
-    void setVec3(const std::string& name, const std::vector<glm::vec3>& value, uint32_t count = 1) const override;
+    void setVec3(const std::string& name, const std::vector<glm::vec3>& value, u32_t count = 1) const override;
 
     void setVec3(const std::string& name, const glm::vec3& value) const override;
 
-    void setVec3(const std::string& name, float x, float y, float z) const override;
+    void setVec3(const std::string& name, f32_t x, f32_t y, f32_t z) const override;
 
-    void setVec4(const std::string& name, const std::vector<glm::vec4>& value, uint32_t count = 1) const override;
+    void setVec4(const std::string& name, const std::vector<glm::vec4>& value, u32_t count = 1) const override;
 
     void setVec4(const std::string& name, const glm::vec4& value) const override;
 
-    void setVec4(const std::string& name, float x, float y, float z, float w) const override;
+    void setVec4(const std::string& name, f32_t x, f32_t y, f32_t z, f32_t w) const override;
 
-    void setMat2(const std::string& name, const std::vector<glm::mat2>& value, uint32_t count = 1) const override;
+    void setMat2(const std::string& name, const std::vector<glm::mat2>& value, u32_t count = 1) const override;
 
     void setMat2(const std::string& name, const glm::mat2& mat) const override;
 
-    void setMat3(const std::string& name, const std::vector<glm::mat3>& value, uint32_t count = 1) const override;
+    void setMat3(const std::string& name, const std::vector<glm::mat3>& value, u32_t count = 1) const override;
 
     void setMat3(const std::string& name, const glm::mat3& mat) const override;
 
-    void setMat4(const std::string& name, const std::vector<glm::mat4>& value, uint32_t count = 1) const override;
+    void setMat4(const std::string& name, const std::vector<glm::mat4>& value, u32_t count = 1) const override;
 
     void setMat4(const std::string& name, const glm::mat4& mat) const override;
 
-    static uint32_t s_getShaderType(ShaderType type);
+    static u32_t s_getShaderType(ShaderType type);
 
    private:
     /// Compiles the shader.
@@ -95,7 +95,7 @@ class GlShader : public Shader
     /// Retrieves the location of a uniform in the shader.
     /// @param name The name of the uniform.
     /// @return The location of the uniform.
-    std::int32_t _getUniformLocation(const std::string& name) const;
+    i32_t _getUniformLocation(const std::string& name) const;
 };
 
 }  // namespace nimbus

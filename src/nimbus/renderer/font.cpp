@@ -58,12 +58,14 @@ void Font::_loadFont()
             // loadGlyphs instead.
             int glyphsLoaded = m_data->fontGeometry.loadCharset(font, 1.0, msdf_atlas::Charset::ASCII);
 
-            Log::coreInfo(
-                "Loaded %i glyphs out of %i from %s", glyphsLoaded, msdf_atlas::Charset::ASCII.size(), m_path.c_str());
+            Log::coreInfo("Loaded %i glyphs out of %i from %s",
+                          glyphsLoaded,
+                          msdf_atlas::Charset::ASCII.size(),
+                          m_path.c_str());
 
             // Apply MSDF edge coloring. See edge-coloring.h for other coloring
             // strategies.
-            const double maxCornerAngle = 3.0;
+            const f64_t maxCornerAngle = 3.0;
             for (msdf_atlas::GlyphGeometry& glyph : m_data->glyphs)
                 glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, maxCornerAngle, 0);
             // TightAtlasPacker class computes the layout of the atlas.
@@ -90,7 +92,7 @@ void Font::_loadFont()
             packer.getDimensions(width, height);
             // The ImmediateAtlasGenerator class facilitates the generation of
             // the atlas bitmap.
-            msdf_atlas::ImmediateAtlasGenerator<float,  // pixel type of buffer for individual glyphs depends on
+            msdf_atlas::ImmediateAtlasGenerator<f32_t,  // pixel type of buffer for individual glyphs depends on
                                                         // generator function
                                                 3,      // number of atlas color channels
                                                 &msdf_atlas::msdfGenerator,  // function to generate bitmaps for

@@ -13,9 +13,9 @@ namespace nimbus
 
 struct FontData
 {
-    void*    pixels = nullptr;
-    uint32_t width;
-    uint32_t height;
+    void* pixels = nullptr;
+    u32_t width;
+    u32_t height;
 
     // Storage for glyph geometry and their coordinates in the atlas
     std::vector<msdf_atlas::GlyphGeometry> glyphs;
@@ -26,6 +26,6 @@ struct FontData
     msdf_atlas::FontGeometry fontGeometry;
 
     // the pixel range used to generate atlas
-    float pixelRange;
+    f32_t pixelRange;
 };
 }  // namespace nimbus

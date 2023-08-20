@@ -10,13 +10,15 @@
 #include "nimbus/guiSubsystem/guiSubsystem.hpp"
 #include "nimbus/core/resourceManager.hpp"
 
+#include "nimbus/script/scriptEngine.hpp"
+
 namespace nimbus
 {
 
 class Application
 {
    public:
-    Application(const std::string& name = "Program", uint32_t windowWidth = 1280, uint32_t windowHeight = 720);
+    Application(const std::string& name = "Program", u32_t windowWidth = 1280, u32_t windowHeight = 720);
 
     virtual ~Application();
 
@@ -41,7 +43,7 @@ class Application
 
     void onEvent(Event& event);
 
-    void insertLayer(const ref<Layer> p_layer, int32_t location = k_insertLocationHead);
+    void insertLayer(const ref<Layer> p_layer, i32_t location = k_insertLocationHead);
 
     void removeLayer(const ref<Layer>& p_layer);
 
@@ -49,13 +51,13 @@ class Application
 
     void guiSubsystemCaptureEvents(bool capture);
 
-    const uint8_t* getKeyboardState() const;
+    const u8_t* getKeyboardState() const;
 
     void setMenuMode(bool mode);
 
-    void setUpdatePeriodLimit(float limit);
+    void setUpdatePeriodLimit(f32_t limit);
 
-    void setDrawPeriodLimit(float limit);
+    void setDrawPeriodLimit(f32_t limit);
 
     inline bool getMenuMode() const
     {
@@ -77,17 +79,17 @@ class Application
         return *mp_resourceManager;
     }
 
-    inline float getUpdateLag() const
+    inline f32_t getUpdateLag() const
     {
         return m_updateLag;
     }
 
-    inline float getDrawLag() const
+    inline f32_t getDrawLag() const
     {
         return m_drawLag;
     }
 
-    inline double getGameTime() const
+    inline f64_t getGameTime() const
     {
         return m_gameTime;
     }
@@ -102,8 +104,8 @@ class Application
     // Parameters
     ///////////////////////////
     std::string m_name;
-    float       m_updatePeriodLimit = 0.0167f;
-    float       m_drawPeriodLimit   = 0.0167f;
+    f32_t       m_updatePeriodLimit = 0.0167f;
+    f32_t       m_drawPeriodLimit   = 0.0167f;
 
     ///////////////////////////
     // State
@@ -111,9 +113,9 @@ class Application
     LayerDeck     m_layerDeck;
     bool          m_menuMode  = false;
     volatile bool m_active    = true;
-    double        m_gameTime  = 0.0f;
-    float         m_updateLag = 0.0f;
-    float         m_drawLag   = 0.0f;
+    f64_t         m_gameTime  = 0.0f;
+    f32_t         m_updateLag = 0.0f;
+    f32_t         m_drawLag   = 0.0f;
     StopWatchBank m_swBank;
 
     ///////////////////////////

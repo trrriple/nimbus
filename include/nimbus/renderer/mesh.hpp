@@ -49,7 +49,7 @@ class Mesh : public refCounted
 
     // with verticies, indicies, and textures
     Mesh(std::vector<Vertex>       verticies,
-         std::vector<uint32_t>     indicies,
+         std::vector<u32_t>        indicies,
          std::vector<ref<Texture>> textures,
          bool                      normalize = false);
 
@@ -57,7 +57,7 @@ class Mesh : public refCounted
     Mesh(std::vector<Vertex> verticies, std::vector<ref<Texture>> textures, bool normalize = false);
 
     // with verticies and indicies
-    Mesh(std::vector<Vertex> verticies, std::vector<uint32_t> indicies, bool normalize = false);
+    Mesh(std::vector<Vertex> verticies, std::vector<u32_t> indicies, bool normalize = false);
 
     // with verticies only
     Mesh(std::vector<Vertex> verticies, bool normalize = false);
@@ -70,7 +70,7 @@ class Mesh : public refCounted
 
    private:
     std::vector<Vertex>       m_vertices;
-    std::vector<uint32_t>     m_indices;
+    std::vector<u32_t>        m_indices;
     std::vector<ref<Texture>> m_textures;
     bool                      m_normalize;
     ref<Shader>               mp_shader = nullptr;

@@ -28,7 +28,7 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
     ///////////////////////////
     // NameCmp
     ///////////////////////////
-    NM_CORE_ASSERT_STATIC(entity.hasComponent<NameCmp>(), "Entity needs NameCmp to serialize!");
+    NB_CORE_ASSERT_STATIC(entity.hasComponent<NameCmp>(), "Entity needs NameCmp to serialize!");
 
     entityTbl.insert("name", entity.getComponent<NameCmp>().name);
 
@@ -149,10 +149,10 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
 
         toml::table paramTbl;
 
-        paramTbl.insert(
-            "centerPosition",
-            toml::array{
-                pe.parameters.centerPosition.x, pe.parameters.centerPosition.y, pe.parameters.centerPosition.z});
+        paramTbl.insert("centerPosition",
+                        toml::array{pe.parameters.centerPosition.x,
+                                    pe.parameters.centerPosition.y,
+                                    pe.parameters.centerPosition.z});
 
         paramTbl.insert("spawnVolumeType", static_cast<int>(pe.parameters.spawnVolumeType));
         paramTbl.insert("lifetimeMin_s", pe.parameters.lifetimeMin_s);
@@ -160,15 +160,15 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
         paramTbl.insert("initSpeedMin", pe.parameters.initSpeedMin);
         paramTbl.insert("initSpeedMax", pe.parameters.initSpeedMax);
 
-        paramTbl.insert(
-            "accelerationMin",
-            toml::array{
-                pe.parameters.accelerationMin.x, pe.parameters.accelerationMin.y, pe.parameters.accelerationMin.z});
+        paramTbl.insert("accelerationMin",
+                        toml::array{pe.parameters.accelerationMin.x,
+                                    pe.parameters.accelerationMin.y,
+                                    pe.parameters.accelerationMin.z});
 
-        paramTbl.insert(
-            "accelerationMax",
-            toml::array{
-                pe.parameters.accelerationMax.x, pe.parameters.accelerationMax.y, pe.parameters.accelerationMax.z});
+        paramTbl.insert("accelerationMax",
+                        toml::array{pe.parameters.accelerationMax.x,
+                                    pe.parameters.accelerationMax.y,
+                                    pe.parameters.accelerationMax.z});
 
         paramTbl.insert("initSizeMin", toml::array{pe.parameters.initSizeMin.x, pe.parameters.initSizeMin.y});
 
@@ -315,8 +315,8 @@ void SceneSerializer::serialize(const std::string& filepath)
 }
 void SceneSerializer::serializeBin(const std::string& filepath)
 {
-    NM_UNUSED(filepath);
-    NM_CORE_ASSERT(false, "NOT IMPLEMENTED");
+    NB_UNUSED(filepath);
+    NB_CORE_ASSERT(false, "NOT IMPLEMENTED");
 }
 
 static void _s_deserializeComponent(Entity entity, const std::string& cmpType, toml::table& cmpTbl)
@@ -333,11 +333,11 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
         auto& scale       = *cmpTbl["scale"].as_array();
 
         tc.local.setTranslation(
-            {translation[0].ref<double>(), translation[1].ref<double>(), translation[2].ref<double>()});
+            {translation[0].ref<f64_t>(), translation[1].ref<f64_t>(), translation[2].ref<f64_t>()});
 
-        tc.local.setRotation({rotation[0].ref<double>(), rotation[1].ref<double>(), rotation[2].ref<double>()});
+        tc.local.setRotation({rotation[0].ref<f64_t>(), rotation[1].ref<f64_t>(), rotation[2].ref<f64_t>()});
 
-        tc.local.setScale({scale[0].ref<double>(), scale[1].ref<double>(), scale[2].ref<double>()});
+        tc.local.setScale({scale[0].ref<f64_t>(), scale[1].ref<f64_t>(), scale[2].ref<f64_t>()});
 
         tc.local.setScaleLocked(cmpTbl["scaleLocked"].ref<bool>());
     }
@@ -352,7 +352,7 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
         auto& color = *cmpTbl["color"].as_array();
 
         sc.color
-            = glm::vec4(color[0].ref<double>(), color[1].ref<double>(), color[2].ref<double>(), color[3].ref<double>());
+            = glm::vec4(color[0].ref<f64_t>(), color[1].ref<f64_t>(), color[2].ref<f64_t>(), color[3].ref<f64_t>());
 
         auto texture = cmpTbl["texture"].as_table();
 
@@ -361,7 +361,7 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
             sc.p_texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
                                                                                  (*texture)["path"].ref<std::string>());
 
-            sc.tilingFactor = (*texture)["tilingFactor"].ref<double>();
+            sc.tilingFactor = (*texture)["tilingFactor"].ref<f64_t>();
         }
     }
 
@@ -370,10 +370,8 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
     ///////////////////////////
     if (cmpType == "TextCmp")
     {
-        auto& tc = entity.addComponent<TextCmp>();
-
-        tc.text = cmpTbl["text"].ref<std::string>();
-
+        auto& tc       = entity.addComponent<TextCmp>();
+        tc.text        = cmpTbl["text"].ref<std::string>();
         auto formatTbl = cmpTbl["format"].as_table();
 
         if (formatTbl)
@@ -386,20 +384,20 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
 
             auto fgColor = (*formatTbl)["fgColor"].as_array();
 
-            tc.format.fgColor = glm::vec4((*fgColor)[0].ref<double>(),
-                                          (*fgColor)[1].ref<double>(),
-                                          (*fgColor)[2].ref<double>(),
-                                          (*fgColor)[3].ref<double>());
+            tc.format.fgColor = glm::vec4((*fgColor)[0].ref<f64_t>(),
+                                          (*fgColor)[1].ref<f64_t>(),
+                                          (*fgColor)[2].ref<f64_t>(),
+                                          (*fgColor)[3].ref<f64_t>());
 
             auto bgColor = (*formatTbl)["bgColor"].as_array();
 
-            tc.format.bgColor = glm::vec4((*bgColor)[0].ref<double>(),
-                                          (*bgColor)[1].ref<double>(),
-                                          (*bgColor)[2].ref<double>(),
-                                          (*bgColor)[3].ref<double>());
+            tc.format.bgColor = glm::vec4((*bgColor)[0].ref<f64_t>(),
+                                          (*bgColor)[1].ref<f64_t>(),
+                                          (*bgColor)[2].ref<f64_t>(),
+                                          (*bgColor)[3].ref<f64_t>());
 
-            tc.format.kerning = (*formatTbl)["kerning"].ref<double>();
-            tc.format.leading = (*formatTbl)["leading"].ref<double>();
+            tc.format.kerning = (*formatTbl)["kerning"].ref<f64_t>();
+            tc.format.leading = (*formatTbl)["leading"].ref<f64_t>();
         }
     }
 
@@ -410,7 +408,7 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
     {
         auto& pe = entity.addComponent<ParticleEmitterCmp>();
 
-        pe.numParticles = cmpTbl["numParticles"].ref<int64_t>();
+        pe.numParticles = cmpTbl["numParticles"].ref<i64_t>();
 
         auto texture = cmpTbl["texture"].as_table();
 
@@ -424,34 +422,34 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
 
         auto paramTbl = *cmpTbl["parameters"].as_table();
 
-        params.centerPosition = glm::vec3(paramTbl["centerPosition"][0].ref<double>(),
-                                          paramTbl["centerPosition"][1].ref<double>(),
-                                          paramTbl["centerPosition"][2].ref<double>());
+        params.centerPosition = glm::vec3(paramTbl["centerPosition"][0].ref<f64_t>(),
+                                          paramTbl["centerPosition"][1].ref<f64_t>(),
+                                          paramTbl["centerPosition"][2].ref<f64_t>());
 
         params.spawnVolumeType
-            = static_cast<ParticleEmitter::SpawnVolumeType>(paramTbl["spawnVolumeType"].ref<int64_t>());
+            = static_cast<ParticleEmitter::SpawnVolumeType>(paramTbl["spawnVolumeType"].ref<i64_t>());
 
-        params.lifetimeMin_s = paramTbl["lifetimeMin_s"].ref<double>();
-        params.lifetimeMax_s = paramTbl["lifetimeMax_s"].ref<double>();
-        params.initSpeedMin  = paramTbl["initSpeedMin"].ref<double>();
-        params.initSpeedMax  = paramTbl["initSpeedMax"].ref<double>();
+        params.lifetimeMin_s = paramTbl["lifetimeMin_s"].ref<f64_t>();
+        params.lifetimeMax_s = paramTbl["lifetimeMax_s"].ref<f64_t>();
+        params.initSpeedMin  = paramTbl["initSpeedMin"].ref<f64_t>();
+        params.initSpeedMax  = paramTbl["initSpeedMax"].ref<f64_t>();
 
-        params.accelerationMin = glm::vec3(paramTbl["accelerationMin"][0].ref<double>(),
-                                           paramTbl["accelerationMin"][1].ref<double>(),
-                                           paramTbl["accelerationMin"][2].ref<double>());
+        params.accelerationMin = glm::vec3(paramTbl["accelerationMin"][0].ref<f64_t>(),
+                                           paramTbl["accelerationMin"][1].ref<f64_t>(),
+                                           paramTbl["accelerationMin"][2].ref<f64_t>());
 
-        params.accelerationMax = glm::vec3(paramTbl["accelerationMax"][0].ref<double>(),
-                                           paramTbl["accelerationMax"][1].ref<double>(),
-                                           paramTbl["accelerationMax"][2].ref<double>());
+        params.accelerationMax = glm::vec3(paramTbl["accelerationMax"][0].ref<f64_t>(),
+                                           paramTbl["accelerationMax"][1].ref<f64_t>(),
+                                           paramTbl["accelerationMax"][2].ref<f64_t>());
 
         params.initSizeMin
-            = glm::vec2(paramTbl["initSizeMin"][0].ref<double>(), paramTbl["initSizeMin"][1].ref<double>());
+            = glm::vec2(paramTbl["initSizeMin"][0].ref<f64_t>(), paramTbl["initSizeMin"][1].ref<f64_t>());
 
         params.initSizeMax
-            = glm::vec2(paramTbl["initSizeMax"][0].ref<double>(), paramTbl["initSizeMax"][1].ref<double>());
+            = glm::vec2(paramTbl["initSizeMax"][0].ref<f64_t>(), paramTbl["initSizeMax"][1].ref<f64_t>());
 
-        params.ejectionBaseAngle_rad   = paramTbl["ejectionBaseAngle_rad"].ref<double>();
-        params.ejectionSpreadAngle_rad = paramTbl["ejectionSpreadAngle_rad"].ref<double>();
+        params.ejectionBaseAngle_rad   = paramTbl["ejectionBaseAngle_rad"].ref<f64_t>();
+        params.ejectionSpreadAngle_rad = paramTbl["ejectionSpreadAngle_rad"].ref<f64_t>();
 
         for (const auto& colorNode : *paramTbl["colors"].as_array())
         {
@@ -459,31 +457,27 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
 
             ParticleEmitter::colorSpec color;
 
-            color.colorStart = glm::vec4(colorTbl["colorStart"][0].ref<double>(),
-                                         colorTbl["colorStart"][1].ref<double>(),
-                                         colorTbl["colorStart"][2].ref<double>(),
-                                         colorTbl["colorStart"][3].ref<double>());
+            color.colorStart = glm::vec4(colorTbl["colorStart"][0].ref<f64_t>(),
+                                         colorTbl["colorStart"][1].ref<f64_t>(),
+                                         colorTbl["colorStart"][2].ref<f64_t>(),
+                                         colorTbl["colorStart"][3].ref<f64_t>());
 
-            color.colorEnd = glm::vec4(colorTbl["colorEnd"][0].ref<double>(),
-                                       colorTbl["colorEnd"][1].ref<double>(),
-                                       colorTbl["colorEnd"][2].ref<double>(),
-                                       colorTbl["colorEnd"][3].ref<double>());
+            color.colorEnd = glm::vec4(colorTbl["colorEnd"][0].ref<f64_t>(),
+                                       colorTbl["colorEnd"][1].ref<f64_t>(),
+                                       colorTbl["colorEnd"][2].ref<f64_t>(),
+                                       colorTbl["colorEnd"][3].ref<f64_t>());
 
             params.colors.push_back(color);
         }
 
-        params.circleVolumeParams.radius = paramTbl["circleVolumeParams"]["radius"].ref<double>();
+        params.circleVolumeParams.radius = paramTbl["circleVolumeParams"]["radius"].ref<f64_t>();
+        params.rectVolumeParams.width    = paramTbl["rectVolumeParams"]["width"].ref<f64_t>();
+        params.rectVolumeParams.height   = paramTbl["rectVolumeParams"]["height"].ref<f64_t>();
+        params.lineVolumeParams.length   = paramTbl["lineVolumeParams"]["length"].ref<f64_t>();
+        params.persist                   = paramTbl["persist"].as_boolean();
+        params.shrink                    = paramTbl["shrink"].as_boolean();
 
-        params.rectVolumeParams.width = paramTbl["rectVolumeParams"]["width"].ref<double>();
-
-        params.rectVolumeParams.height = paramTbl["rectVolumeParams"]["height"].ref<double>();
-
-        params.lineVolumeParams.length = paramTbl["lineVolumeParams"]["length"].ref<double>();
-
-        params.persist = paramTbl["persist"].as_boolean();
-        params.shrink  = paramTbl["shrink"].as_boolean();
-
-        params.blendingMode = static_cast<GraphicsApi::BlendingMode>(paramTbl["blendingMode"].ref<int64_t>());
+        params.blendingMode = static_cast<GraphicsApi::BlendingMode>(paramTbl["blendingMode"].ref<i64_t>());
 
         pe.parameters = params;
     }
@@ -498,23 +492,22 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
         cc.primary     = cmpTbl["primary"].ref<bool>();
         cc.fixedAspect = cmpTbl["fixedAspect"].ref<bool>();
 
-        cc.camera.setType(static_cast<Camera::Type>(cmpTbl["type"].ref<int64_t>()));
+        cc.camera.setType(static_cast<Camera::Type>(cmpTbl["type"].ref<i64_t>()));
 
-        cc.camera.setAspectRatio(cmpTbl["aspectRatio"].ref<double>());
+        cc.camera.setAspectRatio(cmpTbl["aspectRatio"].ref<f64_t>());
 
         auto position = cmpTbl["position"].as_array();
 
-        cc.camera.setPosition(
-            {(*position)[0].ref<double>(), (*position)[1].ref<double>(), (*position)[2].ref<double>()});
+        cc.camera.setPosition({(*position)[0].ref<f64_t>(), (*position)[1].ref<f64_t>(), (*position)[2].ref<f64_t>()});
 
-        cc.camera.setYaw(cmpTbl["yaw"].ref<double>());
-        cc.camera.setPitch(cmpTbl["pitch"].ref<double>());
-        cc.camera.setSpeed(cmpTbl["speed"].ref<double>());
-        cc.camera.setSensitivity(cmpTbl["sensitivity"].ref<double>());
-        cc.camera.setZoom(cmpTbl["zoom"].ref<double>());
-        cc.camera.setFov(cmpTbl["fov"].ref<double>());
-        cc.camera.setFarClip(cmpTbl["farClip"].ref<double>());
-        cc.camera.setNearClip(cmpTbl["nearClip"].ref<double>());
+        cc.camera.setYaw(cmpTbl["yaw"].ref<f64_t>());
+        cc.camera.setPitch(cmpTbl["pitch"].ref<f64_t>());
+        cc.camera.setSpeed(cmpTbl["speed"].ref<f64_t>());
+        cc.camera.setSensitivity(cmpTbl["sensitivity"].ref<f64_t>());
+        cc.camera.setZoom(cmpTbl["zoom"].ref<f64_t>());
+        cc.camera.setFov(cmpTbl["fov"].ref<f64_t>());
+        cc.camera.setFarClip(cmpTbl["farClip"].ref<f64_t>());
+        cc.camera.setNearClip(cmpTbl["nearClip"].ref<f64_t>());
     }
 }
 
@@ -522,7 +515,7 @@ void SceneSerializer::_deserializeEntity(void* entityTbl, Scene* p_scene, const 
 {
     toml::table* p_entityTbl = reinterpret_cast<toml::table*>(entityTbl);
 
-    uint32_t     sequenceIndex = (*p_entityTbl)["sequenceIndex"].value_or(0);
+    u32_t        sequenceIndex = (*p_entityTbl)["sequenceIndex"].value_or(0);
     std::string& name          = (*p_entityTbl)["name"].ref<std::string>();
 
     Log::coreTrace("Name %s, guidStr %s, sequenceIndex %i", name.c_str(), guidStr.c_str(), sequenceIndex);
@@ -659,8 +652,8 @@ bool SceneSerializer::deserialize(const std::string& filepath)
 
 bool SceneSerializer::deserializeBin(const std::string& filepath)
 {
-    NM_UNUSED(filepath);
-    NM_CORE_ASSERT(false, "NOT IMPLEMENTED");
+    NB_UNUSED(filepath);
+    NB_CORE_ASSERT(false, "NOT IMPLEMENTED");
 
     return false;
 }

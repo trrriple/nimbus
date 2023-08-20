@@ -23,25 +23,25 @@ class Stopwatch : public refCounted
         m_ts = std::chrono::steady_clock::now();
     }
 
-    inline double elapsed() const
+    inline f64_t elapsed() const
     {
         return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - m_ts).count()
                * 1E-6;
     }
 
-    inline uint32_t elapsedMs() const
+    inline u32_t elapsedMs() const
     {
         return elapsed() * 1000.0f;
     }
 
-    inline uint32_t elapsedUs() const
+    inline u32_t elapsedUs() const
     {
         return elapsed() * 1000000.0f;
     }
 
-    inline float split()
+    inline f32_t split()
     {
-        double tNow_s    = elapsed();
+        f64_t tNow_s     = elapsed();
         m_lastSplit_s    = tNow_s - m_splitElapsed_s;
         m_splitElapsed_s = tNow_s;
         return m_lastSplit_s;
@@ -59,18 +59,18 @@ class Stopwatch : public refCounted
         m_savedSplit = m_lastSplit_s;
     }
 
-    inline void saveSplitOverride(double split)
+    inline void saveSplitOverride(f64_t split)
     {
         std::scoped_lock<std::mutex> lock(m_splitMtx);
         m_savedSplit = split;
     }
 
-    inline float getLastSplit() const
+    inline f32_t getLastSplit() const
     {
         return m_lastSplit_s;
     }
 
-    inline float getLastSavedSplit() const
+    inline f32_t getLastSavedSplit() const
     {
         std::scoped_lock<std::mutex> lock(m_splitMtx);
         return m_savedSplit;
@@ -78,10 +78,10 @@ class Stopwatch : public refCounted
 
    private:
     std::chrono::time_point<std::chrono::steady_clock> m_ts;
-    double                                             m_splitElapsed_s;
-    float                                              m_lastSplit_s;
+    f64_t                                              m_splitElapsed_s;
+    f32_t                                              m_lastSplit_s;
     inline static std::mutex                           m_splitMtx;
-    float                                              m_savedSplit;
+    f32_t                                              m_savedSplit;
 
     friend class WatchBank;
 };

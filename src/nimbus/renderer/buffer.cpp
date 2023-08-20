@@ -10,7 +10,7 @@ namespace nimbus
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Vertex Buffer
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ref<VertexBuffer> VertexBuffer::s_create(const void* vertices, uint32_t size, VertexBuffer::Type type)
+ref<VertexBuffer> VertexBuffer::s_create(const void* vertices, u32_t size, VertexBuffer::Type type)
 
 {
     return ref<GlVertexBuffer>::gen(vertices, size, type);
@@ -19,17 +19,17 @@ ref<VertexBuffer> VertexBuffer::s_create(const void* vertices, uint32_t size, Ve
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Index Buffer
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ref<IndexBuffer> IndexBuffer::s_create(uint32_t* indices, uint32_t count)
+ref<IndexBuffer> IndexBuffer::s_create(u32_t* indices, u32_t count)
 {
     return ref<GlIndexBuffer>::gen(indices, count);
 }
 
-ref<IndexBuffer> IndexBuffer::s_create(uint16_t* indices, uint32_t count)
+ref<IndexBuffer> IndexBuffer::s_create(u16_t* indices, u32_t count)
 {
     return ref<GlIndexBuffer>::gen(indices, count);
 }
 
-ref<IndexBuffer> IndexBuffer::s_create(uint8_t* indices, uint32_t count)
+ref<IndexBuffer> IndexBuffer::s_create(u8_t* indices, u32_t count)
 {
     return ref<GlIndexBuffer>::gen(indices, count);
 }

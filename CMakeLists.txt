@@ -228,21 +228,6 @@ set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(box2d)
 
-# #########################
-# yaml-cpp
-# #########################
-# FetchContent_Declare(yaml-cpp
-#     GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-#     GIT_TAG 35b4498026b6293bfadc75f9ee325cb16d6975af
-#     GIT_SHALLOW TRUE
-#     GIT_PROGRESS TRUE)
-
-
-# set(YAML_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-
-# FetchContent_MakeAvailable(yaml-cpp)
-# target_compile_options(yaml-cpp PRIVATE -fexceptions)
-
 
 # #########################
 # Toml++
@@ -291,6 +276,13 @@ target_link_libraries(nimbus PRIVATE imguizmo)
 target_link_libraries(nimbus PRIVATE box2d)
 target_link_libraries(nimbus PUBLIC TracyClient)
 
+# Mono
+# TODO : Not just windows release 
+target_link_libraries(nimbus PRIVATE "${VENDOR_PATH}/mono/win64/lib/Release/libmono-static-sgen.lib")
+if(WIN32)
+  target_link_libraries(nimbus PRIVATE ws2_32)
+  target_link_libraries(nimbus PRIVATE Bcrypt.lib)
+endif()
 
 # #########################
 # Add Include paths
@@ -348,6 +340,10 @@ target_include_directories(nimbus PUBLIC "${VENDOR_PATH}/IconFontCppHeaders")
 
 #portable-file-dialogs
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/portable-file-dialogs")
+
+#mono 
+target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/mono/include")
+
 
 
 

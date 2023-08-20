@@ -62,8 +62,9 @@ static void _s_updateWorldTransformRuntime(TransformCmp& tc, AncestryCmp& ac, bo
                     hasFixture = true;
                 }
             }
-            _s_updateWorldTransformRuntime(
-                child.getComponent<TransformCmp>(), child.getComponent<AncestryCmp>(), hasFixture);
+            _s_updateWorldTransformRuntime(child.getComponent<TransformCmp>(),
+                                           child.getComponent<AncestryCmp>(),
+                                           hasFixture);
         }
     }
 }
@@ -124,7 +125,7 @@ void Scene::removeEntity(Entity entity, bool removeChildren)
     else
     {
         // otherwise we nuke the children recursively xD
-        for (uint32_t i = 0; i < ac.children.size(); i++)
+        for (u32_t i = 0; i < ac.children.size(); i++)
         {
             removeEntity(ac.children[i], true);
         }
@@ -169,7 +170,7 @@ void Scene::onStartRuntime()
     m_registry.view<ParticleEmitterCmp>().each(
         [=](auto entity, auto& pec)
         {
-            NM_UNUSED(entity);
+            NB_UNUSED(entity);
             pec.p_emitter = ref<ParticleEmitter>::gen(pec.numParticles, pec.parameters, pec.p_texture, nullptr, false);
         });
 
@@ -181,7 +182,7 @@ void Scene::onStartRuntime()
     m_registry.view<TransformCmp, RigidBody2DCmp, NameCmp>().each(
         [=](auto entity, auto& tc, auto& rbc, auto& nc)
         {
-            NM_UNUSED(entity);
+            NB_UNUSED(entity);
 
             // update the spec with transform information
             rbc.spec.position.x = tc.world.getTranslation().x;
@@ -192,8 +193,8 @@ void Scene::onStartRuntime()
             rbc.preSimTransform = tc.local;
 
             // other parameters are configured in place and are accessable by the SHP
-            rbc.p_body       = mp_world2D->addRigidBody(rbc.spec);
-            rbc.p_body->name = nc.name;
+            rbc.p_body             = mp_world2D->addRigidBody(rbc.spec);
+            rbc.p_body->name       = nc.name;
             rbc.p_body->p_userData = (void*)entity;
 
             // add fixture if so inclined
@@ -212,7 +213,7 @@ void Scene::onStopRuntime()
     m_registry.view<NativeLogicCmp>().each(
         [=](auto entity, auto& nsc)
         {
-            NM_UNUSED(entity);
+            NB_UNUSED(entity);
             if (nsc.p_logic)
             {
                 nsc.p_logic->onDestroy();
@@ -224,7 +225,7 @@ void Scene::onStopRuntime()
     m_registry.view<ParticleEmitterCmp>().each(
         [=](auto entity, auto& pec)
         {
-            NM_UNUSED(entity);
+            NB_UNUSED(entity);
             pec.p_emitter = nullptr;
         });
 
@@ -235,20 +236,18 @@ void Scene::onStopRuntime()
     m_registry.view<TransformCmp, RigidBody2DCmp>().each(
         [=](auto entity, auto& tc, auto& rbc)
         {
-            NM_UNUSED(entity);
+            NB_UNUSED(entity);
             rbc.p_body = nullptr;
 
             tc.local = rbc.preSimTransform;
-
         });
 
     // remove world
     mp_world2D = nullptr;
 }
 
-void Scene::onUpdateRuntime(float deltaTime)
+void Scene::onUpdateRuntime(f32_t deltaTime)
 {
-
     ///////////////////////////
     // Update Physics
     ///////////////////////////
@@ -257,7 +256,7 @@ void Scene::onUpdateRuntime(float deltaTime)
     m_registry.view<TransformCmp, RigidBody2DCmp>().each(
         [=](auto entity, auto& tc, auto& rbc)
         {
-            NM_UNUSED(entity);
+            NB_UNUSED(entity);
 
             // we only want to update the XY translation and z rotation when using 2D physics
             util::Transform& transform = rbc.p_body->getTransform();
@@ -272,7 +271,7 @@ void Scene::onUpdateRuntime(float deltaTime)
     m_registry.view<NativeLogicCmp>().each(
         [=](auto entity, auto& nsc)
         {
-            NM_UNUSED(entity);
+            NB_UNUSED(entity);
             if (nsc.p_logic)
             {
                 nsc.p_logic->onUpdate(deltaTime);
@@ -287,7 +286,7 @@ void Scene::onUpdateRuntime(float deltaTime)
     {
         // only update top level here
         if (!ac.parent)
-        {                                          // this parameter only matters for children
+        {  // this parameter only matters for children
             _s_updateWorldTransformRuntime(tc, ac, false);
         }
     }
@@ -337,11 +336,11 @@ void Scene::onDrawRuntime()
     _renderSceneSpecific(p_mainCamera);
 }
 
-void Scene::onResize(uint32_t width, uint32_t height)
+void Scene::onResize(u32_t width, u32_t height)
 {
     auto cameraView = m_registry.view<CameraCmp>();
 
-    m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    m_aspectRatio = static_cast<f32_t>(width) / static_cast<f32_t>(height);
 
     for (auto entity : cameraView)
     {
@@ -373,8 +372,11 @@ void Scene::_render(Camera* p_camera)
 
     for (auto [entity, gc, tc, sc] : spriteView.each())
     {
-        Renderer2D::s_drawQuad(
-            tc.world.getTransform(), sc.p_texture, sc.color, sc.tilingFactor, static_cast<int>(entity));
+        Renderer2D::s_drawQuad(tc.world.getTransform(),
+                               sc.p_texture,
+                               sc.color,
+                               sc.tilingFactor,
+                               static_cast<int>(entity));
     }
 
     ///////////////////////////
@@ -408,9 +410,9 @@ void Scene::_renderSceneSpecific(Camera* p_camera)
     }
 }
 
-void Scene::_onUpdateEditor(float deltaTime)
+void Scene::_onUpdateEditor(f32_t deltaTime)
 {
-    NM_UNUSED(deltaTime);
+    NB_UNUSED(deltaTime);
     // for all entities that have a transform, we want to update any
     // all child transforms accordingly
     auto tcView = m_registry.view<TransformCmp, AncestryCmp>();
@@ -430,7 +432,7 @@ void Scene::_onDrawEditor(Camera* p_editorCamera)
     _render(p_editorCamera);
 }
 
-Entity Scene::_addEntity(const std::string& name, const std::string& guidStr, uint32_t sequenceIndex)
+Entity Scene::_addEntity(const std::string& name, const std::string& guidStr, u32_t sequenceIndex)
 {
     Entity entity = {m_registry.create(), this};
 

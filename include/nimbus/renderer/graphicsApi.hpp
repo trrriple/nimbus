@@ -25,13 +25,13 @@ class GraphicsApi
 
     static void clearColor(glm::vec4 color);
 
-    static void drawElements(ref<VertexArray> p_vertexArray, uint32_t vertexCount = 0);
+    static void drawElements(ref<VertexArray> p_vertexArray, u32_t vertexCount = 0);
 
-    static void drawArrays(ref<VertexArray> p_vertexArray, uint32_t vertexCount = 0);
+    static void drawArrays(ref<VertexArray> p_vertexArray, u32_t vertexCount = 0);
 
-    static void drawElementsInstanced(ref<VertexArray> p_vertexArray, uint32_t instanceCount, uint32_t vertexCount = 0);
+    static void drawElementsInstanced(ref<VertexArray> p_vertexArray, u32_t instanceCount, u32_t vertexCount = 0);
 
-    static void drawArraysInstanced(ref<VertexArray> p_vertexArray, uint32_t instanceCount, uint32_t vertexCount = 0);
+    static void drawArraysInstanced(ref<VertexArray> p_vertexArray, u32_t instanceCount, u32_t vertexCount = 0);
 
     static void setViewportSize(int x, int y, int w, int h);
 

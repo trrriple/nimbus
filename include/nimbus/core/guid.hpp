@@ -9,7 +9,7 @@ class Guid
    public:
     Guid();
 
-    inline __int128_t get() const
+    inline i128_t get() const
     {
         return m_guid;
     }
@@ -31,10 +31,10 @@ class Guid
 
    private:
     // private constructor takes already generated guid
-    Guid(__int128_t guid);
+    Guid(i128_t guid);
     Guid(const std::string& guidStr);
 
-    __int128_t  m_guid;
+    i128_t      m_guid;
     std::string m_guidStr;
 
     void _toString();

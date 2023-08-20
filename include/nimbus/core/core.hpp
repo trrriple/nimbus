@@ -7,16 +7,16 @@
 #include <memory>
 
 // TODO do this smarter
-#define NM_RUNTIME_ASSERTS
+#define NB_RUNTIME_ASSERTS
 
-#define NM_PROFILE_LEVEL_TRACE 3
-#define NM_PROFILE_LEVEL_DETAIL 2
-#define NM_PROFILE_LEVEL_NORM 1
-#define NM_PROFILE_LEVEL_NONE 0
+#define NB_PROFILE_LEVEL_TRACE 3
+#define NB_PROFILE_LEVEL_DETAIL 2
+#define NB_PROFILE_LEVEL_NORM 1
+#define NB_PROFILE_LEVEL_NONE 0
 
-#define NM_PROFILE_LEVEL NM_PROFILE_LEVEL_NONE
+#define NB_PROFILE_LEVEL NB_PROFILE_LEVEL_NONE
 
-#ifdef NM_RUNTIME_ASSERTS
+#ifdef NB_RUNTIME_ASSERTS
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Asserts
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,17 +25,19 @@
 #include <signal.h>
 #define __debugbreak() raise(SIGTRAP)
 #endif
-#define NM_CORE_ASSERT(condition, msg, ...)                                                               \
-    {                                                                                                     \
-        if (!(condition))                                                                                 \
-        {                                                                                                 \
-            Log::coreCritical(                                                                            \
-                "[%s::%s:%i] " msg, typeid(*this).name(), __func__, __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
-            __debugbreak();                                                                               \
-        }                                                                                                 \
+#define NB_CORE_ASSERT(condition, msg, ...)                         \
+    {                                                               \
+        if (!(condition))                                           \
+        {                                                           \
+            Log::coreCritical("[%s::%s:%i] " msg,                   \
+                              typeid(*this).name(),                 \
+                              __func__,                             \
+                              __LINE__ __VA_OPT__(, ) __VA_ARGS__); \
+            __debugbreak();                                         \
+        }                                                           \
     }
 
-#define NM_CORE_ASSERT_STATIC(condition, msg, ...)                                        \
+#define NB_CORE_ASSERT_STATIC(condition, msg, ...)                                        \
                                                                                           \
     if (!(condition))                                                                     \
     {                                                                                     \
@@ -44,42 +46,42 @@
     }
 
 #else
-#define NM_CORE_ASSERT(condition, msg, ...)
-#define NM_CORE_ASSERT_STATIC(condition, msg, ...)
-#endif /* NM_RUNTIME_ASSERTS */
+#define NB_CORE_ASSERT(condition, msg, ...)
+#define NB_CORE_ASSERT_STATIC(condition, msg, ...)
+#endif /* NB_RUNTIME_ASSERTS */
 
 // we always want compile time asserts
-#define NM_CORE_COMPILETIME_ASSERT(cond, msg) static_assert(cond, msg)
+#define NB_CORE_COMPILETIME_ASSERT(cond, msg) static_assert(cond, msg)
 
-#ifdef NM_PROFILE_LEVEL
+#ifdef NB_PROFILE_LEVEL
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tracy
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if NM_PROFILE_LEVEL >= NM_PROFILE_LEVEL_NORM
+#if NB_PROFILE_LEVEL >= NB_PROFILE_LEVEL_NORM
 #include "Tracy.hpp"
-#define NM_PROFILE_FUNC() ZoneScopedN(__func__)
-#define NM_PROFILE() NM_PROFILE_FUNC()
+#define NB_PROFILE_FUNC() ZoneScopedN(__func__)
+#define NB_PROFILE() NB_PROFILE_FUNC()
 #else
-#define NM_PROFILE()
+#define NB_PROFILE()
 #endif
 
-#if NM_PROFILE_LEVEL >= NM_PROFILE_LEVEL_DETAIL
-#define NM_PROFILE_DETAIL() NM_PROFILE_FUNC()
+#if NB_PROFILE_LEVEL >= NB_PROFILE_LEVEL_DETAIL
+#define NB_PROFILE_DETAIL() NB_PROFILE_FUNC()
 #else
-#define NM_PROFILE_DETAIL()
+#define NB_PROFILE_DETAIL()
 #endif
 
-#if NM_PROFILE_LEVEL >= NM_PROFILE_LEVEL_TRACE
-#define NM_PROFILE_TRACE() NM_PROFILE_FUNC()
+#if NB_PROFILE_LEVEL >= NB_PROFILE_LEVEL_TRACE
+#define NB_PROFILE_TRACE() NB_PROFILE_FUNC()
 #else
-#define NM_PROFILE_TRACE()
+#define NB_PROFILE_TRACE()
 #endif
 
 #else
-#define NM_PROFILE()
-#define NM_PROFILE_DETAIL()
-#define NM_PROFILE_TRACE()
-#endif /* NM_PROFILE_LEVEL */
+#define NB_PROFILE()
+#define NB_PROFILE_DETAIL()
+#define NB_PROFILE_TRACE()
+#endif /* NB_PROFILE_LEVEL */
 #include <chrono>
 #include <mutex>
 
@@ -88,7 +90,7 @@ namespace nimbus::core
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Common Functions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline double getTime_s()
+inline f64_t getTime_s()
 {
     static std::mutex mtx;
 

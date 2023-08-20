@@ -11,17 +11,21 @@
 namespace nimbus::util
 {
 
-glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos, float screenWidth, float screenHeight);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Util functions
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize, float screenWidth, float screenHeight);
+glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos, f32_t screenWidth, f32_t screenHeight);
 
-glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity, float screenWidth, float screenHeight);
+glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize, f32_t screenWidth, f32_t screenHeight);
+
+glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity, f32_t screenWidth, f32_t screenHeight);
 
 glm::vec2 mapPixToScreen(glm::vec2 pixPos,
-                         float     screenMinX,
-                         float     screenMaxX,
-                         float     screenMinY,
-                         float     screenMaxY,
+                         f32_t     screenMinX,
+                         f32_t     screenMaxX,
+                         f32_t     screenMinY,
+                         f32_t     screenMaxY,
                          int       imgWidth,
                          int       imgHeight);
 
@@ -34,202 +38,68 @@ std::string saveFile(const std::string&              prompt    = "",
                      const std::string&              startPath = ".",
                      const std::vector<std::string>& filters   = {"All Files", "*"});
 
+char* readFileAsBytes(const std::string& filepath, u32_t* outSize);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Util classes
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Transform
 {
    public:
     Transform() = default;
-    Transform(const glm::vec3& itranslation) : translation(itranslation)
-    {
-    }
-    Transform(const glm::vec3& itranslation, const glm::vec3& irotation, const glm::vec3& iscale)
-        : translation(itranslation), rotation(irotation), scale(iscale)
-    {
-    }
+    Transform(const glm::vec3& itranslation);
+    Transform(const glm::vec3& itranslation, const glm::vec3& irotation, const glm::vec3& iscale);
 
-    const glm::mat4& getTransform() const
-    {
-        if (transformStale)
-        {
-            glm::mat4 rot = glm::toMat4(glm::quat(rotation));
+    const glm::mat4& getTransform() const;
 
-            transform = glm::translate(glm::mat4(1.0f), translation) * rot;
+    void setTransform(const glm::vec3& itranslation, const glm::vec3& irotation, const glm::vec3& iscale);
+    void setTransform(const glm::mat4& itransform);
 
-            transform = glm::scale(transform, scale);
-
-            transformStale = false;
-        }
-
-        return transform;
-    }
-
-    void setTransform(const glm::vec3& itranslation, const glm::vec3& irotation, const glm::vec3& iscale)
-    {
-        translation    = itranslation;
-        rotation       = irotation;
-        scale          = iscale;
-        transformStale = true;
-    }
-
-    void setTransform(const glm::mat4& itransform)
-    {
-        glm::quat orientation;
-        glm::vec3 skew;
-        glm::vec4 perspective;
-
-        glm::decompose(itransform, scale, orientation, translation, skew, perspective);
-
-        rotation = glm::eulerAngles(orientation);
-
-        transform = itransform;
-
-        transformStale = false;
-    }
-
-    const glm::vec3& getTranslation() const
+    inline const glm::vec3& getTranslation() const
     {
         return translation;
     }
 
-    const glm::vec3& getRotation() const
+    inline const glm::vec3& getRotation() const
     {
         return rotation;
     }
 
-    const glm::vec3& getScale() const
+    inline const glm::vec3& getScale() const
     {
         return scale;
     }
 
-    void setTranslation(const glm::vec3& itranslation)
-    {
-        translation    = itranslation;
-        transformStale = true;
-    }
+    void setTranslation(const glm::vec3& itranslation);
 
-    void setTranslationX(float transX)
-    {
-        translation.x  = transX;
-        transformStale = true;
-    }
+    void setTranslationX(f32_t transX);
 
-    void setTranslationY(float transY)
-    {
-        translation.y  = transY;
-        transformStale = true;
-    }
+    void setTranslationY(f32_t transY);
 
-    void setTranslationZ(float transZ)
-    {
-        translation.z  = transZ;
-        transformStale = true;
-    }
+    void setTranslationZ(f32_t transZ);
 
-    void setRotation(const glm::vec3& irotation)
-    {
-        rotation       = irotation;
-        transformStale = true;
-    }
+    void setRotation(const glm::vec3& irotation);
 
-    void setRotationX(float rotX)
-    {
-        rotation.x     = rotX;
-        transformStale = true;
-    }
+    void setRotationX(f32_t rotX);
 
-    void setRotationY(float rotY)
-    {
-        rotation.y     = rotY;
-        transformStale = true;
-    }
+    void setRotationY(f32_t rotY);
 
-    void setRotationZ(float rotZ)
-    {
-        rotation.z     = rotZ;
-        transformStale = true;
-    }
+    void setRotationZ(f32_t rotZ);
 
-    void setScale(const glm::vec3& iscale)
-    {
-        scale          = iscale;
-        transformStale = true;
-        scaleLocked    = false;
-    }
+    void setScale(const glm::vec3& iscale);
 
-    void setScaleX(float scaleX)
-    {
-        if (scaleLocked)
-        {
-            if (scale.x != 0.0 && scaleX != 0.0)
-            {
-                float factorYX = abs(scale.y / scale.x);
-                float factorZX = abs(scale.z / scale.x);
+    void setScaleX(f32_t scaleX);
 
-                scale.x = scaleX;
-                scale.y = scaleX * factorYX;
-                scale.z = scaleX * factorZX;
-            }
-        }
-        else
-        {
-            scale.x = scaleX;
-        }
+    void setScaleY(f32_t scaleY);
 
-        transformStale = true;
-    }
+    void setScaleZ(f32_t scaleZ);
 
-    void setScaleY(float scaleY)
-    {
-        if (scaleLocked)
-        {
-            if (scale.y != 0.0 && scaleY != 0.0)
-            {
-                float factorXY = scale.x / scale.y;
-                float factorZY = scale.z / scale.y;
-
-                scale.y = scaleY;
-                scale.x = scaleY * factorXY;
-                scale.z = scaleY * factorZY;
-            }
-        }
-        else
-        {
-            scale.y = scaleY;
-        }
-
-        transformStale = true;
-    }
-
-    void setScaleZ(float scaleZ)
-    {
-        if (scaleLocked)
-        {
-            if (scale.z != 0.0 && scaleZ != 0.0)
-            {
-                float factorXZ = scale.x / scale.z;
-                float factorYZ = scale.y / scale.z;
-
-                scale.z = scaleZ;
-                scale.x = scaleZ * factorXZ;
-                scale.y = scaleZ * factorYZ;
-            }
-        }
-        else
-        {
-            scale.z = scaleZ;
-        }
-
-        transformStale = true;
-    }
-
-    bool isScaleLocked() const
+    inline bool isScaleLocked() const
     {
         return scaleLocked;
     }
 
-    void setScaleLocked(bool locked)
-    {
-        scaleLocked = locked;
-    }
+    void setScaleLocked(bool locked);
 
    private:
     mutable glm::mat4 transform;

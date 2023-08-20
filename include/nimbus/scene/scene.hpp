@@ -24,11 +24,11 @@ class Scene : public refCounted
     void sortEntities();
 
     void onStartRuntime();
-    void onUpdateRuntime(float deltaTime);
+    void onUpdateRuntime(f32_t deltaTime);
     void onDrawRuntime();
     void onStopRuntime();
 
-    void onResize(uint32_t width, uint32_t height);
+    void onResize(u32_t width, u32_t height);
 
     template <typename Fn>
     void submitPostUpdateFunc(Fn&& func)
@@ -37,10 +37,10 @@ class Scene : public refCounted
     }
 
    private:
-    entt::registry                     m_registry;
-    float                              m_aspectRatio;
-    std::string                        m_name;
-    uint32_t                           m_genesisIndex = 0;
+    entt::registry m_registry;
+    f32_t          m_aspectRatio;
+    std::string    m_name;
+    u32_t          m_genesisIndex = 0;
 
     ///////////////////////////
     // 2D Physics World
@@ -62,12 +62,12 @@ class Scene : public refCounted
 
     void _renderSceneSpecific(Camera* p_camera);
 
-    void _onUpdateEditor(float deltaTime);
+    void _onUpdateEditor(f32_t deltaTime);
 
     void _onDrawEditor(Camera* p_editorCamera);
 
     // private addEntity for scene deserialization where these are known
-    Entity _addEntity(const std::string& name, const std::string& guidStr, uint32_t sequenceIndex);
+    Entity _addEntity(const std::string& name, const std::string& guidStr, u32_t sequenceIndex);
 };
 
 }  // namespace nimbus

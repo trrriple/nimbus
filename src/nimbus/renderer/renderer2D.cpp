@@ -20,6 +20,7 @@ Renderer2D::Stats     Renderer2D::s_stats;
 
 void Renderer2D::s_init()
 {
+    //clang-format off
     static std::once_flag initFlag;
     std::call_once(initFlag,
                    []()
@@ -38,8 +39,9 @@ void Renderer2D::s_init()
                        ///////////////////////////
                        // Quad data init
                        ///////////////////////////
-                       s_quadData->p_shader = Application::s_get().getResourceManager().loadShader(
-                           "../resources/shaders/quad.v.glsl", "../resources/shaders/quad.f.glsl");
+                       s_quadData->p_shader
+                           = Application::s_get().getResourceManager().loadShader("../resources/shaders/quad.v.glsl",
+                                                                                  "../resources/shaders/quad.f.glsl");
 
                        s_quadData->textures.reserve(Texture::s_getMaxTextures());
 
@@ -50,13 +52,15 @@ void Renderer2D::s_init()
                        ///////////////////////////
                        // Text data init
                        ///////////////////////////
-                       s_textData->p_shader = Application::s_get().getResourceManager().loadShader(
-                           "../resources/shaders/text.v.glsl", "../resources/shaders/text.f.glsl");
+                       s_textData->p_shader
+                           = Application::s_get().getResourceManager().loadShader("../resources/shaders/text.v.glsl",
+                                                                                  "../resources/shaders/text.f.glsl");
 
                        s_textData->atlases.reserve(Texture::s_getMaxTextures());
 
                        _s_createTextBuffers();
                    });
+    //clang-format on
 }
 
 void Renderer2D::s_destroy()
@@ -67,7 +71,7 @@ void Renderer2D::s_destroy()
 
 void Renderer2D::s_begin(const glm::mat4& vpMatrix)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     if (s_inScene)
     {
@@ -81,7 +85,7 @@ void Renderer2D::s_begin(const glm::mat4& vpMatrix)
 
 void Renderer2D::s_end()
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     if (!s_inScene)
     {
@@ -107,8 +111,8 @@ void Renderer2D::s_end()
 void Renderer2D::s_drawQuad(const glm::mat4&    transform,
                             const ref<Texture>& p_texture,
                             const glm::vec4&    color,
-                            float               texTilingFactor,
-                            uint32_t            entityId)
+                            f32_t               texTilingFactor,
+                            u32_t               entityId)
 {
     // first make sure we can fit this quad:
     //  verify we have room left for this character
@@ -160,9 +164,9 @@ void Renderer2D::s_drawQuad(const glm::mat4&    transform,
     s_quadData->quadCount++;
 }
 
-void Renderer2D::s_drawQuad(const glm::mat4& transform, const glm::vec4& color, uint32_t entityId)
+void Renderer2D::s_drawQuad(const glm::mat4& transform, const glm::vec4& color, u32_t entityId)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
     s_drawQuad(transform, nullptr, color, 1.0f, entityId);
 }
 
@@ -170,9 +174,9 @@ void Renderer2D::s_drawText(const std::string&  text,
                             const Font::Format& fontFormat,
                             const glm::vec3&    position,
                             const glm::vec2&    size,
-                            uint32_t            entityId)
+                            u32_t               entityId)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
     glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
     transform           = glm::scale(transform, {size.x, size.y, 1.0f});
     s_drawText(text, fontFormat, transform, entityId);
@@ -181,10 +185,10 @@ void Renderer2D::s_drawText(const std::string&  text,
 void Renderer2D::s_drawText(const std::string&  text,
                             const Font::Format& fontFormat,
                             const glm::mat4&    transform,
-                            uint32_t            entityId)
+                            u32_t               entityId)
 
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     // can't render without a font
     if (fontFormat.p_font == nullptr)
@@ -202,20 +206,20 @@ void Renderer2D::s_drawText(const std::string&  text,
     const auto& fontData     = fontFormat.p_font->getFontData();
     const auto& fontGeometry = fontData->fontGeometry;
     const auto& fontMetrics  = fontGeometry.getMetrics();
-    const float spaceAdvance = fontGeometry.getGlyph(' ')->getAdvance();
+    const f32_t spaceAdvance = fontGeometry.getGlyph(' ')->getAdvance();
 
     auto p_atlas = fontFormat.p_font->getAtlasTex();
 
     // calc data we need
-    float     atlasWidth  = p_atlas->getWidth();
-    float     atlasHeight = p_atlas->getHeight();
+    f32_t     atlasWidth  = p_atlas->getWidth();
+    f32_t     atlasHeight = p_atlas->getHeight();
     glm::vec2 unitRange   = glm::vec2(fontData->pixelRange) / glm::vec2(atlasWidth, atlasHeight);
 
-    double incX        = 0.0;  // incremental x position
-    double incY        = 0.0;  // incremental y positioncp
-    double scale       = 1.0 / (fontMetrics.ascenderY - fontMetrics.descenderY);
-    float  texelWidth  = 1.0f / atlasWidth;
-    float  texelHeight = 1.0f / atlasHeight;
+    f64_t incX        = 0.0;  // incremental x position
+    f64_t incY        = 0.0;  // incremental y positioncp
+    f64_t scale       = 1.0 / (fontMetrics.ascenderY - fontMetrics.descenderY);
+    f32_t texelWidth  = 1.0f / atlasWidth;
+    f32_t texelHeight = 1.0f / atlasHeight;
 
     int texIdx = -1;
     for (size_t i = 0; i < s_textData->atlases.size(); i++)
@@ -241,7 +245,7 @@ void Renderer2D::s_drawText(const std::string&  text,
         s_textData->atlases.push_back(p_atlas);
     }
 
-    for (uint32_t i = 0; i < text.size(); i++)
+    for (u32_t i = 0; i < text.size(); i++)
     {
         char character = text[i];
 
@@ -252,7 +256,7 @@ void Renderer2D::s_drawText(const std::string&  text,
             // if this isn't the last character
             if (i < text.size() - 1)
             {
-                double advance;
+                f64_t advance;
                 if (!fontGeometry.getAdvance(advance, character, text[i + 1]))
                 {
                     // we couldn't get a specific advance for this character
@@ -261,7 +265,7 @@ void Renderer2D::s_drawText(const std::string&  text,
                 }
 
                 // kerning doesn't apply to spaces
-                incX += scale * static_cast<float>(advance);
+                incX += scale * static_cast<f32_t>(advance);
                 continue;
             }
         }
@@ -304,16 +308,16 @@ void Renderer2D::s_drawText(const std::string&  text,
             Log::coreWarn("Glyph %c not found in font %s", character, fontFormat.p_font->getPath().c_str());
         }
         // whats the deal with this font?
-        NM_CORE_ASSERT_STATIC(glyph,
+        NB_CORE_ASSERT_STATIC(glyph,
                               "Glyph %c not found in font %s (nor was ? for that matter)",
                               character,
                               fontFormat.p_font->getPath().c_str());
 
         // figure out the bounds of the quad needed for glyph
-        double quadLeft;
-        double quadBottom;
-        double quadRight;
-        double quadTop;
+        f64_t quadLeft;
+        f64_t quadBottom;
+        f64_t quadRight;
+        f64_t quadTop;
         glyph->getQuadPlaneBounds(quadLeft, quadBottom, quadRight, quadTop);
         quadLeft   = (quadLeft * scale) + incX;
         quadBottom = (quadBottom * scale) + incY;
@@ -321,13 +325,13 @@ void Renderer2D::s_drawText(const std::string&  text,
         quadTop    = (quadTop * scale) + incY;
 
         // figure out the location in the atlas
-        double texLeft;
-        double texBottom;
-        double texRight;
-        double texTop;
+        f64_t texLeft;
+        f64_t texBottom;
+        f64_t texRight;
+        f64_t texTop;
         glyph->getQuadAtlasBounds(texLeft, texBottom, texRight, texTop);
-        glm::vec2 texCoordMin((float)texLeft, (float)texBottom);
-        glm::vec2 texCoordMax((float)texRight, (float)texTop);
+        glm::vec2 texCoordMin((f32_t)texLeft, (f32_t)texBottom);
+        glm::vec2 texCoordMax((f32_t)texRight, (f32_t)texTop);
 
         texLeft *= texelWidth;
         texBottom *= texelHeight;
@@ -378,7 +382,7 @@ void Renderer2D::s_drawText(const std::string&  text,
 
         if (i < text.size() - 1)
         {
-            double advance;
+            f64_t advance;
             if (!fontGeometry.getAdvance(advance, character, text[i + 1]))
             {
                 // we couldn't get a specific advance for this character
@@ -386,7 +390,7 @@ void Renderer2D::s_drawText(const std::string&  text,
                 advance = glyph->getAdvance();
             }
 
-            incX += scale * static_cast<float>(advance) + fontFormat.kerning;
+            incX += scale * static_cast<f32_t>(advance) + fontFormat.kerning;
         }
     }
 }
@@ -401,7 +405,7 @@ void Renderer2D::s_resetStats()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Renderer2D::_s_submit()
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     ///////////////////////////
     // Quad Rendering
@@ -465,13 +469,13 @@ void Renderer2D::_s_submit()
 }
 
 template <typename IndexType>
-static void s_generateIndicesAndSetBuffer(uint32_t quads, ref<VertexArray>& p_vao)
+static void s_generateIndicesAndSetBuffer(u32_t quads, ref<VertexArray>& p_vao)
 {
     std::vector<IndexType> quadVertexIndices;
     quadVertexIndices.reserve(6 * quads);
 
     IndexType offset = 0;
-    for (uint32_t i = 0; i < quads; i++)
+    for (u32_t i = 0; i < quads; i++)
     {
         quadVertexIndices.push_back(0 + offset);
         quadVertexIndices.push_back(1 + offset);
@@ -487,12 +491,12 @@ static void s_generateIndicesAndSetBuffer(uint32_t quads, ref<VertexArray>& p_va
 
 void Renderer2D::_s_createQuadBuffers()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     ///////////////////////////
     // Determine size
     ///////////////////////////
-    uint32_t newSize;
+    u32_t newSize;
     if (s_quadData->p_vao)
     {
         // this is a resize
@@ -518,8 +522,9 @@ void Renderer2D::_s_createQuadBuffers()
     // (Re)make Shared VBO
     ///////////////////////////
     // shared, doesn't change after creation so no need to save handle to it
-    auto sharedVbo = VertexBuffer::s_create(
-        &s_quadData->vertices[0], s_quadData->vertices.size() * sizeof(QuadVertex), VertexBuffer::Type::STATIC_DRAW);
+    auto sharedVbo = VertexBuffer::s_create(&s_quadData->vertices[0],
+                                            s_quadData->vertices.size() * sizeof(QuadVertex),
+                                            VertexBuffer::Type::STATIC_DRAW);
 
     sharedVbo->setFormat(k_quadVertexFormat);
     s_quadData->p_vao->addVertexBuffer(sharedVbo);
@@ -527,7 +532,7 @@ void Renderer2D::_s_createQuadBuffers()
     ///////////////////////////
     // (Re)make IBO for shared
     ///////////////////////////
-    s_generateIndicesAndSetBuffer<uint8_t>(1, s_quadData->p_vao);
+    s_generateIndicesAndSetBuffer<u8_t>(1, s_quadData->p_vao);
 
     ///////////////////////////
     // (Re)make Instance VBO
@@ -549,12 +554,12 @@ void Renderer2D::_s_createQuadBuffers()
 
 void Renderer2D::_s_createTextBuffers()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     ///////////////////////////
     // Determine size
     ///////////////////////////
-    uint32_t newSize;
+    u32_t newSize;
     if (s_textData->p_vao)
     {
         // this is a resize
@@ -583,8 +588,9 @@ void Renderer2D::_s_createTextBuffers()
     ///////////////////////////
     s_textData->vertices = std::vector<TextVertex>(newSize);
 
-    s_textData->p_vbo = VertexBuffer::s_create(
-        &s_textData->vertices[0], s_textData->vertices.size() * sizeof(TextVertex), VertexBuffer::Type::DYNAMIC_DRAW);
+    s_textData->p_vbo = VertexBuffer::s_create(&s_textData->vertices[0],
+                                               s_textData->vertices.size() * sizeof(TextVertex),
+                                               VertexBuffer::Type::DYNAMIC_DRAW);
 
     s_textData->p_vbo->setFormat(k_TextVertexFormat);
     s_textData->p_vao->addVertexBuffer(s_textData->p_vbo);
@@ -592,15 +598,15 @@ void Renderer2D::_s_createTextBuffers()
     ///////////////////////////
     // (Re)make IBO
     ///////////////////////////
-    uint32_t maxIndexVal = 6 * newSize - 1;
+    u32_t maxIndexVal = 6 * newSize - 1;
 
     if (maxIndexVal < 65536)
     {
-        s_generateIndicesAndSetBuffer<uint16_t>(newSize / 4, s_textData->p_vao);
+        s_generateIndicesAndSetBuffer<u16_t>(newSize / 4, s_textData->p_vao);
     }
     else
     {
-        s_generateIndicesAndSetBuffer<uint32_t>(newSize / 4, s_textData->p_vao);
+        s_generateIndicesAndSetBuffer<u32_t>(newSize / 4, s_textData->p_vao);
     }
 
     s_textData->charCount   = 0;

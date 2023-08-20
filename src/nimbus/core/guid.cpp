@@ -20,10 +20,10 @@ Guid::Guid()
     GUID guid;
     CoCreateGuid(&guid);
 
-    __int128_t high = static_cast<__int128_t>(guid.Data1) << 96 | static_cast<__int128_t>(guid.Data2) << 80
-                      | static_cast<__int128_t>(guid.Data3) << 64;
+    i128_t high = static_cast<i128_t>(guid.Data1) << 96 | static_cast<i128_t>(guid.Data2) << 80
+                  | static_cast<i128_t>(guid.Data3) << 64;
 
-    __int128_t low = *reinterpret_cast<__int128_t*>(guid.Data4);
+    i128_t low = *reinterpret_cast<i128_t*>(guid.Data4);
 
     m_guid = high | low;
 
@@ -33,14 +33,14 @@ Guid::Guid()
     uuid_t uuid;
     uuid_generate_random(uuid);
 
-    m_guid = *reinterpret_cast<__int128_t*>(uuid);
+    m_guid = *reinterpret_cast<i128_t*>(uuid);
 
     _toString();
 
 #endif
 }
 
-Guid::Guid(__int128_t guid)
+Guid::Guid(i128_t guid)
 {
     m_guid = guid;
     _toString();
@@ -56,8 +56,8 @@ void Guid::_toString()
 {
     char buffer[37];  // 32 characters, 4 hyphens, and a null terminator
 
-    uint64_t high = static_cast<uint64_t>(m_guid >> 64);
-    uint64_t low  = static_cast<uint64_t>(m_guid);
+    u64_t high = static_cast<u64_t>(m_guid >> 64);
+    u64_t low  = static_cast<u64_t>(m_guid);
 
     snprintf(buffer,
              sizeof(buffer),
@@ -73,18 +73,18 @@ void Guid::_toString()
 
 void Guid::_fromString()
 {
-    uint64_t high, low;
-    uint32_t a;
-    uint16_t b, c, d;
-    uint64_t e;
+    u64_t high, low;
+    u32_t a;
+    u16_t b, c, d;
+    u64_t e;
 
     sscanf_s(m_guidStr.c_str(), "%08lx-%04hx-%04hx-%04hx-%012lx", &a, &b, &c, &d, &e);
 
-    high = (static_cast<uint64_t>(a) << 32) | (static_cast<uint64_t>(b) << 16) | static_cast<uint64_t>(c);
+    high = (static_cast<u64_t>(a) << 32) | (static_cast<u64_t>(b) << 16) | static_cast<u64_t>(c);
 
-    low = (static_cast<uint64_t>(d) << 48) | e;
+    low = (static_cast<u64_t>(d) << 48) | e;
 
-    m_guid = (static_cast<__int128_t>(high) << 64) | low;
+    m_guid = (static_cast<i128_t>(high) << 64) | low;
 }
 
 }  // namespace nimbus

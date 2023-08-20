@@ -9,7 +9,7 @@
 namespace nimbus
 {
 
-static const int32_t k_insertLocationHead = -1;
+static const i32_t k_insertLocationHead = -1;
 
 class LayerDeck
 {
@@ -18,7 +18,7 @@ class LayerDeck
 
     ~LayerDeck();
 
-    void insertLayer(ref<Layer> p_layer, int32_t location = k_insertLocationHead);
+    void insertLayer(ref<Layer> p_layer, i32_t location = k_insertLocationHead);
 
     void removeLayer(ref<Layer> p_layer);
 
@@ -80,6 +80,6 @@ class LayerDeck
 
    private:
     std::deque<ref<Layer>> m_deck;
-    int32_t                m_lastRegularLayerIdx = 0;
+    i32_t                  m_lastRegularLayerIdx = 0;
 };
 }  // namespace nimbus

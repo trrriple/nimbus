@@ -87,9 +87,9 @@ class Texture : public refCounted
 
     struct Spec
     {
-        uint32_t       width          = 1;
-        uint32_t       height         = 1;
-        uint32_t       samples        = 1;
+        u32_t          width          = 1;
+        u32_t          height         = 1;
+        u32_t          samples        = 1;
         Format         format         = Format::RGBA;
         FormatInternal formatInternal = FormatInternal::RGBA8;
         DataType       dataType       = DataType::UNSIGNED_BYTE;
@@ -98,25 +98,25 @@ class Texture : public refCounted
         WrapType       wrapTypeS      = WrapType::CLAMP_TO_EDGE;
         WrapType       wrapTypeT      = WrapType::CLAMP_TO_EDGE;
         WrapType       wrapTypeR      = WrapType::CLAMP_TO_EDGE;
-        std::variant<std::array<float, 4>, std::array<int32_t, 4>, std::array<uint32_t, 4>> clearColor
-            = std::array<float, 4>{0.0f, 0.0f, 0.0f, 0.0f};
+        std::variant<std::array<f32_t, 4>, std::array<i32_t, 4>, std::array<u32_t, 4>> clearColor
+            = std::array<f32_t, 4>{0.0f, 0.0f, 0.0f, 0.0f};
     };
 
     static ref<Texture> s_create(const Type type, Spec& spec, bool submitForMe = true);
 
     virtual ~Texture() = default;
 
-    virtual void bind(const uint32_t glTextureUnit) const = 0;
+    virtual void bind(const u32_t glTextureUnit) const = 0;
 
     virtual void unbind() const = 0;
 
-    virtual void setData(void* data, uint32_t size) = 0;
+    virtual void setData(void* data, u32_t size) = 0;
 
-    virtual uint32_t getId() const = 0;
+    virtual u32_t getId() const = 0;
 
-    virtual uint32_t getWidth() const = 0;
+    virtual u32_t getWidth() const = 0;
 
-    virtual uint32_t getHeight() const = 0;
+    virtual u32_t getHeight() const = 0;
 
     virtual Type getType() const = 0;
     ;
@@ -132,31 +132,31 @@ class Texture : public refCounted
         return m_loaded;
     }
 
-    static void s_setMaxTextures(uint32_t maxTextures);
+    static void s_setMaxTextures(u32_t maxTextures);
 
-    static uint32_t s_getMaxTextures();
+    static u32_t s_getMaxTextures();
 
-    static uint32_t s_format(Format format);
+    static u32_t s_format(Format format);
 
-    static uint32_t s_formatInternal(FormatInternal format);
+    static u32_t s_formatInternal(FormatInternal format);
 
-    static uint32_t s_dataType(DataType dataType);
+    static u32_t s_dataType(DataType dataType);
 
-    static uint32_t s_filterType(FilterType filterType);
+    static u32_t s_filterType(FilterType filterType);
 
-    static uint32_t s_wrapType(WrapType wrapType);
+    static u32_t s_wrapType(WrapType wrapType);
 
    protected:
     Type m_type;
     Spec m_spec;
 
-    uint32_t    m_id;
+    u32_t       m_id;
     std::string m_path;
     bool        m_flipOnLoad;
     bool        m_loaded = false;
 
-    static const uint32_t  k_maxTexturesUninit = 0;
-    inline static uint32_t s_maxTextures       = k_maxTexturesUninit;
+    static const u32_t  k_maxTexturesUninit = 0;
+    inline static u32_t s_maxTextures       = k_maxTexturesUninit;
 
    private:
     // ensure only Resource manager can call this

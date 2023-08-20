@@ -25,7 +25,7 @@ Model::Model(std::string path, bool flipOnLoad, bool normalize) : m_flipOnLoad(f
 
 void Model::draw(ref<Shader>& shader, const glm::mat4& model)
 {
-    for (uint32_t i = 0; i < mp_meshes.size(); i++)
+    for (u32_t i = 0; i < mp_meshes.size(); i++)
     {
         mp_meshes[i]->setShader(shader);
         mp_meshes[i]->draw(model);
@@ -55,13 +55,13 @@ void Model::processNode(void* node, const void* scene)
     const aiScene* aiScene = static_cast<const struct aiScene*>(scene);
 
     // process all the node's meshes (if any)
-    for (uint32_t i = 0; i < ainode->mNumMeshes; i++)
+    for (u32_t i = 0; i < ainode->mNumMeshes; i++)
     {
         aiMesh* mesh = aiScene->mMeshes[ainode->mMeshes[i]];
         mp_meshes.push_back(processMesh(mesh, aiScene));
     }
     // then do the same for each of its children
-    for (uint32_t i = 0; i < ainode->mNumChildren; i++)
+    for (u32_t i = 0; i < ainode->mNumChildren; i++)
     {
         processNode(ainode->mChildren[i], scene);
     }
@@ -70,14 +70,14 @@ void Model::processNode(void* node, const void* scene)
 scope<Mesh> Model::processMesh(void* mesh, const void* scene)
 {
     std::vector<Mesh::Vertex> vertices;
-    std::vector<uint32_t>     indices;
+    std::vector<u32_t>        indices;
     std::vector<ref<Texture>> textures;
 
     aiMesh*        aimesh  = static_cast<aiMesh*>(mesh);
     const aiScene* aiScene = static_cast<const struct aiScene*>(scene);
 
     // process vertex positions, normals and texture coordinates
-    for (uint32_t i = 0; i < aimesh->mNumVertices; i++)
+    for (u32_t i = 0; i < aimesh->mNumVertices; i++)
     {
         Mesh::Vertex vertex;
         // we declare a placeholder vector since assimp uses its own vector
@@ -133,10 +133,10 @@ scope<Mesh> Model::processMesh(void* mesh, const void* scene)
 
     // now walk through each of the mesh's faces (a face is a mesh its
     // triangle) and retrieve the corresponding vertex indices.
-    for (uint32_t i = 0; i < aimesh->mNumFaces; i++)
+    for (u32_t i = 0; i < aimesh->mNumFaces; i++)
     {
         aiFace face = aimesh->mFaces[i];
-        for (uint32_t j = 0; j < face.mNumIndices; j++)
+        for (u32_t j = 0; j < face.mNumIndices; j++)
         {
             indices.push_back(face.mIndices[j]);
         }
@@ -198,7 +198,7 @@ std::vector<ref<Texture>> Model::loadMaterialTextures(void* mat, Texture::Type t
     }
     else
     {
-        NM_CORE_ASSERT(0, "Unknown Texture format 0x%x", texType);
+        NB_CORE_ASSERT(0, "Unknown Texture format 0x%x", texType);
     }
 
     std::vector<ref<Texture>> textures;

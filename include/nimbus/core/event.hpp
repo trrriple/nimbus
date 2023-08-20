@@ -10,7 +10,7 @@ namespace nimbus
 class Event
 {
    public:
-    enum class Type : int32_t
+    enum class Type : i32_t
     {
         FIRSTEVENT = 0,  // Unused (do not remove)
 
@@ -125,8 +125,8 @@ class Event
      */
     typedef struct CommonEvent
     {
-        uint32_t type;
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t type;
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
     } CommonEvent;
 
     /**
@@ -134,14 +134,14 @@ class Event
      */
     typedef struct DisplayEvent
     {
-        uint32_t type;       ///< ::DISPLAYEVENT
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t display;    ///< The associated display index
-        uint8_t  event;      ///< ::DisplayEventID
-        uint8_t  padding1;
-        uint8_t  padding2;
-        uint8_t  padding3;
-        int32_t  data1;  ///< Event dependent data
+        u32_t type;       ///< ::DISPLAYEVENT
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t display;    ///< The associated display index
+        u8_t  event;      ///< ::DisplayEventID
+        u8_t  padding1;
+        u8_t  padding2;
+        u8_t  padding3;
+        i32_t data1;  ///< Event dependent data
     } DisplayEvent;
 
     /**
@@ -149,15 +149,15 @@ class Event
      */
     typedef struct WindowEvent
     {
-        uint32_t type;       ///< ::WINDOWEVENT
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;   ///< The associated window
-        uint8_t  event;      ///< ::WindowEventID
-        uint8_t  padding1;
-        uint8_t  padding2;
-        uint8_t  padding3;
-        int32_t  data1;  ///< Event dependent data
-        int32_t  data2;  ///< Event dependent data
+        u32_t type;       ///< ::WINDOWEVENT
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t windowID;   ///< The associated window
+        u8_t  event;      ///< ::WindowEventID
+        u8_t  padding1;
+        u8_t  padding2;
+        u8_t  padding3;
+        i32_t data1;  ///< Event dependent data
+        i32_t data2;  ///< Event dependent data
     } WindowEvent;
 
     /**
@@ -165,14 +165,14 @@ class Event
      */
     typedef struct KeyboardEvent
     {
-        uint32_t type;       ///< ::KEYDOWN or ::KEYUP
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;   ///< The window with keyboard focus, if any
-        uint8_t  state;      ///< ::PRESSED or ::RELEASED
-        uint8_t  repeat;     ///< Non-zero if this is a key repeat
-        uint8_t  padding2;
-        uint8_t  padding3;
-        KeySym   keysym;  ///< The key that was pressed or released
+        u32_t  type;       ///< ::KEYDOWN or ::KEYUP
+        u32_t  timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t  windowID;   ///< The window with keyboard focus, if any
+        u8_t   state;      ///< ::PRESSED or ::RELEASED
+        u8_t   repeat;     ///< Non-zero if this is a key repeat
+        u8_t   padding2;
+        u8_t   padding3;
+        KeySym keysym;  ///< The key that was pressed or released
     } KeyboardEvent;
 
 #define TEXTEDITINGEVENT_TEXT_SIZE (32)
@@ -181,12 +181,12 @@ class Event
      */
     typedef struct TextEditingEvent
     {
-        uint32_t type;                              ///< ::TEXTEDITING
-        uint32_t timestamp;                         ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;                          ///< The window with keyboard focus, if any
-        char     text[TEXTEDITINGEVENT_TEXT_SIZE];  ///< The editing text
-        int32_t  start;                             ///< The start cursor of selected editing text
-        int32_t  length;                            ///< The length of selected editing text
+        u32_t type;                              ///< ::TEXTEDITING
+        u32_t timestamp;                         ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t windowID;                          ///< The window with keyboard focus, if any
+        char  text[TEXTEDITINGEVENT_TEXT_SIZE];  ///< The editing text
+        i32_t start;                             ///< The start cursor of selected editing text
+        i32_t length;                            ///< The length of selected editing text
     } TextEditingEvent;
 
     /**
@@ -196,13 +196,13 @@ class Event
      */
     typedef struct TextEditingExtEvent
     {
-        uint32_t type;       ///< ::TEXTEDITING_EXT
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;   ///< The window with keyboard focus, if any
-        char*    text;       ///< The editing text, which should be freed with
-                             ///< SDL_free(), and will not be NULL
-        int32_t start;       ///< The start cursor of selected editing text
-        int32_t length;      ///< The length of selected editing text
+        u32_t type;       ///< ::TEXTEDITING_EXT
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t windowID;   ///< The window with keyboard focus, if any
+        char* text;       ///< The editing text, which should be freed with
+                          ///< SDL_free(), and will not be NULL
+        i32_t start;      ///< The start cursor of selected editing text
+        i32_t length;     ///< The length of selected editing text
     } TextEditingExtEvent;
 
 #define TEXTINPUTEVENT_TEXT_SIZE (32)
@@ -211,10 +211,10 @@ class Event
      */
     typedef struct TextInputEvent
     {
-        uint32_t type;                            ///< ::TEXTINPUT
-        uint32_t timestamp;                       ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;                        ///< The window with keyboard focus, if any
-        char     text[TEXTINPUTEVENT_TEXT_SIZE];  ///< The input text
+        u32_t type;                            ///< ::TEXTINPUT
+        u32_t timestamp;                       ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t windowID;                        ///< The window with keyboard focus, if any
+        char  text[TEXTINPUTEVENT_TEXT_SIZE];  ///< The input text
     } TextInputEvent;
 
     /**
@@ -222,15 +222,15 @@ class Event
      */
     typedef struct MouseMotionEvent
     {
-        uint32_t type;       ///< ::MOUSEMOTION
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;   ///< The window with mouse focus, if any
-        uint32_t which;      ///< The mouse instance id, or TOUCH_MOUSEID
-        uint32_t state;      ///< The current button state
-        int32_t  x;          ///< X coordinate, relative to window
-        int32_t  y;          ///< Y coordinate, relative to window
-        int32_t  xrel;       ///< The relative motion in the X direction
-        int32_t  yrel;       ///< The relative motion in the Y direction
+        u32_t type;       ///< ::MOUSEMOTION
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t windowID;   ///< The window with mouse focus, if any
+        u32_t which;      ///< The mouse instance id, or TOUCH_MOUSEID
+        u32_t state;      ///< The current button state
+        i32_t x;          ///< X coordinate, relative to window
+        i32_t y;          ///< Y coordinate, relative to window
+        i32_t xrel;       ///< The relative motion in the X direction
+        i32_t yrel;       ///< The relative motion in the Y direction
     } MouseMotionEvent;
 
     /**
@@ -238,16 +238,16 @@ class Event
      */
     typedef struct MouseButtonEvent
     {
-        uint32_t type;       ///< ::MOUSEBUTTONDOWN or ::MOUSEBUTTONUP
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;   ///< The window with mouse focus, if any
-        uint32_t which;      ///< The mouse instance id, or TOUCH_MOUSEID
-        uint8_t  button;     ///< The mouse button index
-        uint8_t  state;      ///< ::PRESSED or ::RELEASED
-        uint8_t  clicks;     ///< 1 for single-click, 2 for double-click, etc.
-        uint8_t  padding1;
-        int32_t  x;  ///< X coordinate, relative to window
-        int32_t  y;  ///< Y coordinate, relative to window
+        u32_t type;       ///< ::MOUSEBUTTONDOWN or ::MOUSEBUTTONUP
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t windowID;   ///< The window with mouse focus, if any
+        u32_t which;      ///< The mouse instance id, or TOUCH_MOUSEID
+        u8_t  button;     ///< The mouse button index
+        u8_t  state;      ///< ::PRESSED or ::RELEASED
+        u8_t  clicks;     ///< 1 for single-click, 2 for f64_t-click, etc.
+        u8_t  padding1;
+        i32_t x;  ///< X coordinate, relative to window
+        i32_t y;  ///< Y coordinate, relative to window
     } MouseButtonEvent;
 
     /**
@@ -255,25 +255,25 @@ class Event
      */
     typedef struct MouseWheelEvent
     {
-        uint32_t type;       ///< ::MOUSEWHEEL
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;   ///< The window with mouse focus, if any
-        uint32_t which;      ///< The mouse instance id, or TOUCH_MOUSEID
-        int32_t  x;          ///< The amount scrolled horizontally, positive to the right
-                             ///< and negative to the left
-        int32_t y;           ///< The amount scrolled vertically, positive away from the
-                             ///< user and negative toward the user
-        uint32_t direction;  ///< Set to one of the MOUSEWHEEL_* defines. When
-                             ///< FLIPPED the values in X and Y will be
-                             ///< opposite. Multiply by -1 to change them back
-        float preciseX;      ///< The amount scrolled horizontally, positive to the
-                             ///< right and negative to the left, with float
-                             ///< precision (added in 2.0.18)
-        float preciseY;      ///< The amount scrolled vertically, positive away from
-                             ///< the user and negative toward the user, with float
-                             ///< precision (added in 2.0.18)
-        int32_t mouseX;      ///< X coordinate, relative to window (added in 2.26.0)
-        int32_t mouseY;      ///< Y coordinate, relative to window (added in 2.26.0)
+        u32_t type;       ///< ::MOUSEWHEEL
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t windowID;   ///< The window with mouse focus, if any
+        u32_t which;      ///< The mouse instance id, or TOUCH_MOUSEID
+        i32_t x;          ///< The amount scrolled horizontally, positive to the right
+                          ///< and negative to the left
+        i32_t y;          ///< The amount scrolled vertically, positive away from the
+                          ///< user and negative toward the user
+        u32_t direction;  ///< Set to one of the MOUSEWHEEL_* defines. When
+                          ///< FLIPPED the values in X and Y will be
+                          ///< opposite. Multiply by -1 to change them back
+        f32_t preciseX;   ///< The amount scrolled horizontally, positive to the
+                          ///< right and negative to the left, with f32_t
+                          ///< precision (added in 2.0.18)
+        f32_t preciseY;   ///< The amount scrolled vertically, positive away from
+                          ///< the user and negative toward the user, with f32_t
+                          ///< precision (added in 2.0.18)
+        i32_t mouseX;     ///< X coordinate, relative to window (added in 2.26.0)
+        i32_t mouseY;     ///< Y coordinate, relative to window (added in 2.26.0)
     } MouseWheelEvent;
 
     /**
@@ -281,15 +281,15 @@ class Event
      */
     typedef struct JoyAxisEvent
     {
-        uint32_t type;       ///< ::JOYAXISMOTION
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick instance id
-        uint8_t  axis;       ///< The joystick axis index
-        uint8_t  padding1;
-        uint8_t  padding2;
-        uint8_t  padding3;
-        int16_t  value;  ///< The axis value (range: -32768 to 32767)
-        uint16_t padding4;
+        u32_t type;       ///< ::JOYAXISMOTION
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick instance id
+        u8_t  axis;       ///< The joystick axis index
+        u8_t  padding1;
+        u8_t  padding2;
+        u8_t  padding3;
+        i16_t value;  ///< The axis value (range: -32768 to 32767)
+        u16_t padding4;
     } JoyAxisEvent;
 
     /**
@@ -297,15 +297,15 @@ class Event
      */
     typedef struct JoyBallEvent
     {
-        uint32_t type;       ///< ::JOYBALLMOTION
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick instance id
-        uint8_t  ball;       ///< The joystick trackball index
-        uint8_t  padding1;
-        uint8_t  padding2;
-        uint8_t  padding3;
-        int16_t  xrel;  ///< The relative motion in the X direction
-        int16_t  yrel;  ///< The relative motion in the Y direction
+        u32_t type;       ///< ::JOYBALLMOTION
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick instance id
+        u8_t  ball;       ///< The joystick trackball index
+        u8_t  padding1;
+        u8_t  padding2;
+        u8_t  padding3;
+        i16_t xrel;  ///< The relative motion in the X direction
+        i16_t yrel;  ///< The relative motion in the Y direction
     } JoyBallEvent;
 
     /**
@@ -313,18 +313,18 @@ class Event
      */
     typedef struct JoyHatEvent
     {
-        uint32_t type;       ///< ::JOYHATMOTION
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick instance id
-        uint8_t  hat;        ///< The joystick hat index
-        uint8_t  value;      ///< The hat position value.
-                             ///<   \sa HAT_LEFTUP HAT_UP HAT_RIGHTUP
-                             ///<   \sa HAT_LEFT HAT_CENTERED HAT_RIGHT
-                             ///<   \sa HAT_LEFTDOWN HAT_DOWN HAT_RIGHTDOWN
-                             ///
-                             ///<   Note that zero means the POV is centered.
-        uint8_t padding1;
-        uint8_t padding2;
+        u32_t type;       ///< ::JOYHATMOTION
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick instance id
+        u8_t  hat;        ///< The joystick hat index
+        u8_t  value;      ///< The hat position value.
+                          ///<   \sa HAT_LEFTUP HAT_UP HAT_RIGHTUP
+                          ///<   \sa HAT_LEFT HAT_CENTERED HAT_RIGHT
+                          ///<   \sa HAT_LEFTDOWN HAT_DOWN HAT_RIGHTDOWN
+                          ///
+                          ///<   Note that zero means the POV is centered.
+        u8_t padding1;
+        u8_t padding2;
     } JoyHatEvent;
 
     /**
@@ -332,13 +332,13 @@ class Event
      */
     typedef struct JoyButtonEvent
     {
-        uint32_t type;       ///< ::JOYBUTTONDOWN or ::JOYBUTTONUP
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick instance id
-        uint8_t  button;     ///< The joystick button index
-        uint8_t  state;      ///< ::PRESSED or ::RELEASED
-        uint8_t  padding1;
-        uint8_t  padding2;
+        u32_t type;       ///< ::JOYBUTTONDOWN or ::JOYBUTTONUP
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick instance id
+        u8_t  button;     ///< The joystick button index
+        u8_t  state;      ///< ::PRESSED or ::RELEASED
+        u8_t  padding1;
+        u8_t  padding2;
     } JoyButtonEvent;
 
     /**
@@ -346,13 +346,13 @@ class Event
      */
     typedef struct JoyDeviceEvent
     {
-        uint32_t type;       ///< ::JOYDEVICEADDED or ::JOYDEVICEREMOVED
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick device index for the ADDED event,
-                             ///< instance id for the REMOVED event
+        u32_t type;       ///< ::JOYDEVICEADDED or ::JOYDEVICEREMOVED
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick device index for the ADDED event,
+                          ///< instance id for the REMOVED event
     } JoyDeviceEvent;
 
-    enum class JoystickPowerLevel : int32_t
+    enum class JoystickPowerLevel : i32_t
     {
         UNKNOWN = -1,
         EMPTY,  /* <= 5% */
@@ -368,9 +368,9 @@ class Event
      */
     typedef struct JoyBatteryEvent
     {
-        uint32_t           type;       ///< ::JOYBATTERYUPDATED
-        uint32_t           timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t            which;      ///< The joystick instance id
+        u32_t              type;       ///< ::JOYBATTERYUPDATED
+        u32_t              timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t              which;      ///< The joystick instance id
         JoystickPowerLevel level;      ///< The joystick battery level
     } JoyBatteryEvent;
 
@@ -379,15 +379,15 @@ class Event
      */
     typedef struct ControllerAxisEvent
     {
-        uint32_t type;       ///< ::CONTROLLERAXISMOTION
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick instance id
-        uint8_t  axis;       ///< The controller axis (GameControllerAxis)
-        uint8_t  padding1;
-        uint8_t  padding2;
-        uint8_t  padding3;
-        int16_t  value;  ///< The axis value (range: -32768 to 32767)
-        uint16_t padding4;
+        u32_t type;       ///< ::CONTROLLERAXISMOTION
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick instance id
+        u8_t  axis;       ///< The controller axis (GameControllerAxis)
+        u8_t  padding1;
+        u8_t  padding2;
+        u8_t  padding3;
+        i16_t value;  ///< The axis value (range: -32768 to 32767)
+        u16_t padding4;
     } ControllerAxisEvent;
 
     /**
@@ -395,13 +395,13 @@ class Event
      */
     typedef struct ControllerButtonEvent
     {
-        uint32_t type;       ///< ::CONTROLLERBUTTONDOWN or ::CONTROLLERBUTTONUP
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick instance id
-        uint8_t  button;     ///< The controller button (GameControllerButton)
-        uint8_t  state;      ///< ::PRESSED or ::RELEASED
-        uint8_t  padding1;
-        uint8_t  padding2;
+        u32_t type;       ///< ::CONTROLLERBUTTONDOWN or ::CONTROLLERBUTTONUP
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick instance id
+        u8_t  button;     ///< The controller button (GameControllerButton)
+        u8_t  state;      ///< ::PRESSED or ::RELEASED
+        u8_t  padding1;
+        u8_t  padding2;
     } ControllerButtonEvent;
 
     /**
@@ -409,11 +409,11 @@ class Event
      */
     typedef struct ControllerDeviceEvent
     {
-        uint32_t type;       ///< ::CONTROLLERDEVICEADDED, ::CONTROLLERDEVICEREMOVED,
-                             ///< or ::CONTROLLERDEVICEREMAPPED
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick device index for the ADDED event,
-                             ///< instance id for the REMOVED or REMAPPED event
+        u32_t type;       ///< ::CONTROLLERDEVICEADDED, ::CONTROLLERDEVICEREMOVED,
+                          ///< or ::CONTROLLERDEVICEREMAPPED
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick device index for the ADDED event,
+                          ///< instance id for the REMOVED or REMAPPED event
     } ControllerDeviceEvent;
 
     /**
@@ -421,15 +421,15 @@ class Event
      */
     typedef struct ControllerTouchpadEvent
     {
-        uint32_t type;       ///< ::CONTROLLERTOUCHPADDOWN or
-                             ///< ::CONTROLLERTOUCHPADMOTION or ::CONTROLLERTOUCHPADUP
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;      ///< The joystick instance id
-        int32_t  touchpad;   ///< The index of the touchpad
-        int32_t  finger;     ///< The index of the finger on the touchpad
-        float    x;          ///< Normalized in the range 0...1 with 0 being on the left
-        float    y;          ///< Normalized in the range 0...1 with 0 being at the top
-        float    pressure;   ///< Normalized in the range 0...1
+        u32_t type;       ///< ::CONTROLLERTOUCHPADDOWN or
+                          ///< ::CONTROLLERTOUCHPADMOTION or ::CONTROLLERTOUCHPADUP
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;      ///< The joystick instance id
+        i32_t touchpad;   ///< The index of the touchpad
+        i32_t finger;     ///< The index of the finger on the touchpad
+        f32_t x;          ///< Normalized in the range 0...1 with 0 being on the left
+        f32_t y;          ///< Normalized in the range 0...1 with 0 being at the top
+        f32_t pressure;   ///< Normalized in the range 0...1
     } ControllerTouchpadEvent;
 
     /**
@@ -437,16 +437,16 @@ class Event
      */
     typedef struct ControllerSensorEvent
     {
-        uint32_t type;          ///< ::CONTROLLERSENSORUPDATE
-        uint32_t timestamp;     ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;         ///< The joystick instance id
-        int32_t  sensor;        ///< The type of the sensor, one of the values of
-                                ///< SensorType
-        float data[3];          ///< Up to 3 values from the sensor, as defined in
-                                ///< SDL_sensor.h
-        uint64_t timestamp_us;  ///< The timestamp of the sensor reading in
-                                ///< microseconds, if the hardware provides this
-                                ///< information.
+        u32_t type;          ///< ::CONTROLLERSENSORUPDATE
+        u32_t timestamp;     ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;         ///< The joystick instance id
+        i32_t sensor;        ///< The type of the sensor, one of the values of
+                             ///< SensorType
+        f32_t data[3];       ///< Up to 3 values from the sensor, as defined in
+                             ///< SDL_sensor.h
+        u64_t timestamp_us;  ///< The timestamp of the sensor reading in
+                             ///< microseconds, if the hardware provides this
+                             ///< information.
     } ControllerSensorEvent;
 
     /**
@@ -454,16 +454,16 @@ class Event
      */
     typedef struct AudioDeviceEvent
     {
-        uint32_t type;       ///< ::AUDIODEVICEADDED, or ::AUDIODEVICEREMOVED
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t which;      ///< The audio device index for the ADDED event (valid
-                             ///< until next SDL_GetNumAudioDevices() call),
-                             ///< SDL_AudioDeviceID for the REMOVED event
-        uint8_t iscapture;   ///< zero if an output device, non-zero if a capture
-                             ///< device.
-        uint8_t padding1;
-        uint8_t padding2;
-        uint8_t padding3;
+        u32_t type;       ///< ::AUDIODEVICEADDED, or ::AUDIODEVICEREMOVED
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t which;      ///< The audio device index for the ADDED event (valid
+                          ///< until next SDL_GetNumAudioDevices() call),
+                          ///< SDL_AudioDeviceID for the REMOVED event
+        u8_t iscapture;   ///< zero if an output device, non-zero if a capture
+                          ///< device.
+        u8_t padding1;
+        u8_t padding2;
+        u8_t padding3;
     } AudioDeviceEvent;
 
     /**
@@ -471,16 +471,16 @@ class Event
      */
     typedef struct TouchFingerEvent
     {
-        uint32_t type;       ///< ::FINGERMOTION or ::FINGERDOWN or ::FINGERUP
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int64_t  touchId;    ///< The touch device id
-        int64_t  fingerId;
-        float    x;         ///< Normalized in the range 0...1
-        float    y;         ///< Normalized in the range 0...1
-        float    dx;        ///< Normalized in the range -1...1
-        float    dy;        ///< Normalized in the range -1...1
-        float    pressure;  ///< Normalized in the range 0...1
-        uint32_t windowID;  ///< The window underneath the finger, if any
+        u32_t type;       ///< ::FINGERMOTION or ::FINGERDOWN or ::FINGERUP
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i64_t touchId;    ///< The touch device id
+        i64_t fingerId;
+        f32_t x;         ///< Normalized in the range 0...1
+        f32_t y;         ///< Normalized in the range 0...1
+        f32_t dx;        ///< Normalized in the range -1...1
+        f32_t dy;        ///< Normalized in the range -1...1
+        f32_t pressure;  ///< Normalized in the range 0...1
+        u32_t windowID;  ///< The window underneath the finger, if any
     } TouchFingerEvent;
 
     /**
@@ -488,15 +488,15 @@ class Event
      */
     typedef struct MultiGestureEvent
     {
-        uint32_t type;       ///< ::MULTIGESTURE
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int64_t  touchId;    ///< The touch device id
-        float    dTheta;
-        float    dDist;
-        float    x;
-        float    y;
-        uint16_t numFingers;
-        uint16_t padding;
+        u32_t type;       ///< ::MULTIGESTURE
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i64_t touchId;    ///< The touch device id
+        f32_t dTheta;
+        f32_t dDist;
+        f32_t x;
+        f32_t y;
+        u16_t numFingers;
+        u16_t padding;
     } MultiGestureEvent;
 
     /**
@@ -504,14 +504,14 @@ class Event
      */
     typedef struct DollarGestureEvent
     {
-        uint32_t type;       ///< ::DOLLARGESTURE or ::DOLLARRECORD
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        int64_t  touchId;    ///< The touch device id
-        int64_t  gestureId;
-        uint32_t numFingers;
-        float    error;
-        float    x;  ///< Normalized center of gesture
-        float    y;  ///< Normalized center of gesture
+        u32_t type;       ///< ::DOLLARGESTURE or ::DOLLARRECORD
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        i64_t touchId;    ///< The touch device id
+        i64_t gestureId;
+        u32_t numFingers;
+        f32_t error;
+        f32_t x;  ///< Normalized center of gesture
+        f32_t y;  ///< Normalized center of gesture
     } DollarGestureEvent;
 
     /**
@@ -522,12 +522,12 @@ class Event
      */
     typedef struct DropEvent
     {
-        uint32_t type;       ///< ::DROPBEGIN or ::DROPFILE or ::DROPTEXT or
-                             ///< ::DROPCOMPLETE
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        char*    file;       ///< The file name, which should be freed with SDL_free(),
-                             ///< is NULL on begin/complete
-        uint32_t windowID;   ///< The window that was dropped on, if any
+        u32_t type;       ///< ::DROPBEGIN or ::DROPFILE or ::DROPTEXT or
+                          ///< ::DROPCOMPLETE
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        char* file;       ///< The file name, which should be freed with SDL_free(),
+                          ///< is NULL on begin/complete
+        u32_t windowID;   ///< The window that was dropped on, if any
     } DropEvent;
 
     /**
@@ -535,14 +535,14 @@ class Event
      */
     typedef struct SensorEvent
     {
-        uint32_t type;          ///< ::SENSORUPDATE
-        uint32_t timestamp;     ///< In milliseconds, populated using SDL_GetTicks()
-        int32_t  which;         ///< The instance ID of the sensor
-        float    data[6];       ///< Up to 6 values from the sensor - additional values
-                                ///< can be queried using SDL_SensorGetData()
-        uint64_t timestamp_us;  ///< The timestamp of the sensor reading in
-                                ///< microseconds, if the hardware provides this
-                                ///< information.
+        u32_t type;          ///< ::SENSORUPDATE
+        u32_t timestamp;     ///< In milliseconds, populated using SDL_GetTicks()
+        i32_t which;         ///< The instance ID of the sensor
+        f32_t data[6];       ///< Up to 6 values from the sensor - additional values
+                             ///< can be queried using SDL_SensorGetData()
+        u64_t timestamp_us;  ///< The timestamp of the sensor reading in
+                             ///< microseconds, if the hardware provides this
+                             ///< information.
     } SensorEvent;
 
     /**
@@ -550,8 +550,8 @@ class Event
      */
     typedef struct QuitEvent
     {
-        uint32_t type;       ///< ::QUIT
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t type;       ///< ::QUIT
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
     } QuitEvent;
 
     /**
@@ -559,8 +559,8 @@ class Event
      */
     typedef struct OSEvent
     {
-        uint32_t type;       ///< ::QUIT
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t type;       ///< ::QUIT
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
     } OSEvent;
 
     /**
@@ -568,12 +568,12 @@ class Event
      */
     typedef struct UserEvent
     {
-        uint32_t type;       ///< ::USEREVENT through ::LASTEVENT-1
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        uint32_t windowID;   ///< The associated window if any
-        int32_t  code;       ///< User defined event code
-        void*    data1;      ///< User defined data pointer
-        void*    data2;      ///< User defined data pointer
+        u32_t type;       ///< ::USEREVENT through ::LASTEVENT-1
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        u32_t windowID;   ///< The associated window if any
+        i32_t code;       ///< User defined event code
+        void* data1;      ///< User defined data pointer
+        void* data2;      ///< User defined data pointer
     } UserEvent;
 
     /**
@@ -585,9 +585,9 @@ class Event
      */
     typedef struct SysWMEvent
     {
-        uint32_t type;       ///< ::SYSWMEVENT
-        uint32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
-        void*    msg;        ///< driver dependent data, defined in SDL_syswm.h
+        u32_t type;       ///< ::SYSWMEVENT
+        u32_t timestamp;  ///< In milliseconds, populated using SDL_GetTicks()
+        void* msg;        ///< driver dependent data, defined in SDL_syswm.h
     } SysWMEvent;
 
     /**
@@ -635,7 +635,7 @@ class Event
            event size has been exposed in the SDL API up to this point, we must
            continue to define the size of the event structure as 80 bytes.
          */
-        uint8_t padding[sizeof(void*) <= 8 ? 56 : sizeof(void*) == 16 ? 64 : 3 * sizeof(void*)];
+        u8_t padding[sizeof(void*) <= 8 ? 56 : sizeof(void*) == 16 ? 64 : 3 * sizeof(void*)];
     } EventDetails;
 
     Event() = default;

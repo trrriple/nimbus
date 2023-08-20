@@ -11,14 +11,14 @@
 namespace nimbus
 {
 
-Window::Window(const std::string& windowCaption, uint32_t width, uint32_t height)
-    : m_width(width), m_height(height), m_aspectRatio(static_cast<float>(width) / static_cast<float>(height))
+Window::Window(const std::string& windowCaption, u32_t width, u32_t height)
+    : m_width(width), m_height(height), m_aspectRatio(static_cast<f32_t>(width) / static_cast<f32_t>(height))
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        NM_CORE_ASSERT(0, "SDL could not init. SDL_Error: %s", SDL_GetError());
+        NB_CORE_ASSERT(0, "SDL could not init. SDL_Error: %s", SDL_GetError());
     }
 
     // relative mouse
@@ -33,12 +33,12 @@ Window::Window(const std::string& windowCaption, uint32_t width, uint32_t height
 
     m_windowId = SDL_GetWindowID(static_cast<SDL_Window*>(mp_window));
 
-    NM_CORE_ASSERT(mp_window, "Window could not be created. sdl error %s", SDL_GetError());
+    NB_CORE_ASSERT(mp_window, "Window could not be created. sdl error %s", SDL_GetError());
 }
 
 Window::~Window()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     SDL_DestroyWindow(static_cast<SDL_Window*>(mp_window));
     mp_window = nullptr;
@@ -51,7 +51,7 @@ Window::~Window()
 
 void Window::graphicsContextInit()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
 #ifdef NIMBUS_GL_DEBUG
     int contextFlags = 0;
@@ -70,7 +70,7 @@ void Window::graphicsContextInit()
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     mp_context = static_cast<void*>(SDL_GL_CreateContext(static_cast<SDL_Window*>(mp_window)));
-    NM_CORE_ASSERT(mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
+    NB_CORE_ASSERT(mp_context, "Failed to created OpenGL Context %s", SDL_GetError());
 
     // Set V-sync
     SDL_GL_SetSwapInterval(m_VSyncOn);
@@ -78,14 +78,14 @@ void Window::graphicsContextInit()
 
 void Window::setEventCallback(const WindowEventCallback_t& callback)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     m_evtCallback = callback;
 }
 
 void Window::setExitCallback(const WindowEventCallback_t& callback)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     m_exitCallback = callback;
 }
@@ -101,7 +101,7 @@ void Window::swapBuffers()
 
 void Window::pumpEvents()
 {
-    NM_PROFILE();
+    NB_PROFILE();
 
     m_event.clear();
 
@@ -145,35 +145,35 @@ void Window::pumpEvents()
 
 bool Window::keyPressed(ScanCode scanCode) const
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    const uint8_t* keyboardState = SDL_GetKeyboardState(nullptr);
+    const u8_t* keyboardState = SDL_GetKeyboardState(nullptr);
 
     // Will break if SDL changes their keymap
-    return keyboardState[static_cast<uint32_t>(scanCode)];
+    return keyboardState[static_cast<u32_t>(scanCode)];
 }
 
 bool Window::modKeyPressed(KeyMod keyMod) const
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     // Will break if SDL changes their keymap
-    return SDL_GetModState() & static_cast<uint32_t>(keyMod);
+    return SDL_GetModState() & static_cast<u32_t>(keyMod);
 }
 
 bool Window::mouseButtonPressed(MouseButton button) const
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    const uint32_t mouseState = SDL_GetMouseState(nullptr, nullptr);
+    const u32_t mouseState = SDL_GetMouseState(nullptr, nullptr);
 
     // Will break if SDL changes their button map
-    return mouseState & SDL_BUTTON(static_cast<uint32_t>(button));
+    return mouseState & SDL_BUTTON(static_cast<u32_t>(button));
 }
 
 glm::vec2 Window::mousePos() const
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     int xPos;
     int yPos;
@@ -183,14 +183,14 @@ glm::vec2 Window::mousePos() const
     return {xPos, yPos};
 }
 
-float Window::mouseWheelPos() const
+f32_t Window::mouseWheelPos() const
 {
     return m_mouseWheelPos;
 }
 
 void Window::setVSync(bool on)
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
     if (on != m_VSyncOn)
     {
@@ -201,7 +201,7 @@ void Window::setVSync(bool on)
 
 void Window::_handleWindowEvents()
 {
-    NM_PROFILE_DETAIL();
+    NB_PROFILE_DETAIL();
 
     switch (m_event.getDetails().window.event)
     {
@@ -211,7 +211,7 @@ void Window::_handleWindowEvents()
             m_width  = m_event.getDetails().window.data1;
             m_height = m_event.getDetails().window.data2;
 
-            m_aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
+            m_aspectRatio = static_cast<f32_t>(m_width) / static_cast<f32_t>(m_height);
 
             GraphicsApi::setViewportSize(0, 0, m_width, m_height);
 
@@ -242,13 +242,13 @@ void Window::_handleWindowEvents()
 
 void Window::_calcFramerate()
 {
-    NM_PROFILE_TRACE();
+    NB_PROFILE_TRACE();
 
-    float tNow_s = core::getTime_s();
+    f32_t tNow_s = core::getTime_s();
 
-    static uint32_t frameCount    = 0;
-    static float    tLastFrame_s  = 0;
-    static float    samplesPeriod = 0.0;
+    static u32_t frameCount    = 0;
+    static f32_t tLastFrame_s  = 0;
+    static f32_t samplesPeriod = 0.0;
 
     m_tFrame_s   = tNow_s - tLastFrame_s;
     tLastFrame_s = tNow_s;
@@ -259,7 +259,7 @@ void Window::_calcFramerate()
 
     if (samplesPeriod >= 0.5)
     {
-        m_fps         = (float)frameCount / (samplesPeriod);
+        m_fps         = (f32_t)frameCount / (samplesPeriod);
         frameCount    = 0;
         samplesPeriod = 0;
     }

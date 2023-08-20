@@ -22,9 +22,9 @@ class RenderStatsPanel
     {
     }
 
-    void onDraw(float deltaTime)
+    void onDraw(f32_t deltaTime)
     {
-        NM_UNUSED(deltaTime);
+        NB_UNUSED(deltaTime);
         char buf[128];
         snprintf(buf,
                  128,
@@ -80,7 +80,7 @@ class RenderStatsPanel
                                  0.0f,
                                  20.0f,
                                  ImVec2(0, 0),
-                                 sizeof(float));
+                                 sizeof(f32_t));
 
                 ImGui::PushItemWidth(70.0f);
                 const auto swBank = mp_appRef->getSwBank().getBank();
@@ -119,7 +119,7 @@ class RenderStatsPanel
                     ImGui::TableHeadersRow();
 
                     auto layerNames = mp_appRef->getLayerDeck().getLayerNames();
-                    for (uint32_t i = 0; i < layerNames.size(); i++)
+                    for (u32_t i = 0; i < layerNames.size(); i++)
                     {
                         ImGui::TableNextRow();
                         ImGui::TableNextColumn();
@@ -143,8 +143,8 @@ class RenderStatsPanel
     Window*      mp_appWinRef;
     bool         m_depthTest = false;
 
-    inline static const uint32_t k_frameHistoryLength = 60 * 2 + 1;
-    std::vector<float>           m_frameTimes_ms;
+    inline static const u32_t k_frameHistoryLength = 60 * 2 + 1;
+    std::vector<f32_t>        m_frameTimes_ms;
 };
 
 }  // namespace nimbus
