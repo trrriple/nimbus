@@ -33,7 +33,7 @@ class Shader : public refCounted
     virtual const std::string& getFragmentPath() const = 0;
 
     /// Activates the shader.
-    virtual void bind() const = 0;
+    virtual bool bind() const = 0;
 
     /// Getter for the ID of the shader.
     /// @return The ID of the shader.

@@ -32,7 +32,7 @@ class GlShader : public Shader
 
     const std::string& getFragmentPath() const override;
 
-    void bind() const override;
+    bool bind() const override;
 
     u32_t getId() const override
     {

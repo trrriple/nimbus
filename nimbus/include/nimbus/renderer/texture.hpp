@@ -105,7 +105,7 @@ class Texture : public refCounted
 
     virtual ~Texture() = default;
 
-    virtual void bind(const u32_t glTextureUnit) const = 0;
+    virtual bool bind(const u32_t glTextureUnit) const = 0;
 
     virtual void unbind() const = 0;
 

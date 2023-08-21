@@ -114,8 +114,8 @@ class Physics2D : public refCounted
     void           removeRigidBody(ref<RigidBody>& p_body);
 
    private:
-    const i32_t k_solverVelocityIterations = 6;
-    const i32_t k_solverPositionIterations = 2;
+    const i32_t k_solverVelocityIterations = 8;
+    const i32_t k_solverPositionIterations = 3;
 
     struct WorldData;
     WorldData* mp_worldData;

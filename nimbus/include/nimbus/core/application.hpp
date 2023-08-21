@@ -104,8 +104,8 @@ class Application
     // Parameters
     ///////////////////////////
     std::string m_name;
-    f32_t       m_updatePeriodLimit = 0.0167f;
-    f32_t       m_drawPeriodLimit   = 0.0167f;
+    f32_t       m_updatePeriodLimit = 0.00834f; // 120 hz
+    f32_t       m_drawPeriodLimit   = 0.00834f; // 120 hz
 
     ///////////////////////////
     // State

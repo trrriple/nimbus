@@ -278,8 +278,17 @@ void ParticleEmitter::draw()
         return;
     }
 
-    mp_texture->bind(0);
-    mp_shader->bind();
+    // if these aren't loaded, don't proceed
+    if(!mp_texture->bind(0))
+    {
+        return;
+    }
+    
+    if(!mp_shader->bind())
+    {
+        return;
+    }
+
     mp_shader->setInt("particleTexture", 0);
 
     mp_instanceVbo->bind();

@@ -17,7 +17,7 @@ class GlTexture : public Texture
 
     ~GlTexture();
 
-    virtual void bind(const u32_t glTextureUnit) const override;
+    virtual bool bind(const u32_t glTextureUnit) const override;
 
     virtual void unbind() const override;
 

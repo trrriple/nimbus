@@ -82,13 +82,20 @@ const std::string& GlShader::getFragmentPath() const
 }
 
 // user/activate the shader
-void GlShader::bind() const
+bool GlShader::bind() const
 {
     NB_PROFILE_TRACE();
+
+    if (!m_loaded)
+    {
+        return false;
+    }
 
     ref<GlShader> p_this = const_cast<GlShader*>(this);
 
     Renderer::s_submit([p_this]() { glUseProgram(p_this->m_id); });
+
+    return true;
 }
 
 // utility uniform functions
@@ -336,6 +343,7 @@ void GlShader::_compileShader(const std::string& vertexSource, const std::string
             }
 
             delete[] uniformName;
+            m_loaded = true;
         });
 }
 

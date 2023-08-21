@@ -131,7 +131,7 @@ GlTexture::~GlTexture()
     Renderer::s_submitObject([id]() { glDeleteTextures(1, &id); });
 }
 
-void GlTexture::bind(const u32_t glTextureUnit) const
+bool GlTexture::bind(const u32_t glTextureUnit) const
 {
     NB_CORE_ASSERT_STATIC((glTextureUnit <= s_maxTextures),
                           "glTextureUnit > s_setMaxTextures. Did you call "
@@ -139,7 +139,7 @@ void GlTexture::bind(const u32_t glTextureUnit) const
 
     if (!m_loaded)
     {
-        return;
+        return false;
     }
 
     ref<GlTexture> p_this = const_cast<GlTexture*>(this);
@@ -151,6 +151,7 @@ void GlTexture::bind(const u32_t glTextureUnit) const
 
             glBindTexture(p_this->m_spec.samples > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, p_this->m_id);
         });
+    return true;
 }
 
 void GlTexture::unbind() const
