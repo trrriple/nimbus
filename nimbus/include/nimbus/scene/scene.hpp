@@ -3,6 +3,8 @@
 
 #include "nimbus/scene/camera.hpp"
 #include "nimbus/physics/physics2D.hpp"
+
+#define ENTT_NOEXCEPTION
 #include "entt/entity/registry.hpp"
 
 namespace nimbus

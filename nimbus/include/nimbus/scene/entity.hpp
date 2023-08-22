@@ -1,6 +1,8 @@
 #pragma once
 #include "nimbus/core/common.hpp"
 #include "nimbus/scene/scene.hpp"
+
+#define ENTT_NOEXCEPTION
 #include "entt/entity/registry.hpp"
 
 namespace nimbus

@@ -1,6 +1,8 @@
 #pragma once
 #include "nimbus/core/common.hpp"
 
+#include <string>
+
 namespace nimbus
 {
 
@@ -19,8 +21,15 @@ class ScriptEngine
     // Functions
     ////////////////////////////////////////////////////////////////////////////
    public:
-    static void s_init(const std::string& installPath);
-    static void s_destroy();
+    static void  s_init(const std::string& installPath);
+    static void  s_destroy();
+    static void* s_getStaticMethodPtr(const std::wstring& name);
+    static void  s_freeMemory(void* p);
+    static void  s_loadScriptAssembly();
+    static void  s_unloadScriptAssembly();
+    static void  s_reloadScriptAssembly();
+
+    static void s_testCallScript();
 };
 
 }  // namespace nimbus

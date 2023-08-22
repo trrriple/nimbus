@@ -6,6 +6,7 @@
 *.a
 *.o
 *.bak
+.vs*
 
 build/
 vendor/assimp*
@@ -23,6 +24,8 @@ vendor/toml*
 # script core stuff
 resources/scriptCore/obj*
 resources/scriptCore/bin*
+resources/scripts/bin*
+resources/scripts/obj*
 # cmake stuff
 CMakeFiles/
 CMakeCache.txt

@@ -730,6 +730,21 @@ class FelixLayer : public Layer
                     _save(true);
                 }
 
+                if (ImGui::MenuItem("Test call script"))
+                {
+                    ScriptEngine::s_testCallScript();
+                }
+
+                if (ImGui::MenuItem("Unload Script Assembly"))
+                {
+                    ScriptEngine::s_unloadScriptAssembly();
+                }
+
+                if (ImGui::MenuItem("Load Script Assembly"))
+                {
+                    ScriptEngine::s_loadScriptAssembly();
+                }
+
                 if (ImGui::MenuItem("Exit"))
                 {
                     // Handle when 'Exit' is clicked

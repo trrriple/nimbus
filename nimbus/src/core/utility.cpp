@@ -9,6 +9,9 @@
 
 #include <fstream>
 
+#include "nimbus/platform/os/os.hpp"
+
+
 namespace nimbus::util
 {
 
@@ -107,6 +110,24 @@ char* readFileAsBytes(const std::string& filepath, u32_t* outSize)
 
     *outSize = size;
     return buffer;
+}
+
+std::string getExecutablePath()
+{
+#if defined(NB_WINDOWS)
+    char buffer[MAX_PATH];
+    GetModuleFileName(nullptr, buffer, MAX_PATH);
+    return std::filesystem::path(buffer).generic_string();
+#elif defined(NB_LINUX)
+    char    buffer[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+    if (len != -1)
+    {
+        buffer[len] = '\0';
+        return std::filesystem::path(buffer).generic_string();
+    }
+#endif
+    return "";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
