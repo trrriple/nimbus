@@ -10,7 +10,7 @@
 namespace nimbus
 {
 
-class ResourceManager
+class NIMBUS_API ResourceManager
 {
    public:
     ResourceManager();

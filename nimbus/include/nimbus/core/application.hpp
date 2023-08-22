@@ -15,14 +15,14 @@
 namespace nimbus
 {
 
-class Application
+class NIMBUS_API Application
 {
    public:
     Application(const std::string& name = "Program", u32_t windowWidth = 1280, u32_t windowHeight = 720);
 
     virtual ~Application();
 
-    inline static Application& s_get()
+    static Application& s_get()
     {
         return *sp_instance;
     }
@@ -50,6 +50,11 @@ class Application
     void guiRender();
 
     void guiSubsystemCaptureEvents(bool capture);
+
+    void* getGuiContext()
+    {
+        return mp_guiSubsystemLayer->getGuiContext();
+    }
 
     const u8_t* getKeyboardState() const;
 
@@ -121,10 +126,10 @@ class Application
     ///////////////////////////
     // References
     ///////////////////////////
-    inline static Application* sp_instance          = nullptr;
-    scope<Window>              mp_window            = nullptr;
-    scope<ResourceManager>     mp_resourceManager   = nullptr;
-    ref<GuiSubsystem>          mp_guiSubsystemLayer = nullptr;
+    static Application*    sp_instance;
+    scope<Window>          mp_window            = nullptr;
+    scope<ResourceManager> mp_resourceManager   = nullptr;
+    ref<GuiSubsystem>      mp_guiSubsystemLayer = nullptr;
 };
 
 Application* createApplication();

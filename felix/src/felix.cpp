@@ -680,6 +680,13 @@ class FelixLayer : public Layer
 
     virtual void onGuiDraw(f32_t deltaTime) override
     {
+        
+        //////////////////////////////////////////////////////
+        // Need to set context in this because nimbus is DLL
+        //////////////////////////////////////////////////////
+        ImGuiContext* p_context = static_cast<ImGuiContext*>(mp_appRef->getGuiContext());
+        ImGui::SetCurrentContext(p_context);
+
         ///////////////////////////
         // Allow external file drops
         ///////////////////////////

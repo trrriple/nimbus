@@ -12,7 +12,7 @@
 namespace nimbus
 {
 
-class Mesh : public refCounted
+class NIMBUS_API Mesh : public refCounted
 {
     inline static const std::string k_texDiffNm = "texDiff";
     inline static const std::string k_texSpecNm = "texSpec";

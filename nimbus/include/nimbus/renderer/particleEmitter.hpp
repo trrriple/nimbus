@@ -13,7 +13,7 @@
 
 namespace nimbus
 {
-class ParticleEmitter : public refCounted
+class NIMBUS_API ParticleEmitter : public refCounted
 {
    public:
     struct colorSpec

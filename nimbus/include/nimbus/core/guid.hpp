@@ -4,7 +4,7 @@
 namespace nimbus
 {
 
-class Guid
+class NIMBUS_API Guid
 {
    public:
     Guid();

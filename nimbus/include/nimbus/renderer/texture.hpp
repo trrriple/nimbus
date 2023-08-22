@@ -9,7 +9,7 @@
 namespace nimbus
 {
 
-class Texture : public refCounted
+class NIMBUS_API Texture : public refCounted
 {
    public:
     enum class Type

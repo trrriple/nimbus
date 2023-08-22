@@ -13,7 +13,7 @@
 namespace nimbus
 {
 
-class Window : public refCounted
+class NIMBUS_API Window : public refCounted
 {
     typedef std::function<void(Event&)> WindowEventCallback_t;
 

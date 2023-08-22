@@ -5,7 +5,7 @@
 namespace nimbus
 {
 
-class Camera : public refCounted
+class NIMBUS_API Camera : public refCounted
 {
    public:
     enum class Type

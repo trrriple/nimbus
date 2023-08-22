@@ -15,37 +15,37 @@ namespace nimbus::util
 // Util functions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos, f32_t screenWidth, f32_t screenHeight);
+NIMBUS_API glm::vec2 pixelPosToScreenPos(glm::vec2 pixelPos, f32_t screenWidth, f32_t screenHeight);
 
-glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize, f32_t screenWidth, f32_t screenHeight);
+NIMBUS_API glm::vec2 pixelSizeToScreenSize(glm::vec2 pixelSize, f32_t screenWidth, f32_t screenHeight);
 
-glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity, f32_t screenWidth, f32_t screenHeight);
+NIMBUS_API glm::vec2 pixelVelocityToScreenVelocity(glm::vec2 pixelVelocity, f32_t screenWidth, f32_t screenHeight);
 
-glm::vec2 mapPixToScreen(glm::vec2 pixPos,
-                         f32_t     screenMinX,
-                         f32_t     screenMaxX,
-                         f32_t     screenMinY,
-                         f32_t     screenMaxY,
-                         int       imgWidth,
-                         int       imgHeight);
+NIMBUS_API glm::vec2 mapPixToScreen(glm::vec2 pixPos,
+                                   f32_t     screenMinX,
+                                   f32_t     screenMaxX,
+                                   f32_t     screenMinY,
+                                   f32_t     screenMaxY,
+                                   int       imgWidth,
+                                   int       imgHeight);
 
-std::vector<std::string> openFile(const std::string&              prompt      = "",
-                                  const std::string&              startPath   = ".",
-                                  const std::vector<std::string>& filters     = {"All Files", "*"},
-                                  bool                            multiSelect = false);
+NIMBUS_API std::vector<std::string> openFile(const std::string&              prompt      = "",
+                                            const std::string&              startPath   = ".",
+                                            const std::vector<std::string>& filters     = {"All Files", "*"},
+                                            bool                            multiSelect = false);
 
-std::string saveFile(const std::string&              prompt    = "",
-                     const std::string&              startPath = ".",
-                     const std::vector<std::string>& filters   = {"All Files", "*"});
+NIMBUS_API std::string saveFile(const std::string&              prompt    = "",
+                               const std::string&              startPath = ".",
+                               const std::vector<std::string>& filters   = {"All Files", "*"});
 
-char* readFileAsBytes(const std::string& filepath, u32_t* outSize);
+NIMBUS_API char* readFileAsBytes(const std::string& filepath, u32_t* outSize);
 
-std::string getExecutablePath();
+NIMBUS_API std::string getExecutablePath();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Util classes
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class Transform
+class NIMBUS_API Transform
 {
    public:
     Transform() = default;

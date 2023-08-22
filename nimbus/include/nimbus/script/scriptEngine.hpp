@@ -8,7 +8,7 @@ namespace nimbus
 
 struct ScriptEngineInternalData;
 
-class ScriptEngine
+class NIMBUS_API ScriptEngine
 {
     ////////////////////////////////////////////////////////////////////////////
     // Variables

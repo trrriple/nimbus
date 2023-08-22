@@ -8,7 +8,7 @@
 namespace nimbus
 {
 
-class Framebuffer : public refCounted
+class NIMBUS_API Framebuffer : public refCounted
 {
    public:
     // does anyone even have 8k res?

@@ -4,7 +4,7 @@
 
 namespace nimbus
 {
-class GraphicsApi
+class NIMBUS_API GraphicsApi
 {
    public:
     enum class BlendingMode

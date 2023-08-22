@@ -6,7 +6,7 @@
 namespace nimbus
 {
 
-class SceneSerializer
+class NIMBUS_API SceneSerializer
 {
    public:
     SceneSerializer(const ref<Scene>& p_scene);

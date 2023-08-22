@@ -11,7 +11,7 @@ namespace nimbus
 
 static const i32_t k_insertLocationHead = -1;
 
-class LayerDeck
+class NIMBUS_API LayerDeck
 {
    public:
     LayerDeck() = default;

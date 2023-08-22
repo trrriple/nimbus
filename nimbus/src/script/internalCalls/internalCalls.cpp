@@ -13,6 +13,7 @@ INTERNAL_CALL void ic_coreInfo(char* msg)
 {
     Log::coreInfo(msg);
     f32_t fps = Application::s_get().getWindow().m_fps;
+    Application* app = &Application::s_get();
     Log::coreInfo("FPS %f", fps);
 }
 

@@ -11,7 +11,7 @@
 
 namespace nimbus
 {
-class Renderer2D : public refCounted
+class NIMBUS_API Renderer2D : public refCounted
 {
    public:
     struct Stats
@@ -56,7 +56,7 @@ class Renderer2D : public refCounted
 
     static void s_resetStats();
 
-    inline static Stats s_getStats()
+    static Stats s_getStats()
     {
         return s_stats;
     }

@@ -8,7 +8,7 @@
 namespace nimbus
 {
 
-class Stopwatch : public refCounted
+class NIMBUS_API Stopwatch : public refCounted
 {
    public:
     inline Stopwatch()

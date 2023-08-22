@@ -7,7 +7,7 @@ namespace nimbus
 
 typedef void* Body2D;
 
-class Physics2D : public refCounted
+class NIMBUS_API Physics2D : public refCounted
 {
    public:
     enum class BodyType
@@ -79,7 +79,7 @@ class Physics2D : public refCounted
         bool   isSensor             = false;
     };
 
-    class RigidBody : public refCounted
+    class NIMBUS_API RigidBody : public refCounted
     {
        public:
         struct RigidBodyData;

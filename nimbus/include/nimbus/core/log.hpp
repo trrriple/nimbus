@@ -11,7 +11,7 @@
 namespace nimbus
 {
 
-class Log
+class NIMBUS_API Log
 {
    public:
     static void init();

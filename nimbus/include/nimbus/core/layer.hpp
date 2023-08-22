@@ -6,7 +6,7 @@
 
 namespace nimbus
 {
-class Layer : public refCounted
+class NIMBUS_API Layer : public refCounted
 {
    public:
     enum class Type

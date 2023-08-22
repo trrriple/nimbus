@@ -18,6 +18,11 @@ class GuiSubsystem : public Layer
 
     virtual void onEvent(Event& event) override;
 
+    void* getGuiContext()
+    {
+        return m_guiContext;
+    }
+
     void begin();
     void end();
 
@@ -27,7 +32,8 @@ class GuiSubsystem : public Layer
     }
 
    private:
-    bool m_captureEvents = true;
+    bool  m_captureEvents = true;
+    void* m_guiContext    = nullptr;
 
     void _setDarkThemeColors();
 };

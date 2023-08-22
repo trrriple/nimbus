@@ -9,7 +9,7 @@ namespace nimbus
 {
 struct FontData;
 
-class Font : public refCounted
+class NIMBUS_API Font : public refCounted
 {
    public:
     struct Format

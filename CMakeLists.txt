@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.8)
 
-# #########################
+# ######################################################################################################################
 # General Setup
-# #########################
+# ######################################################################################################################
 project(nimbus)
 
 option(NIMBUS_BUILD_FELIX "Build the Felix Editor" ON)
-
 
 if(NOT CMAKE_CXX_COMPILER)
     if(CMAKE_SYSTEM_NAME MATCHES Windows)
@@ -32,7 +31,6 @@ if(NOT CMAKE_AR)
     endif()
 endif()
 
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_PARALLEL_LEVEL 32)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -40,10 +38,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-
-# #########################
+# ######################################################################################################################
 # Vendor Libraries
-# #########################
+# ######################################################################################################################
 set(VENDOR_PATH "${CMAKE_CURRENT_LIST_DIR}/vendor")
 
 include(FetchContent)
@@ -98,8 +95,7 @@ if(TARGET zlibstatic)
         -D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-   target_compile_options(assimp PRIVATE -Wno-microsoft-enum-value)
-
+target_compile_options(assimp PRIVATE -Wno-microsoft-enum-value)
 
 # #########################
 # MSDF atlas gen
@@ -113,7 +109,6 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 
-
 set(MSDF_ATLAS_USE_SKIA OFF CACHE BOOL "" FORCE)
 set(MSDF_ATLAS_NO_ARTERY_FONT ON CACHE BOOL "" FORCE)
 set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
@@ -121,8 +116,8 @@ set(MSDF_ATLAS_USE_VCPKG ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(msdf-atlas-gen)
 
-target_compile_options(msdf-atlas-gen PRIVATE -Wno-deprecated-declarations 
-                        -D_CRT_SECURE_NO_WARNINGS)
+target_compile_options(msdf-atlas-gen PRIVATE -Wno-deprecated-declarations
+    -D_CRT_SECURE_NO_WARNINGS)
 
 # #########################
 # GLM (header only)
@@ -136,7 +131,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
-
 # #########################
 # Entt (header only)
 # #########################
@@ -148,9 +142,7 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 
-
 FetchContent_MakeAvailable(entt)
-
 
 # #########################
 # Glad
@@ -162,13 +154,11 @@ add_library(glad STATIC ${GLAD_LIB_SRC})
 target_include_directories(glad PRIVATE "${VENDOR_PATH}")
 target_include_directories(glad PRIVATE "${VENDOR_PATH}/glad")
 
-
 # #########################
 # STB image
 # #########################
 file(GLOB STB_IMAGE_LIB_SRC "${VENDOR_PATH}/stb_image/*.cpp")
 add_library(stb_image STATIC ${STB_IMAGE_LIB_SRC})
-
 
 # #########################
 # Imgui
@@ -192,7 +182,6 @@ add_library(imgui STATIC ${IMGUI_LIB_SRC})
 target_include_directories(imgui PRIVATE "${imgui_SOURCE_DIR}")
 target_include_directories(imgui PRIVATE "${sdl2_SOURCE_DIR}/include")
 
-
 # #########################
 # ImGuizmo
 # #########################
@@ -211,8 +200,6 @@ add_library(imguizmo STATIC ${IMGUIZMO_LIB_SRC})
 
 target_include_directories(imguizmo PRIVATE "${imgui_SOURCE_DIR}")
 
-
-
 # #########################
 # Box2D
 # #########################
@@ -222,12 +209,10 @@ FetchContent_Declare(box2d
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE)
 
-
 set(BOX2D_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
 set(BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(box2d)
-
 
 # #########################
 # Toml++
@@ -237,7 +222,6 @@ FetchContent_Declare(toml++
     GIT_TAG master
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE)
-
 
 FetchContent_MakeAvailable(toml++)
 
@@ -255,101 +239,92 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(tracy)
 target_compile_options(TracyClient PRIVATE -Wno-format)
 
-# #########################
-# Self: Nimbus
-# #########################
-file(GLOB_RECURSE NIMBUS_LIB_SRC 
+# ######################################################################################################################
+# Self: Nimbus library itself
+# ######################################################################################################################
+file(GLOB_RECURSE NIMBUS_LIB_SRC
     "${CMAKE_CURRENT_LIST_DIR}/nimbus/*.cpp")
 
-add_library(nimbus STATIC ${NIMBUS_LIB_SRC})
+add_library(nimbus SHARED ${NIMBUS_LIB_SRC})
+set_target_properties(nimbus PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin"
+)
+target_compile_definitions(nimbus PRIVATE NIMBUS_BUILD_DLL)
 
 set(CMAKE_USE_PCH ON)
 target_precompile_headers(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/nimbus/include/nimbus/core/nmpch.hpp")
 
+# ######################################################################################################################
+# Nimbus dependencies
+# ######################################################################################################################
+# platform interface
 target_link_libraries(nimbus PRIVATE SDL2-static)
+# model loading
 target_link_libraries(nimbus PRIVATE assimp)
+# font atlas generation
 target_link_libraries(nimbus PRIVATE msdf-atlas-gen)
+# GL interface
 target_link_libraries(nimbus PRIVATE glad)
+# image/texture loading
 target_link_libraries(nimbus PRIVATE stb_image)
-target_link_libraries(nimbus PRIVATE imgui)
-target_link_libraries(nimbus PRIVATE imguizmo)
+# 2d physics
 target_link_libraries(nimbus PRIVATE box2d)
+# GUI
+target_link_libraries(nimbus PUBLIC imgui)
+# GUI gizmos
+target_link_libraries(nimbus PUBLIC imguizmo)
+# profiling
 target_link_libraries(nimbus PUBLIC TracyClient)
-
-# Mono
+#script common lanuage runtime hosting
 # TODO : Not just windows release
-if(WIN32)
-    target_link_libraries(nimbus PRIVATE "${VENDOR_PATH}/mono/win64/lib/Release/libmono-static-sgen.lib")
-    target_link_libraries(nimbus PRIVATE ws2_32)
-    target_link_libraries(nimbus PRIVATE Bcrypt.lib)
-endif()
+target_link_libraries(nimbus PRIVATE "${VENDOR_PATH}/dotnet/win64/lib/nethost.lib")
 
-# #########################
+# ######################################################################################################################
 # Add Include paths
-# #########################
-
+# ######################################################################################################################
 # self
 target_include_directories(nimbus PRIVATE "${CMAKE_CURRENT_LIST_DIR}/nimbus/include")
-
-#sdl
+# sdl
 target_include_directories(nimbus PRIVATE "${sdl2_SOURCE_DIR}/include")
-
-#assimp
+# assimp
 target_include_directories(nimbus PRIVATE "${assimp_SOURCE_DIR}/include")
 # this is needed because assimp builds a file callled config.h here
 target_include_directories(nimbus PRIVATE "${assimp_BINARY_DIR}/include")
-
-#msdf-atlas-gen
+# msdf-atlas-gen
 target_include_directories(nimbus PRIVATE "${msdf-atlas-gen}/include")
-
-
-#glm
+# glm
 target_include_directories(nimbus PUBLIC "${glm_SOURCE_DIR}/glm")
-
-#entt
+# entt
 target_include_directories(nimbus PUBLIC "${entt_SOURCE_DIR}/src/")
-
-
-#imgui
+# imgui
 target_include_directories(nimbus PUBLIC "${imgui_SOURCE_DIR}")
+# imguizmo
 target_include_directories(nimbus PUBLIC "${imguizmo_SOURCE_DIR}")
-
-
-#box2d
+# box2d
 target_include_directories(nimbus PUBLIC "${box2d_SOURCE_DIR}/include")
-
-#yamlcpp
+# toml++
 target_include_directories(nimbus PUBLIC "${toml++_SOURCE_DIR}/include")
-
-#tracy
+# tracy
 target_include_directories(nimbus PUBLIC "${tracy_SOURCE_DIR}/public/tracy")
-
-
 # raw vendor path
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}")
-
-#glad 
+# glad
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/glad")
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/KHR")
-
-#stb_mage
+# stb_image
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/stb_image")
-
-#symbol font header
+# symbol font header
 target_include_directories(nimbus PUBLIC "${VENDOR_PATH}/IconFontCppHeaders")
-
-#portable-file-dialogs
+# portable-file-dialogs
 target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/portable-file-dialogs")
+# dotnet
+target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/dotnet/include")
 
-#mono 
-target_include_directories(nimbus PRIVATE "${VENDOR_PATH}/mono/include")
-
-
-# #########################
+# ######################################################################################################################
 # Self Compiler/Linker flags
-# #########################
+# ######################################################################################################################
 if(NIMBUS_NO_CONSOLE)
-        target_compile_options(nimbus PRIVATE -DNIMBUS_NO_CONSOLE)
+    target_compile_options(nimbus PRIVATE -DNIMBUS_NO_CONSOLE)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -359,13 +334,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         -fno-exceptions)
 
     # from assimp header
-    target_compile_options(nimbus PRIVATE 
-        -Wno-microsoft-enum-value 
+    target_compile_options(nimbus PRIVATE
+        -Wno-microsoft-enum-value
         -Wno-deprecated-copy)
-    
+
     target_link_options(nimbus PRIVATE
         -fuse-ld=lld)
-    endif()
+endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Add debug-specific flags
@@ -380,30 +355,30 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     # Add release-specific flags
-
     target_compile_options(nimbus PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
     target_link_options(nimbus PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
 endif()
 
+# ######################################################################################################################
+# ScriptCore (C#)
+# ######################################################################################################################
 
-# #########################
-# ScriptCore
-# #########################
 set(SCRIPTCORE_PRJ_PATH "${CMAKE_SOURCE_DIR}/resources/scriptCore/scriptCore.csproj")
 
 # Custom target to build the C# project
 add_custom_target(scriptCore
-  COMMAND dotnet build ${SCRIPTCORE_PRJ_PATH} -c Release -o "${CMAKE_SOURCE_DIR}/resources/scriptCore/bin"
-  COMMENT "Building C# project ${SCRIPTCORE_PRJ_PATH}"
+    COMMAND dotnet build ${SCRIPTCORE_PRJ_PATH} -c ${CMAKE_BUILD_TYPE} -o "${CMAKE_SOURCE_DIR}/resources/scriptCore/bin"
+    COMMENT "Building C# project ${SCRIPTCORE_PRJ_PATH}"
 )
 
 # make nimbus dependent on scriptCore so it builds with nimbus
 add_dependencies(nimbus scriptCore)
 
+# ######################################################################################################################
+# Felix (Editor)
+# ######################################################################################################################
 if(NIMBUS_BUILD_FELIX)
-    # #########################
-    # Felix (Editor)
-    # #########################
+
     file(GLOB FELIX_SRC "felix/src/*.cpp")
     add_executable(felix WIN32 ${FELIX_SRC})
     set_target_properties(felix PROPERTIES
@@ -414,7 +389,6 @@ if(NIMBUS_BUILD_FELIX)
 
     target_include_directories(felix PRIVATE "${CMAKE_CURRENT_LIST_DIR}/nimbus/include")
     target_include_directories(felix PRIVATE "${CMAKE_CURRENT_LIST_DIR}/felix/include")
-
 
     # #########################
     # Felix Compiler/Linker flags
@@ -445,6 +419,5 @@ if(NIMBUS_BUILD_FELIX)
         # Add release-specific flags
         target_compile_options(felix PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
         target_link_options(felix PRIVATE -O3 -flto -march=native -DGLM_FORCE_INTRINSICS)
-
     endif()
 endif()

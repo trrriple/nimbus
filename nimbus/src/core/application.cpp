@@ -19,6 +19,8 @@
 namespace nimbus
 {
 
+Application* Application::sp_instance = nullptr;
+
 Application::Application(const std::string& name, u32_t windowWidth, u32_t windowHeight) : m_name(name)
 {
     NB_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");

@@ -1,4 +1,5 @@
 #pragma once
-#include "nimbus/platform/os/os.hpp"
+#include "nimbus/platform/os/export.hpp"
 
-#define INTERNAL_CALL extern "C" DLLEXPORT
+
+#define INTERNAL_CALL extern "C" NIMBUS_API

@@ -7,7 +7,7 @@
 
 namespace nimbus
 {
-class Event
+class NIMBUS_API Event
 {
    public:
     enum class Type : i32_t

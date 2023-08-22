@@ -11,7 +11,7 @@
 namespace nimbus
 {
 
-class Shader : public refCounted
+class NIMBUS_API Shader : public refCounted
 {
    public:
     enum class ShaderType
