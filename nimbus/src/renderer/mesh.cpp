@@ -89,27 +89,27 @@ void Mesh::draw(const glm::mat4& model) const
     {
         switch (m_textures[i]->getType())
         {
-            case (Texture::Type::DIFFUSE):
+            case (Texture::Type::diffuse):
             {
                 mp_shader->setInt(m_texDiffUniformNms[diffIndex++], i);
                 break;
             }
-            case (Texture::Type::SPECULAR):
+            case (Texture::Type::specular):
             {
                 mp_shader->setInt(m_texSpecUniformNms[specIndex++], i);
                 break;
             }
-            case (Texture::Type::AMBIENT):
+            case (Texture::Type::ambient):
             {
                 mp_shader->setInt(m_texAmbiUniformNms[ambIndex++], i);
                 break;
             }
-            case (Texture::Type::NORMAL):
+            case (Texture::Type::normal):
             {
                 mp_shader->setInt(m_texNormUniformNms[normalIndex++], i);
                 break;
             }
-            case (Texture::Type::HEIGHT):
+            case (Texture::Type::height):
             {
                 mp_shader->setInt(m_texHghtUniformNms[heightIndex++], i);
                 break;
@@ -201,31 +201,31 @@ void Mesh::_setupTextureUniforms()
     {
         switch (tex->getType())
         {
-            case (Texture::Type::DIFFUSE):
+            case (Texture::Type::diffuse):
             {
                 std::string name = k_texDiffNm + "_" + std::to_string(diffIndex++);
                 m_texDiffUniformNms.push_back(name);
                 break;
             }
-            case (Texture::Type::SPECULAR):
+            case (Texture::Type::specular):
             {
                 std::string name = k_texSpecNm + "_" + std::to_string(specIndex++);
                 m_texSpecUniformNms.push_back(name);
                 break;
             }
-            case (Texture::Type::AMBIENT):
+            case (Texture::Type::ambient):
             {
                 std::string name = k_texAmbiNm + "_" + std::to_string(ambIndex++);
                 m_texAmbiUniformNms.push_back(name);
                 break;
             }
-            case (Texture::Type::NORMAL):
+            case (Texture::Type::normal):
             {
                 std::string name = k_texNormNm + "_" + std::to_string(normalIndex++);
                 m_texNormUniformNms.push_back(name);
                 break;
             }
-            case (Texture::Type::HEIGHT):
+            case (Texture::Type::height):
             {
                 std::string name = k_texHghtNm + "_" + std::to_string(heightIndex++);
                 m_texHghtUniformNms.push_back(name);

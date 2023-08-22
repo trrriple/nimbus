@@ -14,74 +14,74 @@ class Texture : public refCounted
    public:
     enum class Type
     {
-        DIFFUSE,
-        SPECULAR,
-        AMBIENT,
-        NORMAL,
-        HEIGHT
+        diffuse,
+        specular,
+        ambient,
+        normal,
+        height
     };
 
     enum class Format
     {
-        NONE,
-        RGBA,
-        RGB,
-        RG,
-        RED,
-        RED_INT
+        none,
+        rgba,
+        rgb,
+        rg,
+        red,
+        redInt
     };
 
     enum class FormatInternal
     {
-        NONE,
-        RGBA8,
-        RGBA16F,
-        RGBA32F,
-        RGB8,
-        RGB16F,
-        RGB32F,
-        RG8,
-        RG16F,
-        RG32F,
-        R8,
-        R16,
-        R8I,
-        R16I,
-        R32I,
-        R8UI,
-        R16UI,
-        R32UI,
-        R16F,
-        R32F,
-        DEPTH_COMPONENT16,
-        DEPTH_COMPONENT24,
-        DEPTH_COMPONENT32F,
-        DEPTH24_STENCIL8,
+        none,
+        rgba8,
+        rgba16f,
+        rgba32f,
+        rgb8,
+        rgb16f,
+        rgb32f,
+        rg8,
+        rg16f,
+        rg32f,
+        r8,
+        r16,
+        r8i,
+        r16i,
+        r32i,
+        r8ui,
+        r16ui,
+        r32ui,
+        r16f,
+        r32f,
+        depthComponent16,
+        depthComponent24,
+        depthComponent32f,
+        depth24Stencil8,
     };
 
     enum class DataType
     {
-        UNSIGNED_BYTE,
-        BYTE,
-        UNSIGNED_SHORT,
-        SHORT,
-        UNSIGNED_INT,
-        INT,
-        FLOAT,
-        HALF_FLOAT,
+        unsignedByte_,
+        byte_,
+        unsignedShort_,
+        short_,
+        unsignedInt_,
+        int_,
+        float_,
+        halfFloat_,
     };
 
     enum class FilterType
     {
-        LINEAR,
-        MIPMAP_LINEAR,
-        NEAREST,
+        linear,
+        mipmapLinear,
+        nearest
     };
 
     enum class WrapType
     {
-        CLAMP_TO_EDGE,
-        REPEAT
+        clampToEdge,
+        repeat
     };
 
     struct Spec
@@ -89,14 +89,14 @@ class Texture : public refCounted
         u32_t          width          = 1;
         u32_t          height         = 1;
         u32_t          samples        = 1;
-        Format         format         = Format::RGBA;
-        FormatInternal formatInternal = FormatInternal::RGBA8;
-        DataType       dataType       = DataType::UNSIGNED_BYTE;
-        FilterType     filterTypeMin  = FilterType::LINEAR;
-        FilterType     filterTypeMag  = FilterType::LINEAR;
-        WrapType       wrapTypeS      = WrapType::CLAMP_TO_EDGE;
-        WrapType       wrapTypeT      = WrapType::CLAMP_TO_EDGE;
-        WrapType       wrapTypeR      = WrapType::CLAMP_TO_EDGE;
+        Format         format         = Format::rgba;
+        FormatInternal formatInternal = FormatInternal::rgba8;
+        DataType       dataType       = DataType::unsignedByte_;
+        FilterType     filterTypeMin  = FilterType::linear;
+        FilterType     filterTypeMag  = FilterType::linear;
+        WrapType       wrapTypeS      = WrapType::clampToEdge;
+        WrapType       wrapTypeT      = WrapType::clampToEdge;
+        WrapType       wrapTypeR      = WrapType::clampToEdge;
         std::variant<std::array<f32_t, 4>, std::array<i32_t, 4>, std::array<u32_t, 4>> clearColor
             = std::array<f32_t, 4>{0.0f, 0.0f, 0.0f, 0.0f};
     };

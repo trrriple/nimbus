@@ -184,7 +184,7 @@ ParticleEmitter::ParticleEmitter(u32_t               particleCount,
 
         mp_instanceVbo = VertexBuffer::s_create(&m_particleInstanceData[0],
                                                 m_particleInstanceData.size() * sizeof(particleInstanceData),
-                                                VertexBuffer::Type::STREAM_DRAW);
+                                                VertexBuffer::Type::streamDraw);
 
         mp_instanceVbo->setFormat(k_instanceVboFormat);
 
@@ -504,24 +504,24 @@ glm::vec3 ParticleEmitter::_getRandomPositionInVolume()
 
     switch (m_parameters.spawnVolumeType)
     {
-        case SpawnVolumeType::POINT:
+        case SpawnVolumeType::point:
         {
             // For a point, there's no variation. Return zero offset.
             return glm::vec3(0.0f, 0.0f, 0.0f);
         }
-        case SpawnVolumeType::CIRCLE:
+        case SpawnVolumeType::circle:
         {
             f32_t theta = 2 * 3.1415926f * dist(m_randGen);
             f32_t r     = m_parameters.circleVolumeParams.radius * sqrt(dist(m_randGen));
             return glm::vec3(r * cos(theta), r * sin(theta), 0.0f);
         }
-        case SpawnVolumeType::RECTANGLE:
+        case SpawnVolumeType::rectangle:
         {
             f32_t x = dist(m_randGen) * m_parameters.rectVolumeParams.width;
             f32_t y = dist(m_randGen) * m_parameters.rectVolumeParams.height;
             return glm::vec3(x, y, 0.0f);
         }
-        case SpawnVolumeType::LINE:
+        case SpawnVolumeType::line:
         {
             f32_t x = dist(m_randGen) * m_parameters.lineVolumeParams.length;
             return glm::vec3(x, 0.0f, 0.0f);

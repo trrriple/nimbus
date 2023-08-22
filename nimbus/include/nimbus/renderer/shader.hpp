@@ -16,11 +16,12 @@ class Shader : public refCounted
    public:
     enum class ShaderType
     {
-        INT,
-        UINT,
-        FLOAT,
-        BOOL
+        _int,
+        _uint,
+        _float,
+        _bool
     };
+
     /// Destructor for Shader.
     virtual ~Shader() = default;
 

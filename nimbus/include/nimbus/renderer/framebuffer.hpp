@@ -21,14 +21,14 @@ class Framebuffer : public refCounted
         u32_t samples = 1;
 
         std::vector<Texture::Spec> colorAttachments;
-        Texture::FormatInternal    depthType = Texture::FormatInternal::DEPTH24_STENCIL8;
+        Texture::FormatInternal    depthType = Texture::FormatInternal::depth24Stencil8;
     };
 
     enum class Mode
     {
-        READ_WRITE,
-        READ,
-        WRITE,
+        readWrite,
+        read,
+        write,
     };
 
     struct PixelValues
@@ -115,9 +115,9 @@ class Framebuffer : public refCounted
                       const u32_t      destAttachmentIdx = 0) const
         = 0;
 
-    virtual void bind(Mode mode = Mode::READ_WRITE) const = 0;
+    virtual void bind(Mode mode = Mode::readWrite) const = 0;
 
-    virtual void unbind(Mode mode = Mode::READ_WRITE) const = 0;
+    virtual void unbind(Mode mode = Mode::readWrite) const = 0;
 
     virtual void bindTexture(const u32_t textureUnit, const u32_t attachmentIdx = 0) const = 0;
 

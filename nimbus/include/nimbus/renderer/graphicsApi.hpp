@@ -9,14 +9,14 @@ class GraphicsApi
    public:
     enum class BlendingMode
     {
-        ADDITIVE = 0,           // GL_ONE, GL_ONE
-        SUBTRACT,               // GL_ZERO, GL_ONE_MINUS_SRC_COLOR
-        MULTIPLY,               // GL_DST_COLOR, GL_ZERO
-        SCREEN,                 // GL_ONE, GL_ONE_MINUS_SRC_COLOR
-        REPLACE,                // GL_ONE, GL_ZERO
-        ALPHA_BLEND,            // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
-        ALPHA_PREMULTIPLIED,    // GL_ONE, GL_ONE_MINUS_SRC_ALPHA
-        SOURCE_ALPHA_ADDITIVE,  // GL_SRC_ALPHA, GL_ONE
+        additive = 0,           // GL_ONE, GL_ONE
+        subtract,               // GL_ZERO, GL_ONE_MINUS_SRC_COLOR
+        multiply,               // GL_DST_COLOR, GL_ZERO
+        screen,                 // GL_ONE, GL_ONE_MINUS_SRC_COLOR
+        replace,                // GL_ONE, GL_ZERO
+        alphaBlend,             // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+        alphaPremultiplied,     // GL_ONE, GL_ONE_MINUS_SRC_ALPHA
+        sourceAlphaAdditive,    // GL_SRC_ALPHA, GL_ONE
     };
 
     static void init();
@@ -59,6 +59,6 @@ class GraphicsApi
    protected:
     inline static bool         s_wireframe        = false;
     inline static bool         s_depthTest        = false;
-    inline static BlendingMode s_currBlendingMode = BlendingMode::ALPHA_BLEND;
+    inline static BlendingMode s_currBlendingMode = BlendingMode::alphaBlend;
 };
 }  // namespace nimbus

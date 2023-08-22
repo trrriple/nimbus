@@ -235,13 +235,13 @@ u32_t GlShader::s_getShaderType(ShaderType type)
 {
     switch (type)
     {
-        case (ShaderType::INT):
+        case (ShaderType::_int):
             return GL_INT;
-        case (ShaderType::UINT):
+        case (ShaderType::_uint):
             return GL_UNSIGNED_INT;
-        case (ShaderType::FLOAT):
+        case (ShaderType::_float):
             return GL_FLOAT;
-        case (ShaderType::BOOL):
+        case (ShaderType::_bool):
             return GL_BOOL;
         default:
             NB_CORE_ASSERT_STATIC(false, "Unknown Shader::ShaderType %i", type);

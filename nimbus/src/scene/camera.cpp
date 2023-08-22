@@ -26,32 +26,32 @@ void Camera::processPosiUpdate(Movement direction, f32_t deltaTime)
     f32_t velocity = m_speed * deltaTime;
     switch (direction)
     {
-        case (Movement::FORWARD):
+        case (Movement::forward):
         {
             m_position += m_front * velocity;
             break;
         }
-        case (Movement::BACKWARD):
+        case (Movement::backward):
         {
             m_position -= m_front * velocity;
             break;
         }
-        case (Movement::LEFT):
+        case (Movement::left):
         {
             m_position -= m_right * velocity;
             break;
         }
-        case (Movement::RIGHT):
+        case (Movement::right):
         {
             m_position += m_right * velocity;
             break;
         }
-        case (Movement::UP):
+        case (Movement::up):
         {
             m_position += m_up * velocity;
             break;
         }
-        case (Movement::DOWN):
+        case (Movement::down):
         {
             m_position -= m_up * velocity;
             break;
@@ -95,7 +95,7 @@ void Camera::processZoom(f32_t offset)
     NB_PROFILE_TRACE();
     const f32_t zoomScale = m_orthoWidth / 50;
 
-    if (m_type == Type::PERSPECTIVE)
+    if (m_type == Type::perspective)
     {
         m_fov -= offset;
         if (m_fov < 1.0f)
@@ -121,7 +121,7 @@ glm::mat4& Camera::getView()
 
     if (m_staleView)
     {
-        if (m_type == Type::PERSPECTIVE)
+        if (m_type == Type::perspective)
         {
             m_view = glm::lookAt(m_position, m_position + m_front, m_up);
         }
@@ -145,7 +145,7 @@ glm::mat4& Camera::getProjection()
 
     if (m_staleProjection)
     {
-        if (m_type == Type::PERSPECTIVE)
+        if (m_type == Type::perspective)
         {
             m_projection = glm::perspective(glm::radians(m_fov), m_aspectRatio, m_near, m_far);
         }
@@ -237,7 +237,7 @@ void Camera::setAspectRatio(f32_t aspectRatio)
 
 void Camera::setNearClip(f32_t near)
 {
-    if (m_type == Type::PERSPECTIVE)
+    if (m_type == Type::perspective)
     {
         m_near = near;
     }
@@ -251,7 +251,7 @@ void Camera::setNearClip(f32_t near)
 
 void Camera::setFarClip(f32_t far)
 {
-    if (m_type == Type::PERSPECTIVE)
+    if (m_type == Type::perspective)
     {
         m_far = far;
     }

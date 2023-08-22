@@ -55,17 +55,17 @@ class EditCameraMenuPanel
         {
             if (currentType == 0)
             {
-                mp_editCamera->setType(Camera::Type::ORTHOGRAPHIC);
+                mp_editCamera->setType(Camera::Type::orthographic);
             }
             else
             {
-                mp_editCamera->setType(Camera::Type::PERSPECTIVE);
+                mp_editCamera->setType(Camera::Type::perspective);
             }
 
             _resetCamera();
         }
 
-        if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
+        if (mp_editCamera->getType() == Camera::Type::orthographic)
         {
             f32_t orthoWidth = mp_editCamera->getOrthoWidth();
 
@@ -129,7 +129,7 @@ class EditCameraMenuPanel
             ImGui::EndTable();
         }
 
-        if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
+        if (mp_editCamera->getType() == Camera::Type::orthographic)
         {
             if (ImGui::CollapsingHeader("Visible World Bounds"))
             {
@@ -190,7 +190,7 @@ class EditCameraMenuPanel
 
     void _resetCamera()
     {
-        if (mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
+        if (mp_editCamera->getType() == Camera::Type::perspective)
         {
 #if IMGUIZO_SCALE_FIXED
             mp_editCamera->setPosition({0.00f, 0.00f, 10 * 2.4125f});

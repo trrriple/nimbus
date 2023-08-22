@@ -13,10 +13,10 @@ class RenderThread
    public:
     enum class State
     {
-        PEND = 0,
-        BUSY,
-        READY,
-        DEAD
+        pend = 0,
+        busy,
+        ready,
+        dead
     };
 
     RenderThread();

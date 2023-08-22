@@ -521,7 +521,7 @@ void Renderer2D::_s_createQuadBuffers()
     ///////////////////////////
     // shared, doesn't change after creation so no need to save handle to it
     auto sharedVbo = VertexBuffer::s_create(
-        &s_quadData->vertices[0], s_quadData->vertices.size() * sizeof(QuadVertex), VertexBuffer::Type::STATIC_DRAW);
+        &s_quadData->vertices[0], s_quadData->vertices.size() * sizeof(QuadVertex), VertexBuffer::Type::staticDraw);
 
     sharedVbo->setFormat(k_quadVertexFormat);
     s_quadData->p_vao->addVertexBuffer(sharedVbo);
@@ -538,7 +538,7 @@ void Renderer2D::_s_createQuadBuffers()
 
     s_quadData->p_vbo = VertexBuffer::s_create(&s_quadData->instVertices[0],
                                                s_quadData->instVertices.size() * sizeof(QuadInstVertex),
-                                               VertexBuffer::Type::STREAM_DRAW);
+                                               VertexBuffer::Type::streamDraw);
 
     s_quadData->p_vbo->setFormat(k_quadInstVertexFormat);
     s_quadData->p_vao->addVertexBuffer(s_quadData->p_vbo);
@@ -586,7 +586,7 @@ void Renderer2D::_s_createTextBuffers()
     s_textData->vertices = std::vector<TextVertex>(newSize);
 
     s_textData->p_vbo = VertexBuffer::s_create(
-        &s_textData->vertices[0], s_textData->vertices.size() * sizeof(TextVertex), VertexBuffer::Type::DYNAMIC_DRAW);
+        &s_textData->vertices[0], s_textData->vertices.size() * sizeof(TextVertex), VertexBuffer::Type::dynamicDraw);
 
     s_textData->p_vbo->setFormat(k_TextVertexFormat);
     s_textData->p_vao->addVertexBuffer(s_textData->p_vbo);

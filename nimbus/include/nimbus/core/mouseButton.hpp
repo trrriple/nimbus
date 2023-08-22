@@ -6,11 +6,11 @@ namespace nimbus
 {
 enum class MouseButton : i32_t
 {
-    LEFT = 1,
-    MIDDLE,
-    RIGHT,
-    X1,
-    X2
+    left = 1,
+    middle,
+    right,
+    x1,
+    x2
 
 };
 }

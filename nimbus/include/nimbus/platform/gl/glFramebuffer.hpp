@@ -19,9 +19,9 @@ class GlFramebuffer : public Framebuffer
                       const u32_t      srcAttachmentIdx  = 0,
                       const u32_t      destAttachmentIdx = 0) const override;
 
-    virtual void bind(Mode mode = Mode::READ_WRITE) const override;
+    virtual void bind(Mode mode = Mode::readWrite) const override;
 
-    virtual void unbind(Mode mode = Mode::READ_WRITE) const override;
+    virtual void unbind(Mode mode = Mode::readWrite) const override;
 
     virtual void bindTexture(const u32_t textureUnit, const u32_t attachmentIdx = 0) const override;
 

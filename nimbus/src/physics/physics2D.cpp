@@ -166,7 +166,7 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec& fixtureSpec, const util
     ///////////////////////////
     NB_CORE_ASSERT(fixtureSpec.shape, "Fixture Shape cannot be null!");
 
-    if (fixtureSpec.shape->type == ShapeType::RECTANGLE)
+    if (fixtureSpec.shape->type == ShapeType::rectangle)
     {
         const Rectangle* rect = static_cast<const Rectangle*>(fixtureSpec.shape);
 
@@ -178,7 +178,7 @@ void Physics2D::RigidBody::addFixture(const FixtureSpec& fixtureSpec, const util
 
         fixtureDef.shape = shape;
     }
-    else if (fixtureSpec.shape->type == ShapeType::CIRCLE)
+    else if (fixtureSpec.shape->type == ShapeType::circle)
     {
         const Circle*  circle = static_cast<const Circle*>(fixtureSpec.shape);
         b2CircleShape* shape  = new b2CircleShape();
@@ -284,15 +284,15 @@ u32_t Physics2D::_bodyType(BodyType bodyType) const
 {
     switch (bodyType)
     {
-        case (BodyType::STATIC):
+        case (BodyType::fixed):
         {
             return b2_staticBody;
         }
-        case (BodyType::KINEMATIC):
+        case (BodyType::kinematic):
         {
             return b2_kinematicBody;
         }
-        case (BodyType::DYNAMIC):
+        case (BodyType::dynamic):
         {
             return b2_dynamicBody;
         }

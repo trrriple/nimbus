@@ -11,14 +11,14 @@ class Layer : public refCounted
    public:
     enum class Type
     {
-        REGULAR,
-        OVERLAY
+        regular,
+        overlay
     };
 
     Type        m_type;
     std::string m_name;
 
-    Layer(Type type = Type::REGULAR, const std::string& name = "noName");
+    Layer(Type type = Type::regular, const std::string& name = "noName");
 
     virtual ~Layer() = default;
 

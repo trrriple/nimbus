@@ -18,7 +18,7 @@ void LayerDeck::insertLayer(ref<Layer> p_layer, i32_t location)
 {
     NB_PROFILE();
 
-    if (p_layer->m_type == Layer::Type::REGULAR)
+    if (p_layer->m_type == Layer::Type::regular)
     {
         if (location == k_insertLocationHead || location > m_lastRegularLayerIdx)
         {
@@ -30,7 +30,7 @@ void LayerDeck::insertLayer(ref<Layer> p_layer, i32_t location)
         m_deck.insert(m_deck.begin() + location, p_layer);
         m_lastRegularLayerIdx++;
     }
-    else if (p_layer->m_type == Layer::Type::OVERLAY)
+    else if (p_layer->m_type == Layer::Type::overlay)
     {
         // location is ignored for overlays and they are always pushed to
         // the absolute end of the deck

@@ -25,7 +25,7 @@ static const std::string k_defaultBoldFontPath = "../resources/fonts/Roboto/Robo
 
 static const std::string k_defaultIconFontPath = "../resources/fonts/FontAwesome6/" FONT_ICON_FILE_NAME_FAS;
 
-GuiSubsystem::GuiSubsystem() : Layer(Layer::Type::OVERLAY, "guiSubsystem")
+GuiSubsystem::GuiSubsystem() : Layer(Layer::Type::overlay, "guiSubsystem")
 {
 }
 
@@ -134,19 +134,19 @@ void GuiSubsystem::onEvent(Event& event)
 
         // mark mouse events as handled
         if (io.WantCaptureMouse
-            && (eventType == Event::Type::MOUSEMOTION || eventType == Event::Type::MOUSEBUTTONUP
-                || eventType == Event::Type::MOUSEBUTTONDOWN || eventType == Event::Type::MOUSEWHEEL))
+            && (eventType == Event::Type::mouseMotion || eventType == Event::Type::mouseButtonUp
+                || eventType == Event::Type::mouseButtonDown || eventType == Event::Type::mouseWheel))
         {
             event.markAsHandled();
         }
         // mark keyboard events as handled
         else if (io.WantCaptureKeyboard
-                 && (eventType == Event::Type::KEYDOWN || eventType == Event::Type::KEYUP
-                     || eventType == Event::Type::TEXTEDITING || eventType == Event::Type::TEXTINPUT))
+                 && (eventType == Event::Type::keyDown || eventType == Event::Type::keyUp
+                     || eventType == Event::Type::textEditing || eventType == Event::Type::textInput))
         {
             event.markAsHandled();
         }
-        else if (!io.WantCaptureMouse && eventType == Event::Type::MOUSEBUTTONDOWN)
+        else if (!io.WantCaptureMouse && eventType == Event::Type::mouseButtonDown)
         {
             p_appRef->setMenuMode(false);
         }

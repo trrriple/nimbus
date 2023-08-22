@@ -12,112 +12,104 @@ class Event
    public:
     enum class Type : i32_t
     {
-        FIRSTEVENT = 0,  // Unused (do not remove)
+        firstEvent = 0,  // Unused (do not remove)
 
         // Application events
-        QUIT = 0x100,  // User-requested quit
+        quit = 0x100,  // User-requested quit
 
         // These application events have special meaning on iOS, see
         // README-ios.md for details
-        APP_TERMINATING,          // The application is being terminated by the OS
-        APP_LOWMEMORY,            // The application is low on memory, free memory if
-                                  // possible.
-        APP_WILLENTERBACKGROUND,  // The application is about to enter the
-                                  // background
-        APP_DIDENTERBACKGROUND,   // The application did enter the background and
-                                  // may not get CPU for some time
-        APP_WILLENTERFOREGROUND,  // The application is about to enter the
-                                  // foreground
-        APP_DIDENTERFOREGROUND,   // The application is now interactive
+        appTerminating,          // The application is being terminated by the OS
+        appLowMemory,            // The application is low on memory, free memory if possible.
+        appWillEnterBackground,  // The application is about to enter the background
+        appDidEnterBackground,   // The application did enter the background and may not get CPU for some time
+        appWillEnterForeground,  // The application is about to enter the foreground
+        appDidEnterForeground,   // The application is now interactive
 
-        LOCALECHANGED,  // The user's locale preferences have changed.
+        localeChanged,  // The user's locale preferences have changed.
 
         // Display events
-        DISPLAY = 0x150,  // Display state change
+        display = 0x150,  // Display state change
 
         // Window events
-        WINDOW = 0x200,  // Window state change
-        SYSWM,           // System specific event
+        window = 0x200,  // Window state change
+        syswm,           // System specific event
 
         // Keyboard events
-        KEYDOWN = 0x300,  // Key pressed
-        KEYUP,            // Key released
-        TEXTEDITING,      // Keyboard text editing (composition)
-        TEXTINPUT,        // Keyboard text input
-        KEYMAPCHANGED,    // Keymap changed due to a system event such as an input
-                          // language or keyboard layout change.
-        TEXTEDITING_EXT,  // Extended keyboard text editing (composition)
+        keyDown = 0x300,  // Key pressed
+        keyUp,            // Key released
+        textEditing,      // Keyboard text editing (composition)
+        textInput,        // Keyboard text input
+        keymapChanged,    // Keymap changed due to a system event such as an input language or keyboard layout change.
+        textEditingExt,   // Extended keyboard text editing (composition)
 
         // Mouse events
-        MOUSEMOTION = 0x400,  // Mouse moved
-        MOUSEBUTTONDOWN,      // Mouse button pressed
-        MOUSEBUTTONUP,        // Mouse button released
-        MOUSEWHEEL,           // Mouse wheel motion
+        mouseMotion = 0x400,  // Mouse moved
+        mouseButtonDown,      // Mouse button pressed
+        mouseButtonUp,        // Mouse button released
+        mouseWheel,           // Mouse wheel motion
 
         // Joystick events
-        JOYAXISMOTION = 0x600,  // Joystick axis motion
-        JOYBALLMOTION,          // Joystick trackball motion
-        JOYHATMOTION,           // Joystick hat position change
-        JOYBUTTONDOWN,          // Joystick button pressed
-        JOYBUTTONUP,            // Joystick button released
-        JOYDEVICEADDED,         // A new joystick has been inserted into the system
-        JOYDEVICEREMOVED,       // An opened joystick has been removed
-        JOYBATTERYUPDATED,      // Joystick battery level change
+        joyAxisMotion = 0x600,  // Joystick axis motion
+        joyBallMotion,          // Joystick trackball motion
+        joyHatMotion,           // Joystick hat position change
+        joyButtonDown,          // Joystick button pressed
+        joyButtonUp,            // Joystick button released
+        joyDeviceAdded,         // A new joystick has been inserted into the system
+        joyDeviceRemoved,       // An opened joystick has been removed
+        joyBatteryUpdated,      // Joystick battery level change
 
         // Game controller events
-        CONTROLLERAXISMOTION = 0x650,  // Game controller axis motion
-        CONTROLLERBUTTONDOWN,          // Game controller button pressed
-        CONTROLLERBUTTONUP,            // Game controller button released
-        CONTROLLERDEVICEADDED,         // A new Game controller has been inserted into
-                                       // the system
-        CONTROLLERDEVICEREMOVED,       // An opened Game controller has been removed
-        CONTROLLERDEVICEREMAPPED,      // The controller mapping was updated
-        CONTROLLERTOUCHPADDOWN,        // Game controller touchpad was touched
-        CONTROLLERTOUCHPADMOTION,      // Game controller touchpad finger was moved
-        CONTROLLERTOUCHPADUP,          // Game controller touchpad finger was lifted
-        CONTROLLERSENSORUPDATE,        // Game controller sensor was updated
+        controllerAxisMotion = 0x650,  // Game controller axis motion
+        controllerButtonDown,          // Game controller button pressed
+        controllerButtonUp,            // Game controller button released
+        controllerDeviceAdded,         // A new Game controller has been inserted into the system
+        controllerDeviceRemoved,       // An opened Game controller has been removed
+        controllerDeviceRemapped,      // The controller mapping was updated
+        controllerTouchpadDown,        // Game controller touchpad was touched
+        controllerTouchpadMotion,      // Game controller touchpad finger was moved
+        controllerTouchpadUp,          // Game controller touchpad finger was lifted
+        controllerSensorUpdate,        // Game controller sensor was updated
 
         // Touch events
-        FINGERDOWN = 0x700,
-        FINGERUP,
-        FINGERMOTION,
+        fingerDown = 0x700,
+        fingerUp,
+        fingerMotion,
 
         // Gesture events
-        DOLLARGESTURE = 0x800,
-        DOLLARRECORD,
-        MULTIGESTURE,
+        dollarGesture = 0x800,
+        dollarRecord,
+        multiGesture,
 
         // Clipboard events
-        CLIPBOARDUPDATE = 0x900,  // The clipboard or primary selection changed
+        clipboardUpdate = 0x900,  // The clipboard or primary selection changed
 
         // Drag and drop events
-        DROPFILE = 0x1000,  // The system requests a file open
-        DROPTEXT,           // text/plain drag-and-drop event
-        DROPBEGIN,          // A new set of drops is beginning (NULL filename)
-        DROPCOMPLETE,       // Current set of drops is now complete (NULL filename)
+        dropFile = 0x1000,  // The system requests a file open
+        dropText,           // text/plain drag-and-drop event
+        dropBegin,          // A new set of drops is beginning (NULL filename)
+        dropComplete,       // Current set of drops is now complete (NULL filename)
 
         // Audio hotplug events
-        AUDIODEVICEADDED = 0x1100,  // A new audio device is available
-        AUDIODEVICEREMOVED,         // An audio device has been removed.
+        audioDeviceAdded = 0x1100,  // A new audio device is available
+        audioDeviceRemoved,         // An audio device has been removed.
 
         // Sensor events
-        SENSORUPDATE = 0x1200,  // A sensor was updated
+        sensorUpdate = 0x1200,  // A sensor was updated
 
         // Render events
-        RENDER_TARGETS_RESET = 0x2000,  // The render targets have been reset
-                                        // and their contents need to be updated
-        RENDER_DEVICE_RESET,            // The device has been reset and all textures need
-                                        // to be recreated
+        renderTargetsReset = 0x2000,  // The render targets have been reset and their contents need to be updated
+        renderDeviceReset,            // The device has been reset and all textures need to be recreated
 
         // Internal events
-        POLLSENTINEL = 0x7F00,  // Signals the end of an event poll cycle
+        pollSentinel = 0x7F00,  // Signals the end of an event poll cycle
 
-        // Events ::USEREVENT through ::LASTEVENT are for your use,
+        // Events ::userEvent through ::lastEvent are for your use,
         // and should be allocated with registerEvents()
-        USEREVENT = 0x8000,
+        userEvent = 0x8000,
 
         // This last event is only for bounding internal arrays
-        LASTEVENT = 0xFFFF
+        lastEvent = 0xFFFF
     };
 
     /**
@@ -354,13 +346,13 @@ class Event
 
     enum class JoystickPowerLevel : i32_t
     {
-        UNKNOWN = -1,
-        EMPTY,  /* <= 5% */
-        LOW,    /* <= 20% */
-        MEDIUM, /* <= 70% */
-        FULL,   /* <= 100% */
-        WIRED,
-        MAX
+        unknown = -1,
+        empty,  /* <= 5% */
+        low,    /* <= 20% */
+        medium, /* <= 70% */
+        full,   /* <= 100% */
+        wired,
+        max
     };
 
     /**

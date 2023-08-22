@@ -30,7 +30,7 @@ class SceneHeirarchyPanel
         mp_sceneContext = p_scene;
 
         mp_checkerboardTex
-            = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+            = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse,
                                                                     "../resources/textures/checkerboard.png");
     }
     ~SceneHeirarchyPanel()
@@ -385,7 +385,7 @@ class SceneHeirarchyPanel
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse,
                                                                                                  filePath,
                                                                                                  false);
 
@@ -414,7 +414,7 @@ class SceneHeirarchyPanel
                 {
                     const char*  path = (const char*)payload->Data;
                     ref<Texture> texture
-                        = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE, path, false);
+                        = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse, path, false);
 
                     if (texture)
                     {
@@ -573,20 +573,20 @@ class SceneHeirarchyPanel
 
             ImGui::Combo("Type", (int*)&pc.parameters.spawnVolumeType, spawnTypes, IM_ARRAYSIZE(spawnTypes));
 
-            if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::POINT)
+            if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::point)
             {
                 // no parameters
             }
-            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::CIRCLE)
+            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::circle)
             {
                 ImGui::DragFloat("Radius", &pc.parameters.circleVolumeParams.radius, 0.01);
             }
-            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::RECTANGLE)
+            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::rectangle)
             {
                 ImGui::DragFloat("Width", &pc.parameters.rectVolumeParams.width, 0.01);
                 ImGui::DragFloat("Height", &pc.parameters.rectVolumeParams.height, 0.01);
             }
-            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::LINE)
+            else if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::line)
             {
                 ImGui::DragFloat("Length", &pc.parameters.lineVolumeParams.length, 0.01);
             }
@@ -822,7 +822,7 @@ class SceneHeirarchyPanel
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse,
                                                                                                  filePath,
                                                                                                  false);
 
@@ -851,7 +851,7 @@ class SceneHeirarchyPanel
                 {
                     const char*  path = (const char*)payload->Data;
                     ref<Texture> texture
-                        = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE, path, false);
+                        = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse, path, false);
 
                     if (texture)
                     {
@@ -889,19 +889,19 @@ class SceneHeirarchyPanel
             {
                 if (currentType == 0)
                 {
-                    rbc.spec.type = Physics2D::BodyType::STATIC;
+                    rbc.spec.type = Physics2D::BodyType::fixed;
                 }
                 else if (currentType == 1)
                 {
-                    rbc.spec.type = Physics2D::BodyType::KINEMATIC;
+                    rbc.spec.type = Physics2D::BodyType::kinematic;
                 }
                 else
                 {
-                    rbc.spec.type = Physics2D::BodyType::DYNAMIC;
+                    rbc.spec.type = Physics2D::BodyType::dynamic;
                 }
             }
 
-            if (rbc.spec.type != Physics2D::BodyType::STATIC)
+            if (rbc.spec.type != Physics2D::BodyType::fixed)
             {
                 ImGui::DragFloat("Gravity Scale", &rbc.spec.gravityScale, 0.01f, 0.0f, 1000.0f);
                 ImGui::DragFloat2("Linear Velocity", glm::value_ptr(rbc.spec.linearVelocity), 0.01f);
@@ -923,11 +923,11 @@ class SceneHeirarchyPanel
 
             if (rbc.fixSpec.shape != nullptr)
             {
-                if (rbc.fixSpec.shape->type == Physics2D::ShapeType::RECTANGLE)
+                if (rbc.fixSpec.shape->type == Physics2D::ShapeType::rectangle)
                 {
                     currentType = 1;
                 }
-                else if (rbc.fixSpec.shape->type == Physics2D::ShapeType::CIRCLE)
+                else if (rbc.fixSpec.shape->type == Physics2D::ShapeType::circle)
                 {
                     currentType = 2;
                 }
@@ -977,11 +977,11 @@ class SceneHeirarchyPanel
         {
             if (currentType == 0)
             {
-                cameraCmp.camera.setType(Camera::Type::ORTHOGRAPHIC);
+                cameraCmp.camera.setType(Camera::Type::orthographic);
             }
             else
             {
-                cameraCmp.camera.setType(Camera::Type::PERSPECTIVE);
+                cameraCmp.camera.setType(Camera::Type::perspective);
             }
         }
 
@@ -1034,7 +1034,7 @@ class SceneHeirarchyPanel
             cameraCmp.camera.setPosition(position);
         }
 
-        if (cameraCmp.camera.getType() == Camera::Type::ORTHOGRAPHIC)
+        if (cameraCmp.camera.getType() == Camera::Type::orthographic)
         {
             f32_t orthoWidth = cameraCmp.camera.getOrthoWidth();
 

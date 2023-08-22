@@ -14,23 +14,23 @@ class SceneControlPanel
    public:
     enum class RunState
     {
-        STOP,
-        PLAY
+        stop,
+        play
     };
 
     enum class ToolState
     {
-        NONE,
-        UNIVERSAL,
-        MOVE,
-        ROTATE,
-        SCALE,
+        none,
+        universal,
+        move,
+        rotate,
+        scale,
     };
 
     struct State
     {
-        RunState  runState  = RunState::STOP;
-        ToolState toolState = ToolState::NONE;
+        RunState  runState  = RunState::stop;
+        ToolState toolState = ToolState::none;
     };
 
     bool m_wireFrame = false;
@@ -40,7 +40,7 @@ class SceneControlPanel
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
 
-        m_state.runState = RunState::STOP;
+        m_state.runState = RunState::stop;
     }
     ~SceneControlPanel()
     {
@@ -60,7 +60,7 @@ class SceneControlPanel
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
 
-        bool play = m_state.runState == RunState::PLAY;
+        bool play = m_state.runState == RunState::play;
 
         char icon[5];
 
@@ -78,7 +78,7 @@ class SceneControlPanel
 
         if (ImGui::Button(icon))
         {
-            m_state.runState = play ? RunState::STOP : RunState::PLAY;
+            m_state.runState = play ? RunState::stop : RunState::play;
         }
 
         ///////////////////////////
@@ -88,71 +88,71 @@ class SceneControlPanel
         ImGui::SameLine();
 
         // universal tool
-        bool enabled = m_state.toolState == ToolState::UNIVERSAL;
+        bool enabled = m_state.toolState == ToolState::universal;
         if (widgets::stateButton(ICON_FA_ATOM, enabled))
         {
             if (enabled)
             {
                 // turn off tool
-                m_state.toolState = ToolState::NONE;
+                m_state.toolState = ToolState::none;
             }
             else
             {
                 // enable/switch tool
-                m_state.toolState = ToolState::UNIVERSAL;
+                m_state.toolState = ToolState::universal;
             }
         }
 
         ImGui::SameLine();
 
         // move tool
-        enabled = m_state.toolState == ToolState::MOVE;
+        enabled = m_state.toolState == ToolState::move;
         if (widgets::stateButton(ICON_FA_UP_DOWN_LEFT_RIGHT, enabled))
         {
             if (enabled)
             {
                 // turn off tool
-                m_state.toolState = ToolState::NONE;
+                m_state.toolState = ToolState::none;
             }
             else
             {
                 // enable/switch tool
-                m_state.toolState = ToolState::MOVE;
+                m_state.toolState = ToolState::move;
             }
         }
 
         ImGui::SameLine();
 
         // rotate tool
-        enabled = m_state.toolState == ToolState::ROTATE;
+        enabled = m_state.toolState == ToolState::rotate;
         if (widgets::stateButton(ICON_FA_ARROWS_SPIN, enabled))
         {
             if (enabled)
             {
                 // turn off tool
-                m_state.toolState = ToolState::NONE;
+                m_state.toolState = ToolState::none;
             }
             else
             {
                 // enable/switch tool
-                m_state.toolState = ToolState::ROTATE;
+                m_state.toolState = ToolState::rotate;
             }
         }
 
         ImGui::SameLine();
         // scale tool
-        enabled = m_state.toolState == ToolState::SCALE;
+        enabled = m_state.toolState == ToolState::scale;
         if (widgets::stateButton(ICON_FA_MAXIMIZE, enabled))
         {
             if (enabled)
             {
                 // turn off tool
-                m_state.toolState = ToolState::NONE;
+                m_state.toolState = ToolState::none;
             }
             else
             {
                 // enable/switch tool
-                m_state.toolState = ToolState::SCALE;
+                m_state.toolState = ToolState::scale;
             }
         }
 

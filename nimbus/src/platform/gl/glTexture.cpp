@@ -35,18 +35,18 @@ GlTexture::GlTexture(const Type type, const std::string& path, const bool flipOn
     {
         if (numComponents == 1)
         {
-            m_spec.format         = Format::RED;
-            m_spec.formatInternal = FormatInternal::R8;
+            m_spec.format         = Format::red;
+            m_spec.formatInternal = FormatInternal::r8;
         }
         else if (numComponents == 3)
         {
-            m_spec.format         = Format::RGB;
-            m_spec.formatInternal = FormatInternal::RGB8;
+            m_spec.format         = Format::rgb;
+            m_spec.formatInternal = FormatInternal::rgb8;
         }
         else if (numComponents == 4)
         {
-            m_spec.format         = Format::RGBA;
-            m_spec.formatInternal = FormatInternal::RGBA8;
+            m_spec.format         = Format::rgba;
+            m_spec.formatInternal = FormatInternal::rgba8;
         }
         else
         {
@@ -62,12 +62,12 @@ GlTexture::GlTexture(const Type type, const std::string& path, const bool flipOn
                 glBindTexture(GL_TEXTURE_2D, p_this->m_id);
 
                 // TODO, determine how to set this
-                p_this->m_spec.dataType      = DataType::UNSIGNED_BYTE;
-                p_this->m_spec.filterTypeMin = FilterType::MIPMAP_LINEAR;
-                p_this->m_spec.filterTypeMag = FilterType::LINEAR;
-                p_this->m_spec.wrapTypeS     = WrapType::REPEAT;
-                p_this->m_spec.wrapTypeT     = WrapType::REPEAT;
-                p_this->m_spec.wrapTypeR     = WrapType::REPEAT;
+                p_this->m_spec.dataType      = DataType::unsignedByte_;
+                p_this->m_spec.filterTypeMin = FilterType::mipmapLinear;
+                p_this->m_spec.filterTypeMag = FilterType::linear;
+                p_this->m_spec.wrapTypeS     = WrapType::repeat;
+                p_this->m_spec.wrapTypeT     = WrapType::repeat;
+                p_this->m_spec.wrapTypeR     = WrapType::repeat;
 
                 // safety check for:
                 // If a non-zero named buffer object is bound to the
@@ -166,22 +166,22 @@ void GlTexture::setData(void* data, u32_t size)
     u32_t bytesPerElement = 0;
     switch (m_spec.format)
     {
-        case (Format::RGBA):
+        case (Format::rgba):
         {
             elements = 4;
             break;
         }
-        case (Format::RGB):
+        case (Format::rgb):
         {
             elements = 3;
             break;
         }
-        case (Format::RG):
+        case (Format::rg):
         {
             elements = 2;
             break;
         }
-        case (Format::RED):
+        case (Format::red):
         {
             elements = 1;
             break;
@@ -192,22 +192,22 @@ void GlTexture::setData(void* data, u32_t size)
 
     switch (m_spec.dataType)
     {
-        case (DataType::UNSIGNED_BYTE):
-        case (DataType::BYTE):
+        case (DataType::unsignedByte_):
+        case (DataType::byte_):
         {
             bytesPerElement = 1;
             break;
         }
-        case (DataType::UNSIGNED_SHORT):
-        case (DataType::SHORT):
-        case (DataType::HALF_FLOAT):
+        case (DataType::unsignedShort_):
+        case (DataType::short_):
+        case (DataType::halfFloat_):
         {
             bytesPerElement = 2;
             break;
         }
-        case (DataType::UNSIGNED_INT):
-        case (DataType::INT):
-        case (DataType::FLOAT):
+        case (DataType::unsignedInt_):
+        case (DataType::int_):
+        case (DataType::float_):
         {
             bytesPerElement = 4;
             break;
@@ -256,17 +256,17 @@ u32_t GlTexture::s_format(Format format)
 {
     switch (format)
     {
-        case Format::NONE:
+        case Format::none:
             return 0;
-        case Format::RGBA:
+        case Format::rgba:
             return GL_RGBA;
-        case Format::RGB:
+        case Format::rgb:
             return GL_RGB;
-        case Format::RG:
+        case Format::rg:
             return GL_RG;
-        case Format::RED:
+        case Format::red:
             return GL_RED;
-        case Format::RED_INT:
+        case Format::redInt:
             return GL_RED_INTEGER;
         default:
         {
@@ -280,51 +280,51 @@ u32_t GlTexture::s_formatInternal(FormatInternal format)
 {
     switch (format)
     {
-        case FormatInternal::NONE:
+        case FormatInternal::none:
             return 0;
-        case FormatInternal::RGBA8:
+        case FormatInternal::rgba8:
             return GL_RGBA8;
-        case FormatInternal::RGBA16F:
+        case FormatInternal::rgba16f:
             return GL_RGBA16F;
-        case FormatInternal::RGBA32F:
+        case FormatInternal::rgba32f:
             return GL_RGBA32F;
-        case FormatInternal::RGB8:
+        case FormatInternal::rgb8:
             return GL_RGB8;
-        case FormatInternal::RGB16F:
+        case FormatInternal::rgb16f:
             return GL_RGB16F;
-        case FormatInternal::RGB32F:
+        case FormatInternal::rgb32f:
             return GL_RGB32F;
-        case FormatInternal::RG8:
+        case FormatInternal::rg8:
             return GL_RG8;
-        case FormatInternal::RG16F:
+        case FormatInternal::rg16f:
             return GL_RG16F;
-        case FormatInternal::RG32F:
+        case FormatInternal::rg32f:
             return GL_RG32F;
-        case FormatInternal::R8:
+        case FormatInternal::r8:
             return GL_R8;
-        case FormatInternal::R16:
+        case FormatInternal::r16:
             return GL_R16;
-        case FormatInternal::R8I:
+        case FormatInternal::r8i:
             return GL_R8I;
-        case FormatInternal::R16I:
+        case FormatInternal::r16i:
             return GL_R16I;
-        case FormatInternal::R32I:
+        case FormatInternal::r32i:
             return GL_R32I;
-        case FormatInternal::R8UI:
+        case FormatInternal::r8ui:
             return GL_R8UI;
-        case FormatInternal::R16UI:
+        case FormatInternal::r16ui:
             return GL_R16UI;
-        case FormatInternal::R32UI:
+        case FormatInternal::r32ui:
             return GL_R32UI;
-        case FormatInternal::R32F:
+        case FormatInternal::r32f:
             return GL_R32F;
-        case FormatInternal::DEPTH_COMPONENT16:
+        case FormatInternal::depthComponent16:
             return GL_DEPTH_COMPONENT16;
-        case FormatInternal::DEPTH_COMPONENT24:
+        case FormatInternal::depthComponent24:
             return GL_DEPTH_COMPONENT24;
-        case FormatInternal::DEPTH_COMPONENT32F:
+        case FormatInternal::depthComponent32f:
             return GL_DEPTH_COMPONENT32F;
-        case FormatInternal::DEPTH24_STENCIL8:
+        case FormatInternal::depth24Stencil8:
             return GL_DEPTH24_STENCIL8;
         default:
         {
@@ -338,21 +338,21 @@ u32_t GlTexture::s_dataType(DataType dataType)
 {
     switch (dataType)
     {
-        case DataType::UNSIGNED_BYTE:
+        case DataType::unsignedByte_:
             return GL_UNSIGNED_BYTE;
-        case DataType::BYTE:
+        case DataType::byte_:
             return GL_BYTE;
-        case DataType::UNSIGNED_SHORT:
+        case DataType::unsignedShort_:
             return GL_UNSIGNED_SHORT;
-        case DataType::SHORT:
+        case DataType::short_:
             return GL_SHORT;
-        case DataType::UNSIGNED_INT:
+        case DataType::unsignedInt_:
             return GL_UNSIGNED_INT;
-        case DataType::INT:
+        case DataType::int_:
             return GL_INT;
-        case DataType::FLOAT:
+        case DataType::float_:
             return GL_FLOAT;
-        case DataType::HALF_FLOAT:
+        case DataType::halfFloat_:
             return GL_HALF_FLOAT;
         // Add more conversions as needed
         default:
@@ -367,11 +367,11 @@ u32_t GlTexture::s_filterType(FilterType filterType)
 {
     switch (filterType)
     {
-        case (FilterType::LINEAR):
+        case (FilterType::linear):
             return GL_LINEAR;
-        case (FilterType::MIPMAP_LINEAR):
+        case (FilterType::mipmapLinear):
             return GL_LINEAR_MIPMAP_LINEAR;
-        case (FilterType::NEAREST):
+        case (FilterType::nearest):
             return GL_NEAREST;
         default:
         {
@@ -385,9 +385,9 @@ u32_t GlTexture::s_wrapType(WrapType wrapType)
 {
     switch (wrapType)
     {
-        case (WrapType::CLAMP_TO_EDGE):
+        case (WrapType::clampToEdge):
             return GL_CLAMP_TO_EDGE;
-        case (WrapType::REPEAT):
+        case (WrapType::repeat):
             return GL_REPEAT;
         default:
         {

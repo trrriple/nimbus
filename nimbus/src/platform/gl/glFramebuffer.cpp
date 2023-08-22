@@ -139,17 +139,17 @@ void GlFramebuffer::bind(Mode mode) const
         {
             switch (mode)
             {
-                case (Mode::READ_WRITE):
+                case (Mode::readWrite):
                 {
                     glBindFramebuffer(GL_FRAMEBUFFER, id);
                     break;
                 }
-                case (Mode::READ):
+                case (Mode::read):
                 {
                     glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
                     break;
                 }
-                case (Mode::WRITE):
+                case (Mode::write):
                 {
                     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
                     break;
@@ -169,17 +169,17 @@ void GlFramebuffer::unbind(Mode mode) const
         {
             switch (mode)
             {
-                case (Mode::READ_WRITE):
+                case (Mode::readWrite):
                 {
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     break;
                 }
-                case (Mode::READ):
+                case (Mode::read):
                 {
                     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
                     break;
                 }
-                case (Mode::WRITE):
+                case (Mode::write):
                 {
                     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
                     break;
@@ -218,19 +218,19 @@ void GlFramebuffer::clearColorAttachment(const u32_t attachmentIdx)
 
     switch (m_colorAttachments[attachmentIdx]->getSpec().formatInternal)
     {
-        case (Texture::FormatInternal::RGBA8):
-        case (Texture::FormatInternal::RGBA16F):
-        case (Texture::FormatInternal::RGBA32F):
-        case (Texture::FormatInternal::RGB8):
-        case (Texture::FormatInternal::RGB16F):
-        case (Texture::FormatInternal::RGB32F):
-        case (Texture::FormatInternal::RG8):
-        case (Texture::FormatInternal::RG16F):
-        case (Texture::FormatInternal::RG32F):
-        case (Texture::FormatInternal::R8):
-        case (Texture::FormatInternal::R16):
-        case (Texture::FormatInternal::R16F):
-        case (Texture::FormatInternal::R32F):
+        case (Texture::FormatInternal::rgba8):
+        case (Texture::FormatInternal::rgba16f):
+        case (Texture::FormatInternal::rgba32f):
+        case (Texture::FormatInternal::rgb8):
+        case (Texture::FormatInternal::rgb16f):
+        case (Texture::FormatInternal::rgb32f):
+        case (Texture::FormatInternal::rg8):
+        case (Texture::FormatInternal::rg16f):
+        case (Texture::FormatInternal::rg32f):
+        case (Texture::FormatInternal::r8):
+        case (Texture::FormatInternal::r16):
+        case (Texture::FormatInternal::r16f):
+        case (Texture::FormatInternal::r32f):
         {
             // floating types
             Renderer::s_submitObject(
@@ -251,9 +251,9 @@ void GlFramebuffer::clearColorAttachment(const u32_t attachmentIdx)
                 });
             break;
         }
-        case (Texture::FormatInternal::R8I):
-        case (Texture::FormatInternal::R16I):
-        case (Texture::FormatInternal::R32I):
+        case (Texture::FormatInternal::r8i):
+        case (Texture::FormatInternal::r16i):
+        case (Texture::FormatInternal::r32i):
         {
             // signed int
             Renderer::s_submitObject(
@@ -274,9 +274,9 @@ void GlFramebuffer::clearColorAttachment(const u32_t attachmentIdx)
                 });
             break;
         }
-        case (Texture::FormatInternal::R8UI):
-        case (Texture::FormatInternal::R16UI):
-        case (Texture::FormatInternal::R32UI):
+        case (Texture::FormatInternal::r8ui):
+        case (Texture::FormatInternal::r16ui):
+        case (Texture::FormatInternal::r32ui):
         {
             // unsigned int
             Renderer::s_submitObject(
@@ -311,9 +311,9 @@ void GlFramebuffer::clearDepthAttachment()
 
     switch (m_spec.depthType)
     {
-        case (Texture::FormatInternal::DEPTH_COMPONENT16):
-        case (Texture::FormatInternal::DEPTH_COMPONENT24):
-        case (Texture::FormatInternal::DEPTH_COMPONENT32F):
+        case (Texture::FormatInternal::depthComponent16):
+        case (Texture::FormatInternal::depthComponent24):
+        case (Texture::FormatInternal::depthComponent32f):
         {
             // depth
             Renderer::s_submitObject(
@@ -324,7 +324,7 @@ void GlFramebuffer::clearDepthAttachment()
                 });
             break;
         }
-        case (Texture::FormatInternal::DEPTH24_STENCIL8):
+        case (Texture::FormatInternal::depth24Stencil8):
         {
             Renderer::s_submitObject(
                 [p_this]()
@@ -348,7 +348,7 @@ void GlFramebuffer::clearAllAttachments()
     {
         clearColorAttachment(i);
     }
-    if (m_spec.depthType != Texture::FormatInternal::NONE)
+    if (m_spec.depthType != Texture::FormatInternal::none)
     {
         clearDepthAttachment();
     }
@@ -379,7 +379,7 @@ void GlFramebuffer::requestPixel(ref<PixelReadRequest> p_request)
 
             switch (format)
             {
-                case (Texture::Format::RGBA):
+                case (Texture::Format::rgba):
                 {
                     glm::vec4 data;
                     glReadPixels(x,
@@ -392,7 +392,7 @@ void GlFramebuffer::requestPixel(ref<PixelReadRequest> p_request)
                     p_request->setValue(data);
                     break;
                 }
-                case (Texture::Format::RGB):
+                case (Texture::Format::rgb):
                 {
                     glm::vec3 data;
                     glReadPixels(x,
@@ -405,7 +405,7 @@ void GlFramebuffer::requestPixel(ref<PixelReadRequest> p_request)
                     p_request->setValue(glm::vec4({data, 0.0f}));
                     break;
                 }
-                case (Texture::Format::RG):
+                case (Texture::Format::rg):
                 {
                     glm::vec2 data;
                     glReadPixels(x,
@@ -418,7 +418,7 @@ void GlFramebuffer::requestPixel(ref<PixelReadRequest> p_request)
                     p_request->setValue(glm::vec4({data, 0.0f, 0.0f}));
                     break;
                 }
-                case (Texture::Format::RED_INT):
+                case (Texture::Format::redInt):
                 {
                     u32_t data;
                     glReadPixels(x,
@@ -496,7 +496,7 @@ void GlFramebuffer::_construct()
                                           "dimensions!");
                 }
 
-                ref<Texture> texture = Texture::s_create(Texture::Type::DIFFUSE, texSpec, false);
+                ref<Texture> texture = Texture::s_create(Texture::Type::diffuse, texSpec, false);
 
                 p_this->m_colorAttachments.push_back(texture);
 

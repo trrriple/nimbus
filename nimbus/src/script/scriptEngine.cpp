@@ -351,7 +351,6 @@ void ScriptEngine::s_init(const std::string& installPath)
     // call init inside managed code
     s_callManagedMethodByName<char*>(STR("InitializeScriptCore"));
 
-
     // messin
     char* runtimeInfo = s_callManagedMethodByName<char*>(STR("GetRuntimeInformation"));
     Log::coreInfo("Dotnet runtime info %s", runtimeInfo);
@@ -359,7 +358,7 @@ void ScriptEngine::s_init(const std::string& installPath)
     s_freeMemory(runtimeInfo);
 
 #endif
-                   });
+    });
 }
 
 void ScriptEngine::s_destroy()

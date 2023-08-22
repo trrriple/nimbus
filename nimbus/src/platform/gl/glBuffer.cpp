@@ -23,7 +23,7 @@ GlVertexBuffer::GlVertexBuffer(const void* vertices, u32_t size, VertexBuffer::T
 
     switch (m_type)
     {
-        case (VertexBuffer::Type::STATIC_DRAW):
+        case (VertexBuffer::Type::staticDraw):
         {
             Renderer::s_submitObject(
                 [p_this, localCpy]() mutable
@@ -36,8 +36,8 @@ GlVertexBuffer::GlVertexBuffer(const void* vertices, u32_t size, VertexBuffer::T
 
             break;
         }
-        case (VertexBuffer::Type::DYNAMIC_DRAW):
-        case (VertexBuffer::Type::STREAM_DRAW):
+        case (VertexBuffer::Type::dynamicDraw):
+        case (VertexBuffer::Type::streamDraw):
         {
             Renderer::s_submitObject(
                 [p_this, localCpy]() mutable
@@ -94,7 +94,7 @@ void GlVertexBuffer::setData(const void* data, u32_t size)
 {
     NB_CORE_ASSERT(size <= m_size, "Size (%i) must be <= preallocated size (%i)", size, m_size);
 
-    NB_CORE_ASSERT(m_type != VertexBuffer::Type::STATIC_DRAW, "Cannot set data in a static buffer!");
+    NB_CORE_ASSERT(m_type != VertexBuffer::Type::staticDraw, "Cannot set data in a static buffer!");
 
     if (m_mapped)
     {
@@ -241,7 +241,7 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
                                            format.getStride(),
                                            (const void*)component.offset);
 
-                    if (component.type == BufferComponent::Type::PER_INSTANCE)
+                    if (component.type == BufferComponent::Type::perInstance)
                     {
                         glVertexAttribDivisor(p_this->m_vertexBufferIndex, component.perInstance);
                     }
@@ -273,7 +273,7 @@ void GlVertexArray::addVertexBuffer(ref<VertexBuffer> p_vertexBuffer)
                                               format.getStride(),
                                               (const void*)offset);
 
-                        if (component.type == BufferComponent::Type::PER_INSTANCE)
+                        if (component.type == BufferComponent::Type::perInstance)
                         {
                             glVertexAttribDivisor(p_this->m_vertexBufferIndex, component.perInstance);
                         }

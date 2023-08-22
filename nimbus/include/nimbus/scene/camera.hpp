@@ -10,18 +10,18 @@ class Camera : public refCounted
    public:
     enum class Type
     {
-        ORTHOGRAPHIC,
-        PERSPECTIVE
+        orthographic,
+        perspective
     };
 
     enum class Movement
     {
-        FORWARD,
-        BACKWARD,
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN,
+        forward,
+        backward,
+        left,
+        right,
+        up,
+        down,
     };
 
     struct Bounds
@@ -32,7 +32,7 @@ class Camera : public refCounted
         glm::vec4 bottomRight;
     };
 
-    Camera(Type type = Type::ORTHOGRAPHIC);
+    Camera(Type type = Type::orthographic);
 
     void setType(Type type);
 
@@ -70,14 +70,14 @@ class Camera : public refCounted
 
     inline f32_t getNearClip()
     {
-        return m_type == Type::ORTHOGRAPHIC ? m_orthoNear : m_near;
+        return m_type == Type::orthographic ? m_orthoNear : m_near;
     }
 
     void setFarClip(f32_t far);
 
     inline f32_t getFarClip()
     {
-        return m_type == Type::ORTHOGRAPHIC ? m_orthoFar : m_far;
+        return m_type == Type::orthographic ? m_orthoFar : m_far;
     }
 
     void setPosition(const glm::vec3& position);

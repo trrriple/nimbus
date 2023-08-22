@@ -92,14 +92,14 @@ void Renderer::s_init()
         texSpec.width  = 1;
         texSpec.height = 1;
         s_data->p_whiteTexture
-            = Texture::s_create(Texture::Type::DIFFUSE, texSpec);
+            = Texture::s_create(Texture::Type::diffuse, texSpec);
 
         // being a 1x1 texture, it's only 4 bytes of data
         u32_t whiteData = 0xFFFFFFFF;
         s_data->p_whiteTexture->setData(&whiteData, sizeof(whiteData));
 
         s_data->p_blackTexture
-            = Texture::s_create(Texture::Type::DIFFUSE, texSpec);
+            = Texture::s_create(Texture::Type::diffuse, texSpec);
         
         u32_t blackData = 0xFF000000;
         s_data->p_blackTexture->setData(&blackData, sizeof(blackData));
@@ -166,12 +166,12 @@ void Renderer::s_endFrame()
 void Renderer::s_swapAndStart()
 {
     _s_qSwap();
-    s_data->renderThread.setState(RenderThread::State::READY);
+    s_data->renderThread.setState(RenderThread::State::ready);
 }
 
 void Renderer::s_waitForRenderThread()
 {
-    s_data->renderThread.waitForState(RenderThread::State::PEND);
+    s_data->renderThread.waitForState(RenderThread::State::pend);
 }
 
 void Renderer::s_pumpCmds()
@@ -319,15 +319,15 @@ void Renderer::_s_renderThreadFn()
     while (s_data->renderThread.isActive())
     {
         pendSw->split();
-        s_data->renderThread.waitForState(RenderThread::State::READY);
+        s_data->renderThread.waitForState(RenderThread::State::ready);
         pendSw->splitAndSave();
 
         processSw->split();
 
-        s_data->renderThread.setState(RenderThread::State::BUSY);
+        s_data->renderThread.setState(RenderThread::State::busy);
         // process all the commands in render queue
         _s_getProcessRenderCmdQ()->pump();
-        s_data->renderThread.setState(RenderThread::State::PEND);
+        s_data->renderThread.setState(RenderThread::State::pend);
         processSw->splitAndSave();
     }
 }

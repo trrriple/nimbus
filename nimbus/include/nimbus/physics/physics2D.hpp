@@ -12,9 +12,9 @@ class Physics2D : public refCounted
    public:
     enum class BodyType
     {
-        STATIC = 0,
-        KINEMATIC,
-        DYNAMIC
+        fixed = 0,
+        kinematic,
+        dynamic
     };
 
     struct RigidBodySpec
@@ -29,16 +29,16 @@ class Physics2D : public refCounted
         bool      awake           = true;
         bool      fixedRotation   = false;
         bool      bullet          = false;
-        BodyType  type            = BodyType::STATIC;
+        BodyType  type            = BodyType::fixed;
         bool      enabled         = true;
         f32_t     gravityScale    = 1.0f;
     };
 
     enum class ShapeType
     {
-        NONE,
-        RECTANGLE,
-        CIRCLE,
+        none,
+        rectangle,
+        circle,
     };
 
     struct Shape
@@ -55,7 +55,7 @@ class Physics2D : public refCounted
     {
         glm::vec2 size = {0.5f, 0.5f};
 
-        Rectangle() : Shape(ShapeType::RECTANGLE)
+        Rectangle() : Shape(ShapeType::rectangle)
         {
         }
     };
@@ -64,7 +64,7 @@ class Physics2D : public refCounted
     {
         f32_t radius = 0.5f;
 
-        Circle() : Shape(ShapeType::CIRCLE)
+        Circle() : Shape(ShapeType::circle)
         {
         }
     };

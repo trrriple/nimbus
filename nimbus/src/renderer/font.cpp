@@ -139,12 +139,12 @@ void Font::_initializeTexture()
 {
     Texture::Spec texSpec;
 
-    texSpec.format         = Texture::Format::RGB;
-    texSpec.formatInternal = Texture::FormatInternal::RGB8;
+    texSpec.format         = Texture::Format::rgb;
+    texSpec.formatInternal = Texture::FormatInternal::rgb8;
     texSpec.width          = m_data->width;
     texSpec.height         = m_data->height;
 
-    m_atlasTex = Texture::s_create(Texture::Type::DIFFUSE, texSpec);
+    m_atlasTex = Texture::s_create(Texture::Type::diffuse, texSpec);
 
     // todo configure size
     m_atlasTex->setData((void*)m_data->pixels, m_data->width * m_data->height * 3);

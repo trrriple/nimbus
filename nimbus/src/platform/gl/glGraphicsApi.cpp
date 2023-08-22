@@ -189,35 +189,35 @@ void GlGraphicsApi::setBlendingMode(GraphicsApi::BlendingMode mode)
     u32_t dFactor = GL_NONE;
     switch (mode)
     {
-        case BlendingMode::ADDITIVE:
+        case BlendingMode::additive:
             sFactor = GL_ONE;
             dFactor = GL_ONE;
             break;
-        case BlendingMode::SUBTRACT:
+        case BlendingMode::subtract:
             sFactor = GL_ZERO;
             dFactor = GL_ONE_MINUS_SRC_COLOR;
             break;
-        case BlendingMode::MULTIPLY:
+        case BlendingMode::multiply:
             sFactor = GL_DST_COLOR;
             dFactor = GL_ZERO;
             break;
-        case BlendingMode::SCREEN:
+        case BlendingMode::screen:
             sFactor = GL_ONE;
             dFactor = GL_ONE_MINUS_SRC_COLOR;
             break;
-        case BlendingMode::REPLACE:
+        case BlendingMode::replace:
             sFactor = GL_ONE;
             dFactor = GL_ZERO;
             break;
-        case BlendingMode::ALPHA_BLEND:
+        case BlendingMode::alphaBlend:
             sFactor = GL_SRC_ALPHA;
             dFactor = GL_ONE_MINUS_SRC_ALPHA;
             break;
-        case BlendingMode::ALPHA_PREMULTIPLIED:
+        case BlendingMode::alphaPremultiplied:
             sFactor = GL_ONE;
             dFactor = GL_ONE_MINUS_SRC_ALPHA;
             break;
-        case BlendingMode::SOURCE_ALPHA_ADDITIVE:
+        case BlendingMode::sourceAlphaAdditive:
             sFactor = GL_SRC_ALPHA;
             dFactor = GL_ONE;
             break;

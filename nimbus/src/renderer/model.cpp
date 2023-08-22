@@ -148,23 +148,23 @@ scope<Mesh> Model::processMesh(void* mesh, const void* scene)
         aiMaterial* material = aiScene->mMaterials[aimesh->mMaterialIndex];
 
         // 1. diffuse maps
-        std::vector<ref<Texture>> diffuseMaps = loadMaterialTextures(material, Texture::Type::DIFFUSE);
+        std::vector<ref<Texture>> diffuseMaps = loadMaterialTextures(material, Texture::Type::diffuse);
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
         // 2. specular maps
-        std::vector<ref<Texture>> specularMaps = loadMaterialTextures(material, Texture::Type::SPECULAR);
+        std::vector<ref<Texture>> specularMaps = loadMaterialTextures(material, Texture::Type::specular);
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
         // 3. Ambient maps
-        std::vector<ref<Texture>> ambientMaps = loadMaterialTextures(material, Texture::Type::AMBIENT);
+        std::vector<ref<Texture>> ambientMaps = loadMaterialTextures(material, Texture::Type::ambient);
         textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
 
         // 3. normal maps
-        std::vector<ref<Texture>> normalMaps = loadMaterialTextures(material, Texture::Type::NORMAL);
+        std::vector<ref<Texture>> normalMaps = loadMaterialTextures(material, Texture::Type::normal);
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
         // 4. height maps
-        std::vector<ref<Texture>> heightMaps = loadMaterialTextures(material, Texture::Type::HEIGHT);
+        std::vector<ref<Texture>> heightMaps = loadMaterialTextures(material, Texture::Type::height);
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     }
     return genScope<Mesh>(vertices, indices, textures, m_normalize);
@@ -176,23 +176,23 @@ std::vector<ref<Texture>> Model::loadMaterialTextures(void* mat, Texture::Type t
     aiMaterial* aimat = static_cast<aiMaterial*>(mat);
 
     aiTextureType aiType = aiTextureType_NONE;
-    if (texType == Texture::Type::NORMAL)
+    if (texType == Texture::Type::normal)
     {
         aiType = aiTextureType_NORMALS;
     }
-    else if (texType == Texture::Type::DIFFUSE)
+    else if (texType == Texture::Type::diffuse)
     {
         aiType = aiTextureType_DIFFUSE;
     }
-    else if (texType == Texture::Type::SPECULAR)
+    else if (texType == Texture::Type::specular)
     {
         aiType = aiTextureType_SPECULAR;
     }
-    else if (texType == Texture::Type::AMBIENT)
+    else if (texType == Texture::Type::ambient)
     {
         aiType = aiTextureType_AMBIENT;
     }
-    else if (texType == Texture::Type::HEIGHT)
+    else if (texType == Texture::Type::height)
     {
         aiType = aiTextureType_HEIGHT;
     }

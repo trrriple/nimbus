@@ -1,4 +1,5 @@
 #include "nimbus/script/internalCalls/internalCalls.hpp"
+#include "nimbus/core/application.hpp"
 #include "nimbus/core/common.hpp"
 
 namespace nimbus
@@ -11,6 +12,8 @@ namespace nimbus
 INTERNAL_CALL void ic_coreInfo(char* msg)
 {
     Log::coreInfo(msg);
+    f32_t fps = Application::s_get().getWindow().m_fps;
+    Log::coreInfo("FPS %f", fps);
 }
 
 INTERNAL_CALL void ic_coreWarn(char* msg)
@@ -60,7 +63,7 @@ INTERNAL_CALL void ic_trace(char* msg)
 
 INTERNAL_CALL void ic_test()
 {
-    Log::coreInfo("Hello from C++!");
+
 }
 
 }  // namespace nimbus

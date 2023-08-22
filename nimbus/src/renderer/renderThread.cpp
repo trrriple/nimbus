@@ -12,7 +12,7 @@ namespace nimbus
 
 RenderThread::RenderThread()
 {
-    m_state  = State::DEAD;
+    m_state  = State::dead;
     m_active = false;
 }
 
@@ -23,7 +23,7 @@ void RenderThread::run(void (*fn)())
 {
     SDL_GL_MakeCurrent(static_cast<SDL_Window*>(Application::s_get().getWindow().getOsWindow()), nullptr);
     m_active = true;
-    m_state  = State::BUSY;
+    m_state  = State::busy;
     m_thread = std::thread(fn);
 }
 
@@ -57,7 +57,7 @@ void RenderThread::setState(State state)
 void RenderThread::stop()
 {
     m_active = false;
-    setState(State::DEAD);
+    setState(State::dead);
     m_thread.join();
 }
 

@@ -24,10 +24,10 @@ class ParticleEmitter : public refCounted
 
     enum class SpawnVolumeType
     {
-        POINT = 0,
-        CIRCLE,
-        RECTANGLE,
-        LINE
+        point = 0,
+        circle,
+        rectangle,
+        line
     };
 
     struct CircleVolumeParameters
@@ -49,7 +49,7 @@ class ParticleEmitter : public refCounted
     struct Parameters
     {
         glm::vec3                 centerPosition  = glm::vec3(0.0f);
-        SpawnVolumeType           spawnVolumeType = SpawnVolumeType::POINT;
+        SpawnVolumeType           spawnVolumeType = SpawnVolumeType::point;
         CircleVolumeParameters    circleVolumeParams;
         RectVolumeParameters      rectVolumeParams;
         LineVolumeParameters      lineVolumeParams;
@@ -66,7 +66,7 @@ class ParticleEmitter : public refCounted
         std::vector<colorSpec>    colors;
         bool                      persist      = true;
         bool                      shrink       = false;
-        GraphicsApi::BlendingMode blendingMode = GraphicsApi::BlendingMode::SOURCE_ALPHA_ADDITIVE;
+        GraphicsApi::BlendingMode blendingMode = GraphicsApi::BlendingMode::sourceAlphaAdditive;
     };
 
     ParticleEmitter() = default;
@@ -156,9 +156,9 @@ class ParticleEmitter : public refCounted
     // GPU data unique to each particle
     ////////////////////////////////////////////////////////////////////////////
     inline static const BufferFormat k_instanceVboFormat = {
-        {k_shaderVec3, "position", BufferComponent::Type::PER_INSTANCE, 1},
-        {k_shaderVec4, "color", BufferComponent::Type::PER_INSTANCE, 1},
-        {k_shaderVec2, "size", BufferComponent::Type::PER_INSTANCE, 1},
+        {k_shaderVec3, "position", BufferComponent::Type::perInstance, 1},
+        {k_shaderVec4, "color", BufferComponent::Type::perInstance, 1},
+        {k_shaderVec2, "size", BufferComponent::Type::perInstance, 1},
 
     };
     struct particleInstanceData

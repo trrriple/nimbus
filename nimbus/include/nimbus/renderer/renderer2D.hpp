@@ -86,11 +86,11 @@ class Renderer2D : public refCounted
     };
 
     inline static const BufferFormat k_quadInstVertexFormat = {
-        {k_shaderMat4, "transform", BufferComponent::Type::PER_INSTANCE, 1},
-        {k_shaderVec4, "color", BufferComponent::Type::PER_INSTANCE, 1},
-        {k_shaderInt, "texIndex", BufferComponent::Type::PER_INSTANCE, 1},
-        {k_shaderFloat, "texTilingFactor", BufferComponent::Type::PER_INSTANCE, 1},
-        {k_shaderUInt, "entityId", BufferComponent::Type::PER_INSTANCE, 1},
+        {k_shaderMat4, "transform", BufferComponent::Type::perInstance, 1},
+        {k_shaderVec4, "color", BufferComponent::Type::perInstance, 1},
+        {k_shaderInt, "texIndex", BufferComponent::Type::perInstance, 1},
+        {k_shaderFloat, "texTilingFactor", BufferComponent::Type::perInstance, 1},
+        {k_shaderUInt, "entityId", BufferComponent::Type::perInstance, 1},
     };
 
     struct QuadInstVertex

@@ -19,14 +19,7 @@ namespace nimbus
 class GlVertexBuffer : public VertexBuffer
 {
    public:
-    enum class Type
-    {
-        STATIC_DRAW,
-        DYNAMIC_DRAW,
-        STREAM_DRAW,
-    };
-
-    GlVertexBuffer(const void* vertices, u32_t size, VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
+    GlVertexBuffer(const void* vertices, u32_t size, VertexBuffer::Type type = VertexBuffer::Type::staticDraw);
 
     virtual ~GlVertexBuffer();
 

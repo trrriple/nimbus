@@ -196,29 +196,29 @@ class ViewportPanel
             }
         }
 
-        if (selectedEntity && toolState != SceneControlPanel::ToolState::NONE)
+        if (selectedEntity && toolState != SceneControlPanel::ToolState::none)
         {
             if (selectedEntity.hasComponent<TransformCmp>())
             {
                 ImGuizmo::OPERATION operation = ImGuizmo::OPERATION::UNIVERSAL;
                 switch (toolState)
                 {
-                    case (SceneControlPanel::ToolState::UNIVERSAL):
+                    case (SceneControlPanel::ToolState::universal):
                     {
                         operation = ImGuizmo::OPERATION::UNIVERSAL;
                         break;
                     }
-                    case (SceneControlPanel::ToolState::MOVE):
+                    case (SceneControlPanel::ToolState::move):
                     {
                         operation = ImGuizmo::OPERATION::TRANSLATE;
                         break;
                     }
-                    case (SceneControlPanel::ToolState::SCALE):
+                    case (SceneControlPanel::ToolState::scale):
                     {
                         operation = ImGuizmo::OPERATION::SCALE;
                         break;
                     }
-                    case (SceneControlPanel::ToolState::ROTATE):
+                    case (SceneControlPanel::ToolState::rotate):
                     {
                         operation = ImGuizmo::OPERATION::ROTATE;
                         break;

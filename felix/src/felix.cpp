@@ -48,21 +48,21 @@ class sceneCameraController : public EntityLogic
             return;
         }
 
-        if (mp_window->keyPressed(ScanCode::W))
+        if (mp_window->keyPressed(ScanCode::w))
         {
-            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::UP, deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::up, deltaTime);
         }
-        if (mp_window->keyPressed(ScanCode::A))
+        if (mp_window->keyPressed(ScanCode::a))
         {
-            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::BACKWARD, deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::backward, deltaTime);
         }
-        if (mp_window->keyPressed(ScanCode::S))
+        if (mp_window->keyPressed(ScanCode::s))
         {
-            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::DOWN, deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::down, deltaTime);
         }
-        if (mp_window->keyPressed(ScanCode::D))
+        if (mp_window->keyPressed(ScanCode::d))
         {
-            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::FORWARD, deltaTime);
+            mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::forward, deltaTime);
         }
 
         f32_t curWheelPos = mp_window->mouseWheelPos();
@@ -88,8 +88,8 @@ class FelixLayer : public Layer
    public:
     enum class State
     {
-        STOP,
-        PLAY
+        stop,
+        play
     };
 
     ///////////////////////////
@@ -102,7 +102,7 @@ class FelixLayer : public Layer
     // Scene
     ///////////////////////////
     ref<Scene>  mp_scene;
-    State       m_sceneState      = State::STOP;
+    State       m_sceneState      = State::stop;
     std::string m_openedScenePath = "";
     Entity      m_selectedEntity  = {};
 
@@ -143,7 +143,7 @@ class FelixLayer : public Layer
     bool        m_fileDropHandled = true;
     std::string m_fileDropPath;
 
-    FelixLayer() : Layer(Layer::Type::REGULAR, "Felix")
+    FelixLayer() : Layer(Layer::Type::regular, "Felix")
     {
     }
 
@@ -164,7 +164,7 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Edit Camera
         ///////////////////////////
-        mp_editCamera = ref<Camera>::gen(Camera::Type::PERSPECTIVE);
+        mp_editCamera = ref<Camera>::gen(Camera::Type::perspective);
         mp_editCamera->setAspectRatio(m_aspectRatio);
 #if IMGUIZO_SCALE_FIXED
         mp_editCamera->setPosition({0.00f, 0.00f, 10 * 2.4125f});
@@ -259,14 +259,14 @@ class FelixLayer : public Layer
         fbMainTex.width          = fbSpec.width;
         fbMainTex.height         = fbSpec.height;
         fbMainTex.samples        = fbSpec.samples;
-        fbMainTex.format         = Texture::Format::RGBA;
-        fbMainTex.formatInternal = Texture::FormatInternal::RGBA8;
-        fbMainTex.dataType       = Texture::DataType::UNSIGNED_BYTE;
-        fbMainTex.filterTypeMin  = Texture::FilterType::LINEAR;
-        fbMainTex.filterTypeMag  = Texture::FilterType::LINEAR;
-        fbMainTex.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
-        fbMainTex.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
-        fbMainTex.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
+        fbMainTex.format         = Texture::Format::rgba;
+        fbMainTex.formatInternal = Texture::FormatInternal::rgba8;
+        fbMainTex.dataType       = Texture::DataType::unsignedByte_;
+        fbMainTex.filterTypeMin  = Texture::FilterType::linear;
+        fbMainTex.filterTypeMag  = Texture::FilterType::linear;
+        fbMainTex.wrapTypeR      = Texture::WrapType::clampToEdge;
+        fbMainTex.wrapTypeS      = Texture::WrapType::clampToEdge;
+        fbMainTex.wrapTypeT      = Texture::WrapType::clampToEdge;
         fbMainTex.clearColor     = std::array<f32_t, 4>{0.1f, 0.1f, 0.1f, 1.0f};
 
         fbSpec.colorAttachments.push_back(fbMainTex);
@@ -275,19 +275,19 @@ class FelixLayer : public Layer
         fbEntIdTexSpec.width          = fbSpec.width;
         fbEntIdTexSpec.height         = fbSpec.height;
         fbEntIdTexSpec.samples        = fbSpec.samples;
-        fbEntIdTexSpec.format         = Texture::Format::RED_INT;
-        fbEntIdTexSpec.formatInternal = Texture::FormatInternal::R32UI;
-        fbEntIdTexSpec.dataType       = Texture::DataType::UNSIGNED_INT;
-        fbEntIdTexSpec.filterTypeMin  = Texture::FilterType::NEAREST;
-        fbEntIdTexSpec.filterTypeMag  = Texture::FilterType::NEAREST;
-        fbEntIdTexSpec.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
-        fbEntIdTexSpec.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
-        fbEntIdTexSpec.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
+        fbEntIdTexSpec.format         = Texture::Format::redInt;
+        fbEntIdTexSpec.formatInternal = Texture::FormatInternal::r32ui;
+        fbEntIdTexSpec.dataType       = Texture::DataType::unsignedInt_;
+        fbEntIdTexSpec.filterTypeMin  = Texture::FilterType::nearest;
+        fbEntIdTexSpec.filterTypeMag  = Texture::FilterType::nearest;
+        fbEntIdTexSpec.wrapTypeR      = Texture::WrapType::clampToEdge;
+        fbEntIdTexSpec.wrapTypeS      = Texture::WrapType::clampToEdge;
+        fbEntIdTexSpec.wrapTypeT      = Texture::WrapType::clampToEdge;
         fbEntIdTexSpec.clearColor     = std::array<u32_t, 4>{Entity::k_nullEntity};
 
         fbSpec.colorAttachments.push_back(fbEntIdTexSpec);
 
-        fbSpec.depthType = Texture::FormatInternal::DEPTH24_STENCIL8;
+        fbSpec.depthType = Texture::FormatInternal::depth24Stencil8;
 
         mp_frameBuffer = Framebuffer::s_create(fbSpec);
 
@@ -300,14 +300,14 @@ class FelixLayer : public Layer
         sbMainTex.width          = screenSpec.width;
         sbMainTex.height         = screenSpec.height;
         sbMainTex.samples        = screenSpec.samples;
-        sbMainTex.format         = Texture::Format::RGBA;
-        sbMainTex.formatInternal = Texture::FormatInternal::RGBA8;
-        sbMainTex.dataType       = Texture::DataType::UNSIGNED_BYTE;
-        sbMainTex.filterTypeMin  = Texture::FilterType::LINEAR;
-        sbMainTex.filterTypeMag  = Texture::FilterType::LINEAR;
-        sbMainTex.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
-        sbMainTex.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
-        sbMainTex.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
+        sbMainTex.format         = Texture::Format::rgba;
+        sbMainTex.formatInternal = Texture::FormatInternal::rgba8;
+        sbMainTex.dataType       = Texture::DataType::unsignedByte_;
+        sbMainTex.filterTypeMin  = Texture::FilterType::linear;
+        sbMainTex.filterTypeMag  = Texture::FilterType::linear;
+        sbMainTex.wrapTypeR      = Texture::WrapType::clampToEdge;
+        sbMainTex.wrapTypeS      = Texture::WrapType::clampToEdge;
+        sbMainTex.wrapTypeT      = Texture::WrapType::clampToEdge;
         sbMainTex.clearColor     = std::array<f32_t, 4>{0.1f, 0.1f, 0.1f, 1.0f};
 
         screenSpec.colorAttachments.push_back(sbMainTex);
@@ -316,19 +316,19 @@ class FelixLayer : public Layer
         sbEntIdTexSpec.width          = screenSpec.width;
         sbEntIdTexSpec.height         = screenSpec.height;
         sbEntIdTexSpec.samples        = screenSpec.samples;
-        sbEntIdTexSpec.format         = Texture::Format::RED_INT;
-        sbEntIdTexSpec.formatInternal = Texture::FormatInternal::R32UI;
-        sbEntIdTexSpec.dataType       = Texture::DataType::UNSIGNED_INT;
-        sbEntIdTexSpec.filterTypeMin  = Texture::FilterType::NEAREST;
-        sbEntIdTexSpec.filterTypeMag  = Texture::FilterType::NEAREST;
-        sbEntIdTexSpec.wrapTypeR      = Texture::WrapType::CLAMP_TO_EDGE;
-        sbEntIdTexSpec.wrapTypeS      = Texture::WrapType::CLAMP_TO_EDGE;
-        sbEntIdTexSpec.wrapTypeT      = Texture::WrapType::CLAMP_TO_EDGE;
+        sbEntIdTexSpec.format         = Texture::Format::redInt;
+        sbEntIdTexSpec.formatInternal = Texture::FormatInternal::r32ui;
+        sbEntIdTexSpec.dataType       = Texture::DataType::unsignedInt_;
+        sbEntIdTexSpec.filterTypeMin  = Texture::FilterType::nearest;
+        sbEntIdTexSpec.filterTypeMag  = Texture::FilterType::nearest;
+        sbEntIdTexSpec.wrapTypeR      = Texture::WrapType::clampToEdge;
+        sbEntIdTexSpec.wrapTypeS      = Texture::WrapType::clampToEdge;
+        sbEntIdTexSpec.wrapTypeT      = Texture::WrapType::clampToEdge;
         sbEntIdTexSpec.clearColor     = std::array<u32_t, 4>{Entity::k_nullEntity};
 
         screenSpec.colorAttachments.push_back(sbEntIdTexSpec);
 
-        screenSpec.depthType = Texture::FormatInternal::NONE;
+        screenSpec.depthType = Texture::FormatInternal::none;
 
         mp_screenBuffer = Framebuffer::s_create(screenSpec);
     }
@@ -342,16 +342,16 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Start/Stop Scene
         ///////////////////////////
-        if (mp_sceneControlPanel->getState().runState == SceneControlPanel::RunState::PLAY
-            && m_sceneState != State::PLAY)
+        if (mp_sceneControlPanel->getState().runState == SceneControlPanel::RunState::play
+            && m_sceneState != State::play)
         {
-            m_sceneState = State::PLAY;
+            m_sceneState = State::play;
             mp_scene->onStartRuntime();
         }
-        else if (mp_sceneControlPanel->getState().runState == SceneControlPanel::RunState::STOP
-                 && m_sceneState != State::STOP)
+        else if (mp_sceneControlPanel->getState().runState == SceneControlPanel::RunState::stop
+                 && m_sceneState != State::stop)
         {
-            m_sceneState = State::STOP;
+            m_sceneState = State::stop;
             mp_scene->onStopRuntime();
         }
 
@@ -363,11 +363,11 @@ class FelixLayer : public Layer
         ///////////////////////////
         // Update scene
         ///////////////////////////
-        if (m_sceneState == State::PLAY)
+        if (m_sceneState == State::play)
         {
             mp_scene->onUpdateRuntime(deltaTime);
         }
-        else if (m_sceneState == State::STOP)
+        else if (m_sceneState == State::stop)
         {
             if (m_viewportHovered)
             {
@@ -390,7 +390,7 @@ class FelixLayer : public Layer
 
         Renderer2D::s_resetStats();
 
-        if (m_sceneState == State::STOP)
+        if (m_sceneState == State::stop)
         {
             mp_scene->_onDrawEditor(mp_editCamera.raw());
         }
@@ -416,10 +416,10 @@ class FelixLayer : public Layer
             auto filePath = selection[0];
 
             // stop old scene
-            if (m_sceneState == State::PLAY)
+            if (m_sceneState == State::play)
             {
                 mp_scene->onStopRuntime();
-                mp_sceneControlPanel->setRunState(SceneControlPanel::RunState::STOP);
+                mp_sceneControlPanel->setRunState(SceneControlPanel::RunState::stop);
             }
 
             // throw away old scene (should probably be in a new scene func)
@@ -468,12 +468,12 @@ class FelixLayer : public Layer
         Event::Type eventType = event.getEventType();
 
         // We only care about these events if we're paused
-        if (m_sceneState == State::STOP)
+        if (m_sceneState == State::stop)
         {
-            if (eventType == Event::Type::MOUSEMOTION)
+            if (eventType == Event::Type::mouseMotion)
             {
-                if (mp_appWinRef->mouseButtonPressed(MouseButton::MIDDLE)
-                    && mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
+                if (mp_appWinRef->mouseButtonPressed(MouseButton::middle)
+                    && mp_editCamera->getType() == Camera::Type::perspective)
                 {
                     glm::vec2 delta = {(f32_t)event.getDetails().motion.xrel, (f32_t)event.getDetails().motion.yrel};
 
@@ -483,7 +483,7 @@ class FelixLayer : public Layer
 
                 event.markAsHandled();
             }
-            else if (eventType == Event::Type::MOUSEWHEEL)
+            else if (eventType == Event::Type::mouseWheel)
             {
                 f32_t zoomAmount = event.getDetails().wheel.preciseY;
 
@@ -492,7 +492,7 @@ class FelixLayer : public Layer
                 event.markAsHandled();
             }
 
-            else if (eventType == Event::Type::DROPFILE)
+            else if (eventType == Event::Type::dropFile)
             {
                 m_fileDropHandled = false;
                 m_fileDropPath    = event.getDetails().drop.file;
@@ -500,19 +500,19 @@ class FelixLayer : public Layer
             }
 
             // shortcuts TODO make this less hacky
-            else if (eventType == Event::Type::KEYDOWN)
+            else if (eventType == Event::Type::keyDown)
             {
-                if (mp_appWinRef->modKeyPressed(KeyMod::CTRL))
+                if (mp_appWinRef->modKeyPressed(KeyMod::ctrl))
                 {
                     // open
-                    if (mp_appWinRef->keyPressed(ScanCode::O))
+                    if (mp_appWinRef->keyPressed(ScanCode::o))
                     {
                         _open();
                     }
                     // save, saveas
-                    else if (mp_appWinRef->keyPressed(ScanCode::S))
+                    else if (mp_appWinRef->keyPressed(ScanCode::s))
                     {
-                        if (mp_appWinRef->modKeyPressed(KeyMod::SHIFT))
+                        if (mp_appWinRef->modKeyPressed(KeyMod::shift))
                         {
                             _save(true);
                         }
@@ -524,42 +524,42 @@ class FelixLayer : public Layer
                 }
                 else
                 {
-                    if (mp_appWinRef->keyPressed(ScanCode::ESCAPE))
+                    if (mp_appWinRef->keyPressed(ScanCode::escape))
                     {
                         if (m_selectedEntity)
                         {
-                            if (mp_sceneControlPanel->getState().toolState != SceneControlPanel::ToolState::NONE)
+                            if (mp_sceneControlPanel->getState().toolState != SceneControlPanel::ToolState::none)
                             {
-                                mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::NONE;
+                                mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::none;
                             }
                         }
                     }
-                    if (mp_appWinRef->keyPressed(ScanCode::U))
+                    if (mp_appWinRef->keyPressed(ScanCode::u))
                     {
                         if (m_selectedEntity)
                         {
-                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::UNIVERSAL;
+                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::universal;
                         }
                     }
-                    else if (mp_appWinRef->keyPressed(ScanCode::M))
+                    else if (mp_appWinRef->keyPressed(ScanCode::m))
                     {
                         if (m_selectedEntity)
                         {
-                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::MOVE;
+                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::move;
                         }
                     }
-                    else if (mp_appWinRef->keyPressed(ScanCode::R))
+                    else if (mp_appWinRef->keyPressed(ScanCode::r))
                     {
                         if (m_selectedEntity)
                         {
-                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::ROTATE;
+                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::rotate;
                         }
                     }
-                    else if (mp_appWinRef->keyPressed(ScanCode::E))
+                    else if (mp_appWinRef->keyPressed(ScanCode::e))
                     {
                         if (m_selectedEntity)
                         {
-                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::SCALE;
+                            mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::scale;
                         }
                     }
                 }
@@ -573,50 +573,50 @@ class FelixLayer : public Layer
         // Camera Controls
         ///////////////////////////
 
-        if (mp_editCamera->getType() == Camera::Type::PERSPECTIVE)
+        if (mp_editCamera->getType() == Camera::Type::perspective)
         {
-            if (mp_appWinRef->keyPressed(ScanCode::W))
+            if (mp_appWinRef->keyPressed(ScanCode::w))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::forward, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::S))
+            if (mp_appWinRef->keyPressed(ScanCode::s))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::backward, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::SPACE))
+            if (mp_appWinRef->keyPressed(ScanCode::space))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::UP, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::up, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::C))
+            if (mp_appWinRef->keyPressed(ScanCode::c))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::DOWN, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::down, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::A))
+            if (mp_appWinRef->keyPressed(ScanCode::a))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::LEFT, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::left, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::D))
+            if (mp_appWinRef->keyPressed(ScanCode::d))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::RIGHT, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::right, deltaTime);
             }
         }
         else
         {
-            if (mp_appWinRef->keyPressed(ScanCode::W))
+            if (mp_appWinRef->keyPressed(ScanCode::w))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::UP, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::up, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::A))
+            if (mp_appWinRef->keyPressed(ScanCode::a))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::BACKWARD, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::backward, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::S))
+            if (mp_appWinRef->keyPressed(ScanCode::s))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::DOWN, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::down, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::D))
+            if (mp_appWinRef->keyPressed(ScanCode::d))
             {
-                mp_editCamera->processPosiUpdate(Camera::Movement::FORWARD, deltaTime);
+                mp_editCamera->processPosiUpdate(Camera::Movement::forward, deltaTime);
             }
         }
     }
@@ -773,7 +773,7 @@ class FelixLayer : public Layer
 
         // Bounds used for some calculations
         Camera::Bounds worldBounds;
-        if (mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC)
+        if (mp_editCamera->getType() == Camera::Type::orthographic)
         {
             worldBounds = mp_editCamera->getVisibleWorldBounds();
         }
@@ -787,7 +787,7 @@ class FelixLayer : public Layer
         // Viewport
         ///////////////////////////
         mp_viewportPanel->onDraw(mp_screenBuffer,
-                                 mp_editCamera->getType() == Camera::Type::ORTHOGRAPHIC,
+                                 mp_editCamera->getType() == Camera::Type::orthographic,
                                  worldBounds,
                                  m_selectedEntity,
                                  mp_sceneControlPanel->getState().toolState);

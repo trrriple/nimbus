@@ -2,6 +2,7 @@
 #include "nimbus/core/core.hpp"
 
 #include "nimbus/core/application.hpp"
+#include "nimbus/core/event.hpp"
 
 #include "nimbus/script/scriptEngine.hpp"
 
@@ -215,7 +216,7 @@ void Application::execute()
             // Call all gui updates
             ///////////////////////////
             bool mouseButtonsDown
-                = mp_window->mouseButtonPressed(MouseButton::LEFT) || mp_window->mouseButtonPressed(MouseButton::RIGHT);
+                = mp_window->mouseButtonPressed(MouseButton::left) || mp_window->mouseButtonPressed(MouseButton::right);
 
             SDL_CaptureMouse((mouseButtonsDown != 0) ? SDL_TRUE : SDL_FALSE);
 
@@ -272,7 +273,7 @@ void Application::onEvent(Event& event)
     ////////////////////////////////////////
     switch (event.getEventType())
     {
-        case Event::Type::QUIT:
+        case Event::Type::quit:
         {
             m_active = false;
             break;

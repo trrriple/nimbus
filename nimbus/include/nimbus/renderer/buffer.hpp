@@ -18,21 +18,21 @@ namespace nimbus
 //                    Type             sizeof      # of Components
 typedef std::tuple<Shader::ShaderType, u32_t, u32_t> ShaderDataType;
 
-const ShaderDataType k_shaderFloat = std::make_tuple(Shader::ShaderType::FLOAT, 4, 1);
-const ShaderDataType k_shaderVec2  = std::make_tuple(Shader::ShaderType::FLOAT, 8, 2);
-const ShaderDataType k_shaderVec3  = std::make_tuple(Shader::ShaderType::FLOAT, 12, 3);
-const ShaderDataType k_shaderVec4  = std::make_tuple(Shader::ShaderType::FLOAT, 16, 4);
-const ShaderDataType k_shaderMat3  = std::make_tuple(Shader::ShaderType::FLOAT, 36, 9);
-const ShaderDataType k_shaderMat4  = std::make_tuple(Shader::ShaderType::FLOAT, 64, 16);
-const ShaderDataType k_shaderInt   = std::make_tuple(Shader::ShaderType::INT, 4, 1);
-const ShaderDataType k_shaderInt2  = std::make_tuple(Shader::ShaderType::INT, 8, 2);
-const ShaderDataType k_shaderInt3  = std::make_tuple(Shader::ShaderType::INT, 12, 3);
-const ShaderDataType k_shaderInt4  = std::make_tuple(Shader::ShaderType::INT, 16, 4);
-const ShaderDataType k_shaderUInt  = std::make_tuple(Shader::ShaderType::UINT, 4, 1);
-const ShaderDataType k_shaderUInt2 = std::make_tuple(Shader::ShaderType::UINT, 8, 2);
-const ShaderDataType k_shaderUInt3 = std::make_tuple(Shader::ShaderType::UINT, 12, 3);
-const ShaderDataType k_shaderUInt4 = std::make_tuple(Shader::ShaderType::UINT, 16, 4);
-const ShaderDataType k_shaderBool  = std::make_tuple(Shader::ShaderType::BOOL, 1, 1);
+const ShaderDataType k_shaderFloat = std::make_tuple(Shader::ShaderType::_float, 4, 1);
+const ShaderDataType k_shaderVec2  = std::make_tuple(Shader::ShaderType::_float, 8, 2);
+const ShaderDataType k_shaderVec3  = std::make_tuple(Shader::ShaderType::_float, 12, 3);
+const ShaderDataType k_shaderVec4  = std::make_tuple(Shader::ShaderType::_float, 16, 4);
+const ShaderDataType k_shaderMat3  = std::make_tuple(Shader::ShaderType::_float, 36, 9);
+const ShaderDataType k_shaderMat4  = std::make_tuple(Shader::ShaderType::_float, 64, 16);
+const ShaderDataType k_shaderInt   = std::make_tuple(Shader::ShaderType::_int, 4, 1);
+const ShaderDataType k_shaderInt2  = std::make_tuple(Shader::ShaderType::_int, 8, 2);
+const ShaderDataType k_shaderInt3  = std::make_tuple(Shader::ShaderType::_int, 12, 3);
+const ShaderDataType k_shaderInt4  = std::make_tuple(Shader::ShaderType::_int, 16, 4);
+const ShaderDataType k_shaderUInt  = std::make_tuple(Shader::ShaderType::_uint, 4, 1);
+const ShaderDataType k_shaderUInt2 = std::make_tuple(Shader::ShaderType::_uint, 8, 2);
+const ShaderDataType k_shaderUInt3 = std::make_tuple(Shader::ShaderType::_uint, 12, 3);
+const ShaderDataType k_shaderUInt4 = std::make_tuple(Shader::ShaderType::_uint, 16, 4);
+const ShaderDataType k_shaderBool  = std::make_tuple(Shader::ShaderType::_bool, 1, 1);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Description of component in a buffer
@@ -41,8 +41,8 @@ struct BufferComponent
 {
     enum class Type
     {
-        PER_VERTEX,
-        PER_INSTANCE
+        perVertex,
+        perInstance
     };
 
     ShaderDataType        dataType;
@@ -57,7 +57,7 @@ struct BufferComponent
     BufferComponent(ShaderDataType dataType, const std::string& name, bool normalized = false)
         : dataType(dataType),
           name(name),
-          type(BufferComponent::Type::PER_VERTEX),
+          type(BufferComponent::Type::perVertex),
           perInstance(0),
           normalized(normalized),
           offset(0)
@@ -140,14 +140,14 @@ class VertexBuffer : public refCounted
    public:
     enum class Type
     {
-        STATIC_DRAW,
-        DYNAMIC_DRAW,
-        STREAM_DRAW,
+        staticDraw,
+        dynamicDraw,
+        streamDraw,
     };
 
     static ref<VertexBuffer> s_create(const void*        vertices,
                                       u32_t              size,
-                                      VertexBuffer::Type type = VertexBuffer::Type::STATIC_DRAW);
+                                      VertexBuffer::Type type = VertexBuffer::Type::staticDraw);
 
     virtual ~VertexBuffer() = default;
 

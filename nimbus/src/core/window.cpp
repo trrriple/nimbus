@@ -111,12 +111,12 @@ void Window::pumpEvents()
         // SDL_QUIT comes if all windows are closed
         switch (m_event.getEventType())
         {
-            case (Event::Type::QUIT):
+            case (Event::Type::quit):
             {
                 m_exitCallback(m_event);
                 break;
             }
-            case (Event::Type::WINDOW):
+            case (Event::Type::window):
             {
                 // we only want to handle window events for this window
                 if (m_event.getDetails().window.windowID == m_windowId)
@@ -125,7 +125,7 @@ void Window::pumpEvents()
                 }
                 break;
             }
-            case (Event::Type::MOUSEWHEEL):
+            case (Event::Type::mouseWheel):
             {
                 // track the mouse wheel because SDL doesn't g78ive us a way
                 // to get current position, just event based relative

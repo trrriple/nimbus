@@ -230,7 +230,7 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
         spec.insert("gravityScale", rbc.spec.gravityScale);
         rbcTbl.insert("spec", spec);
 
-        Physics2D::ShapeType shapeType = Physics2D::ShapeType::NONE;
+        Physics2D::ShapeType shapeType = Physics2D::ShapeType::none;
         if (rbc.fixSpec.shape != nullptr)
         {
             shapeType = rbc.fixSpec.shape->type;
@@ -358,7 +358,7 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
 
         if (texture)
         {
-            sc.p_texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+            sc.p_texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse,
                                                                                  (*texture)["path"].ref<std::string>());
 
             sc.tilingFactor = (*texture)["tilingFactor"].ref<f64_t>();
@@ -414,7 +414,7 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
 
         if (texture)
         {
-            pe.p_texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::DIFFUSE,
+            pe.p_texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse,
                                                                                  (*texture)["path"].ref<std::string>());
         }
 
@@ -509,15 +509,15 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
 
         Physics2D::ShapeType shapeType = static_cast<Physics2D::ShapeType>(fixSpecTbl["shape"].ref<i64_t>());
 
-        if (shapeType == Physics2D::ShapeType::NONE)
+        if (shapeType == Physics2D::ShapeType::none)
         {
             rbc.fixSpec.shape = nullptr;
         }
-        else if (shapeType == Physics2D::ShapeType::RECTANGLE)
+        else if (shapeType == Physics2D::ShapeType::rectangle)
         {
             rbc.fixSpec.shape = &rbc.rectShape;
         }
-        else if (shapeType == Physics2D::ShapeType::CIRCLE)
+        else if (shapeType == Physics2D::ShapeType::circle)
         {
             rbc.fixSpec.shape = &rbc.circShape;
         }
