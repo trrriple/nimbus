@@ -739,12 +739,14 @@ class FelixLayer : public Layer
 
                 if (ImGui::MenuItem("Test call script"))
                 {
-                    ScriptEngine::s_testCallScript();
+                    // ScriptEngine::s_testCallScript();
+
+                    ScriptEngine::s_invokeManagedMethodByName<void>(L"Hello", L"Script.ExamplePlayer");
                 }
 
-                if (ImGui::MenuItem("Reflect on Script Assembly"))
+                if (ImGui::MenuItem("Get Script Types"))
                 {
-                    ScriptEngine::s_reflectOnScriptAssembly();
+                    ScriptEngine::s_getScriptAssemblyTypes();
                 }
 
                 if (ImGui::MenuItem("Unload Script Assembly"))

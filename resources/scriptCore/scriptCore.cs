@@ -5,40 +5,19 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 
 
-namespace nimbus
+namespace Nimbus
 {
     public unsafe class ScriptCore
     {
-        internal class ScriptAssemblyContext : AssemblyLoadContext
-        {
-
-            private AssemblyDependencyResolver _resolver;
-
-            public ScriptAssemblyContext(string mainAssemblyToLoadPath) : base(isCollectible: true)
-            {
-
-                _resolver = new AssemblyDependencyResolver(mainAssemblyToLoadPath);
-
-            }
-
-            protected override Assembly? Load(AssemblyName name)
-            {
-                string? assemblyPath = _resolver.ResolveAssemblyToPath(name);
-                if (assemblyPath != null)
-                {
-                    return LoadFromAssemblyPath(assemblyPath);
-                }
-
-                return null;
-            }
-
-        }
-
         internal static WeakReference? scriptAlcWeakRef;
-        internal static ScriptAssemblyContext? scriptAlc;
+        internal static AssemblyLoadContext? scriptAlc;
         internal static Assembly? scriptAssembly;
         internal static int callCount = 0;
 
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Purely Internal Functions (Managed)
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal static void IntUnloadScriptAssembly()
         {
             if (scriptAlc is null)
@@ -96,7 +75,7 @@ namespace nimbus
             string directory = Path.GetDirectoryName(executingAssemblyLocation)!;
             string assemblyPath = Path.Combine(directory, relativePath);
 
-            scriptAlc = new ScriptAssemblyContext(assemblyPath);
+            scriptAlc = new AssemblyLoadContext(assemblyPath, true);
             scriptAlcWeakRef = new WeakReference(scriptAlc, trackResurrection: true);
 
             scriptAssembly = scriptAlc.LoadFromAssemblyPath(assemblyPath);
@@ -115,23 +94,94 @@ namespace nimbus
             callCount++;
         }
 
+        internal static List<string> IntReflectOnScriptAssembly(Type? baseType)
+        {
+            List<string> typeNames = new List<string>();
 
+            if (scriptAssembly is null)
+            {
+                InternalCalls.CoreError("Can't Reflect on unloaded script assembly!");
+                return typeNames;
+            }
+
+            // Iterate through all types in the assembly
+            foreach (Type type in scriptAssembly.GetTypes())
+            {
+                if (!type.IsClass || (baseType != null && !type.IsSubclassOf(baseType)))
+                    continue;
+
+                InternalCalls.CoreInfo($"Type: {type.FullName}");
+
+                typeNames.Add(type.FullName!);
+
+
+                // // Iterate through all methods in the type
+                // foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic
+                //             | BindingFlags.Instance | BindingFlags.Static))
+                // {
+                //     InternalCalls.CoreInfo($"  Method: {method.Name}");
+                // }
+            }
+
+            return typeNames;
+        }
+
+        internal static object? GetObjectFromHandle(IntPtr handle)
+        {
+            if (handle == IntPtr.Zero)
+            {
+                InternalCalls.CoreError("Null instance handle!");
+                return null;
+            }
+
+            GCHandle gcHandle = GCHandle.FromIntPtr(handle);
+            object? instance = gcHandle.Target;
+
+            if (instance == null || !(instance is Entity))
+            {
+                InternalCalls.CoreError("Invalid instance handle!");
+                return null;
+            }
+
+            return instance;
+        }
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Unmanaged only functions
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         [UnmanagedCallersOnly]
-        internal static void memFree(void* p)
+        internal static void MemFree(void* p)
         {
             Util.FreeNative(p);
         }
 
         [UnmanagedCallersOnly]
+        internal static void ReleaseHandle(IntPtr handle)
+        {
+            if (handle == IntPtr.Zero)
+            {
+                InternalCalls.CoreError("Null handle!");
+                return;
+            }
+
+            // Convert the IntPtr to a GCHandle
+            GCHandle gcHandle = GCHandle.FromIntPtr(handle);
+
+            // Release the handle
+            gcHandle.Free();
+        }
+
+        [UnmanagedCallersOnly]
         internal static IntPtr GetRuntimeInformation()
         {
-            InternalCalls.CoreInfo("Testing!");
             return Util.AllocNativeString(System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
         }
 
         [UnmanagedCallersOnly]
         internal static void InitializeScriptCore(IntPtr p_pathToLibs)
         {
+            //TODO path?
             IntLoadScriptAssembly();
         }
 
@@ -154,11 +204,10 @@ namespace nimbus
             IntLoadScriptAssembly();
         }
 
-
         [UnmanagedCallersOnly]
-        internal static void TestCallScript()
+        internal static void CallScriptMethod(IntPtr baseClassNamePtr)
         {
-            Type? type = scriptAssembly!.GetType("script.Felix");
+            Type? type = scriptAssembly!.GetType("Script.Felix");
 
 
             if (type is null)
@@ -192,34 +241,134 @@ namespace nimbus
         }
 
         [UnmanagedCallersOnly]
-        internal static void ReflectOnScriptAssembly()
+        internal static IntPtr GetScriptAssemblyTypes(IntPtr p_baseClassName, IntPtr p_count)
+        {
+
+            Type? baseType = null;
+            if (p_baseClassName != IntPtr.Zero)
+            {
+                string baseClassName = Marshal.PtrToStringAnsi(p_baseClassName)!; // Assuming ANSI encoding
+                baseType = Type.GetType(baseClassName);
+
+                if (baseType is null)
+                {
+                    InternalCalls.CoreError($"Base class type {baseClassName} not found!");
+                    return IntPtr.Zero;
+                }
+            }
+
+            List<string> typeNames = IntReflectOnScriptAssembly(baseType);
+
+            Marshal.WriteInt32(p_count, typeNames.Count);
+
+            IntPtr p_typeNamesAnsi = Marshal.AllocHGlobal(typeNames.Count * IntPtr.Size);
+
+            for (int i = 0; i < typeNames.Count; i++)
+            {
+                IntPtr p_typeNameAnsi = Util.AllocNativeString(typeNames[i]);
+                Marshal.WriteIntPtr(p_typeNamesAnsi, i * IntPtr.Size, p_typeNameAnsi);
+            }
+
+            return p_typeNamesAnsi;
+
+        }
+
+        [UnmanagedCallersOnly]
+        internal static IntPtr CreateInstanceOfScriptAssemblyType(IntPtr p_typeName)
         {
             if (scriptAssembly is null)
             {
-                InternalCalls.CoreError("Can't Reflect on unloaded assembly!");
-                return;
+                InternalCalls.CoreError("Can't get type from unloaded script assembly!!");
+                return IntPtr.Zero;
             }
 
-            // Iterate through all types in the assembly
-            foreach (Type type in scriptAssembly.GetTypes())
+            if (p_typeName != IntPtr.Zero)
             {
-                InternalCalls.CoreInfo($"Type: {type.FullName}");
+                string typeName = Marshal.PtrToStringAnsi(p_typeName)!; // Assuming ANSI encoding
 
-                // Iterate through all methods in the type
-                foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.Static
-                         | BindingFlags.DeclaredOnly))
+                Type? type = scriptAssembly.GetType(typeName);
+                if (type == null)
                 {
-                    InternalCalls.CoreInfo($"  Method: {method.Name}");
+                    InternalCalls.CoreError($"Type {typeName} not found!");
+                    return IntPtr.Zero;
                 }
 
-                // Iterate through all properties in the type
-                foreach (PropertyInfo property in type.GetProperties())
+                object? instance = Activator.CreateInstance(type);
+                if (instance == null)
                 {
-                    InternalCalls.CoreInfo($"  Property: {property.Name}");
+                    InternalCalls.CoreError($"Couldn't create instance of {typeName}!");
+                    return IntPtr.Zero;
                 }
+
+                // Return the handle to the newly created object.
+                return GCHandle.ToIntPtr(GCHandle.Alloc(instance));
+            }
+            else
+            {
+                InternalCalls.CoreError($"Null type Name!");
+                return IntPtr.Zero;
 
             }
         }
+
+
+        [UnmanagedCallersOnly]
+        internal static IntPtr GetEntityOnCreateFPtr(IntPtr instanceHandle)
+        {
+            object? instance = GetObjectFromHandle(instanceHandle);
+
+            if (instance == null)
+            {
+                return IntPtr.Zero;
+            }
+
+            Entity entity = (Entity)instance;
+            return entity.OnCreateFunctionPointer;
+        }
+
+        [UnmanagedCallersOnly]
+        internal static IntPtr GetEntityOnUpdateFPtr(IntPtr instanceHandle)
+        {
+            object? instance = GetObjectFromHandle(instanceHandle);
+
+            if (instance == null)
+            {
+                return IntPtr.Zero;
+            }
+
+            Entity entity = (Entity)instance;
+            return entity.OnUpdateFunctionPointer;
+        }
+
+        [UnmanagedCallersOnly]
+        internal static IntPtr GetEntityOnPhysicsUpdateFPtr(IntPtr instanceHandle)
+        {
+            object? instance = GetObjectFromHandle(instanceHandle);
+
+            if (instance == null)
+            {
+                return IntPtr.Zero;
+            }
+
+            Entity entity = (Entity)instance;
+            return entity.OnPhysicsUpdateFunctionPointer;
+        }
+
+
+        [UnmanagedCallersOnly]
+        internal static IntPtr GetEntityOnDestroyFPtr(IntPtr instanceHandle)
+        {
+            object? instance = GetObjectFromHandle(instanceHandle);
+
+            if (instance == null)
+            {
+                return IntPtr.Zero;
+            }
+
+            Entity entity = (Entity)instance;
+            return entity.OnDestroyFunctionPointer;
+        }
+
     }
 
 }

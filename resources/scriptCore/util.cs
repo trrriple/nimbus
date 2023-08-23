@@ -3,7 +3,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 
 
-namespace nimbus
+namespace Nimbus
 {
     public unsafe class Util
     {

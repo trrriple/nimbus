@@ -1,12 +1,20 @@
 ﻿using System;
+using Nimbus;
 
-namespace script;
+namespace Script;
 
-public class Felix
+public class ExamplePlayer : Entity
 {
-    public static void Hello()
+
+    protected override void OnCreate()
     {
-        nimbus.InternalCalls.Info("Howdy!");
+
     }
+
+    protected override void OnUpdate(float deltaTime)
+    {
+        InternalCalls.Info($"On update @ {deltaTime}");
+    }
+
 
 }
