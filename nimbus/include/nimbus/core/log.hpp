@@ -29,6 +29,19 @@ class NIMBUS_API Log
 
     static void trace(const char* format, ...);
 
+    ///////////////////////////
+    // Script
+    ///////////////////////////
+    static void scriptInfo(const char* format, ...);
+
+    static void scriptWarn(const char* format, ...);
+
+    static void scriptError(const char* format, ...);
+
+    static void scriptCritical(const char* format, ...);
+
+    static void scriptTrace(const char* format, ...);
+
     ////////////////////////////////////////////////////////////////////////////
     // Log a Core message. Ideally don't use these in application
     ////////////////////////////////////////////////////////////////////////////
@@ -41,5 +54,22 @@ class NIMBUS_API Log
     static void coreCritical(const char* format, ...);
 
     static void coreTrace(const char* format, ...);
+
+
+    ///////////////////////////
+    // Script
+    ///////////////////////////
+    static void scriptCoreInfo(const char* format, ...);
+
+    static void scriptCoreWarn(const char* format, ...);
+
+    static void scriptCoreError(const char* format, ...);
+
+    static void scriptCoreCritical(const char* format, ...);
+
+    static void scriptCoreTrace(const char* format, ...);
+
+   private:
+    static std::string s_scratch;
 };
 }  // namespace nimbus

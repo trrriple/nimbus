@@ -6,7 +6,7 @@ public class Felix
 {
     public static void Hello()
     {
-        nimbus.InternalCalls.CoreInfo("Howdy!");
+        nimbus.InternalCalls.Info("Howdy!");
     }
 
 }

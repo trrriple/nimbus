@@ -39,5 +39,14 @@ namespace nimbus
         [LibraryImport("nimbus", EntryPoint = "ic_trace", StringMarshalling = StringMarshalling.Utf8)]
         public static partial void Trace(string str);
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Vector Testing
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        [LibraryImport("nimbus", EntryPoint = "ic_vec4Test")]
+        public static partial void vec4Test(ref Vec4 vec4);
+
+
+
+
     }
 }

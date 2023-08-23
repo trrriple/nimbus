@@ -742,6 +742,11 @@ class FelixLayer : public Layer
                     ScriptEngine::s_testCallScript();
                 }
 
+                if (ImGui::MenuItem("Reflect on Script Assembly"))
+                {
+                    ScriptEngine::s_reflectOnScriptAssembly();
+                }
+
                 if (ImGui::MenuItem("Unload Script Assembly"))
                 {
                     ScriptEngine::s_unloadScriptAssembly();

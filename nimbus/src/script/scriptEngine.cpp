@@ -8,129 +8,34 @@
 
 #include "nimbus/platform/os/os.hpp"
 
-#ifdef MONO_CLR
-#include "mono/jit/jit.h"
-#include "mono/metadata/image.h"
-#include "mono/metadata/assembly.h"
-#else
+
 #include "nethost.h"
 #include "coreclr_delegates.h"
 #include "hostfxr.h"
-#endif
 
 namespace nimbus
 {
 
 struct ScriptEngineInternalData
 {
-#ifdef MONO_CLR
-    ///////////////////////////
-    // Domain
-    ///////////////////////////
-    MonoDomain* rootDomain = nullptr;
-    MonoDomain* appDomain  = nullptr;
-
-    ///////////////////////////
-    // Assembly
-    ///////////////////////////
-    MonoAssembly* coreAssembly = nullptr;
-
-#else
-
+    //////////////////////////////////////////////////////
+    // HostFxr Pointers
+    //////////////////////////////////////////////////////
     hostfxr_initialize_for_runtime_config_fn      mp_initRuntimeFptr = nullptr;
     hostfxr_initialize_for_dotnet_command_line_fn mp_initCmdLineFPtr = nullptr;
     hostfxr_get_runtime_delegate_fn               mp_getDelegateFptr = nullptr;
     hostfxr_close_fn                              mp_closeFptr       = nullptr;
     get_function_pointer_fn                       mp_getFptr         = nullptr;
 
-#endif
+    //////////////////////////////////////////////////////
+    // Map of known functions
+    //////////////////////////////////////////////////////
+    std::unordered_map<std::wstring, void*> m_managedMethodCache;
 };
 
 ScriptEngineInternalData* ScriptEngine::s_data;
 
-#ifdef MONO_CLR
 
-static MonoAssembly* s_loadCSharpAssembly(const std::string& assemblyPath)
-{
-    if (!std::filesystem::exists(assemblyPath))
-    {
-        Log::coreError("%s doesn't exist!", assemblyPath.c_str());
-
-        return nullptr;
-    }
-
-    u32_t fileSize = 0;
-    char* fileData = util::readFileAsBytes(assemblyPath, &fileSize);
-
-    // NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a
-    // reference to the assembly
-    MonoImageOpenStatus status;
-    MonoImage*          image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
-
-    MonoAssembly* assembly = nullptr;
-    do
-    {
-        if (status != MONO_IMAGE_OK)
-        {
-            const char* errorMessage = mono_image_strerror(status);
-
-            Log::coreError("Could not open c# image: Error %s", errorMessage);
-
-            break;
-        }
-
-        assembly = mono_assembly_load_from_full(image, assemblyPath.c_str(), &status, 0);
-        if (status != MONO_IMAGE_OK)
-        {
-            const char* errorMessage = mono_image_strerror(status);
-
-            Log::coreError("Could not open c# assemmbly: Error %s", errorMessage);
-
-            break;
-        }
-
-    } while (0);
-
-    mono_image_close(image);
-
-    delete[] fileData;
-
-    return assembly;
-}
-
-static void s_printAssemblyTypes(MonoAssembly* assembly)
-{
-    MonoImage*           image                = mono_assembly_get_image(assembly);
-    const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-    i32_t                numTypes             = mono_table_info_get_rows(typeDefinitionsTable);
-
-    for (i32_t i = 0; i < numTypes; i++)
-    {
-        u32_t cols[MONO_TYPEDEF_SIZE];
-        mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-
-        const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-        const char* name      = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-
-        Log::coreInfo("%s.%s", nameSpace, name);
-    }
-}
-
-MonoClass* s_getClassInAssembly(MonoAssembly* assembly, const char* namespaceName, const char* className)
-{
-    MonoImage* image = mono_assembly_get_image(assembly);
-    MonoClass* klass = mono_class_from_name(image, namespaceName, className);
-
-    if (klass == nullptr)
-    {
-        Log::coreError("Could not get class %s in namespace %s in assembly", className, namespaceName);
-        return nullptr;
-    }
-
-    return klass;
-}
-
-#else
 #ifdef NB_WINDOWS
 static void* s_loadLibrary(const char_t* path)
 {
@@ -167,16 +72,40 @@ static inline rT s_callManagedMethodByName(const std::wstring& name, Args... arg
     return ((fn)ScriptEngine::s_getStaticMethodPtr(name))(args...);
 }
 
+template <typename rT, typename... Args>
+static inline rT s_callManagedMethod(void* p, Args... args)
+{
+    typedef rT(CORECLR_DELEGATE_CALLTYPE * fn)(Args...);
+    return ((fn)p)(args...);
+}
+
+
 void* ScriptEngine::s_getStaticMethodPtr(const std::wstring& name)
 {
-    // TODO cache
-    void* fn;
 
-    const int rc = s_data->mp_getFptr(
-        STR("nimbus.ScriptCore, scriptCore"), name.c_str(), UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, &fn);
-    if (rc != 0)
+    // try to find the method pointer in the cache
+    auto it = s_data->m_managedMethodCache.find(name);
+
+    void* fn = nullptr;
+    if (it != s_data->m_managedMethodCache.end())
     {
-        Log::coreError("Failed to get pointer to managed function %s", name.c_str());
+        // we found it, send it
+        fn = it->second;
+    }
+    else
+    {
+        // didn't find it, try to load it
+        const int rc = s_data->mp_getFptr(
+            STR("nimbus.ScriptCore, scriptCore"), name.c_str(), UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, &fn);
+        if (rc != 0)
+        {
+            Log::coreError("Failed to get pointer to managed function %s", name.c_str());
+        }
+        else
+        {
+            // save it
+            s_data->m_managedMethodCache.emplace(name, fn);
+        }
     }
 
     return fn;
@@ -189,95 +118,53 @@ void ScriptEngine::s_freeMemory(void* p)
         return;
     }
 
-    s_callManagedMethodByName<void, void*>(STR("memFree"), p);
+    static void* p_fn = s_getStaticMethodPtr(STR("memFree"));
+
+    s_callManagedMethod<void, void*>(p_fn, p);
 }
 
 void ScriptEngine::s_loadScriptAssembly()
 {
-    s_callManagedMethodByName<void>(STR("LoadScriptAssembly"));
+    static void* p_fn = s_getStaticMethodPtr(STR("LoadScriptAssembly"));
+
+    s_callManagedMethod<void>(p_fn);
 }
 
 void ScriptEngine::s_unloadScriptAssembly()
 {
-    s_callManagedMethodByName<void>(STR("UnloadScriptAssembly"));
+    static void* p_fn = s_getStaticMethodPtr(STR("UnloadScriptAssembly"));
+
+    s_callManagedMethod<void>(p_fn);
 }
 
 void ScriptEngine::s_reloadScriptAssembly()
 {
-    s_callManagedMethodByName<void>(STR("ReloadScriptAssembly"));
+    static void* p_fn = s_getStaticMethodPtr(STR("ReloadScriptAssembly"));
+
+    s_callManagedMethod<void>(p_fn);
 }
 
 void ScriptEngine::s_testCallScript()
 {
-    s_callManagedMethodByName<void>(STR("TestCallScript"));
+    static void* p_fn = s_getStaticMethodPtr(STR("TestCallScript"));
+
+    s_callManagedMethod<void>(p_fn);
 }
 
+void ScriptEngine::s_reflectOnScriptAssembly()
+{
+    static void* p_fn = s_getStaticMethodPtr(STR("ReflectOnScriptAssembly"));
 
-#endif
+    s_callManagedMethod<void>(p_fn);
+}
 
 void ScriptEngine::s_init(const std::string& installPath)
 {
     static std::once_flag initFlag;
     std::call_once(initFlag,
-                   [=]()
-                   {
-                       s_data = new ScriptEngineInternalData();
-
-#ifdef MONO_CLR
-
-                       std::filesystem::path libPath(installPath);
-                       libPath /= "lib";
-                       std::filesystem::path etcPath(installPath);
-                       etcPath /= "etc";
-
-                       mono_set_dirs(libPath.generic_string().c_str(), etcPath.generic_string().c_str());
-                       s_data->rootDomain = mono_jit_init("nbMonoRuntime");
-
-                       NB_CORE_ASSERT_STATIC(s_data->rootDomain, "Mono Jit failed to load!");
-
-                       s_data->appDomain = mono_domain_create_appdomain((char*)"nbAppDomain", nullptr);
-                       mono_domain_set(s_data->appDomain, true);
-
-                       // test loading
-                       s_data->coreAssembly = s_loadCSharpAssembly("../resources/scriptCore/bin/scriptCore.dll");
-                       s_printAssemblyTypes(s_data->coreAssembly);
-
-                       MonoClass* testingClass = s_getClassInAssembly(s_data->coreAssembly, "nimbus", "ScriptCore");
-
-                       // Allocate an instance of our class
-                       MonoObject* classInstance = mono_object_new(s_data->appDomain, testingClass);
-
-                       if (classInstance == nullptr)
-                       {
-                           Log::coreError("Ripperoni Pizza");
-                           return;
-                       }
-
-                       // Call the parameterless (default) constructor
-                       mono_runtime_object_init(classInstance);
-
-                       // Get a reference to the method in the class
-                       MonoMethod* method = mono_class_get_method_from_name(testingClass, "PrintFloatVar", 0);
-
-                       if (method == nullptr)
-                       {
-                           // No method called "PrintFloatVar" with 0 parameters in the class, log error or something
-                           return;
-                       }
-
-                       // Call the C# method on the objectInstance instance, and get any potential exceptions
-                       MonoObject* exception = nullptr;
-                       mono_runtime_invoke(method, classInstance, nullptr, &exception);
-
-                       MonoMethod* method2 = mono_class_get_method_from_name(testingClass, "IncrementFloatVar", 1);
-
-                       f32_t value = 5;
-                       void* param = &value;
-                       mono_runtime_invoke(method2, classInstance, &param, &exception);
-
-                       mono_runtime_invoke(method, classInstance, nullptr, &exception);
-
-#else
+    [=]()
+    {
+    s_data = new ScriptEngineInternalData();
 
     NB_UNUSED(installPath); // TODO use dotnet that isn't pre-installed?
 
@@ -357,17 +244,13 @@ void ScriptEngine::s_init(const std::string& installPath)
 
     s_freeMemory(runtimeInfo);
 
-#endif
     });
 }
 
 void ScriptEngine::s_destroy()
 {
-#ifdef MONO_CLR
-    mono_jit_cleanup(s_data->rootDomain);
-#endif
-
     delete s_data;
+
 }
 
 }  // namespace nimbus

@@ -34,10 +34,10 @@ namespace nimbus
 
         }
 
-        internal static WeakReference?          scriptAlcWeakRef;
-        internal static ScriptAssemblyContext?  scriptAlc;
-        internal static Assembly?               scriptAssembly;
-        internal static int                     callCount = 0;
+        internal static WeakReference? scriptAlcWeakRef;
+        internal static ScriptAssemblyContext? scriptAlc;
+        internal static Assembly? scriptAssembly;
+        internal static int callCount = 0;
 
         internal static void IntUnloadScriptAssembly()
         {
@@ -110,7 +110,7 @@ namespace nimbus
 
             // TODO
             // scriptAlc.Resolving += OnScriptinglcResolving;
-            
+
             InternalCalls.CoreInfo($"Loaded script Assembly {callCount}");
             callCount++;
         }
@@ -183,7 +183,43 @@ namespace nimbus
 
             object[] parameters = { /* your parameters here */ };
             method.Invoke(null, parameters);
+
+
+            Vec4 vector = new Vec4(1.0f, 2.0f, 3.0f, 4.0f);
+
+            InternalCalls.vec4Test(ref vector);
+
         }
 
+        [UnmanagedCallersOnly]
+        internal static void ReflectOnScriptAssembly()
+        {
+            if (scriptAssembly is null)
+            {
+                InternalCalls.CoreError("Can't Reflect on unloaded assembly!");
+                return;
+            }
+
+            // Iterate through all types in the assembly
+            foreach (Type type in scriptAssembly.GetTypes())
+            {
+                InternalCalls.CoreInfo($"Type: {type.FullName}");
+
+                // Iterate through all methods in the type
+                foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.Static
+                         | BindingFlags.DeclaredOnly))
+                {
+                    InternalCalls.CoreInfo($"  Method: {method.Name}");
+                }
+
+                // Iterate through all properties in the type
+                foreach (PropertyInfo property in type.GetProperties())
+                {
+                    InternalCalls.CoreInfo($"  Property: {property.Name}");
+                }
+
+            }
+        }
     }
+
 }

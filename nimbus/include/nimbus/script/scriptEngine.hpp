@@ -30,6 +30,8 @@ class NIMBUS_API ScriptEngine
     static void  s_reloadScriptAssembly();
 
     static void s_testCallScript();
+    static void s_reflectOnScriptAssembly();
+
 };
 
 }  // namespace nimbus
