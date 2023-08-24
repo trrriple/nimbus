@@ -742,12 +742,6 @@ class FelixLayer : public Layer
                     _save(true);
                 }
 
-                if (ImGui::MenuItem("Test call script"))
-                {
-                    // ScriptEngine::s_testCallScript();
-
-                    ScriptEngine::s_invokeManagedMethodByName<void>(L"Hello", L"Script.ExamplePlayer");
-                }
 
                 if (ImGui::MenuItem("Get Script Types"))
                 {
@@ -757,13 +751,6 @@ class FelixLayer : public Layer
                     {
                         Log::coreInfo("Available scriptEntity %s", name.c_str());
                     }
-
-                    // ref<ScriptEngine::ScriptInstance> p_scriptEntity
-                    //     = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(m_scriptAssemblyTypeNames[0]);
-
-                    // p_scriptEntity->onUpdate(5.6578);
-
-                    // p_scriptEntity = nullptr;
                 }
 
                 if (ImGui::MenuItem("Unload Script Assembly"))

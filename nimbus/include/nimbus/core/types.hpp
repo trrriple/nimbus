@@ -34,6 +34,14 @@ using i128_t = __int128_t;  // gcc/clang
 using f32_t = float;
 using f64_t = double;
 
+
+//////////////////////////////////////////////////////
+// Pointer
+//////////////////////////////////////////////////////
+using ip_t = intptr_t;
+using fp_t = ip_t*;
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Templates to help increase brevity of using smart pointers.
 // Credit Hazel
@@ -45,8 +53,6 @@ constexpr scope<T> genScope(Args&&... args)
 {
     return std::make_unique<T>(std::forward<Args>(args)...);
 }
-
-
 
 
 class refCounted

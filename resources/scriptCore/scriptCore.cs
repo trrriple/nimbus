@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 
 
+using System.Runtime.CompilerServices;
+[assembly: DisableRuntimeMarshalling]
+
 namespace Nimbus
 {
     public unsafe class ScriptCore
@@ -203,42 +206,6 @@ namespace Nimbus
         {
             IntUnloadScriptAssembly();
             IntLoadScriptAssembly();
-        }
-
-        [UnmanagedCallersOnly]
-        internal static void CallScriptMethod(IntPtr baseClassNamePtr)
-        {
-            Type? type = scriptAssembly!.GetType("Script.Felix");
-
-
-            if (type is null)
-            {
-                InternalCalls.CoreError("Failed to get type!");
-                return;
-            }
-
-
-            // foreach (MethodInfo m in type.GetMethods())
-            // {
-            //     Console.WriteLine(m.Name);
-            // }
-
-            MethodInfo? method = type.GetMethod("Hello");
-
-            if (method is null)
-            {
-                InternalCalls.CoreError("Failed to get method!");
-                return;
-            }
-
-            object[] parameters = { /* your parameters here */ };
-            method.Invoke(null, parameters);
-
-
-            Vec4 vector = new Vec4(1.0f, 2.0f, 3.0f, 4.0f);
-
-            InternalCalls.vec4Test(ref vector);
-
         }
 
         [UnmanagedCallersOnly]

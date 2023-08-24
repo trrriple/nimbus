@@ -27,7 +27,7 @@ class NIMBUS_API ScriptEngine
     //////////////////////////////////////////////////////
     // ScriptInstance class for holding instance info
     //////////////////////////////////////////////////////
-    class ScriptInstance : public refCounted
+     class ScriptInstance : public refCounted
     {
        public:
         inline void onUpdate(float deltaTime)
@@ -47,11 +47,11 @@ class NIMBUS_API ScriptEngine
         }
 
        private:
-        ScriptInstance(void* p_entityHandle,
-                     void* p_onCreateFptr,
-                     void* p_onUpdateFptr,
-                     void* p_onPhysicsUpdateFptr,
-                     void* p_onDestroyFptr)
+        ScriptInstance(fp_t p_entityHandle,
+                       fp_t p_onCreateFptr,
+                       fp_t p_onUpdateFptr,
+                       fp_t p_onPhysicsUpdateFptr,
+                       fp_t p_onDestroyFptr)
             : mp_entityHandle(p_entityHandle),
               mp_onCreateFptr(p_onCreateFptr),
               mp_onUpdateFptr(p_onUpdateFptr),
@@ -63,11 +63,11 @@ class NIMBUS_API ScriptEngine
 
         ScriptInstance() = delete;
 
-        void* mp_entityHandle        = nullptr;
-        void* mp_onCreateFptr        = nullptr;
-        void* mp_onUpdateFptr        = nullptr;
-        void* mp_onPhysicsUpdateFptr = nullptr;
-        void* mp_onDestroyFptr       = nullptr;
+        fp_t mp_entityHandle        = nullptr;
+        fp_t mp_onCreateFptr        = nullptr;
+        fp_t mp_onUpdateFptr        = nullptr;
+        fp_t mp_onPhysicsUpdateFptr = nullptr;
+        fp_t mp_onDestroyFptr       = nullptr;
 
         friend class ScriptEngine;
     };
@@ -87,21 +87,21 @@ class NIMBUS_API ScriptEngine
     }
 
     template <typename rT, typename... Args>
-    static inline rT s_invokeManagedMethod(void* p, Args... args)
+    static inline rT s_invokeManagedMethod(ip_t* p, Args... args)
     {
         typedef rT(SCRIPTENGINE_DELEGATE_CALLTYPE * fn)(Args...);
         return ((fn)p)(args...);
     }
 
-    static void  s_init(const std::string& installPath);
-    
-    static void  s_destroy();
-    
-    static void* s_getStaticMethodPtr(const std::wstring& name, const std::wstring& typeName = k_scriptCoreTypeName);
+    static void s_init(const std::string& installPath);
 
-    static void s_freeMemory(void* p);
+    static void s_destroy();
 
-    static void s_releaseHandle(void* h);
+    static fp_t s_getStaticMethodPtr(const std::wstring& name, const std::wstring& typeName = k_scriptCoreTypeName);
+
+    static void s_freeMemory(ip_t* p);
+
+    static void s_releaseHandle(ip_t* h);
 
     static void s_loadScriptAssembly();
 

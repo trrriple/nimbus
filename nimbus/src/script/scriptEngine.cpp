@@ -40,7 +40,7 @@ struct ScriptEngineInternalData
     //////////////////////////////////////////////////////
     // Map of known functions
     //////////////////////////////////////////////////////
-    std::unordered_map<std::wstring, void*> m_managedMethodCache;
+    std::unordered_map<std::wstring, fp_t> m_managedMethodCache;
 };
 
 ScriptEngineInternalData* ScriptEngine::s_data;
@@ -74,12 +74,12 @@ static void* s_getExport(void* h, const char* name)
 
 #endif
 
-void* ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::wstring& typeName)
+fp_t ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::wstring& typeName)
 {
     // try to find the method pointer in the cache
     auto it = s_data->m_managedMethodCache.find(name);
 
-    void* fn = nullptr;
+    fp_t fn = nullptr;
     if (it != s_data->m_managedMethodCache.end())
     {
         // we found it, send it
@@ -88,8 +88,8 @@ void* ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::ws
     else
     {
         // didn't find it, try to load it
-        const int rc
-            = s_data->mp_getFptr(typeName.c_str(), name.c_str(), UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, &fn);
+        const int rc = s_data->mp_getFptr(
+            typeName.c_str(), name.c_str(), UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, (void**)&fn);
         if (rc != 0)
         {
             Log::coreError("Failed to get pointer to managed function %ls", name.c_str());
@@ -104,65 +104,65 @@ void* ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::ws
     return fn;
 }
 
-void ScriptEngine::s_freeMemory(void* p)
+void ScriptEngine::s_freeMemory(ip_t* p)
 {
     if (!p)
     {
         return;
     }
 
-    static void* p_fn = s_getStaticMethodPtr(STR("MemFree"));
+    static fp_t p_fn = s_getStaticMethodPtr(STR("MemFree"));
 
-    s_invokeManagedMethod<void, void*>(p_fn, p);
+    s_invokeManagedMethod<void, ip_t*>(p_fn, p);
 }
 
-void ScriptEngine::s_releaseHandle(void* h)
+void ScriptEngine::s_releaseHandle(ip_t* h)
 {
     if (!h)
     {
         return;
     }
 
-    static void* p_fn = s_getStaticMethodPtr(STR("ReleaseHandle"));
+    static fp_t p_fn = s_getStaticMethodPtr(STR("ReleaseHandle"));
 
-    s_invokeManagedMethod<void, void*>(p_fn, h);
+    s_invokeManagedMethod<void, ip_t*>(p_fn, h);
 }
 
 void ScriptEngine::s_loadScriptAssembly()
 {
-    static void* p_fn = s_getStaticMethodPtr(STR("LoadScriptAssembly"));
+    static fp_t p_fn = s_getStaticMethodPtr(STR("LoadScriptAssembly"));
 
     s_invokeManagedMethod<void>(p_fn);
 }
 
 void ScriptEngine::s_unloadScriptAssembly()
 {
-    static void* p_fn = s_getStaticMethodPtr(STR("UnloadScriptAssembly"));
+    static fp_t p_fn = s_getStaticMethodPtr(STR("UnloadScriptAssembly"));
 
     s_invokeManagedMethod<void>(p_fn);
 }
 
 void ScriptEngine::s_reloadScriptAssembly()
 {
-    static void* p_fn = s_getStaticMethodPtr(STR("ReloadScriptAssembly"));
+    static fp_t p_fn = s_getStaticMethodPtr(STR("ReloadScriptAssembly"));
 
     s_invokeManagedMethod<void>(p_fn);
 }
 
 void ScriptEngine::s_testCallScript()
 {
-    static void* p_fn = s_getStaticMethodPtr(STR("TestCallScript"));
+    static fp_t p_fn = s_getStaticMethodPtr(STR("TestCallScript"));
 
     s_invokeManagedMethod<void>(p_fn);
 }
 
 std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_baseClassFilter)
 {
-    static void* p_fn = s_getStaticMethodPtr(STR("GetScriptAssemblyTypes"));
+    static fp_t p_fn = s_getStaticMethodPtr(STR("GetScriptAssemblyTypes"));
 
     i32_t count = -1;
 
-    void* p_scriptEntityNames = s_invokeManagedMethod<void*, const char*, i32_t*>(p_fn, p_baseClassFilter, &count);
+    ip_t* p_scriptEntityNames = s_invokeManagedMethod<ip_t*, const char*, i32_t*>(p_fn, p_baseClassFilter, &count);
 
     Log::info("Got %i entities", count);
 
@@ -171,28 +171,28 @@ std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_ba
 
     for (i32_t i = 0; i < count; i++)
     {
-        void*       p_string = *(void**)((char*)p_scriptEntityNames + i * sizeof(void*));
+        ip_t*       p_string = *(ip_t**)(p_scriptEntityNames + i);
         const char* p_name   = (const char*)p_string;
 
         typeNames.push_back(p_name);
         s_freeMemory(p_string);
     }
-
+ 
     return typeNames;
 }
 
 ref<ScriptEngine::ScriptInstance> ScriptEngine::s_createInstanceOfScriptAssemblyEntity(const std::string& typeName,
                                                                                        u32_t nativeEntityId)
 {
-    static void* p_createInstanceFn     = s_getStaticMethodPtr(STR("CreateInstanceOfScriptAssemblyEntity"));
-    static void* p_getOnCreateFn        = s_getStaticMethodPtr(STR("GetEntityOnCreateFPtr"));
-    static void* p_getOnUpdateFn        = s_getStaticMethodPtr(STR("GetEntityOnUpdateFPtr"));
-    static void* p_getOnPhysicsUpdateFn = s_getStaticMethodPtr(STR("GetEntityOnPhysicsUpdateFPtr"));
-    static void* p_getOnDestroyFn       = s_getStaticMethodPtr(STR("GetEntityOnDestroyFPtr"));
+    static fp_t p_createInstanceFn     = s_getStaticMethodPtr(STR("CreateInstanceOfScriptAssemblyEntity"));
+    static fp_t p_getOnCreateFn        = s_getStaticMethodPtr(STR("GetEntityOnCreateFPtr"));
+    static fp_t p_getOnUpdateFn        = s_getStaticMethodPtr(STR("GetEntityOnUpdateFPtr"));
+    static fp_t p_getOnPhysicsUpdateFn = s_getStaticMethodPtr(STR("GetEntityOnPhysicsUpdateFPtr"));
+    static fp_t p_getOnDestroyFn       = s_getStaticMethodPtr(STR("GetEntityOnDestroyFPtr"));
 
     // create the instance
-    void* p_handle
-        = s_invokeManagedMethod<void*, const char*, u32_t>(p_createInstanceFn, typeName.c_str(), nativeEntityId);
+    ip_t* p_handle
+        = s_invokeManagedMethod<ip_t*, const char*, u32_t>(p_createInstanceFn, typeName.c_str(), nativeEntityId);
 
     if (p_handle == nullptr)
     {
@@ -201,10 +201,10 @@ ref<ScriptEngine::ScriptInstance> ScriptEngine::s_createInstanceOfScriptAssembly
     }
 
     // get pointers to the required functions in the instance
-    void* p_onCreateFn        = s_invokeManagedMethod<void*, void*>(p_getOnCreateFn, p_handle);
-    void* p_onUpdateFn        = s_invokeManagedMethod<void*, void*>(p_getOnUpdateFn, p_handle);
-    void* p_onPhysicsUpdateFn = s_invokeManagedMethod<void*, void*>(p_getOnPhysicsUpdateFn, p_handle);
-    void* p_onDetroyFn        = s_invokeManagedMethod<void*, void*>(p_getOnDestroyFn, p_handle);
+    fp_t p_onCreateFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnCreateFn, p_handle);
+    fp_t p_onUpdateFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnUpdateFn, p_handle);
+    fp_t p_onPhysicsUpdateFn = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnPhysicsUpdateFn, p_handle);
+    fp_t p_onDetroyFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnDestroyFn, p_handle);
 
     if (p_onCreateFn == nullptr || p_onUpdateFn == nullptr || p_onPhysicsUpdateFn == nullptr || p_onDetroyFn == nullptr)
     {
@@ -293,11 +293,12 @@ void ScriptEngine::s_init(const std::string& installPath)
 
             s_data->mp_closeFptr(handle);
 
-            // call init inside managed code
+            // call init inside managed code 
+            // TODO path
             s_invokeManagedMethodByName<void, const char*>(STR("InitializeScriptCore"), "somePath");
 
             // print some info to verify all is in order
-            void*       p_runtimeInfo  = s_invokeManagedMethodByName<void*>(STR("GetRuntimeInformation"));
+            ip_t*       p_runtimeInfo  = s_invokeManagedMethodByName<ip_t*>(STR("GetRuntimeInformation"));
             const char* runtimeInfoStr = (char*)p_runtimeInfo;
             Log::coreInfo("Dotnet runtime info %s", runtimeInfoStr);
 
