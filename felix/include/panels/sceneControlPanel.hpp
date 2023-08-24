@@ -1,8 +1,6 @@
 #pragma once
-#include "nimbus/core/common.hpp"
-#include "nimbus/core/application.hpp"
-#include "nimbus/core/window.hpp"
-#include "nimbus/guiSubsystem/widgets.hpp"
+#include "nimbus.hpp"
+
 
 #include "IconsFontAwesome6.h"
 

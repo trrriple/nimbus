@@ -1,12 +1,5 @@
 #pragma once
-#include "nimbus/core/common.hpp"
-#include "nimbus/core/application.hpp"
-#include "nimbus/core/window.hpp"
-#include "nimbus/scene/scene.hpp"
-#include "nimbus/scene/entity.hpp"
-#include "nimbus/scene/component.hpp"
-#include "nimbus/core/resourceManager.hpp"
-#include "nimbus/renderer/texture.hpp"
+#include "nimbus.hpp"
 #include "IconsFontAwesome6.h"
 
 #include <filesystem>
@@ -16,12 +9,12 @@ namespace nimbus
 
 class SceneHeirarchyPanel
 {
-   private:
-    ref<Texture> mp_checkerboardTex = nullptr;
-
    public:
     typedef std::function<void(Entity)> EntitySelectedCallback_t;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Public Functions
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     SceneHeirarchyPanel(ref<Scene> p_scene)
     {
         mp_appRef    = &Application::s_get();
@@ -29,9 +22,8 @@ class SceneHeirarchyPanel
 
         mp_sceneContext = p_scene;
 
-        mp_checkerboardTex
-            = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse,
-                                                                    "../resources/textures/checkerboard.png");
+        mp_checkerboardTex = Application::s_get().getResourceManager().loadTexture(
+            Texture::Type::diffuse, "../resources/textures/checkerboard.png");
     }
     ~SceneHeirarchyPanel()
     {
@@ -214,19 +206,22 @@ class SceneHeirarchyPanel
     }
 
    private:
-    Application* mp_appRef;
-    Window*      mp_appWinRef;
-
-    ref<Scene> mp_sceneContext;
-    Entity     m_selectionContext;
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Private Variables
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    Application*             mp_appRef;
+    Window*                  mp_appWinRef;
     EntitySelectedCallback_t m_entitySelectedCallback;
+
+    ref<Texture> mp_checkerboardTex = nullptr;
+    ref<Scene>   mp_sceneContext;
+    Entity       m_selectionContext;
 
     char m_scratch[1024];
 
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private Functions
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     Entity _drawEntity(Entity& entity)
     {
         Entity selectedEntity;
@@ -316,7 +311,10 @@ class SceneHeirarchyPanel
         return selectedChild ? selectedChild : selectedEntity;
     }
 
-    void _drawNameCmp(Entity& entity)
+    //////////////////////////////////////////////////////
+    // Name Component Menu
+    //////////////////////////////////////////////////////
+    void _drawNameCmpMenu(Entity& entity)
     {
         auto& name = entity.getComponent<NameCmp>().name;
 
@@ -336,7 +334,77 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawSpriteCmp(Entity& entity)
+    //////////////////////////////////////////////////////
+    // Transform Component Menu
+    //////////////////////////////////////////////////////
+    void _drawTransformCmpMenu(Entity& entity)
+    {
+        auto& tc = entity.getComponent<TransformCmp>();
+
+        glm::vec3 translation = tc.local.getTranslation();
+
+        if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
+        {
+            tc.local.setTranslation(translation);
+        }
+
+        glm::vec3 rotation = glm::degrees(tc.local.getRotation());
+
+        if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
+        {
+            tc.local.setRotation(glm::radians(rotation));
+        }
+
+        glm::vec3 scale = tc.local.getScale();
+
+        bool locked = tc.local.isScaleLocked();
+        if (_drawVec3Control("Scale", scale, 1.0f, 0.01f, true, &locked))
+        {
+            tc.local.setScaleLocked(locked);
+
+            if (tc.local.isScaleLocked())
+            {
+                // check what changed
+                if (scale.x != tc.local.getScale().x)
+                {
+                    tc.local.setScaleX(scale.x);
+                }
+                else if (scale.y != tc.local.getScale().y)
+                {
+                    tc.local.setScaleY(scale.y);
+                }
+                else if (scale.z != tc.local.getScale().z)
+                {
+                    tc.local.setScaleZ(scale.z);
+                }
+            }
+            else
+            {
+                tc.local.setScale(scale);
+            }
+        }
+
+    }
+
+    //////////////////////////////////////////////////////
+    // Script Component Menu
+    //////////////////////////////////////////////////////
+    void _drawScriptCmpMenu(Entity& entity)
+    {
+        auto& sc = entity.getComponent<ScriptCmp>();
+
+        strncpy_s(m_scratch, sc.scriptEntityName.c_str(), sc.scriptEntityName.length());
+
+        if (ImGui::InputText("Script Entity", m_scratch, sizeof(m_scratch)))
+        {
+            sc.scriptEntityName = std::string(m_scratch);
+        }
+    }
+
+    //////////////////////////////////////////////////////
+    // Sprite Component Menu
+    //////////////////////////////////////////////////////
+    void _drawSpriteCmpMenu(Entity& entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
@@ -385,9 +453,8 @@ class SceneHeirarchyPanel
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse,
-                                                                                                 filePath,
-                                                                                                 false);
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
+                        Texture::Type::diffuse, filePath, false);
 
                     if (texture)
                     {
@@ -438,7 +505,10 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawTextCmp(Entity& entity)
+    //////////////////////////////////////////////////////
+    // Text Component Menu
+    //////////////////////////////////////////////////////
+    void _drawTextCmpMenu(Entity& entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
@@ -470,10 +540,8 @@ class SceneHeirarchyPanel
             }
 
             // this const cast is safe because of the readonly flag
-            ImGui::InputText("Font",
-                             const_cast<char*>(fontName.c_str()),
-                             fontName.length(),
-                             ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputText(
+                "Font", const_cast<char*>(fontName.c_str()), fontName.length(), ImGuiInputTextFlags_ReadOnly);
 
             if (ImGui::IsItemHovered())
             {
@@ -554,7 +622,10 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawParticleEmitterCmp(Entity& entity)
+    //////////////////////////////////////////////////////
+    // Particle Emitter Component Menu
+    //////////////////////////////////////////////////////
+    void _drawParticleEmitterCmpMenu(Entity& entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
@@ -822,9 +893,8 @@ class SceneHeirarchyPanel
                     // single file is selected
                     auto filePath = selection[0];
 
-                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(Texture::Type::diffuse,
-                                                                                                 filePath,
-                                                                                                 false);
+                    ref<Texture> texture = Application::s_get().getResourceManager().loadTexture(
+                        Texture::Type::diffuse, filePath, false);
 
                     if (texture)
                     {
@@ -874,7 +944,10 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawRigidBody2DCmp(Entity& entity)
+    //////////////////////////////////////////////////////
+    // Rigid Body 2D Component Menu
+    //////////////////////////////////////////////////////
+    void _drawRigidBody2DCmpMenu(Entity& entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
 
@@ -966,7 +1039,10 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawCameraCmp(Entity& entity)
+    //////////////////////////////////////////////////////
+    // Camera Component Menu
+    //////////////////////////////////////////////////////
+    void _drawCameraCmpMenu(Entity& entity)
     {
         auto& cameraCmp = entity.getComponent<CameraCmp>();
 
@@ -1076,54 +1152,6 @@ class SceneHeirarchyPanel
         }
     }
 
-    void _drawTransformCmp(Entity& entity)
-    {
-        auto& tc = entity.getComponent<TransformCmp>();
-
-        glm::vec3 translation = tc.local.getTranslation();
-
-        if (_drawVec3Control("Translation", translation, 0.0f, 0.01f))
-        {
-            tc.local.setTranslation(translation);
-        }
-
-        glm::vec3 rotation = glm::degrees(tc.local.getRotation());
-
-        if (_drawVec3Control("Rotation", rotation, 0.0f, 0.1f))
-        {
-            tc.local.setRotation(glm::radians(rotation));
-        }
-
-        glm::vec3 scale = tc.local.getScale();
-
-        bool locked = tc.local.isScaleLocked();
-        if (_drawVec3Control("Scale", scale, 1.0f, 0.01f, true, &locked))
-        {
-            tc.local.setScaleLocked(locked);
-
-            if (tc.local.isScaleLocked())
-            {
-                // check what changed
-                if (scale.x != tc.local.getScale().x)
-                {
-                    tc.local.setScaleX(scale.x);
-                }
-                else if (scale.y != tc.local.getScale().y)
-                {
-                    tc.local.setScaleY(scale.y);
-                }
-                else if (scale.z != tc.local.getScale().z)
-                {
-                    tc.local.setScaleZ(scale.z);
-                }
-            }
-            else
-            {
-                tc.local.setScale(scale);
-            }
-        }
-    }
-
     void _drawComponents(Entity& entity)
     {
         static ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen
@@ -1133,7 +1161,7 @@ class SceneHeirarchyPanel
         // Name  Component
         ///////////////////////////
         // no tree node for the name
-        _drawNameCmp(entity);
+        _drawNameCmpMenu(entity);
 
         ImGui::SameLine();
         if (ImGui::Button("Add " ICON_FA_CARET_DOWN))
@@ -1178,6 +1206,7 @@ class SceneHeirarchyPanel
             }
 
             _drawAddComponentEntry<NativeLogicCmp>(ICON_FA_COMPUTER " Native Logic");
+            _drawAddComponentEntry<ScriptCmp>(ICON_FA_SCROLL " Script");
             _drawAddComponentEntry<CameraCmp>(ICON_FA_VIDEO " Camera");
 
             ImGui::EndPopup();
@@ -1196,13 +1225,33 @@ class SceneHeirarchyPanel
 
             if (open)
             {
-                _drawTransformCmp(entity);
+                _drawTransformCmpMenu(entity);
                 ImGui::TreePop();
             }
 
             if (removed)
             {
                 entity.removeComponent<TransformCmp>();
+            }
+        }
+
+        ///////////////////////////
+        // Script Component
+        ///////////////////////////
+        if (entity.hasComponent<ScriptCmp>())
+        {
+            bool open    = ImGui::TreeNodeEx(ICON_FA_SCROLL " Script", flags);
+            bool removed = _drawComponentMenu();
+
+            if (open)
+            {
+                _drawScriptCmpMenu(entity);
+                ImGui::TreePop();
+            }
+
+            if (removed)
+            {
+                entity.removeComponent<ScriptCmp>();
             }
         }
 
@@ -1217,7 +1266,7 @@ class SceneHeirarchyPanel
 
             if (open)
             {
-                _drawSpriteCmp(entity);
+                _drawSpriteCmpMenu(entity);
                 ImGui::TreePop();
             }
 
@@ -1237,7 +1286,7 @@ class SceneHeirarchyPanel
 
             if (open)
             {
-                _drawTextCmp(entity);
+                _drawTextCmpMenu(entity);
                 ImGui::TreePop();
             }
 
@@ -1257,7 +1306,7 @@ class SceneHeirarchyPanel
 
             if (open)
             {
-                _drawParticleEmitterCmp(entity);
+                _drawParticleEmitterCmpMenu(entity);
                 ImGui::TreePop();
             }
 
@@ -1277,7 +1326,7 @@ class SceneHeirarchyPanel
 
             if (open)
             {
-                _drawRigidBody2DCmp(entity);
+                _drawRigidBody2DCmpMenu(entity);
                 ImGui::TreePop();
             }
 
@@ -1297,7 +1346,7 @@ class SceneHeirarchyPanel
 
             if (open)
             {
-                _drawCameraCmp(entity);
+                _drawCameraCmpMenu(entity);
                 ImGui::TreePop();
             }
 

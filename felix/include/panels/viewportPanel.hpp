@@ -1,13 +1,9 @@
 #pragma once
-#include "nimbus/core/common.hpp"
-#include "nimbus/core/application.hpp"
-#include "nimbus/core/window.hpp"
-#include "nimbus/core/utility.hpp"
-#include "nimbus/renderer/framebuffer.hpp"
+#include "nimbus.hpp"
+
 #include "panels/sceneControlPanel.hpp"
 
-#include "glm.hpp"
-#include "ImGuizmo.h"
+
 
 namespace nimbus
 {

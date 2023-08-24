@@ -204,7 +204,7 @@ std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_ba
     return typeNames;
 }
 
-ref<ScriptEngine::ScriptEntity> ScriptEngine::s_createInstanceOfScriptAssemblyEntity(const std::string& typeName)
+ref<ScriptEngine::ScriptInstance> ScriptEngine::s_createInstanceOfScriptAssemblyEntity(const std::string& typeName)
 {
     static void* p_createInstanceFn     = s_getStaticMethodPtr(STR("CreateInstanceOfScriptAssemblyType"));
     static void* p_getOnCreateFn        = s_getStaticMethodPtr(STR("GetEntityOnCreateFPtr"));
@@ -217,7 +217,7 @@ ref<ScriptEngine::ScriptEntity> ScriptEngine::s_createInstanceOfScriptAssemblyEn
 
     if (p_handle == nullptr)
     {
-        Log::coreError("Failed to create instance for ScriptEntity of type %s", typeName.c_str());
+        Log::coreError("Failed to create instance for ScriptInstance of type %s", typeName.c_str());
         return nullptr;
     }
 
@@ -229,11 +229,11 @@ ref<ScriptEngine::ScriptEntity> ScriptEngine::s_createInstanceOfScriptAssemblyEn
 
     if (p_onCreateFn == nullptr || p_onUpdateFn == nullptr || p_onPhysicsUpdateFn == nullptr || p_onDetroyFn == nullptr)
     {
-        Log::coreError("Failed to get function pointers for ScriptEntity of type %s", typeName.c_str());
+        Log::coreError("Failed to get function pointers for ScriptInstance of type %s", typeName.c_str());
         return nullptr;
     }
 
-    return ref(new ScriptEntity(p_handle, p_onCreateFn, p_onUpdateFn, p_onPhysicsUpdateFn, p_onDetroyFn));
+    return ref(new ScriptInstance(p_handle, p_onCreateFn, p_onUpdateFn, p_onPhysicsUpdateFn, p_onDetroyFn));
 }
 
 void ScriptEngine::s_init(const std::string& installPath)

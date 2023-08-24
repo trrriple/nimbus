@@ -18,12 +18,16 @@ struct ScriptEngineInternalData;
 class NIMBUS_API ScriptEngine
 {
     ////////////////////////////////////////////////////////////////////////////
-    // Variables
+    // Variables/Types
     ////////////////////////////////////////////////////////////////////////////
    public:
     inline static const wchar_t* k_scriptCoreTypeName = L"Nimbus.ScriptCore, scriptCore";
 
-    class ScriptEntity : public refCounted
+
+    //////////////////////////////////////////////////////
+    // ScriptInstance class for holding instance info
+    //////////////////////////////////////////////////////
+    class ScriptInstance : public refCounted
     {
        public:
         inline void onUpdate(float deltaTime)
@@ -36,14 +40,14 @@ class NIMBUS_API ScriptEngine
             s_invokeManagedMethod<void, float>(mp_onPhysicsUpdateFptr, deltaTime);
         }
 
-        ~ScriptEntity()
+        ~ScriptInstance()
         {
             s_invokeManagedMethod<void>(mp_onDestroyFptr);
             s_releaseHandle(mp_entityHandle);
         }
 
        private:
-        ScriptEntity(void* p_entityHandle,
+        ScriptInstance(void* p_entityHandle,
                      void* p_onCreateFptr,
                      void* p_onUpdateFptr,
                      void* p_onPhysicsUpdateFptr,
@@ -57,7 +61,7 @@ class NIMBUS_API ScriptEngine
             s_invokeManagedMethod<void>(mp_onCreateFptr);
         }
 
-        ScriptEntity() = delete;
+        ScriptInstance() = delete;
 
         void* mp_entityHandle        = nullptr;
         void* mp_onCreateFptr        = nullptr;
@@ -107,7 +111,7 @@ class NIMBUS_API ScriptEngine
 
     static std::vector<std::string> s_getScriptAssemblyTypes(const char* p_baseClassFilter = "Nimbus.Entity");
 
-    static ref<ScriptEntity> s_createInstanceOfScriptAssemblyEntity(const std::string& typeName);
+    static ref<ScriptInstance> s_createInstanceOfScriptAssemblyEntity(const std::string& typeName);
 
     static void s_testCallScript();
 };

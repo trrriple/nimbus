@@ -9,6 +9,7 @@
 #include "nimbus/scene/entity.hpp"
 #include "nimbus/core/utility.hpp"
 #include "nimbus/physics/physics2D.hpp"
+#include "nimbus/script/scriptEngine.hpp"
 
 #include "glm.hpp"
 
@@ -57,6 +58,14 @@ struct AncestryCmp
     }
 };
 
+struct ScriptCmp
+{
+    std::string                       scriptEntityName;
+    ref<ScriptEngine::ScriptInstance> p_scriptInstance;
+
+    ScriptCmp() = default;
+};
+
 struct NativeLogicCmp
 {
     EntityLogic* p_logic = nullptr;
@@ -84,6 +93,7 @@ struct TransformCmp
     util::Transform world;
 
     TransformCmp() = default;
+
     TransformCmp(const glm::vec3& itranslation)
     {
         local.setTranslation(itranslation);
@@ -193,7 +203,16 @@ struct ComponentGroup
 {
 };
 
-using AllComponents
-    = ComponentGroup<NativeLogicCmp, NameCmp, TransformCmp, SpriteCmp, TextCmp, CameraCmp, RefCmp, WindowRefCmp>;
+using AllComponents = ComponentGroup<GuidCmp,
+                                     NameCmp,
+                                     AncestryCmp,
+                                     ScriptCmp,
+                                     NativeLogicCmp,
+                                     TransformCmp,
+                                     SpriteCmp,
+                                     TextCmp,
+                                     CameraCmp,
+                                     RefCmp,
+                                     WindowRefCmp>;
 
 }  // namespace nimbus

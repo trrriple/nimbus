@@ -758,12 +758,12 @@ class FelixLayer : public Layer
                         Log::coreInfo("Available scriptEntity %s", name.c_str());
                     }
 
-                    ref<ScriptEngine::ScriptEntity> p_scriptEntity
-                        = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(m_scriptAssemblyTypeNames[0]);
+                    // ref<ScriptEngine::ScriptInstance> p_scriptEntity
+                    //     = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(m_scriptAssemblyTypeNames[0]);
 
-                    p_scriptEntity->onUpdate(5.6578);
+                    // p_scriptEntity->onUpdate(5.6578);
 
-                    p_scriptEntity = nullptr;
+                    // p_scriptEntity = nullptr;
                 }
 
                 if (ImGui::MenuItem("Unload Script Assembly"))

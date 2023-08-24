@@ -8,20 +8,19 @@ public class ExamplePlayer : Entity
 
     protected override void OnCreate()
     {
-        InternalCalls.Info("Created ExamplePlayer Audrey!");
+        InternalCalls.Info("Created ExamplePlayer!");
 
     }
 
     protected override void OnUpdate(float deltaTime)
     {
-        InternalCalls.Info($"ExamplePlayer onUpdate Audrey @ {deltaTime}");
+        InternalCalls.Info($"ExamplePlayer onUpdate @ {deltaTime}");
     }
 
     protected override void OnDestroy()
     {
-        InternalCalls.Info("Destroyed ExamplePlayer Audrey!");
+        InternalCalls.Info("Destroyed ExamplePlayer!");
     }
-
 
 }
 

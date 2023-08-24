@@ -1,10 +1,5 @@
 #pragma once
-#include "nimbus/core/common.hpp"
-#include "nimbus/core/application.hpp"
-#include "nimbus/core/window.hpp"
-#include "nimbus/scene/camera.hpp"
-
-#include "glm.hpp"
+#include "nimbus.hpp"
 
 namespace nimbus
 {

@@ -7,6 +7,7 @@
 #include "nimbus/renderer/renderer.hpp"
 #include "nimbus/scene/entity.hpp"
 #include "nimbus/scene/entityLogic.hpp"
+#include "nimbus/script/scriptEngine.hpp"
 
 namespace nimbus
 {
@@ -153,9 +154,9 @@ void Scene::sortEntities()
 
 void Scene::onStartRuntime()
 {
-    ///////////////////////////
-    // Initialize Logic
-    ///////////////////////////
+    //////////////////////////////////////////////////////
+    // Initialize Native Logic
+    //////////////////////////////////////////////////////
     m_registry.view<NativeLogicCmp>().each(
         [=](auto entity, auto& nsc)
         {
@@ -167,6 +168,19 @@ void Scene::onStartRuntime()
             }
         });
 
+    //////////////////////////////////////////////////////
+    // Initialize Scripts
+    //////////////////////////////////////////////////////
+    m_registry.view<ScriptCmp>().each(
+        [=](auto entity, auto& sc)
+        {
+            NB_UNUSED(entity);
+            sc.p_scriptInstance = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(sc.scriptEntityName);
+        });
+
+    //////////////////////////////////////////////////////
+    // Initialize Particle Emitters
+    //////////////////////////////////////////////////////
     m_registry.view<ParticleEmitterCmp>().each(
         [=](auto entity, auto& pec)
         {
@@ -174,9 +188,9 @@ void Scene::onStartRuntime()
             pec.p_emitter = ref<ParticleEmitter>::gen(pec.numParticles, pec.parameters, pec.p_texture, nullptr, false);
         });
 
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     // Make 2D Physics world
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     mp_world2D = ref<Physics2D>::gen();
 
     m_registry.view<TransformCmp, RigidBody2DCmp, NameCmp>().each(
@@ -207,9 +221,9 @@ void Scene::onStartRuntime()
 
 void Scene::onStopRuntime()
 {
-    ///////////////////////////
-    // Destruct Logic
-    ///////////////////////////
+    //////////////////////////////////////////////////////
+    // Destruct Native Logic
+    //////////////////////////////////////////////////////
     m_registry.view<NativeLogicCmp>().each(
         [=](auto entity, auto& nsc)
         {
@@ -222,6 +236,9 @@ void Scene::onStopRuntime()
             }
         });
 
+    //////////////////////////////////////////////////////
+    // Destroy Particle Emitters
+    //////////////////////////////////////////////////////
     m_registry.view<ParticleEmitterCmp>().each(
         [=](auto entity, auto& pec)
         {
@@ -229,9 +246,20 @@ void Scene::onStopRuntime()
             pec.p_emitter = nullptr;
         });
 
-    ///////////////////////////
+
+    //////////////////////////////////////////////////////
+    // Destroy Scripts
+    //////////////////////////////////////////////////////
+    m_registry.view<ScriptCmp>().each(
+        [=](auto entity, auto& sc)
+        {
+            NB_UNUSED(entity);
+            sc.p_scriptInstance = nullptr;
+        });
+
+    //////////////////////////////////////////////////////
     // Destory Physics World
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     // remove all body refs
     m_registry.view<TransformCmp, RigidBody2DCmp>().each(
         [=](auto entity, auto& tc, auto& rbc)
@@ -248,9 +276,9 @@ void Scene::onStopRuntime()
 
 void Scene::onUpdateRuntime(f32_t deltaTime)
 {
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     // Update Physics
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     mp_world2D->update(deltaTime);
 
     m_registry.view<TransformCmp, RigidBody2DCmp>().each(
@@ -265,9 +293,10 @@ void Scene::onUpdateRuntime(f32_t deltaTime)
             tc.local.setRotationZ(transform.getRotation().z);
         });
 
-    ///////////////////////////
+
+    //////////////////////////////////////////////////////
     // Update Logic
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     m_registry.view<NativeLogicCmp>().each(
         [=](auto entity, auto& nsc)
         {
@@ -275,6 +304,20 @@ void Scene::onUpdateRuntime(f32_t deltaTime)
             if (nsc.p_logic)
             {
                 nsc.p_logic->onUpdate(deltaTime);
+            }
+        });
+
+
+    //////////////////////////////////////////////////////
+    // Update Scripts
+    //////////////////////////////////////////////////////
+    m_registry.view<ScriptCmp>().each(
+        [=](auto entity, auto& sc)
+        {
+            NB_UNUSED(entity);
+            if(sc.p_scriptInstance)
+            {
+                sc.p_scriptInstance->onUpdate(deltaTime);
             }
         });
 
@@ -308,9 +351,9 @@ void Scene::onUpdateRuntime(f32_t deltaTime)
 
 void Scene::onDrawRuntime()
 {
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     // Get Camera
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     auto cameraView = m_registry.view<CameraCmp>();
 
     Camera* p_mainCamera = nullptr;
@@ -360,9 +403,9 @@ void Scene::_render(Camera* p_camera)
     ////////////////////////////////////////////////////////////////////////////
     Renderer2D::s_begin(p_camera->getViewProjection());
 
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     // Sprites
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     auto spriteView = m_registry.view<GuidCmp, TransformCmp, SpriteCmp>();
 
     // order based on GuidCmp which should be sorted based on sequenceIndex
@@ -379,9 +422,9 @@ void Scene::_render(Camera* p_camera)
                                static_cast<int>(entity));
     }
 
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     // Text
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     auto textView = m_registry.view<GuidCmp, TransformCmp, TextCmp>();
 
     // same as for sprites, but we also assume we want to draw text after
@@ -399,9 +442,9 @@ void Scene::_render(Camera* p_camera)
 void Scene::_renderSceneSpecific(Camera* p_camera)
 {
     Renderer::s_setScene(p_camera->getViewProjection());
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     // Particle Emitter
-    ///////////////////////////
+    //////////////////////////////////////////////////////
     auto peView = m_registry.view<GuidCmp, TransformCmp, ParticleEmitterCmp>();
 
     for (auto [entity, gc, tc, pec] : peView.each())
