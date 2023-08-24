@@ -179,9 +179,10 @@ namespace Nimbus
         }
 
         [UnmanagedCallersOnly]
-        internal static void InitializeScriptCore(IntPtr p_pathToLibs)
+        internal static void InitializeScriptCore(IntPtr p_pathToLib)
         {
-            //TODO path?
+            // TODO remove hardcode
+            string pathToLib = Marshal.PtrToStringAnsi(p_pathToLib)!; // Assuming ANSI encoding
             IntLoadScriptAssembly();
         }
 

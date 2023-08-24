@@ -138,6 +138,11 @@ class FelixLayer : public Layer
     scope<EditCameraMenuPanel> mp_editCameraMenuPanel;
 
     ///////////////////////////
+    // Scripting
+    ///////////////////////////
+    std::vector<std::string> m_scriptAssemblyTypeNames;
+
+    ///////////////////////////
     // Flags for GUI events
     ///////////////////////////
     bool        m_fileDropHandled = true;
@@ -746,7 +751,19 @@ class FelixLayer : public Layer
 
                 if (ImGui::MenuItem("Get Script Types"))
                 {
-                    ScriptEngine::s_getScriptAssemblyTypes();
+                    m_scriptAssemblyTypeNames = ScriptEngine::s_getScriptAssemblyTypes();
+
+                    for(auto& name : m_scriptAssemblyTypeNames)
+                    {
+                        Log::coreInfo("Available scriptEntity %s", name.c_str());
+                    }
+
+                    ref<ScriptEngine::ScriptEntity> p_scriptEntity
+                        = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(m_scriptAssemblyTypeNames[0]);
+
+                    p_scriptEntity->onUpdate(5.6578);
+
+                    p_scriptEntity = nullptr;
                 }
 
                 if (ImGui::MenuItem("Unload Script Assembly"))

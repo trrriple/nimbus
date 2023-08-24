@@ -116,6 +116,18 @@ void ScriptEngine::s_freeMemory(void* p)
     s_invokeManagedMethod<void, void*>(p_fn, p);
 }
 
+void ScriptEngine::s_releaseHandle(void* h)
+{
+    if (!h)
+    {
+        return;
+    }
+
+    static void* p_fn = s_getStaticMethodPtr(STR("ReleaseHandle"));
+
+    s_invokeManagedMethod<void, void*>(p_fn, h);
+}
+
 void ScriptEngine::s_loadScriptAssembly()
 {
     static void* p_fn = s_getStaticMethodPtr(STR("LoadScriptAssembly"));
@@ -144,7 +156,7 @@ void ScriptEngine::s_testCallScript()
     s_invokeManagedMethod<void>(p_fn);
 }
 
-void ScriptEngine::s_getScriptAssemblyTypes(const char* p_baseClassFilter)
+std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_baseClassFilter)
 {
     static void* p_fn = s_getStaticMethodPtr(STR("GetScriptAssemblyTypes"));
 
@@ -154,35 +166,74 @@ void ScriptEngine::s_getScriptAssemblyTypes(const char* p_baseClassFilter)
 
     Log::info("Got %i entities", count);
 
+    std::vector<std::string> typeNames;
+    typeNames.reserve(count);
+
     for (i32_t i = 0; i < count; i++)
     {
         void*       p_string = *(void**)((char*)p_scriptEntityNames + i * sizeof(void*));
         const char* p_name   = (const char*)p_string;
-        Log::info("Name %s", p_name);
 
-        void* p_handle
-            = s_invokeManagedMethodByName<void*, const char*>(STR("CreateInstanceOfScriptAssemblyType"), p_name);
-        if (p_handle != 0)
-        {
-            // Successfully created an instance.
-            Log::info("Created instance :)");
-        }
-
-        void* p_onUpdateHandle
-            = s_invokeManagedMethodByName<void*,void*>(STR("GetEntityOnUpdateFPtr"), p_handle);
-        if (p_onUpdateHandle != 0)
-        {
-            // Successfully created an instance.
-            Log::info("Got onupdate handle");
-        }
-
-            float updateTime = 1.12345f;
-            s_invokeManagedMethod<void, float>(p_onUpdateHandle, updateTime);
+        typeNames.push_back(p_name);
 
 
-        s_invokeManagedMethodByName<void, void*>(STR("ReleaseHandle"), p_handle);
+        // testing, to be removed
+        // void* p_handle
+        //     = s_invokeManagedMethodByName<void*, const char*>(STR("CreateInstanceOfScriptAssemblyType"), p_name);
+        // if (p_handle != 0)
+        // {
+        //     // Successfully created an instance.
+        //     Log::info("Created instance :)");
+        // }
+
+        // void* p_onUpdateHandle = s_invokeManagedMethodByName<void*, void*>(STR("GetEntityOnUpdateFPtr"), p_handle);
+        // if (p_onUpdateHandle != 0)
+        // {
+        //     // Successfully created an instance.
+        //     Log::info("Got onupdate handle");
+        // }
+
+        // float updateTime = 1.12345f;
+        // s_invokeManagedMethod<void, float>(p_onUpdateHandle, updateTime);
+
+        // s_releaseHandle(p_handle);
+
         s_freeMemory(p_string);
     }
+
+    return typeNames;
+}
+
+ref<ScriptEngine::ScriptEntity> ScriptEngine::s_createInstanceOfScriptAssemblyEntity(const std::string& typeName)
+{
+    static void* p_createInstanceFn     = s_getStaticMethodPtr(STR("CreateInstanceOfScriptAssemblyType"));
+    static void* p_getOnCreateFn        = s_getStaticMethodPtr(STR("GetEntityOnCreateFPtr"));
+    static void* p_getOnUpdateFn        = s_getStaticMethodPtr(STR("GetEntityOnUpdateFPtr"));
+    static void* p_getOnPhysicsUpdateFn = s_getStaticMethodPtr(STR("GetEntityOnPhysicsUpdateFPtr"));
+    static void* p_getOnDestroyFn       = s_getStaticMethodPtr(STR("GetEntityOnDestroyFPtr"));
+
+    // create the instance
+    void* p_handle = s_invokeManagedMethod<void*, const char*>(p_createInstanceFn, typeName.c_str());
+
+    if (p_handle == nullptr)
+    {
+        Log::coreError("Failed to create instance for ScriptEntity of type %s", typeName.c_str());
+        return nullptr;
+    }
+
+    // get pointers to the required functions in the instance
+    void* p_onCreateFn        = s_invokeManagedMethod<void*, void*>(p_getOnCreateFn, p_handle);
+    void* p_onUpdateFn        = s_invokeManagedMethod<void*, void*>(p_getOnUpdateFn, p_handle);
+    void* p_onPhysicsUpdateFn = s_invokeManagedMethod<void*, void*>(p_getOnPhysicsUpdateFn, p_handle);
+    void* p_onDetroyFn        = s_invokeManagedMethod<void*, void*>(p_getOnDestroyFn, p_handle);
+
+    if (p_onCreateFn == nullptr || p_onUpdateFn == nullptr || p_onPhysicsUpdateFn == nullptr || p_onDetroyFn == nullptr)
+    {
+        Log::coreError("Failed to get function pointers for ScriptEntity of type %s", typeName.c_str());
+        return nullptr;
+    }
+
+    return ref(new ScriptEntity(p_handle, p_onCreateFn, p_onUpdateFn, p_onPhysicsUpdateFn, p_onDetroyFn));
 }
 
 void ScriptEngine::s_init(const std::string& installPath)
@@ -264,13 +315,14 @@ void ScriptEngine::s_init(const std::string& installPath)
             s_data->mp_closeFptr(handle);
 
             // call init inside managed code
-            s_invokeManagedMethodByName<char*>(STR("InitializeScriptCore"));
+            s_invokeManagedMethodByName<void, const char*>(STR("InitializeScriptCore"), "somePath");
 
             // print some info to verify all is in order
-            char* runtimeInfo = s_invokeManagedMethodByName<char*>(STR("GetRuntimeInformation"));
-            Log::coreInfo("Dotnet runtime info %s", runtimeInfo);
+            void* p_runtimeInfo = s_invokeManagedMethodByName<void *>(STR("GetRuntimeInformation"));
+            const char* runtimeInfoStr = (char*)p_runtimeInfo;
+            Log::coreInfo("Dotnet runtime info %s", runtimeInfoStr);
 
-            s_freeMemory(runtimeInfo);
+            s_freeMemory(p_runtimeInfo);
         });
 }
 
