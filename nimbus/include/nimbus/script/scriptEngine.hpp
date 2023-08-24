@@ -111,7 +111,8 @@ class NIMBUS_API ScriptEngine
 
     static std::vector<std::string> s_getScriptAssemblyTypes(const char* p_baseClassFilter = "Nimbus.Entity");
 
-    static ref<ScriptInstance> s_createInstanceOfScriptAssemblyEntity(const std::string& typeName);
+    static ref<ScriptInstance> s_createInstanceOfScriptAssemblyEntity(const std::string& typeName,
+                                                                      u32_t              nativeEntityId);
 
     static void s_testCallScript();
 };

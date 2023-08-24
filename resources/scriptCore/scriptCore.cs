@@ -275,7 +275,7 @@ namespace Nimbus
         }
 
         [UnmanagedCallersOnly]
-        internal static IntPtr CreateInstanceOfScriptAssemblyType(IntPtr p_typeName)
+        internal static IntPtr CreateInstanceOfScriptAssemblyEntity(IntPtr p_typeName, uint nativeEntityId)
         {
             if (scriptAssembly is null)
             {
@@ -294,7 +294,7 @@ namespace Nimbus
                     return IntPtr.Zero;
                 }
 
-                object? instance = Activator.CreateInstance(type);
+                object? instance = Activator.CreateInstance(type, new object[] { nativeEntityId });
                 if (instance == null)
                 {
                     InternalCalls.CoreError($"Couldn't create instance of {typeName}!");

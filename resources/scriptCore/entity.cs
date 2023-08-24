@@ -21,6 +21,12 @@ namespace Nimbus
         private OnPhysicsUpdateDelegate? onPhysicsUpdateDelegate;
         private OnDestroyDelegate? onDestroyDelegate;
 
+        public readonly uint nativeEntityId;
+
+        public Entity(uint nativeEntityId)
+        {
+            this.nativeEntityId = nativeEntityId;
+        }
 
         public IntPtr OnCreateFunctionPointer
         {

@@ -174,8 +174,13 @@ void Scene::onStartRuntime()
     m_registry.view<ScriptCmp>().each(
         [=](auto entity, auto& sc)
         {
-            NB_UNUSED(entity);
-            sc.p_scriptInstance = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(sc.scriptEntityName);
+            // TODO verify this name is actually a valid one by checking the type list in felix
+
+            if (!sc.scriptEntityName.empty())
+            {
+                sc.p_scriptInstance = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(sc.scriptEntityName,
+                                                                                           static_cast<u32_t>(entity));
+            }
         });
 
     //////////////////////////////////////////////////////

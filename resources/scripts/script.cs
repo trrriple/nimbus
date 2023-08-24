@@ -6,6 +6,10 @@ namespace Script;
 public class ExamplePlayer : Entity
 {
 
+    public ExamplePlayer(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+
     protected override void OnCreate()
     {
         InternalCalls.Info("Created ExamplePlayer!");
@@ -26,6 +30,9 @@ public class ExamplePlayer : Entity
 
 public class ExampleCamera : Entity
 {
+    public ExampleCamera(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
 
     protected override void OnCreate()
     {

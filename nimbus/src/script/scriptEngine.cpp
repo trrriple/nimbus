@@ -175,45 +175,24 @@ std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_ba
         const char* p_name   = (const char*)p_string;
 
         typeNames.push_back(p_name);
-
-
-        // testing, to be removed
-        // void* p_handle
-        //     = s_invokeManagedMethodByName<void*, const char*>(STR("CreateInstanceOfScriptAssemblyType"), p_name);
-        // if (p_handle != 0)
-        // {
-        //     // Successfully created an instance.
-        //     Log::info("Created instance :)");
-        // }
-
-        // void* p_onUpdateHandle = s_invokeManagedMethodByName<void*, void*>(STR("GetEntityOnUpdateFPtr"), p_handle);
-        // if (p_onUpdateHandle != 0)
-        // {
-        //     // Successfully created an instance.
-        //     Log::info("Got onupdate handle");
-        // }
-
-        // float updateTime = 1.12345f;
-        // s_invokeManagedMethod<void, float>(p_onUpdateHandle, updateTime);
-
-        // s_releaseHandle(p_handle);
-
         s_freeMemory(p_string);
     }
 
     return typeNames;
 }
 
-ref<ScriptEngine::ScriptInstance> ScriptEngine::s_createInstanceOfScriptAssemblyEntity(const std::string& typeName)
+ref<ScriptEngine::ScriptInstance> ScriptEngine::s_createInstanceOfScriptAssemblyEntity(const std::string& typeName,
+                                                                                       u32_t nativeEntityId)
 {
-    static void* p_createInstanceFn     = s_getStaticMethodPtr(STR("CreateInstanceOfScriptAssemblyType"));
+    static void* p_createInstanceFn     = s_getStaticMethodPtr(STR("CreateInstanceOfScriptAssemblyEntity"));
     static void* p_getOnCreateFn        = s_getStaticMethodPtr(STR("GetEntityOnCreateFPtr"));
     static void* p_getOnUpdateFn        = s_getStaticMethodPtr(STR("GetEntityOnUpdateFPtr"));
     static void* p_getOnPhysicsUpdateFn = s_getStaticMethodPtr(STR("GetEntityOnPhysicsUpdateFPtr"));
     static void* p_getOnDestroyFn       = s_getStaticMethodPtr(STR("GetEntityOnDestroyFPtr"));
 
     // create the instance
-    void* p_handle = s_invokeManagedMethod<void*, const char*>(p_createInstanceFn, typeName.c_str());
+    void* p_handle
+        = s_invokeManagedMethod<void*, const char*, u32_t>(p_createInstanceFn, typeName.c_str(), nativeEntityId);
 
     if (p_handle == nullptr)
     {
@@ -318,7 +297,7 @@ void ScriptEngine::s_init(const std::string& installPath)
             s_invokeManagedMethodByName<void, const char*>(STR("InitializeScriptCore"), "somePath");
 
             // print some info to verify all is in order
-            void* p_runtimeInfo = s_invokeManagedMethodByName<void *>(STR("GetRuntimeInformation"));
+            void*       p_runtimeInfo  = s_invokeManagedMethodByName<void*>(STR("GetRuntimeInformation"));
             const char* runtimeInfoStr = (char*)p_runtimeInfo;
             Log::coreInfo("Dotnet runtime info %s", runtimeInfoStr);
 
