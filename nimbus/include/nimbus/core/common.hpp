@@ -1,5 +1,5 @@
 #pragma once
-#include "nimbus/platform/os/os.hpp"
+#include "nimbus/platform/os/os.h"
 #include "nimbus/core/types.hpp"
 #include "nimbus/core/log.hpp"
 

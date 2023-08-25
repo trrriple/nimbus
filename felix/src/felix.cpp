@@ -166,6 +166,8 @@ class FelixLayer : public Layer
 
         mp_scene = ref<Scene>::gen("Demo Scene");
 
+        ScriptEngine::s_setSceneContext(mp_scene);
+
         ///////////////////////////
         // Edit Camera
         ///////////////////////////
@@ -414,7 +416,7 @@ class FelixLayer : public Layer
 
     void _open()
     {
-        auto selection = util::openFile("Select Scene to open", ".", {"Scene Files", "*.nmscn"}, false);
+        auto selection = util::openFileDialog("Select Scene to open", ".", {"Scene Files", "*.nmscn"}, false);
 
         if (selection.size() != 0)
         {
@@ -431,6 +433,8 @@ class FelixLayer : public Layer
             mp_scene = ref<Scene>::gen("Loading scene");
             mp_sceneHierarchyPanel->setSceneContext(mp_scene);
             mp_viewportPanel->setSceneContext(mp_scene);
+            ScriptEngine::s_setSceneContext(mp_scene);
+
             m_selectedEntity = {};
 
             SceneSerializer ss = SceneSerializer(mp_scene);
@@ -446,7 +450,7 @@ class FelixLayer : public Layer
 
         if (as || m_openedScenePath.empty())
         {
-            auto selection = util::saveFile("Save scene as", ".", {"Scene Files", "*.nmscn"});
+            auto selection = util::saveFileDialog("Save scene as", ".", {"Scene Files", "*.nmscn"});
 
             if (!selection.empty())
             {

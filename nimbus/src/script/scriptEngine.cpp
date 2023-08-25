@@ -4,14 +4,16 @@
 #include "nimbus/script/scriptEngine.hpp"
 #include "nimbus/core/utility.hpp"
 
-#include <filesystem>
 
-#include "nimbus/platform/os/os.hpp"
-#include "nimbus/platform/os/headers.hpp"
+#include "nimbus/platform/os/os.h"
+#include "nimbus/platform/os/headers.h"
+#include "nimbus/script/internalCalls.hpp"
 
 #include "nethost.h"
 #include "coreclr_delegates.h"
 #include "hostfxr.h"
+
+#include <filesystem>
 
 #if defined(NB_WINDOWS)
 #ifdef _WCHAR_T_DEFINED
@@ -44,6 +46,7 @@ struct ScriptEngineInternalData
 };
 
 ScriptEngineInternalData* ScriptEngine::s_data;
+ref<Scene>                ScriptEngine::sp_sceneContext = nullptr;
 
 #ifdef NB_WINDOWS
 static void* s_loadLibrary(const char_t* path)
@@ -73,147 +76,6 @@ static void* s_getExport(void* h, const char* name)
 }
 
 #endif
-
-fp_t ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::wstring& typeName)
-{
-    // try to find the method pointer in the cache
-    auto it = s_data->m_managedMethodCache.find(name);
-
-    fp_t fn = nullptr;
-    if (it != s_data->m_managedMethodCache.end())
-    {
-        // we found it, send it
-        fn = it->second;
-    }
-    else
-    {
-        // didn't find it, try to load it
-        const int rc = s_data->mp_getFptr(
-            typeName.c_str(), name.c_str(), UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, (void**)&fn);
-        if (rc != 0)
-        {
-            Log::coreError("Failed to get pointer to managed function %ls", name.c_str());
-        }
-        else
-        {
-            // save it
-            s_data->m_managedMethodCache.emplace(name, fn);
-        }
-    }
-
-    return fn;
-}
-
-void ScriptEngine::s_freeMemory(ip_t* p)
-{
-    if (!p)
-    {
-        return;
-    }
-
-    static fp_t p_fn = s_getStaticMethodPtr(STR("MemFree"));
-
-    s_invokeManagedMethod<void, ip_t*>(p_fn, p);
-}
-
-void ScriptEngine::s_releaseHandle(ip_t* h)
-{
-    if (!h)
-    {
-        return;
-    }
-
-    static fp_t p_fn = s_getStaticMethodPtr(STR("ReleaseHandle"));
-
-    s_invokeManagedMethod<void, ip_t*>(p_fn, h);
-}
-
-void ScriptEngine::s_loadScriptAssembly()
-{
-    static fp_t p_fn = s_getStaticMethodPtr(STR("LoadScriptAssembly"));
-
-    s_invokeManagedMethod<void>(p_fn);
-}
-
-void ScriptEngine::s_unloadScriptAssembly()
-{
-    static fp_t p_fn = s_getStaticMethodPtr(STR("UnloadScriptAssembly"));
-
-    s_invokeManagedMethod<void>(p_fn);
-}
-
-void ScriptEngine::s_reloadScriptAssembly()
-{
-    static fp_t p_fn = s_getStaticMethodPtr(STR("ReloadScriptAssembly"));
-
-    s_invokeManagedMethod<void>(p_fn);
-}
-
-void ScriptEngine::s_testCallScript()
-{
-    static fp_t p_fn = s_getStaticMethodPtr(STR("TestCallScript"));
-
-    s_invokeManagedMethod<void>(p_fn);
-}
-
-std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_baseClassFilter)
-{
-    static fp_t p_fn = s_getStaticMethodPtr(STR("GetScriptAssemblyTypes"));
-
-    i32_t count = -1;
-
-    ip_t* p_scriptEntityNames = s_invokeManagedMethod<ip_t*, const char*, i32_t*>(p_fn, p_baseClassFilter, &count);
-
-    Log::info("Got %i entities", count);
-
-    std::vector<std::string> typeNames;
-    typeNames.reserve(count);
-
-    for (i32_t i = 0; i < count; i++)
-    {
-        ip_t*       p_string = *(ip_t**)(p_scriptEntityNames + i);
-        const char* p_name   = (const char*)p_string;
-
-        typeNames.push_back(p_name);
-        s_freeMemory(p_string);
-    }
- 
-    return typeNames;
-}
-
-ref<ScriptEngine::ScriptInstance> ScriptEngine::s_createInstanceOfScriptAssemblyEntity(const std::string& typeName,
-                                                                                       u32_t nativeEntityId)
-{
-    static fp_t p_createInstanceFn     = s_getStaticMethodPtr(STR("CreateInstanceOfScriptAssemblyEntity"));
-    static fp_t p_getOnCreateFn        = s_getStaticMethodPtr(STR("GetEntityOnCreateFPtr"));
-    static fp_t p_getOnUpdateFn        = s_getStaticMethodPtr(STR("GetEntityOnUpdateFPtr"));
-    static fp_t p_getOnPhysicsUpdateFn = s_getStaticMethodPtr(STR("GetEntityOnPhysicsUpdateFPtr"));
-    static fp_t p_getOnDestroyFn       = s_getStaticMethodPtr(STR("GetEntityOnDestroyFPtr"));
-
-    // create the instance
-    ip_t* p_handle
-        = s_invokeManagedMethod<ip_t*, const char*, u32_t>(p_createInstanceFn, typeName.c_str(), nativeEntityId);
-
-    if (p_handle == nullptr)
-    {
-        Log::coreError("Failed to create instance for ScriptInstance of type %s", typeName.c_str());
-        return nullptr;
-    }
-
-    // get pointers to the required functions in the instance
-    fp_t p_onCreateFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnCreateFn, p_handle);
-    fp_t p_onUpdateFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnUpdateFn, p_handle);
-    fp_t p_onPhysicsUpdateFn = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnPhysicsUpdateFn, p_handle);
-    fp_t p_onDetroyFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnDestroyFn, p_handle);
-
-    if (p_onCreateFn == nullptr || p_onUpdateFn == nullptr || p_onPhysicsUpdateFn == nullptr || p_onDetroyFn == nullptr)
-    {
-        Log::coreError("Failed to get function pointers for ScriptInstance of type %s", typeName.c_str());
-        return nullptr;
-    }
-
-    return ref(new ScriptInstance(p_handle, p_onCreateFn, p_onUpdateFn, p_onPhysicsUpdateFn, p_onDetroyFn));
-}
 
 void ScriptEngine::s_init(const std::string& installPath)
 {
@@ -293,7 +155,7 @@ void ScriptEngine::s_init(const std::string& installPath)
 
             s_data->mp_closeFptr(handle);
 
-            // call init inside managed code 
+            // call init inside managed code
             // TODO path
             s_invokeManagedMethodByName<void, const char*>(STR("InitializeScriptCore"), "somePath");
 
@@ -303,12 +165,155 @@ void ScriptEngine::s_init(const std::string& installPath)
             Log::coreInfo("Dotnet runtime info %s", runtimeInfoStr);
 
             s_freeMemory(p_runtimeInfo);
+            
+            internalCallsInit();
+
         });
 }
 
 void ScriptEngine::s_destroy()
 {
+    sp_sceneContext = nullptr;
     delete s_data;
+}
+
+void ScriptEngine::s_setSceneContext(const ref<Scene>& p_scene)
+{
+    sp_sceneContext = p_scene;
+}
+
+fp_t ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::wstring& typeName)
+{
+    // try to find the method pointer in the cache
+    auto it = s_data->m_managedMethodCache.find(name);
+
+    fp_t fn = nullptr;
+    if (it != s_data->m_managedMethodCache.end())
+    {
+        // we found it, send it
+        fn = it->second;
+    }
+    else
+    {
+        // didn't find it, try to load it
+        const int rc = s_data->mp_getFptr(
+            typeName.c_str(), name.c_str(), UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, (void**)&fn);
+        if (rc != 0)
+        {
+            Log::coreError("Failed to get pointer to managed function %ls", name.c_str());
+        }
+        else
+        {
+            // save it
+            s_data->m_managedMethodCache.emplace(name, fn);
+        }
+    }
+
+    return fn;
+}
+
+void ScriptEngine::s_freeMemory(ip_t* p)
+{
+    if (!p)
+    {
+        return;
+    }
+
+    static fp_t p_fn = s_getStaticMethodPtr(STR("MemFree"));
+
+    s_invokeManagedMethod<void, ip_t*>(p_fn, p);
+}
+
+void ScriptEngine::s_releaseHandle(ip_t* h)
+{
+    if (!h)
+    {
+        return;
+    }
+
+    static fp_t p_fn = s_getStaticMethodPtr(STR("ReleaseHandle"));
+
+    s_invokeManagedMethod<void, ip_t*>(p_fn, h);
+}
+
+void ScriptEngine::s_loadScriptAssembly()
+{
+    static fp_t p_fn = s_getStaticMethodPtr(STR("LoadScriptAssembly"));
+
+    s_invokeManagedMethod<void>(p_fn);
+}
+
+void ScriptEngine::s_unloadScriptAssembly()
+{
+    static fp_t p_fn = s_getStaticMethodPtr(STR("UnloadScriptAssembly"));
+
+    s_invokeManagedMethod<void>(p_fn);
+}
+
+void ScriptEngine::s_reloadScriptAssembly()
+{
+    static fp_t p_fn = s_getStaticMethodPtr(STR("ReloadScriptAssembly"));
+
+    s_invokeManagedMethod<void>(p_fn);
+}
+
+std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_baseClassFilter)
+{
+    static fp_t p_fn = s_getStaticMethodPtr(STR("GetScriptAssemblyTypes"));
+
+    i32_t count = -1;
+
+    ip_t* p_scriptEntityNames = s_invokeManagedMethod<ip_t*, const char*, i32_t*>(p_fn, p_baseClassFilter, &count);
+
+    Log::info("Got %i entities", count);
+
+    std::vector<std::string> typeNames;
+    typeNames.reserve(count);
+
+    for (i32_t i = 0; i < count; i++)
+    {
+        ip_t*       p_string = *(ip_t**)(p_scriptEntityNames + i);
+        const char* p_name   = (const char*)p_string;
+
+        typeNames.push_back(p_name);
+        s_freeMemory(p_string);
+    }
+
+    return typeNames;
+}
+
+ref<ScriptEngine::ScriptInstance> ScriptEngine::s_createInstanceOfScriptAssemblyEntity(const std::string& typeName,
+                                                                                       u32_t nativeEntityId)
+{
+    static fp_t p_createInstanceFn     = s_getStaticMethodPtr(STR("CreateInstanceOfScriptAssemblyEntity"));
+    static fp_t p_getOnCreateFn        = s_getStaticMethodPtr(STR("GetEntityOnCreateFPtr"));
+    static fp_t p_getOnUpdateFn        = s_getStaticMethodPtr(STR("GetEntityOnUpdateFPtr"));
+    static fp_t p_getOnPhysicsUpdateFn = s_getStaticMethodPtr(STR("GetEntityOnPhysicsUpdateFPtr"));
+    static fp_t p_getOnDestroyFn       = s_getStaticMethodPtr(STR("GetEntityOnDestroyFPtr"));
+
+    // create the instance
+    ip_t* p_handle
+        = s_invokeManagedMethod<ip_t*, const char*, u32_t>(p_createInstanceFn, typeName.c_str(), nativeEntityId);
+
+    if (p_handle == nullptr)
+    {
+        Log::coreError("Failed to create instance for ScriptInstance of type %s", typeName.c_str());
+        return nullptr;
+    }
+
+    // get pointers to the required functions in the instance
+    fp_t p_onCreateFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnCreateFn, p_handle);
+    fp_t p_onUpdateFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnUpdateFn, p_handle);
+    fp_t p_onPhysicsUpdateFn = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnPhysicsUpdateFn, p_handle);
+    fp_t p_onDetroyFn        = s_invokeManagedMethod<ip_t*, ip_t*>(p_getOnDestroyFn, p_handle);
+
+    if (p_onCreateFn == nullptr || p_onUpdateFn == nullptr || p_onPhysicsUpdateFn == nullptr || p_onDetroyFn == nullptr)
+    {
+        Log::coreError("Failed to get function pointers for ScriptInstance of type %s", typeName.c_str());
+        return nullptr;
+    }
+
+    return ref(new ScriptInstance(p_handle, p_onCreateFn, p_onUpdateFn, p_onPhysicsUpdateFn, p_onDetroyFn));
 }
 
 }  // namespace nimbus

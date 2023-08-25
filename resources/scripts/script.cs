@@ -18,23 +18,55 @@ public class ExamplePlayer : Entity
     protected override void OnCreate()
     {
         InternalCalls.Info("Created ExamplePlayer!");
-
-        Vec4 testV = new Vec4(1.0f, 2.0f, 3.0f, 4.0f);
-        Mat4 testM = new Mat4(1.123f, 2.234f, 3.345f, 4.456f,
-                              11.123f, 12.234f, 13.345f, 14.456f,
-                              21.123f, 22.234f, 23.345f, 24.456f,
-                              31.123f, 32.234f, 33.345f, 34.456f);
-
-        Vec4 testVM = testM * testV;
-
-        InternalCalls.vec4Test(ref testVM);
-
-
     }
 
     protected override void OnUpdate(float deltaTime)
     {
-        InternalCalls.Info($"ExamplePlayer onUpdate @ {deltaTime}");
+
+        // Vec3 scale = InternalCalls.GetWorldScale(nativeEntityId);
+        // Vec3 rotation = InternalCalls.GetWorldRotation(nativeEntityId);
+
+        // rotation.Z += 0.0174533f;
+        // scale.X += 0.0001f;
+
+        // InternalCalls.SetLocalRotation(nativeEntityId, ref rotation);
+        // InternalCalls.SetLocalScale(nativeEntityId, ref scale);
+
+        Vec3 translation = InternalCalls.GetWorldTranslation(nativeEntityId);
+        Vec3 rotation = InternalCalls.GetWorldRotation(nativeEntityId);
+
+
+        if(InternalCalls.KeyPressed(ScanCode.d))
+        {
+            translation.X += 10.0f * deltaTime;
+        }
+        if(InternalCalls.KeyPressed(ScanCode.a))
+        {
+            translation.X += -10.0f * deltaTime;
+        }
+        if(InternalCalls.KeyPressed(ScanCode.w))
+        {
+            translation.Y += 10.0f * deltaTime;
+        }
+        if(InternalCalls.KeyPressed(ScanCode.s))
+        {
+            translation.Y += -10.0f * deltaTime;
+        }
+
+        if(InternalCalls.MouseButtonPressed(MouseButton.left))
+        {
+            rotation.Z += 1.0f * deltaTime;
+        }
+        if(InternalCalls.MouseButtonPressed(MouseButton.right))
+        {
+            rotation.Z += -1.0f * deltaTime;
+        }
+
+
+        InternalCalls.SetLocalTranslation(nativeEntityId, ref translation);
+        InternalCalls.SetLocalRotation(nativeEntityId, ref rotation);
+
+
     }
 
     protected override void OnDestroy()

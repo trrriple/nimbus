@@ -51,7 +51,7 @@ Application::Application(const std::string& name, u32_t windowWidth, u32_t windo
     Renderer2D::s_init();
 
     // TODO configurable parameter
-    ScriptEngine::s_init("C:\\Program Files\\Mono");
+    ScriptEngine::s_init("somePath?");
 }
 
 Application::~Application()

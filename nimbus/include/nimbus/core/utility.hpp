@@ -29,14 +29,14 @@ NIMBUS_API glm::vec2 mapPixToScreen(glm::vec2 pixPos,
                                    int       imgWidth,
                                    int       imgHeight);
 
-NIMBUS_API std::vector<std::string> openFile(const std::string&              prompt      = "",
-                                            const std::string&              startPath   = ".",
-                                            const std::vector<std::string>& filters     = {"All Files", "*"},
-                                            bool                            multiSelect = false);
+NIMBUS_API std::vector<std::string> openFileDialog(const std::string&              prompt      = "",
+                                                   const std::string&              startPath   = ".",
+                                                   const std::vector<std::string>& filters     = {"All Files", "*"},
+                                                   bool                            multiSelect = false);
 
-NIMBUS_API std::string saveFile(const std::string&              prompt    = "",
-                               const std::string&              startPath = ".",
-                               const std::vector<std::string>& filters   = {"All Files", "*"});
+NIMBUS_API std::string saveFileDialog(const std::string&              prompt    = "",
+                                      const std::string&              startPath = ".",
+                                      const std::vector<std::string>& filters   = {"All Files", "*"});
 
 NIMBUS_API char* readFileAsBytes(const std::string& filepath, u32_t* outSize);
 

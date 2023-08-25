@@ -1,5 +1,6 @@
 #pragma once
 #include "nimbus/core/common.hpp"
+#include "nimbus/scene/scene.hpp"
 
 #include <string>
 #include <vector>
@@ -23,11 +24,10 @@ class NIMBUS_API ScriptEngine
    public:
     inline static const wchar_t* k_scriptCoreTypeName = L"Nimbus.ScriptCore, scriptCore";
 
-
     //////////////////////////////////////////////////////
     // ScriptInstance class for holding instance info
     //////////////////////////////////////////////////////
-     class ScriptInstance : public refCounted
+    class ScriptInstance : public refCounted
     {
        public:
         inline void onUpdate(float deltaTime)
@@ -74,6 +74,7 @@ class NIMBUS_API ScriptEngine
 
    private:
     static ScriptEngineInternalData* s_data;
+    static ref<Scene>                sp_sceneContext;
 
     ////////////////////////////////////////////////////////////////////////////
     // Functions
@@ -97,6 +98,13 @@ class NIMBUS_API ScriptEngine
 
     static void s_destroy();
 
+    static void s_setSceneContext(const ref<Scene>& p_scene);
+
+    inline static ref<Scene> s_getSceneContext()
+    {
+        return sp_sceneContext;
+    }
+
     static fp_t s_getStaticMethodPtr(const std::wstring& name, const std::wstring& typeName = k_scriptCoreTypeName);
 
     static void s_freeMemory(ip_t* p);
@@ -113,8 +121,6 @@ class NIMBUS_API ScriptEngine
 
     static ref<ScriptInstance> s_createInstanceOfScriptAssemblyEntity(const std::string& typeName,
                                                                       u32_t              nativeEntityId);
-
-    static void s_testCallScript();
 };
 
 }  // namespace nimbus

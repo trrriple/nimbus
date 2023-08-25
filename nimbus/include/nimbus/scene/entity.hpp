@@ -17,6 +17,9 @@ class Entity
     Entity(entt::entity handle, Scene* scene) : mh_entity(handle), mp_sceneParent(scene)
     {
     }
+    Entity(u32_t handle, Scene* scene) : mh_entity(static_cast<entt::entity>(handle)), mp_sceneParent(scene)
+    {
+    }
 
     template <typename T>
     inline bool hasComponent() const

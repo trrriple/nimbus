@@ -22,7 +22,7 @@ class NIMBUS_API Application
 
     virtual ~Application();
 
-    static Application& s_get()
+    static inline Application& s_get()
     {
         return *sp_instance;
     }

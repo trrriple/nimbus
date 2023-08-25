@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Nimbus
 {
-    public class Entity
+    public abstract class Entity
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         protected delegate void OnCreateDelegate();

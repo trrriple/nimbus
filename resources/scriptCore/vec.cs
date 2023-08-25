@@ -220,5 +220,7 @@ namespace Nimbus
         {
             return new Mat4(Matrix4x4.Multiply(lhs.native, rhs.native));
         }
+        public override string ToString() => native.ToString();
+
     }
 }

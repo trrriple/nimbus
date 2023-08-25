@@ -441,7 +441,7 @@ class SceneHeirarchyPanel
             if (ImGui::ImageButton(textureId, {50, 50}))
             {
                 // open the file dialog
-                auto selection = util::openFile("Select Texture to open",
+                auto selection = util::openFileDialog("Select Texture to open",
                                                 ".",
                                                 {"Image Files",
                                                  "*.png *.jpg *.jpeg *.bmp *.tga "
@@ -571,7 +571,7 @@ class SceneHeirarchyPanel
 
             if (ImGui::IsItemClicked() && ImGui::IsMouseDoubleClicked(0))
             {
-                auto selection = util::openFile("Select Font to open", ".", {"Font Files", "*.ttf *.otf"}, false);
+                auto selection = util::openFileDialog("Select Font to open", ".", {"Font Files", "*.ttf *.otf"}, false);
                 if (selection.size() != 0)
                 {
                     // single file is selected
@@ -881,7 +881,7 @@ class SceneHeirarchyPanel
             if (ImGui::ImageButton(textureId, {50, 50}))
             {
                 // open the file dialog
-                auto selection = util::openFile("Select Texture to open",
+                auto selection = util::openFileDialog("Select Texture to open",
                                                 ".",
                                                 {"Image Files",
                                                  "*.png *.jpg *.jpeg *.bmp *.tga "
