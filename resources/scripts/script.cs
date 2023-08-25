@@ -19,15 +19,15 @@ public class ExamplePlayer : Entity
     {
         InternalCalls.Info("Created ExamplePlayer!");
 
-        Vector4 test = new Vector4(1.123f, 2.234f, 3.345f, 4.456f);
-        Matrix4x4 testMat = new Matrix4x4(1.123f, 2.234f, 3.345f, 4.456f,
-                                          11.123f, 12.234f, 13.345f, 14.456f,
-                                          21.123f, 22.234f, 23.345f, 24.456f,
-                                          31.123f, 32.234f, 33.345f, 34.456f);
+        Vec4 testV = new Vec4(1.0f, 2.0f, 3.0f, 4.0f);
+        Mat4 testM = new Mat4(1.123f, 2.234f, 3.345f, 4.456f,
+                              11.123f, 12.234f, 13.345f, 14.456f,
+                              21.123f, 22.234f, 23.345f, 24.456f,
+                              31.123f, 32.234f, 33.345f, 34.456f);
 
+        Vec4 testVM = testM * testV;
 
-        InternalCalls.vec4Test(ref test);
-        InternalCalls.mat4Test(ref testMat);
+        InternalCalls.vec4Test(ref testVM);
 
 
     }

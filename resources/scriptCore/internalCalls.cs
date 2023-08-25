@@ -44,10 +44,10 @@ namespace Nimbus
         // Vector Testing
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         [LibraryImport("nimbus", EntryPoint = "ic_vec4Test")]
-        public static partial void vec4Test(ref Vector4 vec4);
+        public static partial void vec4Test(ref Vec4 vec4);
 
         [LibraryImport("nimbus", EntryPoint = "ic_mat4Test")]
-        public static partial void mat4Test(ref Matrix4x4 mat4);
+        public static partial void mat4Test(ref Mat4 mat4);
 
 
 

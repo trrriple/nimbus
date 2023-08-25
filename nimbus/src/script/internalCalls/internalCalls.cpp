@@ -69,31 +69,37 @@ INTERNAL_CALL void ic_trace(char* msg)
 
 INTERNAL_CALL void ic_vec4Test(glm::vec4* vec4)
 {
-    Log::coreInfo("Got vec %f %f %f %f", vec4->x, vec4->y, vec4->z, vec4->w);
+    Log::coreInfo("Got vec4 %s", glm::to_string(*vec4).c_str());
+
+    glm::mat4 testM(1.123f,
+                    2.234f,
+                    3.345f,
+                    4.456f,
+                    11.123f,
+                    12.234f,
+                    13.345f,
+                    14.456f,
+                    21.123f,
+                    22.234f,
+                    23.345f,
+                    24.456f,
+                    31.123f,
+                    32.234f,
+                    33.345f,
+                    34.456f);
+
+    glm::vec4 testV(1.0f, 2.0f, 3.0, 4.0f);
+
+    glm::vec4 testMv = testM * testV;
+
+    Log::coreInfo("Compare-> %s", glm::to_string(testMv).c_str());
 }
 
 INTERNAL_CALL void ic_mat4Test(glm::mat4* mat4)
 {
     Log::coreInfo("Got mat4 %s", glm::to_string(*mat4).c_str());
 
-    glm::mat4 test(1.123f,
-                   2.234f,
-                   3.345f,
-                   4.456f,
-                   11.123f,
-                   12.234f,
-                   13.345f,
-                   14.456f,
-                   21.123f,
-                   22.234f,
-                   23.345f,
-                   24.456f,
-                   31.123f,
-                   32.234f,
-                   33.345f,
-                   34.456f);
-
-    Log::coreInfo("Compare-> %s", glm::to_string(test).c_str());
+ 
 
 }
 
