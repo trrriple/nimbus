@@ -199,17 +199,17 @@ INTERNAL_CALL void ic_setLocalScale(u32_t entityId, glm::vec3* p_scale)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 INTERNAL_CALL bool ic_keyPresed(ScanCode scanCode)
 {
-    return gp_appWinRef->keyPressed(scanCode);
+    return gp_appWinRef->keyDown(scanCode);
 }
 
 INTERNAL_CALL bool ic_modKeyPressed(KeyMod keyMod)
 {
-    return gp_appWinRef->modKeyPressed(keyMod);
+    return gp_appWinRef->modKeyDown(keyMod);
 }
 
 INTERNAL_CALL bool ic_mouseButtonPressed(MouseButton mouseButton)
 {
-    return gp_appWinRef->mouseButtonPressed(mouseButton);
+    return gp_appWinRef->nouseButtonDown(mouseButton);
 }
 
 }  // namespace nimbus

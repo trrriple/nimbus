@@ -48,19 +48,19 @@ class sceneCameraController : public EntityLogic
             return;
         }
 
-        if (mp_window->keyPressed(ScanCode::w))
+        if (mp_window->keyDown(ScanCode::w))
         {
             mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::up, deltaTime);
         }
-        if (mp_window->keyPressed(ScanCode::a))
+        if (mp_window->keyDown(ScanCode::a))
         {
             mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::backward, deltaTime);
         }
-        if (mp_window->keyPressed(ScanCode::s))
+        if (mp_window->keyDown(ScanCode::s))
         {
             mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::down, deltaTime);
         }
-        if (mp_window->keyPressed(ScanCode::d))
+        if (mp_window->keyDown(ScanCode::d))
         {
             mp_cameraCmp->camera.processPosiUpdate(Camera::Movement::forward, deltaTime);
         }
@@ -481,7 +481,7 @@ class FelixLayer : public Layer
         {
             if (eventType == Event::Type::mouseMotion)
             {
-                if (mp_appWinRef->mouseButtonPressed(MouseButton::middle)
+                if (mp_appWinRef->nouseButtonDown(MouseButton::middle)
                     && mp_editCamera->getType() == Camera::Type::perspective)
                 {
                     glm::vec2 delta = {(f32_t)event.getDetails().motion.xrel, (f32_t)event.getDetails().motion.yrel};
@@ -511,17 +511,17 @@ class FelixLayer : public Layer
             // shortcuts TODO make this less hacky
             else if (eventType == Event::Type::keyDown)
             {
-                if (mp_appWinRef->modKeyPressed(KeyMod::ctrl))
+                if (mp_appWinRef->modKeyDown(KeyMod::ctrl))
                 {
                     // open
-                    if (mp_appWinRef->keyPressed(ScanCode::o))
+                    if (mp_appWinRef->keyDown(ScanCode::o))
                     {
                         _open();
                     }
                     // save, saveas
-                    else if (mp_appWinRef->keyPressed(ScanCode::s))
+                    else if (mp_appWinRef->keyDown(ScanCode::s))
                     {
-                        if (mp_appWinRef->modKeyPressed(KeyMod::shift))
+                        if (mp_appWinRef->modKeyDown(KeyMod::shift))
                         {
                             _save(true);
                         }
@@ -533,7 +533,7 @@ class FelixLayer : public Layer
                 }
                 else
                 {
-                    if (mp_appWinRef->keyPressed(ScanCode::escape))
+                    if (mp_appWinRef->keyDown(ScanCode::escape))
                     {
                         if (m_selectedEntity)
                         {
@@ -543,28 +543,28 @@ class FelixLayer : public Layer
                             }
                         }
                     }
-                    if (mp_appWinRef->keyPressed(ScanCode::u))
+                    if (mp_appWinRef->keyDown(ScanCode::u))
                     {
                         if (m_selectedEntity)
                         {
                             mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::universal;
                         }
                     }
-                    else if (mp_appWinRef->keyPressed(ScanCode::m))
+                    else if (mp_appWinRef->keyDown(ScanCode::m))
                     {
                         if (m_selectedEntity)
                         {
                             mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::move;
                         }
                     }
-                    else if (mp_appWinRef->keyPressed(ScanCode::r))
+                    else if (mp_appWinRef->keyDown(ScanCode::r))
                     {
                         if (m_selectedEntity)
                         {
                             mp_sceneControlPanel->getState().toolState = SceneControlPanel::ToolState::rotate;
                         }
                     }
-                    else if (mp_appWinRef->keyPressed(ScanCode::e))
+                    else if (mp_appWinRef->keyDown(ScanCode::e))
                     {
                         if (m_selectedEntity)
                         {
@@ -584,46 +584,46 @@ class FelixLayer : public Layer
 
         if (mp_editCamera->getType() == Camera::Type::perspective)
         {
-            if (mp_appWinRef->keyPressed(ScanCode::w))
+            if (mp_appWinRef->keyDown(ScanCode::w))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::forward, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::s))
+            if (mp_appWinRef->keyDown(ScanCode::s))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::backward, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::space))
+            if (mp_appWinRef->keyDown(ScanCode::space))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::up, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::c))
+            if (mp_appWinRef->keyDown(ScanCode::c))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::down, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::a))
+            if (mp_appWinRef->keyDown(ScanCode::a))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::left, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::d))
+            if (mp_appWinRef->keyDown(ScanCode::d))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::right, deltaTime);
             }
         }
         else
         {
-            if (mp_appWinRef->keyPressed(ScanCode::w))
+            if (mp_appWinRef->keyDown(ScanCode::w))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::up, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::a))
+            if (mp_appWinRef->keyDown(ScanCode::a))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::backward, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::s))
+            if (mp_appWinRef->keyDown(ScanCode::s))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::down, deltaTime);
             }
-            if (mp_appWinRef->keyPressed(ScanCode::d))
+            if (mp_appWinRef->keyDown(ScanCode::d))
             {
                 mp_editCamera->processPosiUpdate(Camera::Movement::forward, deltaTime);
             }

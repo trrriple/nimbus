@@ -1496,7 +1496,7 @@ class SceneHeirarchyPanel
     bool _drawComponentMenu()
     {
         bool removed = false;
-        ImGui::SameLine(ImGui::GetContentRegionAvail().x - 15.0f);
+        ImGui::SameLine(ImGui::GetContentRegionAvail().x - 18.0f);
 
         if (ImGui::Button(ICON_FA_BARS))
         {

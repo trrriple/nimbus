@@ -99,6 +99,20 @@ static void s_serializeEntity(toml::table& entitiesTbl, Entity entity, GuidCmp& 
         entityTbl.insert("SpriteCmp", spriteTbl);
     }
 
+
+    ///////////////////////////
+    // ScriptCmp
+    ///////////////////////////
+    if (entity.hasComponent<ScriptCmp>())
+    {
+        toml::table scriptTbl;
+        ScriptCmp&  sc = entity.getComponent<ScriptCmp>();
+
+        scriptTbl.insert("scriptEntityName", sc.scriptEntityName);
+
+        entityTbl.insert("ScriptCmp", scriptTbl);
+    }
+
     ///////////////////////////
     // TextCmp
     ///////////////////////////
@@ -340,6 +354,16 @@ static void _s_deserializeComponent(Entity entity, const std::string& cmpType, t
         tc.local.setScale({scale[0].ref<f64_t>(), scale[1].ref<f64_t>(), scale[2].ref<f64_t>()});
 
         tc.local.setScaleLocked(cmpTbl["scaleLocked"].ref<bool>());
+    }
+
+    ///////////////////////////
+    // ScriptCmp
+    ///////////////////////////
+    if (cmpType == "ScriptCmp")
+    {
+        auto& sc = entity.addComponent<ScriptCmp>();
+
+        sc.scriptEntityName = cmpTbl["scriptEntityName"].ref<std::string>();
     }
 
     ///////////////////////////

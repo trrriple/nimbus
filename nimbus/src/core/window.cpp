@@ -143,7 +143,7 @@ void Window::pumpEvents()
     }
 }
 
-bool Window::keyPressed(ScanCode scanCode) const
+bool Window::keyDown(ScanCode scanCode) const
 {
     NB_PROFILE_TRACE();
 
@@ -153,7 +153,7 @@ bool Window::keyPressed(ScanCode scanCode) const
     return keyboardState[static_cast<u32_t>(scanCode)];
 }
 
-bool Window::modKeyPressed(KeyMod keyMod) const
+bool Window::modKeyDown(KeyMod keyMod) const
 {
     NB_PROFILE_TRACE();
 
@@ -161,7 +161,7 @@ bool Window::modKeyPressed(KeyMod keyMod) const
     return SDL_GetModState() & static_cast<u32_t>(keyMod);
 }
 
-bool Window::mouseButtonPressed(MouseButton button) const
+bool Window::nouseButtonDown(MouseButton button) const
 {
     NB_PROFILE_TRACE();
 

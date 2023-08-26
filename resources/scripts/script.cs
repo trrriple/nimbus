@@ -2,12 +2,13 @@
 using Nimbus;
 using System.Numerics;
 
+using IC = Nimbus.InternalCalls;
 
 using System.Runtime.CompilerServices;
+
 [assembly: DisableRuntimeMarshalling]
 
 namespace Script;
-
 public class ExamplePlayer : Entity
 {
 
@@ -17,7 +18,7 @@ public class ExamplePlayer : Entity
 
     protected override void OnCreate()
     {
-        InternalCalls.Info("Created ExamplePlayer!");
+        IC.Log.Info("Created ExamplePlayer!");
     }
 
     protected override void OnUpdate(float deltaTime)
@@ -32,46 +33,46 @@ public class ExamplePlayer : Entity
         // InternalCalls.SetLocalRotation(nativeEntityId, ref rotation);
         // InternalCalls.SetLocalScale(nativeEntityId, ref scale);
 
-        Vec3 translation = InternalCalls.GetWorldTranslation(nativeEntityId);
-        Vec3 rotation = InternalCalls.GetWorldRotation(nativeEntityId);
+        Vec3 translation = IC.Transform.GetWorldTranslation(nativeEntityId);
+        Vec3 rotation = IC.Transform.GetWorldRotation(nativeEntityId);
 
 
-        if(InternalCalls.KeyPressed(ScanCode.d))
+        if(IC.Input.KeyDown(ScanCode.d))
         {
             translation.X += 10.0f * deltaTime;
         }
-        if(InternalCalls.KeyPressed(ScanCode.a))
+        if(IC.Input.KeyDown(ScanCode.a))
         {
             translation.X += -10.0f * deltaTime;
         }
-        if(InternalCalls.KeyPressed(ScanCode.w))
+        if(IC.Input.KeyDown(ScanCode.w))
         {
             translation.Y += 10.0f * deltaTime;
         }
-        if(InternalCalls.KeyPressed(ScanCode.s))
+        if(IC.Input.KeyDown(ScanCode.s))
         {
             translation.Y += -10.0f * deltaTime;
         }
 
-        if(InternalCalls.MouseButtonPressed(MouseButton.left))
+        if(IC.Input.MouseButtonDown(MouseButton.left))
         {
             rotation.Z += 1.0f * deltaTime;
         }
-        if(InternalCalls.MouseButtonPressed(MouseButton.right))
+        if(IC.Input.MouseButtonDown(MouseButton.right))
         {
             rotation.Z += -1.0f * deltaTime;
         }
 
 
-        InternalCalls.SetLocalTranslation(nativeEntityId, ref translation);
-        InternalCalls.SetLocalRotation(nativeEntityId, ref rotation);
+        IC.Transform.SetLocalTranslation(nativeEntityId, ref translation);
+        IC.Transform.SetLocalRotation(nativeEntityId, ref rotation);
 
 
     }
 
     protected override void OnDestroy()
     {
-        InternalCalls.Info("Destroyed ExamplePlayer!");
+        IC.Log.Info("Destroyed ExamplePlayer!");
     }
 
 }
@@ -89,7 +90,7 @@ public class ExampleCamera : Entity
 
     protected override void OnUpdate(float deltaTime)
     {
-        InternalCalls.Info($"On update @ {deltaTime}");
+        IC.Log.Info($"On update @ {deltaTime}");
     }
 
 }

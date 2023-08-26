@@ -4,6 +4,8 @@ using System.Runtime.Loader;
 using System.Runtime.InteropServices;
 using System.Reflection;
 
+using IC = Nimbus.InternalCalls;
+
 
 using System.Runtime.CompilerServices;
 [assembly: DisableRuntimeMarshalling]
@@ -24,12 +26,12 @@ public unsafe class ScriptCore
     {
         if (scriptAlc is null)
         {
-            InternalCalls.CoreError("Can't unload script assembly when it isn't loaded!");
+            IC.Log.CoreError("Can't unload script assembly when it isn't loaded!");
             return;
         }
         else
         {
-            InternalCalls.CoreInfo("Unloading script Assembly");
+            IC.Log.CoreInfo("Unloading script Assembly");
 
             scriptAlc.Unload();
             scriptAssembly = null;
@@ -41,14 +43,14 @@ public unsafe class ScriptCore
             // block and poll while assembly is unloading
             while (scriptAlcWeakRef!.IsAlive)
             {
-                InternalCalls.CoreInfo("Unloading...");
+                IC.Log.CoreInfo("Unloading...");
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 System.Threading.Thread.Sleep(1);
             }
 
         }
-        InternalCalls.CoreInfo("Unloaded script Assembly");
+        IC.Log.CoreInfo("Unloaded script Assembly");
     }
 
 
@@ -84,7 +86,7 @@ public unsafe class ScriptCore
 
         if (scriptAssembly is null)
         {
-            InternalCalls.CoreError("Failed to get assembly!");
+            IC.Log.CoreError("Failed to get assembly!");
             return;
 
         }
@@ -92,7 +94,7 @@ public unsafe class ScriptCore
         // TODO
         // scriptAlc.Resolving += OnScriptinglcResolving;
 
-        InternalCalls.CoreInfo($"Loaded script Assembly {callCount}");
+        IC.Log.CoreInfo($"Loaded script Assembly {callCount}");
         callCount++;
     }
 
@@ -102,7 +104,7 @@ public unsafe class ScriptCore
 
         if (scriptAssembly is null)
         {
-            InternalCalls.CoreError("Can't Reflect on unloaded script assembly!");
+            IC.Log.CoreError("Can't Reflect on unloaded script assembly!");
             return typeNames;
         }
 
@@ -112,7 +114,7 @@ public unsafe class ScriptCore
             if (!type.IsClass || (baseType != null && !type.IsSubclassOf(baseType)))
                 continue;
 
-            InternalCalls.CoreInfo($"Type: {type.FullName}");
+            IC.Log.CoreInfo($"Type: {type.FullName}");
 
             typeNames.Add(type.FullName!);
 
@@ -121,7 +123,7 @@ public unsafe class ScriptCore
             // foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic
             //             | BindingFlags.Instance | BindingFlags.Static))
             // {
-            //     InternalCalls.CoreInfo($"  Method: {method.Name}");
+            //     IC.Log.CoreInfo($"  Method: {method.Name}");
             // }
         }
 
@@ -132,7 +134,7 @@ public unsafe class ScriptCore
     {
         if (handle == IntPtr.Zero)
         {
-            InternalCalls.CoreError("Null instance handle!");
+            IC.Log.CoreError("Null instance handle!");
             return null;
         }
 
@@ -141,7 +143,7 @@ public unsafe class ScriptCore
 
         if (instance == null || !(instance is Entity))
         {
-            InternalCalls.CoreError("Invalid instance handle!");
+            IC.Log.CoreError("Invalid instance handle!");
             return null;
         }
 
@@ -163,7 +165,7 @@ public unsafe class ScriptCore
     {
         if (handle == IntPtr.Zero)
         {
-            InternalCalls.CoreError("Null handle!");
+            IC.Log.CoreError("Null handle!");
             return;
         }
 
@@ -219,7 +221,7 @@ public unsafe class ScriptCore
 
             if (baseType is null)
             {
-                InternalCalls.CoreError($"Base class type {baseClassName} not found!");
+                IC.Log.CoreError($"Base class type {baseClassName} not found!");
                 return IntPtr.Zero;
             }
         }
@@ -245,7 +247,7 @@ public unsafe class ScriptCore
     {
         if (scriptAssembly is null)
         {
-            InternalCalls.CoreError("Can't get type from unloaded script assembly!!");
+            IC.Log.CoreError("Can't get type from unloaded script assembly!!");
             return IntPtr.Zero;
         }
 
@@ -256,14 +258,14 @@ public unsafe class ScriptCore
             Type? type = scriptAssembly.GetType(typeName);
             if (type == null)
             {
-                InternalCalls.CoreError($"Type {typeName} not found!");
+                IC.Log.CoreError($"Type {typeName} not found!");
                 return IntPtr.Zero;
             }
 
             object? instance = Activator.CreateInstance(type, new object[] { nativeEntityId });
             if (instance == null)
             {
-                InternalCalls.CoreError($"Couldn't create instance of {typeName}!");
+                IC.Log.CoreError($"Couldn't create instance of {typeName}!");
                 return IntPtr.Zero;
             }
 
@@ -272,7 +274,7 @@ public unsafe class ScriptCore
         }
         else
         {
-            InternalCalls.CoreError($"Null type Name!");
+            IC.Log.CoreError($"Null type Name!");
             return IntPtr.Zero;
 
         }

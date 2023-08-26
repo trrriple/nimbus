@@ -35,11 +35,11 @@ class NIMBUS_API Window : public refCounted
 
     void pumpEvents();
 
-    bool keyPressed(ScanCode scanCode) const;
+    bool keyDown(ScanCode scanCode) const;
 
-    bool modKeyPressed(KeyMod keyMod) const;
+    bool modKeyDown(KeyMod keyMod) const;
 
-    bool mouseButtonPressed(MouseButton button) const;
+    bool nouseButtonDown(MouseButton button) const;
 
     glm::vec2 mousePos() const;
 

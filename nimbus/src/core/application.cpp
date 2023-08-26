@@ -218,7 +218,7 @@ void Application::execute()
             // Call all gui updates
             ///////////////////////////
             bool mouseButtonsDown
-                = mp_window->mouseButtonPressed(MouseButton::left) || mp_window->mouseButtonPressed(MouseButton::right);
+                = mp_window->nouseButtonDown(MouseButton::left) || mp_window->nouseButtonDown(MouseButton::right);
 
             SDL_CaptureMouse((mouseButtonsDown != 0) ? SDL_TRUE : SDL_FALSE);
 
