@@ -30,7 +30,7 @@ class Renderer : public refCounted
     static void s_destroy();
 
    private:
-    static RendererInternalData* s_data;
+    static RendererInternalData* sp_data;
 
     ////////////////////////////////////////////////////////////////////////////
     // Functions

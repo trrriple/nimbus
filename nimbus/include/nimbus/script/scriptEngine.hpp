@@ -73,7 +73,7 @@ class NIMBUS_API ScriptEngine
     };
 
    private:
-    static ScriptEngineInternalData* s_data;
+    static ScriptEngineInternalData* sp_data;
     static ref<Scene>                sp_sceneContext;
 
     ////////////////////////////////////////////////////////////////////////////

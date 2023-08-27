@@ -23,6 +23,8 @@ static const std::string k_defaultFontPath = "../resources/fonts/Roboto/Roboto-R
 
 static const std::string k_defaultBoldFontPath = "../resources/fonts/Roboto/Roboto-Black.ttf";
 
+static const std::string k_fixedWidthFontPath = "../resources/fonts/JetBrainsMono/JetBrainsMono-Regular.ttf";
+
 static const std::string k_defaultIconFontPath = "../resources/fonts/FontAwesome6/" FONT_ICON_FILE_NAME_FAS;
 
 GuiSubsystem::GuiSubsystem() : Layer(Layer::Type::overlay, "guiSubsystem")
@@ -89,11 +91,26 @@ void GuiSubsystem::onInsert()
         Log::coreCritical("Could not load GUI font: %s\n", k_defaultFontPath.c_str());
     }
 
+    ///////////////////////////
+    // Fixed Width font
+    ///////////////////////////
+    ImFont* p_fixedWith= io.Fonts->AddFontFromFileTTF(k_fixedWidthFontPath.c_str(), fontSize);
+
+    if (p_fixedWith == nullptr)
+    {
+        Log::coreCritical("Could not load GUI font: %s\n", k_fixedWidthFontPath.c_str());
+    }
+
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
     // override some values;
     _setDarkThemeColors();
+
+    // some extra stuff:
+
+    ImGuiStyle& style   = ImGui::GetStyle();
+    style.ScrollbarSize = 5.0f;
 
     // Setup Platform/Renderer bindings
     // window is the SDL_Window*

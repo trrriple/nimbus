@@ -28,7 +28,7 @@ Application::Application(const std::string& name, u32_t windowWidth, u32_t windo
     sp_instance = this;
 
     mp_window = genScope<Window>(m_name, windowWidth, windowHeight);
-    Log::init();
+    Log::s_init();
 
     Log::coreInfo("------------------------------------------");
     Log::coreInfo("----- Nimbus Engine Application Init -----");
@@ -71,6 +71,8 @@ Application::~Application()
     // as this destroys the renderer queue which handles those
     // destructors
     Renderer::s_destroy();
+
+    Log::s_destroy();
 
     // this will blow away our window and context
     mp_window.reset();

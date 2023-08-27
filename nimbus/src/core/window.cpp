@@ -43,8 +43,6 @@ Window::~Window()
     SDL_DestroyWindow(static_cast<SDL_Window*>(mp_window));
     mp_window = nullptr;
 
-    Log::coreInfo("Window destroyed");
-
     // Quit SDL subsystems
     SDL_Quit();
 }

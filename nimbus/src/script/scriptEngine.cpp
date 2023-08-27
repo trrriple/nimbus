@@ -4,7 +4,6 @@
 #include "nimbus/script/scriptEngine.hpp"
 #include "nimbus/core/utility.hpp"
 
-
 #include "nimbus/platform/os/os.h"
 #include "nimbus/platform/os/headers.h"
 #include "nimbus/script/internalCalls.hpp"
@@ -50,7 +49,7 @@ struct ScriptEngineInternalData
     bool scriptAssemblyLoaded = false;
 };
 
-ScriptEngineInternalData* ScriptEngine::s_data;
+ScriptEngineInternalData* ScriptEngine::sp_data;
 ref<Scene>                ScriptEngine::sp_sceneContext = nullptr;
 
 #ifdef NB_WINDOWS
@@ -89,7 +88,7 @@ void ScriptEngine::s_init(const std::string& installPath)
         initFlag,
         [=]()
         {
-            s_data = new ScriptEngineInternalData();
+            sp_data = new ScriptEngineInternalData();
 
             NB_UNUSED(installPath);  // TODO use dotnet that isn't pre-installed?
 
@@ -126,16 +125,16 @@ void ScriptEngine::s_init(const std::string& installPath)
 
             // Load hostfxr and get desired exports
             void* lib = s_loadLibrary(hostFxrPath);
-            s_data->mp_initRuntimeFptr
+            sp_data->mp_initRuntimeFptr
                 = (hostfxr_initialize_for_runtime_config_fn)s_getExport(lib, "hostfxr_initialize_for_runtime_config");
-            s_data->mp_initCmdLineFPtr = (hostfxr_initialize_for_dotnet_command_line_fn)s_getExport(
+            sp_data->mp_initCmdLineFPtr = (hostfxr_initialize_for_dotnet_command_line_fn)s_getExport(
                 lib, "hostfxr_initialize_for_dotnet_command_line");
-            s_data->mp_getDelegateFptr
+            sp_data->mp_getDelegateFptr
                 = (hostfxr_get_runtime_delegate_fn)s_getExport(lib, "hostfxr_get_runtime_delegate");
-            s_data->mp_closeFptr = (hostfxr_close_fn)s_getExport(lib, "hostfxr_close");
+            sp_data->mp_closeFptr = (hostfxr_close_fn)s_getExport(lib, "hostfxr_close");
 
-            NB_CORE_ASSERT_STATIC(s_data->mp_initRuntimeFptr && s_data->mp_initCmdLineFPtr && s_data->mp_getDelegateFptr
-                                      && s_data->mp_closeFptr,
+            NB_CORE_ASSERT_STATIC(sp_data->mp_initRuntimeFptr && sp_data->mp_initCmdLineFPtr
+                                      && sp_data->mp_getDelegateFptr && sp_data->mp_closeFptr,
                                   "Could not get hostfxr function pointers!");
 
             // initialize for cmd line
@@ -148,17 +147,17 @@ void ScriptEngine::s_init(const std::string& installPath)
             initParams.dotnet_root = nullptr;
 
             hostfxr_handle handle = nullptr;
-            rc                    = s_data->mp_initCmdLineFPtr(1, argv, &initParams, &handle);
+            rc                    = sp_data->mp_initCmdLineFPtr(1, argv, &initParams, &handle);
 
             NB_CORE_ASSERT_STATIC(!rc && handle, "failed to initialize hostfxr!");
 
             // get runtime delegate
             void* p_getFptr = nullptr;
-            rc              = s_data->mp_getDelegateFptr(handle, hdt_get_function_pointer, &p_getFptr);
+            rc              = sp_data->mp_getDelegateFptr(handle, hdt_get_function_pointer, &p_getFptr);
             NB_CORE_ASSERT_STATIC(!rc && p_getFptr, "failed to get get runtime delegate hdt_get_function_pointer!");
-            s_data->mp_getFptr = (get_function_pointer_fn)(p_getFptr);
+            sp_data->mp_getFptr = (get_function_pointer_fn)(p_getFptr);
 
-            s_data->mp_closeFptr(handle);
+            sp_data->mp_closeFptr(handle);
 
             // call init inside managed code
             s_invokeManagedMethodByName<void>(STR("InitializeScriptCore"));
@@ -169,16 +168,15 @@ void ScriptEngine::s_init(const std::string& installPath)
             Log::coreInfo("Dotnet runtime info %s", runtimeInfoStr);
 
             s_freeMemory(p_runtimeInfo);
-            
-            internalCallsInit();
 
+            internalCallsInit();
         });
 }
 
 void ScriptEngine::s_destroy()
 {
     sp_sceneContext = nullptr;
-    delete s_data;
+    delete sp_data;
 }
 
 void ScriptEngine::s_setSceneContext(const ref<Scene>& p_scene)
@@ -189,10 +187,10 @@ void ScriptEngine::s_setSceneContext(const ref<Scene>& p_scene)
 fp_t ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::wstring& typeName)
 {
     // try to find the method pointer in the cache
-    auto it = s_data->m_managedMethodCache.find(name);
+    auto it = sp_data->m_managedMethodCache.find(name);
 
     fp_t fn = nullptr;
-    if (it != s_data->m_managedMethodCache.end())
+    if (it != sp_data->m_managedMethodCache.end())
     {
         // we found it, send it
         fn = it->second;
@@ -200,7 +198,7 @@ fp_t ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::wst
     else
     {
         // didn't find it, try to load it
-        const int rc = s_data->mp_getFptr(
+        const int rc = sp_data->mp_getFptr(
             typeName.c_str(), name.c_str(), UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, (void**)&fn);
         if (rc != 0)
         {
@@ -209,7 +207,7 @@ fp_t ScriptEngine::s_getStaticMethodPtr(const std::wstring& name, const std::wst
         else
         {
             // save it
-            s_data->m_managedMethodCache.emplace(name, fn);
+            sp_data->m_managedMethodCache.emplace(name, fn);
         }
     }
 
@@ -254,21 +252,21 @@ bool ScriptEngine::s_loadScriptAssembly(const std::filesystem::path& assemblyPat
 
     std::string scriptAssemblyPathStr = fullScriptAssemblyPath.generic_string();
 
-    s_data->scriptAssemblyLoaded = s_invokeManagedMethod<bool, const char*>(p_fn, scriptAssemblyPathStr.c_str());
+    sp_data->scriptAssemblyLoaded = s_invokeManagedMethod<bool, const char*>(p_fn, scriptAssemblyPathStr.c_str());
 
-    return s_data->scriptAssemblyLoaded;
+    return sp_data->scriptAssemblyLoaded;
 }
 
 bool ScriptEngine::s_unloadScriptAssembly()
 {
     static fp_t p_fn = s_getStaticMethodPtr(STR("UnloadScriptAssembly"));
 
-    if (s_data->scriptAssemblyLoaded)
+    if (sp_data->scriptAssemblyLoaded)
     {
-        s_data->scriptAssemblyLoaded = !s_invokeManagedMethod<bool>(p_fn);
+        sp_data->scriptAssemblyLoaded = !s_invokeManagedMethod<bool>(p_fn);
     }
 
-    return !s_data->scriptAssemblyLoaded;
+    return !sp_data->scriptAssemblyLoaded;
 }
 
 bool ScriptEngine::s_reloadScriptAssembly(const std::filesystem::path& assemblyPath)

@@ -49,7 +49,7 @@ struct RendererInternalData
     ref<Texture> p_blackTexture;
 };
 
-RendererInternalData* Renderer::s_data;
+RendererInternalData* Renderer::sp_data;
 
 void Renderer::s_init()
 {
@@ -58,7 +58,7 @@ void Renderer::s_init()
     std::call_once(initFlag,
     []()
     {
-        s_data = new RendererInternalData();
+        sp_data = new RendererInternalData();
 
 
         GraphicsApi::init();
@@ -68,22 +68,22 @@ void Renderer::s_init()
         ////////////////////////
         for(int i = 0; i < k_numRenderCmdQ; i++)
         {
-            s_data->renderCmdQ[i] = new RenderCmdQ();
+            sp_data->renderCmdQ[i] = new RenderCmdQ();
         }
 
-        s_data->submitRenderCmdQIdx = 0;
-        s_data->processRenderCmdQIdx = 1;
+        sp_data->submitRenderCmdQIdx = 0;
+        sp_data->processRenderCmdQIdx = 1;
 
         
         for(int i = 0; i < k_numObjectCmdQ; i++)
         {
-            s_data->objectCmdQ[i] = new RenderCmdQ();
+            sp_data->objectCmdQ[i] = new RenderCmdQ();
         }
 
-        s_data->submitObjectCmdQIdx = 0;
-        s_data->processObjectCmdQIdx = 1;
+        sp_data->submitObjectCmdQIdx = 0;
+        sp_data->processObjectCmdQIdx = 1;
 
-        s_data->renderThread.run(Renderer::_s_renderThreadFn);
+        sp_data->renderThread.run(Renderer::_s_renderThreadFn);
 
         ///////////////////////////
         // Make any common assets
@@ -91,18 +91,18 @@ void Renderer::s_init()
         Texture::Spec texSpec;
         texSpec.width  = 1;
         texSpec.height = 1;
-        s_data->p_whiteTexture
+        sp_data->p_whiteTexture
             = Texture::s_create(Texture::Type::diffuse, texSpec);
 
         // being a 1x1 texture, it's only 4 bytes of data
         u32_t whiteData = 0xFFFFFFFF;
-        s_data->p_whiteTexture->setData(&whiteData, sizeof(whiteData));
+        sp_data->p_whiteTexture->setData(&whiteData, sizeof(whiteData));
 
-        s_data->p_blackTexture
+        sp_data->p_blackTexture
             = Texture::s_create(Texture::Type::diffuse, texSpec);
         
         u32_t blackData = 0xFF000000;
-        s_data->p_blackTexture->setData(&blackData, sizeof(blackData));
+        sp_data->p_blackTexture->setData(&blackData, sizeof(blackData));
 
 
     });
@@ -111,8 +111,8 @@ void Renderer::s_init()
 
 void Renderer::s_destroy()
 {
-    s_data->p_whiteTexture = nullptr;
-    s_data->p_blackTexture = nullptr;
+    sp_data->p_whiteTexture = nullptr;
+    sp_data->p_blackTexture = nullptr;
 
     // flush the queues, order matters here due to not wanting to use resources
     // that are being deleted, so we run all of the renders first before
@@ -134,23 +134,23 @@ void Renderer::s_destroy()
         s_waitForRenderThread();
     }
 
-    s_data->renderThread.stop();
+    sp_data->renderThread.stop();
 
     for (int i = 0; i < k_numRenderCmdQ; i++)
     {
-        if (s_data->renderCmdQ[i]->getCmdCount() != 0)
+        if (sp_data->renderCmdQ[i]->getCmdCount() != 0)
         {
-            Log::coreWarn("Unprocessed commands (%i) let on queue", s_data->renderCmdQ[i]->getCmdCount());
+            Log::coreWarn("Unprocessed commands (%i) let on queue", sp_data->renderCmdQ[i]->getCmdCount());
         }
-        delete s_data->renderCmdQ[i];
+        delete sp_data->renderCmdQ[i];
     }
 
-    delete s_data;
+    delete sp_data;
 }
 
 void Renderer::s_setScene(const glm::mat4& vpMatrix)
 {
-    s_data->vpMatrix = vpMatrix;
+    sp_data->vpMatrix = vpMatrix;
 }
 
 void Renderer::s_startFrame()
@@ -166,12 +166,12 @@ void Renderer::s_endFrame()
 void Renderer::s_swapAndStart()
 {
     _s_qSwap();
-    s_data->renderThread.setState(RenderThread::State::ready);
+    sp_data->renderThread.setState(RenderThread::State::ready);
 }
 
 void Renderer::s_waitForRenderThread()
 {
-    s_data->renderThread.waitForState(RenderThread::State::pend);
+    sp_data->renderThread.waitForState(RenderThread::State::pend);
 }
 
 void Renderer::s_pumpCmds()
@@ -188,12 +188,12 @@ void Renderer::s_pumpCmds()
 
 ref<Texture> Renderer::getWhiteTexture()
 {
-    return s_data->p_whiteTexture;
+    return sp_data->p_whiteTexture;
 }
 
 ref<Texture> Renderer::getBlackTexture()
 {
-    return s_data->p_blackTexture;
+    return sp_data->p_blackTexture;
 }
 
 void Renderer::s_render(ref<Shader> p_shader, ref<VertexArray> p_vertexArray, i32_t vertexCount, bool setViewProjection)
@@ -204,7 +204,7 @@ void Renderer::s_render(ref<Shader> p_shader, ref<VertexArray> p_vertexArray, i3
 
     if (setViewProjection)
     {
-        p_shader->setMat4("u_viewProjection", s_data->vpMatrix);
+        p_shader->setMat4("u_viewProjection", sp_data->vpMatrix);
     }
 
     // do we have an index buffer?
@@ -246,7 +246,7 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        p_shader->setMat4("u_viewProjection", s_data->vpMatrix);
+        p_shader->setMat4("u_viewProjection", sp_data->vpMatrix);
     }
 
     // do we have an index buffer?
@@ -281,30 +281,30 @@ void Renderer::s_renderInstanced(const ref<Shader>&      p_shader,
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RenderCmdQ* Renderer::_s_getSubmitRenderCmdQ()
 {
-    return s_data->renderCmdQ[s_data->submitRenderCmdQIdx];
+    return sp_data->renderCmdQ[sp_data->submitRenderCmdQIdx];
 }
 RenderCmdQ* Renderer::_s_getProcessRenderCmdQ()
 {
-    return s_data->renderCmdQ[s_data->processRenderCmdQIdx];
+    return sp_data->renderCmdQ[sp_data->processRenderCmdQIdx];
 }
 
 RenderCmdQ* Renderer::_s_getSubmitObjectCmdQ()
 {
-    return s_data->objectCmdQ[s_data->submitRenderCmdQIdx];
+    return sp_data->objectCmdQ[sp_data->submitRenderCmdQIdx];
 }
 RenderCmdQ* Renderer::_s_getProcessObjectCmdQ()
 {
-    return s_data->objectCmdQ[s_data->processRenderCmdQIdx];
+    return sp_data->objectCmdQ[sp_data->processRenderCmdQIdx];
 }
 
 void Renderer::_s_qSwap()
 // Private Functions
 {
-    s_data->submitRenderCmdQIdx  = (s_data->submitRenderCmdQIdx + 1) % k_numRenderCmdQ;
-    s_data->processRenderCmdQIdx = (s_data->processRenderCmdQIdx + 1) % k_numRenderCmdQ;
+    sp_data->submitRenderCmdQIdx  = (sp_data->submitRenderCmdQIdx + 1) % k_numRenderCmdQ;
+    sp_data->processRenderCmdQIdx = (sp_data->processRenderCmdQIdx + 1) % k_numRenderCmdQ;
 
-    s_data->submitObjectCmdQIdx  = (s_data->submitObjectCmdQIdx + 1) % k_numObjectCmdQ;
-    s_data->processObjectCmdQIdx = (s_data->processObjectCmdQIdx + 1) % k_numObjectCmdQ;
+    sp_data->submitObjectCmdQIdx  = (sp_data->submitObjectCmdQIdx + 1) % k_numObjectCmdQ;
+    sp_data->processObjectCmdQIdx = (sp_data->processObjectCmdQIdx + 1) % k_numObjectCmdQ;
 }
 
 void Renderer::_s_renderThreadFn()
@@ -316,18 +316,18 @@ void Renderer::_s_renderThreadFn()
 
     auto processSw = Application::s_get().getSwBank().newSw("RenderThread Process");
 
-    while (s_data->renderThread.isActive())
+    while (sp_data->renderThread.isActive())
     {
         pendSw->split();
-        s_data->renderThread.waitForState(RenderThread::State::ready);
+        sp_data->renderThread.waitForState(RenderThread::State::ready);
         pendSw->splitAndSave();
 
         processSw->split();
 
-        s_data->renderThread.setState(RenderThread::State::busy);
+        sp_data->renderThread.setState(RenderThread::State::busy);
         // process all the commands in render queue
         _s_getProcessRenderCmdQ()->pump();
-        s_data->renderThread.setState(RenderThread::State::pend);
+        sp_data->renderThread.setState(RenderThread::State::pend);
         processSw->splitAndSave();
     }
 }
@@ -352,7 +352,7 @@ void Renderer::_s_submit(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        p_shader->setMat4("u_viewProjection", s_data->vpMatrix);
+        p_shader->setMat4("u_viewProjection", sp_data->vpMatrix);
     }
 
     // do we have an index buffer?
@@ -396,7 +396,7 @@ void Renderer::_s_submitInstanced(const ref<Shader>&      p_shader,
 
     if (setViewProjection)
     {
-        p_shader->setMat4("u_viewProjection", s_data->vpMatrix);
+        p_shader->setMat4("u_viewProjection", sp_data->vpMatrix);
     }
 
     // do we have an index buffer?

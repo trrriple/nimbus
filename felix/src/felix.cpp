@@ -10,6 +10,9 @@
 #include "panels/sceneControlPanel.hpp"
 #include "panels/sceneHierarchyPanel.hpp"
 #include "panels/renderStatsPanel.hpp"
+#include "panels/consolePanel.hpp"
+#include "panels/resourcePanel.hpp"
+
 
 #include <filesystem>
 
@@ -136,7 +139,8 @@ class FelixLayer : public Layer
     scope<SceneHeirarchyPanel> mp_sceneHierarchyPanel;
     scope<RenderStatsPanel>    mp_renderStatsPanel;
     scope<EditCameraMenuPanel> mp_editCameraMenuPanel;
-
+    scope<ConsolePanel>        mp_consolePanel;
+    scope<ResourcePanel>       mp_resourcePanel;
 
     ///////////////////////////
     // Flags for GUI events
@@ -185,6 +189,8 @@ class FelixLayer : public Layer
         mp_sceneHierarchyPanel = genScope<SceneHeirarchyPanel>(mp_scene);
         mp_renderStatsPanel    = genScope<RenderStatsPanel>();
         mp_editCameraMenuPanel = genScope<EditCameraMenuPanel>(mp_editCamera.raw());
+        mp_consolePanel        = genScope<ConsolePanel>();
+        mp_resourcePanel       = genScope<ResourcePanel>();
 
         mp_viewportPanel->setEntitySelectedCallback(
             std::bind(&FelixLayer::_onEntitySelected, this, std::placeholders::_1));
@@ -701,7 +707,6 @@ class FelixLayer : public Layer
 
     virtual void onGuiDraw(f32_t deltaTime) override
     {
-        
         //////////////////////////////////////////////////////
         // Need to set context in this because nimbus is DLL
         //////////////////////////////////////////////////////
@@ -849,6 +854,19 @@ class FelixLayer : public Layer
         ///////////////////////////
         mp_renderStatsPanel->onDraw(deltaTime);
 
+
+        ///////////////////////////
+        // Console
+        ///////////////////////////
+        mp_consolePanel->onDraw();
+
+
+        ///////////////////////////
+        // Resources
+        ///////////////////////////
+        mp_resourcePanel->onDraw();
+
+
         ImGui::End();  // dockspace
 
         if (mp_viewportPanel->wasResized())
@@ -877,7 +895,7 @@ class FelixLayer : public Layer
 class Felix : public Application
 {
    public:
-    Felix() : Application("Felix", 1920, 1080)
+    Felix() : Application("Felix", 2560, 1200)
     {
         Application::insertLayer(ref<FelixLayer>::gen());
     }
