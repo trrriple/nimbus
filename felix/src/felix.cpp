@@ -137,10 +137,6 @@ class FelixLayer : public Layer
     scope<RenderStatsPanel>    mp_renderStatsPanel;
     scope<EditCameraMenuPanel> mp_editCameraMenuPanel;
 
-    ///////////////////////////
-    // Scripting
-    ///////////////////////////
-    std::vector<std::string> m_scriptAssemblyTypeNames;
 
     ///////////////////////////
     // Flags for GUI events
@@ -431,14 +427,20 @@ class FelixLayer : public Layer
 
             // throw away old scene (should probably be in a new scene func)
             mp_scene = ref<Scene>::gen("Loading scene");
-            mp_sceneHierarchyPanel->setSceneContext(mp_scene);
-            mp_viewportPanel->setSceneContext(mp_scene);
-            ScriptEngine::s_setSceneContext(mp_scene);
 
             m_selectedEntity = {};
 
-            SceneSerializer ss = SceneSerializer(mp_scene);
-            ss.deserialize(filePath);
+            SceneSerializer ss     = SceneSerializer(mp_scene);
+            bool            result = ss.deserialize(filePath);
+
+            if(!result)
+            {
+                Log::coreError("Failed to deserialize scene %s", filePath.c_str());
+            }
+
+            mp_sceneHierarchyPanel->setSceneContext(mp_scene);
+            mp_viewportPanel->setSceneContext(mp_scene);
+            ScriptEngine::s_setSceneContext(mp_scene);
 
             m_openedScenePath = filePath;
         }
@@ -475,6 +477,16 @@ class FelixLayer : public Layer
     virtual void onEvent(Event& event) override
     {
         Event::Type eventType = event.getEventType();
+
+        if(eventType == Event::Type::quit)
+        {
+            if(m_sceneState == State::play)
+            {
+                mp_scene->onStopRuntime();
+                m_sceneState = State::stop;
+                return;
+            }
+        }
 
         // We only care about these events if we're paused
         if (m_sceneState == State::stop)
@@ -746,27 +758,6 @@ class FelixLayer : public Layer
                     _save(true);
                 }
 
-
-                if (ImGui::MenuItem("Get Script Types"))
-                {
-                    m_scriptAssemblyTypeNames = ScriptEngine::s_getScriptAssemblyTypes();
-
-                    for(auto& name : m_scriptAssemblyTypeNames)
-                    {
-                        Log::coreInfo("Available scriptEntity %s", name.c_str());
-                    }
-                }
-
-                if (ImGui::MenuItem("Unload Script Assembly"))
-                {
-                    ScriptEngine::s_unloadScriptAssembly();
-                }
-
-                if (ImGui::MenuItem("Load Script Assembly"))
-                {
-                    ScriptEngine::s_loadScriptAssembly();
-                }
-
                 if (ImGui::MenuItem("Exit"))
                 {
                     // Handle when 'Exit' is clicked
@@ -785,6 +776,32 @@ class FelixLayer : public Layer
                 if (ImGui::MenuItem("Redo", "Ctrl+Y"))
                 {
                     // Handle when 'Redo' is clicked
+                }
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Scene"))
+            {
+                if (ImGui::MenuItem("Set Scene Script Assembly"))
+                {
+                    auto selection
+                        = util::openFileDialog("Select Secipt Assembly", ".", {"Shared Library", "*.dll *.so"}, false);
+
+                    if (selection.size() != 0)
+                    {
+                        mp_scene->setScriptAssemblyPath(selection[0]);
+                    }
+                }
+            
+                if (ImGui::MenuItem("Load Script Assembly"))
+                {
+                    mp_scene->loadScriptAssembly();
+                }
+
+                if (ImGui::MenuItem("Unload Script Assembly"))
+                {
+                    mp_scene->unloadScriptAssembly();
                 }
 
                 ImGui::EndMenu();

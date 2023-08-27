@@ -152,6 +152,81 @@ void Scene::sortEntities()
     m_registry.sort<GuidCmp>([&](const auto lhs, const auto rhs) { return lhs.sequenceIndex < rhs.sequenceIndex; });
 }
 
+bool Scene::setScriptAssemblyPath(const std::filesystem::path& scriptAssemblyPath, bool load)
+{
+    std::filesystem::path relativePath;
+
+    if (scriptAssemblyPath.root_name() != std::filesystem::current_path().root_name())
+    {
+        // Paths are on different drives
+        relativePath = scriptAssemblyPath;
+    }
+    else
+    {
+        relativePath = std::filesystem::relative(scriptAssemblyPath);
+    }
+
+    m_scriptAssemblyPath = relativePath;
+
+    if (load)
+    {
+        return loadScriptAssembly();
+    }
+
+    return true;
+}
+
+bool Scene::loadScriptAssembly()
+{
+    // unload any previously loaded assembly
+    if(!unloadScriptAssembly())
+    {
+        return false;
+    }
+
+    if (!m_scriptAssemblyPath.empty())
+    {
+        if (ScriptEngine::s_loadScriptAssembly(m_scriptAssemblyPath))
+        {
+            m_scriptAssemblyTypeNames = ScriptEngine::s_getScriptAssemblyTypes();
+            m_scriptAsssemblyLoaded   = true;
+        }
+        else
+        {
+            Log::coreCritical("Scene `%s` failed to load scene Script Assembly %s",
+                              m_name.c_str(),
+                              m_scriptAssemblyPath.generic_string().c_str());
+            return false;
+        }
+    }
+    else
+    {
+        Log::coreError("Scene `%s` can't load script assembly, path not set!", m_name.c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool Scene::unloadScriptAssembly()
+{
+    if (m_scriptAsssemblyLoaded)
+    {
+        if (ScriptEngine::s_unloadScriptAssembly())
+        {
+            m_scriptAsssemblyLoaded = false;
+            return true;
+        }
+        else
+        {
+            Log::coreError("Scene `%s` failed to unload script assembly", m_name.c_str());
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void Scene::onStartRuntime()
 {
     //////////////////////////////////////////////////////
@@ -171,17 +246,30 @@ void Scene::onStartRuntime()
     //////////////////////////////////////////////////////
     // Initialize Scripts
     //////////////////////////////////////////////////////
-    m_registry.view<ScriptCmp>().each(
-        [=](auto entity, auto& sc)
-        {
-            // TODO verify this name is actually a valid one by checking the type list in felix
+    if (!m_scriptAsssemblyLoaded)
+    {
+        loadScriptAssembly();
+    }
 
-            if (!sc.scriptEntityName.empty())
+    if (m_scriptAsssemblyLoaded)
+    {
+        m_registry.view<ScriptCmp>().each(
+            [=](auto entity, auto& sc)
             {
-                sc.p_scriptInstance = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(sc.scriptEntityName,
-                                                                                           static_cast<u32_t>(entity));
-            }
-        });
+                if (!sc.scriptEntityName.empty())
+                {
+                    if (m_scriptAssemblyTypeNames.find(sc.scriptEntityName) != m_scriptAssemblyTypeNames.end())
+                    {
+                        sc.p_scriptInstance = ScriptEngine::s_createInstanceOfScriptAssemblyEntity(
+                            sc.scriptEntityName, static_cast<u32_t>(entity));
+                    }
+                    else
+                    {
+                        Log::coreWarn("%s not found in %s", sc.scriptEntityName.c_str(), m_scriptAssemblyPath.c_str());
+                    }
+                }
+            });
+    }
 
     //////////////////////////////////////////////////////
     // Initialize Particle Emitters
@@ -316,15 +404,18 @@ void Scene::onUpdateRuntime(f32_t deltaTime)
     //////////////////////////////////////////////////////
     // Update Scripts
     //////////////////////////////////////////////////////
-    m_registry.view<ScriptCmp>().each(
-        [=](auto entity, auto& sc)
-        {
-            NB_UNUSED(entity);
-            if(sc.p_scriptInstance)
+    if (m_scriptAsssemblyLoaded)
+    {
+        m_registry.view<ScriptCmp>().each(
+            [=](auto entity, auto& sc)
             {
-                sc.p_scriptInstance->onUpdate(deltaTime);
-            }
-        });
+                NB_UNUSED(entity);
+                if (sc.p_scriptInstance)
+                {
+                    sc.p_scriptInstance->onUpdate(deltaTime);
+                }
+            });
+    }
 
     // for all entities that have a transform, we want to update any
     // all child transforms accordingly

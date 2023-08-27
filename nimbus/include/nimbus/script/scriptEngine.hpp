@@ -3,7 +3,7 @@
 #include "nimbus/scene/scene.hpp"
 
 #include <string>
-#include <vector>
+#include <unordered_set>
 
 #if defined(NB_WINDOWS)
 #define SCRIPTENGINE_DELEGATE_CALLTYPE __stdcall
@@ -111,13 +111,13 @@ class NIMBUS_API ScriptEngine
 
     static void s_releaseHandle(ip_t* h);
 
-    static void s_loadScriptAssembly();
+    static bool s_loadScriptAssembly(const std::filesystem::path& assemblyPath);
 
-    static void s_unloadScriptAssembly();
+    static bool s_unloadScriptAssembly();
 
-    static void s_reloadScriptAssembly();
+    static bool s_reloadScriptAssembly(const std::filesystem::path& assemblyPath);
 
-    static std::vector<std::string> s_getScriptAssemblyTypes(const char* p_baseClassFilter = "Nimbus.Entity");
+    static std::unordered_set<std::string> s_getScriptAssemblyTypes(const char* p_baseClassFilter = "Nimbus.Entity");
 
     static ref<ScriptInstance> s_createInstanceOfScriptAssemblyEntity(const std::string& typeName,
                                                                       u32_t              nativeEntityId);

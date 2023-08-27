@@ -305,6 +305,7 @@ void SceneSerializer::serialize(const std::string& filepath)
 {
     toml::table sceneTbl;
     sceneTbl.insert("Scene", mp_scene->m_name);
+    sceneTbl.insert("scriptAssemblyPath", mp_scene->m_scriptAssemblyPath.generic_wstring());
     toml::table entitiesTbl;
 
     mp_scene->sortEntities();
@@ -683,6 +684,12 @@ bool SceneSerializer::deserialize(const std::string& filepath)
 
     Log::coreInfo("Deserialzing scene %s", sceneNm.value().c_str());
     mp_scene->m_name = sceneNm.value();
+
+    std::optional<std::wstring> sceneScriptAssemblyPath = sceneTbl["scriptAssemblyPath"].value<std::wstring>();
+    if (sceneScriptAssemblyPath)
+    {
+        mp_scene->setScriptAssemblyPath(sceneScriptAssemblyPath.value());
+    }
 
     auto entitiesTbl = sceneTbl["Entities"].as_table();
 

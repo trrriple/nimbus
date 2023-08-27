@@ -12,6 +12,23 @@ class SceneHeirarchyPanel
    public:
     typedef std::function<void(Entity)> EntitySelectedCallback_t;
 
+   private:
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Private Variables
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    Application*             mp_appRef;
+    Window*                  mp_appWinRef;
+    EntitySelectedCallback_t m_entitySelectedCallback;
+
+    ref<Texture> mp_checkerboardTex = nullptr;
+    ref<Scene>   mp_sceneContext;
+    Entity       m_selectionContext;
+
+    std::vector<std::string> m_scriptAssemblyTypeNames;
+
+    char m_scratch[1024];
+
+   public:
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Public Functions
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +37,7 @@ class SceneHeirarchyPanel
         mp_appRef    = &Application::s_get();
         mp_appWinRef = &mp_appRef->getWindow();
 
-        mp_sceneContext = p_scene;
+        setSceneContext(p_scene);
 
         mp_checkerboardTex = Application::s_get().getResourceManager().loadTexture(
             Texture::Type::diffuse, "../resources/textures/checkerboard.png");
@@ -38,6 +55,12 @@ class SceneHeirarchyPanel
     {
         mp_sceneContext    = p_scene;
         m_selectionContext = {};
+
+        std::copy(mp_sceneContext->m_scriptAssemblyTypeNames.begin(),
+                  mp_sceneContext->m_scriptAssemblyTypeNames.end(),
+                  std::back_inserter(m_scriptAssemblyTypeNames));
+
+        std::sort(m_scriptAssemblyTypeNames.begin(), m_scriptAssemblyTypeNames.end());
     }
 
     void onDraw(Entity selectedEntity)
@@ -111,13 +134,13 @@ class SceneHeirarchyPanel
         }
 
         auto view  = mp_sceneContext->m_registry.view<GuidCmp>();
-        int  count = view.size();
+        i32_t  count = view.size();
 
         std::vector<Entity> passedFilterEntities;
         passedFilterEntities.reserve(count);
 
-        int selectedIdx = -1;
-        for (int i = 0; i < count; i++)
+        i32_t selectedIdx = -1;
+        for (i32_t i = 0; i < count; i++)
         {
             auto   entityHandle = view[i];
             Entity entity       = {entityHandle, mp_sceneContext.raw()};
@@ -154,7 +177,7 @@ class SceneHeirarchyPanel
         }
         while (clipper.Step())
         {
-            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+            for (i32_t i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
             {
                 Entity& entity = passedFilterEntities[i];
 
@@ -206,18 +229,6 @@ class SceneHeirarchyPanel
     }
 
    private:
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Private Variables
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    Application*             mp_appRef;
-    Window*                  mp_appWinRef;
-    EntitySelectedCallback_t m_entitySelectedCallback;
-
-    ref<Texture> mp_checkerboardTex = nullptr;
-    ref<Scene>   mp_sceneContext;
-    Entity       m_selectionContext;
-
-    char m_scratch[1024];
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private Functions
@@ -395,9 +406,55 @@ class SceneHeirarchyPanel
 
         strncpy_s(m_scratch, sc.scriptEntityName.c_str(), sc.scriptEntityName.length());
 
-        if (ImGui::InputText("Script Entity", m_scratch, sizeof(m_scratch)))
+        ImGui::InputText("Script Entity", m_scratch, sizeof(m_scratch), ImGuiInputTextFlags_ReadOnly);
+
+        if (ImGui::BeginPopupContextItem("##AvailableScriptEntities", 0))
         {
-            sc.scriptEntityName = std::string(m_scratch);
+            // draw prompt title
+            float windowWidth = ImGui::GetWindowSize().x;
+            const char* text = "Select Script Entity";
+            ImVec2 textSize = ImGui::CalcTextSize(text);
+            float centeredX = (windowWidth - textSize.x) * 0.5f;
+            ImGui::SetCursorPosX(centeredX);
+            ImGui::TextUnformatted(text);
+
+            // Text box for filtering
+            static ImGuiTextFilter filter;
+            filter.Draw(ICON_FA_FILTER);
+
+            // do the filtering
+            std::vector<i32_t> passedFilterNames;
+            passedFilterNames.reserve(m_scriptAssemblyTypeNames.size());
+
+            for (i32_t i = 0; i < static_cast<i32_t>(m_scriptAssemblyTypeNames.size()); i++)
+            {
+                if (filter.PassFilter(m_scriptAssemblyTypeNames[i].c_str()))
+                {
+                    passedFilterNames.push_back(i);
+                }
+            }
+
+            // draw the filtered values efficiently
+            ImGui::Separator();
+            ImGui::BeginChild("##ScriptScrollRegion", {0, 200});
+            ImGuiListClipper clipper;
+            clipper.Begin(passedFilterNames.size());
+            while (clipper.Step())
+            {
+                for (i32_t i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+                {
+                    std::string& value = m_scriptAssemblyTypeNames[passedFilterNames[i]];
+
+                    if (ImGui::Selectable(value.c_str()))
+                    {
+                        sc.scriptEntityName = value;
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+            }
+
+            ImGui::EndChild();
+            ImGui::EndPopup();
         }
     }
 
@@ -601,7 +658,7 @@ class SceneHeirarchyPanel
                         "..",
                         "...",
                     };
-                    ImGui::Text("Generating Font Atlas%s", anim[(int)(ImGui::GetTime() / 0.25f) & 3].c_str());
+                    ImGui::Text("Generating Font Atlas%s", anim[(i32_t)(ImGui::GetTime() / 0.25f) & 3].c_str());
                 }
             }
 
@@ -637,12 +694,12 @@ class SceneHeirarchyPanel
         {
             ImGui::Indent();
 
-            ImGui::DragInt("Quantity", (int*)&pc.numParticles, 25.0f, 1, 1000000);
+            ImGui::DragInt("Quantity", (i32_t*)&pc.numParticles, 25.0f, 1, 1000000);
 
             ImGui::SeparatorText("Spawn Volume");
             const char* spawnTypes[] = {"Point", "Circle", "Rectangle", "Line"};
 
-            ImGui::Combo("Type", (int*)&pc.parameters.spawnVolumeType, spawnTypes, IM_ARRAYSIZE(spawnTypes));
+            ImGui::Combo("Type", (i32_t*)&pc.parameters.spawnVolumeType, spawnTypes, IM_ARRAYSIZE(spawnTypes));
 
             if (pc.parameters.spawnVolumeType == ParticleEmitter::SpawnVolumeType::point)
             {
@@ -815,7 +872,7 @@ class SceneHeirarchyPanel
                                        "Alpha Premultiplied",
                                        "Source Alpha"};
 
-            if (ImGui::Combo("Blending", (int*)&pc.parameters.blendingMode, blendType, IM_ARRAYSIZE(blendType)))
+            if (ImGui::Combo("Blending", (i32_t*)&pc.parameters.blendingMode, blendType, IM_ARRAYSIZE(blendType)))
             {
                 if (isRuntime)
                 {
@@ -957,7 +1014,7 @@ class SceneHeirarchyPanel
         {
             const char* bodyTypes[] = {"Static", "Kinematic", "Dynamic"};
 
-            int currentType = static_cast<int>(rbc.spec.type);
+            i32_t currentType = static_cast<i32_t>(rbc.spec.type);
             if (ImGui::Combo("Type", &currentType, bodyTypes, IM_ARRAYSIZE(bodyTypes)))
             {
                 if (currentType == 0)
@@ -992,7 +1049,7 @@ class SceneHeirarchyPanel
         {
             const char* shapeTypes[] = {"None", "Rectangle", "Circle"};
 
-            int currentType = 0;
+            i32_t currentType = 0;
 
             if (rbc.fixSpec.shape != nullptr)
             {
@@ -1048,7 +1105,7 @@ class SceneHeirarchyPanel
 
         const char* cameraTypes[] = {"Orthographic", "Perspective"};
 
-        int currentType = static_cast<int>(cameraCmp.camera.getType());
+        i32_t currentType = static_cast<i32_t>(cameraCmp.camera.getType());
         if (ImGui::Combo("Type", &currentType, cameraTypes, IM_ARRAYSIZE(cameraTypes)))
         {
             if (currentType == 0)

@@ -82,15 +82,82 @@ public class ExampleCamera : Entity
     public ExampleCamera(uint nativeEntityId) : base(nativeEntityId)
     {
     }
+}
 
-    protected override void OnCreate()
+
+public class Placeholder0 : Entity
+{
+    public Placeholder0(uint nativeEntityId) : base(nativeEntityId)
     {
-
     }
+}
 
-    protected override void OnUpdate(float deltaTime)
+public class Placeholder1 : Entity
+{
+    public Placeholder1(uint nativeEntityId) : base(nativeEntityId)
     {
-        IC.Log.Info($"On update @ {deltaTime}");
     }
+}
 
+public class Placeholder2 : Entity
+{
+    public Placeholder2(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+}
+
+public class Placeholder3 : Entity
+{
+    public Placeholder3(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+}
+
+public class Placeholder4 : Entity
+{
+    public Placeholder4(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+}
+
+public class Placeholder5 : Entity
+{
+    public Placeholder5(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+}
+
+public class Placeholder6 : Entity
+{
+    public Placeholder6(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+}
+
+public class Placeholder7 : Entity
+{
+    public Placeholder7(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+}
+
+public class Placeholder8 : Entity
+{
+    public Placeholder8(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+}
+
+public class Placeholder9 : Entity
+{
+    public Placeholder9(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
+}
+
+public class Placeholder10 : Entity
+{
+    public Placeholder10(uint nativeEntityId) : base(nativeEntityId)
+    {
+    }
 }

@@ -43,6 +43,11 @@ struct ScriptEngineInternalData
     // Map of known functions
     //////////////////////////////////////////////////////
     std::unordered_map<std::wstring, fp_t> m_managedMethodCache;
+
+    //////////////////////////////////////////////////////
+    // State
+    //////////////////////////////////////////////////////
+    bool scriptAssemblyLoaded = false;
 };
 
 ScriptEngineInternalData* ScriptEngine::s_data;
@@ -156,8 +161,7 @@ void ScriptEngine::s_init(const std::string& installPath)
             s_data->mp_closeFptr(handle);
 
             // call init inside managed code
-            // TODO path
-            s_invokeManagedMethodByName<void, const char*>(STR("InitializeScriptCore"), "somePath");
+            s_invokeManagedMethodByName<void>(STR("InitializeScriptCore"));
 
             // print some info to verify all is in order
             ip_t*       p_runtimeInfo  = s_invokeManagedMethodByName<ip_t*>(STR("GetRuntimeInformation"));
@@ -236,28 +240,50 @@ void ScriptEngine::s_releaseHandle(ip_t* h)
     s_invokeManagedMethod<void, ip_t*>(p_fn, h);
 }
 
-void ScriptEngine::s_loadScriptAssembly()
+bool ScriptEngine::s_loadScriptAssembly(const std::filesystem::path& assemblyPath)
 {
     static fp_t p_fn = s_getStaticMethodPtr(STR("LoadScriptAssembly"));
 
-    s_invokeManagedMethod<void>(p_fn);
+    std::filesystem::path fullScriptAssemblyPath = std::filesystem::absolute(assemblyPath);
+
+    if (!std::filesystem::exists(fullScriptAssemblyPath))
+    {
+        Log::coreError("Script assembly %s not found!", fullScriptAssemblyPath.generic_string().c_str());
+        return false;
+    }
+
+    std::string scriptAssemblyPathStr = fullScriptAssemblyPath.generic_string();
+
+    s_data->scriptAssemblyLoaded = s_invokeManagedMethod<bool, const char*>(p_fn, scriptAssemblyPathStr.c_str());
+
+    return s_data->scriptAssemblyLoaded;
 }
 
-void ScriptEngine::s_unloadScriptAssembly()
+bool ScriptEngine::s_unloadScriptAssembly()
 {
     static fp_t p_fn = s_getStaticMethodPtr(STR("UnloadScriptAssembly"));
 
-    s_invokeManagedMethod<void>(p_fn);
+    if (s_data->scriptAssemblyLoaded)
+    {
+        s_data->scriptAssemblyLoaded = !s_invokeManagedMethod<bool>(p_fn);
+    }
+
+    return !s_data->scriptAssemblyLoaded;
 }
 
-void ScriptEngine::s_reloadScriptAssembly()
+bool ScriptEngine::s_reloadScriptAssembly(const std::filesystem::path& assemblyPath)
 {
-    static fp_t p_fn = s_getStaticMethodPtr(STR("ReloadScriptAssembly"));
-
-    s_invokeManagedMethod<void>(p_fn);
+    if (s_unloadScriptAssembly())
+    {
+        return s_loadScriptAssembly(assemblyPath);
+    }
+    else
+    {
+        return false;
+    }
 }
 
-std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_baseClassFilter)
+std::unordered_set<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_baseClassFilter)
 {
     static fp_t p_fn = s_getStaticMethodPtr(STR("GetScriptAssemblyTypes"));
 
@@ -265,17 +291,14 @@ std::vector<std::string> ScriptEngine::s_getScriptAssemblyTypes(const char* p_ba
 
     ip_t* p_scriptEntityNames = s_invokeManagedMethod<ip_t*, const char*, i32_t*>(p_fn, p_baseClassFilter, &count);
 
-    Log::info("Got %i entities", count);
-
-    std::vector<std::string> typeNames;
-    typeNames.reserve(count);
+    std::unordered_set<std::string> typeNames;
 
     for (i32_t i = 0; i < count; i++)
     {
         ip_t*       p_string = *(ip_t**)(p_scriptEntityNames + i);
         const char* p_name   = (const char*)p_string;
 
-        typeNames.push_back(p_name);
+        typeNames.insert(p_name);
         s_freeMemory(p_string);
     }
 

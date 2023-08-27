@@ -114,19 +114,19 @@ char* readFileAsBytes(const std::string& filepath, u32_t* outSize)
     return buffer;
 }
 
-std::string getExecutablePath()
+std::filesystem::path getExecutablePath()
 {
 #if defined(NB_WINDOWS)
     char buffer[MAX_PATH];
     GetModuleFileName(nullptr, buffer, MAX_PATH);
-    return std::filesystem::path(buffer).generic_string();
+    return std::filesystem::path(buffer);
 #elif defined(NB_LINUX)
     char    buffer[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
     if (len != -1)
     {
         buffer[len] = '\0';
-        return std::filesystem::path(buffer).generic_string();
+        return std::filesystem::path(buffer)
     }
 #endif
     return "";

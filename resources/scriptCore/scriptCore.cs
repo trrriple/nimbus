@@ -16,18 +16,17 @@ public unsafe class ScriptCore
     internal static WeakReference? scriptAlcWeakRef;
     internal static AssemblyLoadContext? scriptAlc;
     internal static Assembly? scriptAssembly;
-    internal static int callCount = 0;
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Purely Internal Functions (Managed)
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    internal static void IntUnloadScriptAssembly()
+    internal static bool IntUnloadScriptAssembly()
     {
         if (scriptAlc is null)
         {
             IC.Log.CoreError("Can't unload script assembly when it isn't loaded!");
-            return;
+            return false;
         }
         else
         {
@@ -51,6 +50,7 @@ public unsafe class ScriptCore
 
         }
         IC.Log.CoreInfo("Unloaded script Assembly");
+        return true;
     }
 
 
@@ -71,13 +71,12 @@ public unsafe class ScriptCore
     //     }
     // }
 
-    internal static void IntLoadScriptAssembly()
+    internal static bool IntLoadScriptAssembly(string assemblyPath)
     {
         // todo custom resolver for caching
-        string relativePath = "../../scripts/bin/scripts.dll"; // The relative path to the assembly
-        string executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
-        string directory = Path.GetDirectoryName(executingAssemblyLocation)!;
-        string assemblyPath = Path.Combine(directory, relativePath);
+        // string executingAssemblyLocation = Assembly.GetExecutingAssembly().Location;
+        // string directory = Path.GetDirectoryName(executingAssemblyLocation)!;
+        // string assemblyPath = Path.Combine(directory, relativePath);
 
         scriptAlc = new AssemblyLoadContext(assemblyPath, true);
         scriptAlcWeakRef = new WeakReference(scriptAlc, trackResurrection: true);
@@ -86,16 +85,16 @@ public unsafe class ScriptCore
 
         if (scriptAssembly is null)
         {
-            IC.Log.CoreError("Failed to get assembly!");
-            return;
+            IC.Log.CoreError($"Failed to load assembly {assemblyPath}");
+            return false;
 
         }
 
         // TODO
         // scriptAlc.Resolving += OnScriptinglcResolving;
 
-        IC.Log.CoreInfo($"Loaded script Assembly {callCount}");
-        callCount++;
+        IC.Log.CoreInfo($"Loaded script Assembly {assemblyPath}");
+        return true;
     }
 
     internal static List<string> IntReflectOnScriptAssembly(Type? baseType)
@@ -114,17 +113,7 @@ public unsafe class ScriptCore
             if (!type.IsClass || (baseType != null && !type.IsSubclassOf(baseType)))
                 continue;
 
-            IC.Log.CoreInfo($"Type: {type.FullName}");
-
             typeNames.Add(type.FullName!);
-
-
-            // // Iterate through all methods in the type
-            // foreach (MethodInfo method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic
-            //             | BindingFlags.Instance | BindingFlags.Static))
-            // {
-            //     IC.Log.CoreInfo($"  Method: {method.Name}");
-            // }
         }
 
         return typeNames;
@@ -183,30 +172,25 @@ public unsafe class ScriptCore
     }
 
     [UnmanagedCallersOnly]
-    internal static void InitializeScriptCore(IntPtr p_pathToLib)
+    internal static void InitializeScriptCore()
     {
-        // TODO remove hardcode
+        // TODO nothing yet?
+        IC.Log.CoreInfo("ScriptCore Initialized");
+    }
+
+    [UnmanagedCallersOnly]
+    [return: MarshalAs(UnmanagedType.I1)]
+    internal static bool LoadScriptAssembly(IntPtr p_pathToLib)
+    {
         string pathToLib = Marshal.PtrToStringAnsi(p_pathToLib)!; // Assuming ANSI encoding
-        IntLoadScriptAssembly();
+        return IntLoadScriptAssembly(pathToLib);
     }
 
     [UnmanagedCallersOnly]
-    internal static void LoadScriptAssembly()
+    [return: MarshalAs(UnmanagedType.I1)]
+    internal static bool UnloadScriptAssembly()
     {
-        IntLoadScriptAssembly();
-    }
-
-    [UnmanagedCallersOnly]
-    internal static void UnloadScriptAssembly()
-    {
-        IntUnloadScriptAssembly();
-    }
-
-    [UnmanagedCallersOnly]
-    internal static void ReloadScriptAssembly()
-    {
-        IntUnloadScriptAssembly();
-        IntLoadScriptAssembly();
+        return IntUnloadScriptAssembly();
     }
 
     [UnmanagedCallersOnly]
@@ -247,7 +231,7 @@ public unsafe class ScriptCore
     {
         if (scriptAssembly is null)
         {
-            IC.Log.CoreError("Can't get type from unloaded script assembly!!");
+            IC.Log.CoreError("Can't get type from unloaded script assembly!");
             return IntPtr.Zero;
         }
 

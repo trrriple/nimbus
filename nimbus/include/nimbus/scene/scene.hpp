@@ -7,6 +7,8 @@
 #define ENTT_NOEXCEPTION
 #include "entt/entity/registry.hpp"
 
+#include <unordered_set>
+
 namespace nimbus
 {
 
@@ -23,7 +25,12 @@ class NIMBUS_API Scene : public refCounted
     Entity addChildEntity(Entity parentEntity, const std::string& name = std::string());
 
     void removeEntity(Entity entity, bool removeChildren = false);
+    
     void sortEntities();
+
+    bool setScriptAssemblyPath(const std::filesystem::path& scriptAssemblyPath, bool load = true);
+    bool loadScriptAssembly();
+    bool unloadScriptAssembly();
 
     void onStartRuntime();
     void onUpdateRuntime(f32_t deltaTime);
@@ -31,6 +38,7 @@ class NIMBUS_API Scene : public refCounted
     void onStopRuntime();
 
     void onResize(u32_t width, u32_t height);
+    
 
     template <typename Fn>
     void submitPostUpdateFunc(Fn&& func)
@@ -39,10 +47,13 @@ class NIMBUS_API Scene : public refCounted
     }
 
    private:
-    entt::registry m_registry;
-    f32_t          m_aspectRatio;
-    std::string    m_name;
-    u32_t          m_genesisIndex = 0;
+    entt::registry                  m_registry;
+    f32_t                           m_aspectRatio;
+    std::string                     m_name;
+    u32_t                           m_genesisIndex          = 0;
+    std::filesystem::path           m_scriptAssemblyPath;
+    bool                            m_scriptAsssemblyLoaded = false;
+    std::unordered_set<std::string> m_scriptAssemblyTypeNames;
 
     ///////////////////////////
     // 2D Physics World

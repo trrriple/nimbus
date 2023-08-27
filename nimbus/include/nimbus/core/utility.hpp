@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
 namespace nimbus::util
 {
@@ -40,7 +41,7 @@ NIMBUS_API std::string saveFileDialog(const std::string&              prompt    
 
 NIMBUS_API char* readFileAsBytes(const std::string& filepath, u32_t* outSize);
 
-NIMBUS_API std::string getExecutablePath();
+NIMBUS_API std::filesystem::path getExecutablePath();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Util classes
