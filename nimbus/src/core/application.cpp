@@ -25,10 +25,11 @@ Application::Application(const std::string& name, u32_t windowWidth, u32_t windo
 {
     NB_CORE_ASSERT(!sp_instance, "Application should only be created once!\n");
 
+    Log::s_init();
+
     sp_instance = this;
 
     mp_window = genScope<Window>(m_name, windowWidth, windowHeight);
-    Log::s_init();
 
     Log::coreInfo("------------------------------------------");
     Log::coreInfo("----- Nimbus Engine Application Init -----");

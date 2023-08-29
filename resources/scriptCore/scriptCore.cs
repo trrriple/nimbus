@@ -178,6 +178,39 @@ public unsafe class ScriptCore
         IC.Log.CoreInfo("ScriptCore Initialized");
     }
 
+
+    [UnmanagedCallersOnly]
+    internal static IntPtr GetTypeHandle(IntPtr p_typeName)
+    {
+
+        if (p_typeName != IntPtr.Zero)
+        {
+            string typeName = Marshal.PtrToStringAnsi(p_typeName)!; // Assuming ANSI encoding
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            Type? type = assembly.GetTypes().FirstOrDefault(t => t.FullName == typeName);
+
+            if (type != null)
+            {
+                return type.TypeHandle.Value;
+            }
+            else
+            {
+                IC.Log.CoreError($"Could not find {typeName} in assembly!");
+
+                return IntPtr.Zero;
+            }
+        }
+        else
+        {
+            IC.Log.CoreError("p_typeName is null!");
+            return IntPtr.Zero;
+        }
+
+    }
+
+
     [UnmanagedCallersOnly]
     [return: MarshalAs(UnmanagedType.I1)]
     internal static bool LoadScriptAssembly(IntPtr p_pathToLib)

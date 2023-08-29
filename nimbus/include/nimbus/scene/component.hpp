@@ -34,7 +34,7 @@ struct GuidCmp
         guid = Guid(guidStr);
     }
 
-    GuidCmp() = delete;
+    GuidCmp() = default;
 };
 
 struct NameCmp

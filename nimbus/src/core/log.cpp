@@ -6,10 +6,6 @@
 #include <cstdarg>
 #include <fstream>
 
-#ifndef NIMBUS_NO_CONSOLE
-#include "SDL_log.h"
-#endif /* NIMBUS_NO_CONSOLE */
-
 namespace nimbus
 {
 
@@ -36,8 +32,6 @@ LogInternalData* Log::sp_data;
 void Log::s_init()
 {
     sp_data = new LogInternalData();
-
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
 
     sp_data->logData.msgs.resize(sp_data->logHistory);
 

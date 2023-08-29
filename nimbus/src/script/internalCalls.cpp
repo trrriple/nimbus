@@ -14,27 +14,101 @@
 #undef _CRT_SECURE_NO_WARNINGS
 #include "nimbus.hpp"
 
+#include <unordered_map>
+
 namespace nimbus
 {
 
 //////////////////////////////////////////////////////
 // These won't change for lifetime of program
 //////////////////////////////////////////////////////
-static Application* gp_appRef    = nullptr;
-static Window*      gp_appWinRef = nullptr;
+static Application*                                           gp_appRef    = nullptr;
+static Window*                                                gp_appWinRef = nullptr;
+static std::unordered_map<ip_t, std::function<bool(Entity&)>> s_hasComponentFuncs;
+static std::unordered_map<ip_t, std::function<void(Entity&)>> s_createComponentFuncs;
+static std::unordered_map<ip_t, std::function<void(Entity&)>> s_removeComponentFuncs;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helpers
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static inline Entity getEntity(u32_t entityId)
+{
+    return Entity(entityId, ScriptEngine::s_getSceneContext().raw());
+}
+
+std::string convertToCSharpNamespace(const std::string& cppNamespace)
+{
+    std::string        result;
+    std::istringstream iss(cppNamespace);
+    std::string        word;
+
+    while (std::getline(iss, word, ':'))
+    {
+        // Skip single colons (since C++ uses :: as a separator)
+        if (word.empty())
+            continue;
+
+        if (!word.empty())
+        {
+            word[0] = std::toupper(word[0]);
+        }
+
+        result += word;
+        if (!iss.eof())
+        {
+            result += '.';
+        }
+    }
+
+    // Remove trailing dot, if present
+    if (!result.empty() && result.back() == '.')
+    {
+        result.pop_back();
+    }
+
+    return result;
+}
+
+template <typename T>
+void registerComponentType()
+{
+    std::string typeNameWithNameSpace(util::getTypeName<T>());
+
+    std::string typeNameCSharp = convertToCSharpNamespace(typeNameWithNameSpace);
+
+    ip_t typeHandle
+        = ScriptEngine::s_invokeManagedMethodByName<ip_t, const char*>(L"GetTypeHandle", typeNameCSharp.c_str());
+
+    NB_CORE_ASSERT_STATIC(typeHandle != 0, "Didn't find %s in scriptCore Assembly!", typeNameCSharp.c_str());
+
+    s_hasComponentFuncs[typeHandle]    = [](Entity& entity) { return entity.hasComponent<T>(); };
+    s_createComponentFuncs[typeHandle] = [](Entity& entity) { entity.addComponent<T>(); };
+    s_removeComponentFuncs[typeHandle] = [](Entity& entity) { entity.removeComponent<T>(); };
+}
+
 void internalCallsInit()
 {
     gp_appRef    = &Application::s_get();
     gp_appWinRef = &gp_appRef->getWindow();
+
+    registerComponentType<GuidCmp>();
+    registerComponentType<NameCmp>();
+    registerComponentType<AncestryCmp>();
+    registerComponentType<ScriptCmp>();
+    registerComponentType<NativeLogicCmp>();
+    registerComponentType<TransformCmp>();
+    registerComponentType<SpriteCmp>();
+    registerComponentType<TextCmp>();
+    registerComponentType<ParticleEmitterCmp>();
+    registerComponentType<RigidBody2DCmp>();
+    registerComponentType<CameraCmp>();
 }
 
-static inline Entity getEntity(u32_t entityId)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Components
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+INTERNAL_CALL bool ic_hasComponent(u32_t entityId)
 {
-    return Entity(entityId, ScriptEngine::s_getSceneContext().raw());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
