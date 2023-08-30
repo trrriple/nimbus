@@ -102,6 +102,6 @@ class NIMBUS_API Log
    private:
     static LogInternalData* sp_data;
 
-    static LogMessage* _s_getSlot();
+    static LogMessage* _s_getSlot(u32_t& idx);
 };
 }  // namespace nimbus

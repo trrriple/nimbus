@@ -73,10 +73,10 @@ Application::~Application()
     // destructors
     Renderer::s_destroy();
 
-    Log::s_destroy();
-
     // this will blow away our window and context
     mp_window.reset();
+
+    Log::s_destroy();
 }
 
 void Application::shouldQuit(Event& event)
