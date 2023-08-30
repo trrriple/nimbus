@@ -310,6 +310,19 @@ void Scene::onStartRuntime()
                 rbc.p_body->addFixture(rbc.fixSpec, tc.world);
             }
         });
+
+    //////////////////////////////////////////////////////
+    // Ensure correct aspect ratios on cameras
+    //////////////////////////////////////////////////////
+    m_registry.view<CameraCmp>().each(
+        [=](auto entity, auto& cc)
+        {
+            NB_UNUSED(entity);
+            if (!cc.fixedAspect)
+            {
+                cc.camera.setAspectRatio(m_aspectRatio);
+            }
+        });
 }
 
 void Scene::onStopRuntime()

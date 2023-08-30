@@ -444,6 +444,7 @@ class FelixLayer : public Layer
                 Log::coreError("Failed to deserialize scene %s", filePath.c_str());
             }
 
+            mp_scene->onResize(m_viewportSize.x, m_viewportSize.y);
             mp_sceneHierarchyPanel->setSceneContext(mp_scene);
             mp_viewportPanel->setSceneContext(mp_scene);
             ScriptEngine::s_setSceneContext(mp_scene);
