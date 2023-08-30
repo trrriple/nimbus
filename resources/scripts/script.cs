@@ -19,6 +19,20 @@ public class ExamplePlayer : Entity
     protected override void OnCreate()
     {
         IC.Log.Info("Created ExamplePlayer!");
+
+        bool hasTc = HasComponent<TransformCmp>();
+        bool hasTxC = HasComponent<TextCmp>();
+
+        IC.Log.Info($"Has TransformCmp {hasTc}, has TextCmp {hasTxC}");
+
+        AddComponent<TextCmp>();
+
+        hasTxC = HasComponent<TextCmp>();
+
+        IC.Log.Info($"Has TransformCmp {hasTc}, has TextCmp {hasTxC}");
+
+
+
     }
 
     protected override void OnUpdate(float deltaTime)
@@ -33,8 +47,8 @@ public class ExamplePlayer : Entity
         // InternalCalls.SetLocalRotation(nativeEntityId, ref rotation);
         // InternalCalls.SetLocalScale(nativeEntityId, ref scale);
 
-        Vec3 translation = IC.Transform.GetWorldTranslation(nativeEntityId);
-        Vec3 rotation = IC.Transform.GetWorldRotation(nativeEntityId);
+        Vec3 translation = IC.Transform.GetWorldTranslation(m_nativeEntityId);
+        Vec3 rotation = IC.Transform.GetWorldRotation(m_nativeEntityId);
 
 
         if(IC.Input.KeyDown(ScanCode.d))
@@ -64,8 +78,8 @@ public class ExamplePlayer : Entity
         }
 
 
-        IC.Transform.SetLocalTranslation(nativeEntityId, ref translation);
-        IC.Transform.SetLocalRotation(nativeEntityId, ref rotation);
+        IC.Transform.SetLocalTranslation(m_nativeEntityId, ref translation);
+        IC.Transform.SetLocalRotation(m_nativeEntityId, ref rotation);
 
 
     }

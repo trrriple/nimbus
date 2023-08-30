@@ -15,6 +15,15 @@ public unsafe partial class InternalCalls
         [return: MarshalAs(UnmanagedType.I1)]
         public static partial bool HasComponent(uint entityId, IntPtr typeHandle);
 
+        [LibraryImport("nimbus", EntryPoint = "ic_addComponent")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static partial bool AddComponent(uint entityId, IntPtr typeHandle);
+
+        [LibraryImport("nimbus", EntryPoint = "ic_removeComponent")]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static partial bool RemoveComponent(uint entityId, IntPtr typeHandle);
+
+
     }
 
     public unsafe partial class Log

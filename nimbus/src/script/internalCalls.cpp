@@ -25,7 +25,7 @@ namespace nimbus
 static Application*                                           gp_appRef    = nullptr;
 static Window*                                                gp_appWinRef = nullptr;
 static std::unordered_map<ip_t, std::function<bool(Entity&)>> s_hasComponentFuncs;
-static std::unordered_map<ip_t, std::function<void(Entity&)>> s_createComponentFuncs;
+static std::unordered_map<ip_t, std::function<void(Entity&)>> s_addComponentFuncs;
 static std::unordered_map<ip_t, std::function<void(Entity&)>> s_removeComponentFuncs;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ static inline Entity getEntity(u32_t entityId)
     return Entity(entityId, ScriptEngine::s_getSceneContext().raw());
 }
 
-std::string convertToCSharpNamespace(const std::string& cppNamespace)
+std::string convertToCSharpType(const std::string& cppNamespace)
 {
     std::string        result;
     std::istringstream iss(cppNamespace);
@@ -74,7 +74,7 @@ void registerComponentType()
 {
     std::string typeNameWithNameSpace(util::getTypeName<T>());
 
-    std::string typeNameCSharp = convertToCSharpNamespace(typeNameWithNameSpace);
+    std::string typeNameCSharp = convertToCSharpType(typeNameWithNameSpace);
 
     ip_t typeHandle
         = ScriptEngine::s_invokeManagedMethodByName<ip_t, const char*>(L"GetTypeHandle", typeNameCSharp.c_str());
@@ -82,7 +82,7 @@ void registerComponentType()
     NB_CORE_ASSERT_STATIC(typeHandle != 0, "Didn't find %s in scriptCore Assembly!", typeNameCSharp.c_str());
 
     s_hasComponentFuncs[typeHandle]    = [](Entity& entity) { return entity.hasComponent<T>(); };
-    s_createComponentFuncs[typeHandle] = [](Entity& entity) { entity.addComponent<T>(); };
+    s_addComponentFuncs[typeHandle] = [](Entity& entity) { entity.addComponent<T>(); };
     s_removeComponentFuncs[typeHandle] = [](Entity& entity) { entity.removeComponent<T>(); };
 }
 
@@ -107,8 +107,60 @@ void internalCallsInit()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Components
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-INTERNAL_CALL bool ic_hasComponent(u32_t entityId)
+INTERNAL_CALL bool ic_hasComponent(u32_t entityId, ip_t typeHandle)
 {
+    Entity entity = getEntity(entityId);
+
+    auto it = s_hasComponentFuncs.find(typeHandle);
+
+    if (it == s_hasComponentFuncs.end())
+    {
+        Log::coreError("Unknown component type handle 0x%x", typeHandle);
+        return false;
+    }
+
+    return it->second(entity);
+}
+
+INTERNAL_CALL bool ic_addComponent(u32_t entityId, ip_t typeHandle)
+{
+    Entity entity = getEntity(entityId);
+
+    auto it = s_addComponentFuncs.find(typeHandle);
+
+    if (it == s_addComponentFuncs.end())
+    {
+        Log::coreError("Unknown component type handle 0x%x", typeHandle);
+        return false;
+    }
+
+    it->second(entity);
+
+    return true;
+}
+
+INTERNAL_CALL bool ic_removeComponent(u32_t entityId, ip_t typeHandle)
+{
+    Entity entity = getEntity(entityId);
+
+    auto it = s_removeComponentFuncs.find(typeHandle);
+
+    if (it == s_removeComponentFuncs.end())
+    {
+        Log::coreError("Unknown component type handle 0x%x", typeHandle);
+        return false;
+    }
+
+    if (!s_hasComponentFuncs.at(typeHandle)(entity))
+    {
+        Log::coreError(
+            "Can't remove component type 0x%x from entity %i if it doesn't have that component", typeHandle, entityId);
+        return false;
+    }
+
+    it->second(entity);
+
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

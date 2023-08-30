@@ -9,64 +9,48 @@ namespace Nimbus;
 
 public abstract class Component
 {
-    public Entity entity { get; internal set; }
+    public Entity m_entity { get; internal set; } = null!;
 
-    public Component(Entity entity)
-    {
-        this.entity = entity;
-    }
 }
 
 public class GuidCmp : Component
 {
-    public GuidCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class NameCmp : Component
 {
-    public NameCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class AncestryCmp : Component
 {
-    public AncestryCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class ScriptCmp : Component
 {
-    public ScriptCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class NativeLogicCmp : Component
 {
-    public NativeLogicCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class TransformCmp : Component
 {
-    public TransformCmp(Entity entity) : base(entity)
-    {
-    }
+
     public Mat4 LocalTransform
     {
         get
         {
-            return IC.Transform.GetLocalTransform(entity.nativeEntityId);
+            return IC.Transform.GetLocalTransform(m_entity.m_nativeEntityId);
         }
 
         set
         {
-            IC.Transform.SetLocalTransform(entity.nativeEntityId, ref value);
+            IC.Transform.SetLocalTransform(m_entity.m_nativeEntityId, ref value);
         }
     }
 
@@ -74,42 +58,31 @@ public class TransformCmp : Component
     {
         get
         {
-            return IC.Transform.GetWorldTransform(entity.nativeEntityId);
+            return IC.Transform.GetWorldTransform(m_entity.m_nativeEntityId);
         }
     }
 }
 
 public class SpriteCmp : Component
 {
-    public SpriteCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class TextCmp : Component
 {
-    public TextCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class ParticleEmitterCmp : Component
 {
-    public ParticleEmitterCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class RigidBody2DCmp : Component
 {
-    public RigidBody2DCmp(Entity entity) : base(entity)
-    {
-    }
+
 }
 
 public class CameraCmp : Component
 {
-    public CameraCmp(Entity entity) : base(entity)
-    {
-    }
 }
